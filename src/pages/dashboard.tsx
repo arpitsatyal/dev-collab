@@ -1,29 +1,11 @@
-import { signOut } from "next-auth/react";
-import { Button, Container, Flex, Text } from "@mantine/core";
 import { getServerSession, User } from "next-auth";
 import { GetServerSideProps } from "next";
 import { authOptions } from "./api/auth/[...nextauth]";
+import Layout from "../components/Layout";
 
-const Dashboard = ({ user }: { user: User }) => {
-  return (
-    <Container
-      style={{
-        height: "100vh",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-      }}
-    >
-      <Flex direction="column" gap={10}>
-        <Text>Signed in as {user.name}</Text>
-        <Button variant="filled" onClick={() => signOut()}>
-          Sign out
-        </Button>
-      </Flex>
-    </Container>
-  );
+const dashboard = ({ user }: { user: User }) => {
+  return <p>welcome, {user.name}</p>;
 };
-
 export const getServerSideProps: GetServerSideProps = async (context) => {
   const session = await getServerSession(context.req, context.res, authOptions);
   const user = session?.user ?? null;
@@ -37,4 +19,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-export default Dashboard;
+dashboard.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+
+export default dashboard;

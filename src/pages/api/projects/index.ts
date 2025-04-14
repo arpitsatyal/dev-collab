@@ -1,26 +1,18 @@
-import { getSession } from "next-auth/react";
 import { NextApiRequest, NextApiResponse } from "next";
-import prisma from "../../lib/prisma";
+import prisma from "../../../lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]";
 
 interface ProjectCreateData {
   title: string;
-}
-
-interface SessionUser {
-  id: string;
-  [key: string]: any; // Allow for other user properties
-}
-
-interface Session {
-  user: SessionUser;
-  [key: string]: any; // Allow for other session properties
+  ownerId: string;
 }
 
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
 ) {
-  const session = (await getSession({ req })) as Session | null;
+  const session = await getServerSession(req, res, authOptions);
 
   if (!session) {
     return res.status(401).json({ error: "Unauthorized" });
@@ -33,7 +25,7 @@ export default async function handler(
       const project = await prisma.project.create({
         data: {
           title,
-          userId: session.user.id, // Links to the logged-in user
+          ownerId: session.user.id,
         },
       });
 
