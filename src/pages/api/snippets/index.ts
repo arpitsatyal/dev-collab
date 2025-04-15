@@ -3,9 +3,12 @@ import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 
-interface ProjectCreateData {
+interface SnippetsCreateData {
   title: string;
-  ownerId: string;
+  language: string;
+  content: string;
+  authorId: string;
+  projectId: string;
 }
 
 export default async function handler(
@@ -32,33 +35,24 @@ export default async function handler(
   }
 
   switch (req.method) {
-    case "GET":
-      try {
-        const projects = await prisma.project.findMany({
-          where: {
-            ownerId: user.id,
-          },
-        });
-        return res.status(200).json(projects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-
     case "POST":
       try {
-        const { title } = req.body as ProjectCreateData;
+        const { title, language, content, projectId } =
+          req.body as SnippetsCreateData;
 
-        const project = await prisma.project.create({
+        const snippet = await prisma.snippet.create({
           data: {
             title,
-            ownerId: user.id,
+            language,
+            content,
+            authorId: user.id,
+            projectId: projectId,
           },
         });
 
-        return res.status(200).json(project);
+        return res.status(200).json(snippet);
       } catch (error) {
-        console.error("Error creating project:", error);
+        console.error("Error creating snippet:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
 

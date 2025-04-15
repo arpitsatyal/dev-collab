@@ -1,5 +1,6 @@
 import { Loader, Table, Text } from "@mantine/core";
 import { Project } from "../interfaces/project";
+import Link from "next/link";
 
 interface ProjectsTable {
   loading: boolean;
@@ -10,7 +11,9 @@ interface ProjectsTable {
 const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
   const rows = projects.map((project) => (
     <Table.Tr key={project.id}>
-      <Table.Td>{project.id}</Table.Td>
+      <Table.Td>
+        <Link href={`/projects/${project.id}`}>{project.id}</Link>
+      </Table.Td>
       <Table.Td>{project.title}</Table.Td>
     </Table.Tr>
   ));

@@ -49,7 +49,7 @@ const Navbar = () => {
   // Determine if a nav item is active based on the current route
   const isActive = (path?: string) => {
     if (!path) return false;
-    return router.pathname === path;
+    return router.pathname === path || router.pathname.startsWith(path);
   };
 
   return (
