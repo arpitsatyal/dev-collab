@@ -1,6 +1,6 @@
 import { AppShell, Burger } from "@mantine/core";
-import Navbar from "./Navbar";
 import { useDisclosure } from "@mantine/hooks";
+import SideNav from "./SideNav";
 
 export default function Layout({ children }: any) {
   const [opened, { toggle }] = useDisclosure();
@@ -19,7 +19,7 @@ export default function Layout({ children }: any) {
         <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
       </AppShell.Header>
 
-      <Navbar />
+      <SideNav />
       <AppShell.Main>{children}</AppShell.Main>
     </AppShell>
   );

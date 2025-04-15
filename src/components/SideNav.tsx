@@ -1,5 +1,5 @@
 import { AppShell, NavLink } from "@mantine/core";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 import {
@@ -7,11 +7,35 @@ import {
   IconActivity,
   IconPencil,
   IconLogout,
+  IconDashboard,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
+import axios from "axios";
+import { Project } from "../interfaces/project";
 
-const Navbar = () => {
+const SideNav = () => {
   const router = useRouter();
+  const [projectChildren, setProjectChildren] = useState([]);
+
+  useEffect(() => {
+    const getProjects = async () => {
+      try {
+        const { data } = await axios.get("/api/projects");
+        const dynamicProjects = data.map((project: Project) => ({
+          label: project.title,
+          path: `/projects/${project.id}`,
+          icon: IconDashboard,
+          id: project.id,
+        }));
+
+        setProjectChildren(dynamicProjects);
+      } catch (err) {
+        console.error("Failed to fetch projects:", err);
+      }
+    };
+
+    getProjects();
+  }, []);
 
   const data = [
     {
@@ -29,6 +53,7 @@ const Navbar = () => {
           label: "Create Project",
           path: "/projects/create",
         },
+        ...projectChildren,
       ],
     },
     {
@@ -49,7 +74,15 @@ const Navbar = () => {
   // Determine if a nav item is active based on the current route
   const isActive = (path?: string) => {
     if (!path) return false;
-    return router.pathname === path || router.pathname.startsWith(path);
+    const pathName = router.pathname;
+
+    if (path === pathName) {
+      return true;
+    }
+
+    if (router.query.id) {
+      return path.split("/")[2] === router.query.id;
+    }
   };
 
   return (
@@ -79,4 +112,4 @@ const Navbar = () => {
   );
 };
 
-export default Navbar;
+export default SideNav;
