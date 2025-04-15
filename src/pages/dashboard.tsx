@@ -3,7 +3,7 @@ import { GetServerSideProps } from "next";
 import { authOptions } from "./api/auth/[...nextauth]";
 import Layout from "../components/Layout";
 
-const dashboard = ({ user }: { user: User }) => {
+const Dashboard = ({ user }: { user: User }) => {
   return <p>welcome, {user.name}</p>;
 };
 export const getServerSideProps: GetServerSideProps = async (context) => {
@@ -19,6 +19,6 @@ export const getServerSideProps: GetServerSideProps = async (context) => {
   };
 };
 
-dashboard.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+Dashboard.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
-export default dashboard;
+export default Dashboard;

@@ -18,24 +18,54 @@ export default async function handler(
     return res.status(401).json({ error: "Unauthorized" });
   }
 
-  if (req.method === "POST") {
-    try {
-      const { title } = req.body as ProjectCreateData;
+  const user = await prisma.user.findUnique({
+    where: {
+      email: session.user.email,
+    },
+    select: {
+      id: true,
+    },
+  });
 
-      const project = await prisma.project.create({
-        data: {
-          title,
-          ownerId: session.user.id,
-        },
-      });
-
-      return res.status(200).json(project);
-    } catch (error) {
-      console.error("Error creating project:", error);
-      return res.status(500).json({ error: "Internal Server Error" });
-    }
+  if (!user) {
+    return res.status(404).json({ error: "User not found." });
   }
 
-  res.setHeader("Allow", ["POST"]);
-  return res.status(405).end();
+  switch (req.method) {
+    case "GET":
+      try {
+        const projects = await prisma.project.findMany({
+          where: {
+            ownerId: user.id,
+          },
+        });
+        return res.status(200).json(projects);
+      } catch (error) {
+        console.error("Error fetching projects:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
+    case "POST":
+      try {
+        const { title } = req.body as { title: string };
+
+        const project = await prisma.project.create({
+          data: {
+            title,
+            ownerId: user.id,
+          },
+        });
+
+        return res.status(200).json(project);
+      } catch (error) {
+        console.error("Error creating project:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
+    default:
+      res.setHeader("Allow", ["GET", "POST"]);
+      return res
+        .status(405)
+        .json({ error: `Method ${req.method} Not Allowed` });
+  }
 }
