@@ -1,6 +1,7 @@
 import { Loader, Table, Text } from "@mantine/core";
 import { Project } from "../interfaces";
 import Link from "next/link";
+import Loading from "./Loader";
 
 interface ProjectsTable {
   loading: boolean;
@@ -30,7 +31,7 @@ const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
         {loading ? (
           <Table.Tr>
             <Table.Td colSpan={2} style={{ textAlign: "center" }}>
-              <Loader color="blue" />
+              <Loading />
             </Table.Td>
           </Table.Tr>
         ) : error ? (

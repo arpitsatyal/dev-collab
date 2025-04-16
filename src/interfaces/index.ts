@@ -2,7 +2,6 @@ export interface SnippetCreate {
   title: string;
   language: string;
   content: string;
-  projectId: string;
 }
 
 export interface Snippet {

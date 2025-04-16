@@ -35,22 +35,36 @@ export default async function handler(
   }
 
   const {
-    query: { projectId },
+    query: { projectId, snippetId },
     method,
   } = req;
 
   switch (method) {
     case "GET":
       try {
-        const id = Array.isArray(projectId) ? projectId[0] : projectId;
-
-        if (!id) {
+        if (!projectId) {
           return res.status(400).json({ error: "Project ID is required" });
         }
 
+        //single snippet
+        if (snippetId) {
+          const snippet = await prisma.snippet.findUnique({
+            where: {
+              id: snippetId as string,
+            },
+          });
+
+          if (!snippet) {
+            return res.status(404).json({ error: "Snippet not found" });
+          }
+
+          return res.status(200).json(snippet);
+        }
+
+        //snippets for project
         const snippets = await prisma.snippet.findMany({
           where: {
-            projectId: id,
+            projectId: projectId as string,
           },
         });
 
@@ -62,8 +76,7 @@ export default async function handler(
 
     case "POST":
       try {
-        const { title, language, content, projectId } =
-          req.body as SnippetsCreateData;
+        const { title, language, content } = req.body as SnippetsCreateData;
 
         const snippet = await prisma.snippet.create({
           data: {
@@ -71,7 +84,29 @@ export default async function handler(
             language,
             content,
             authorId: user.id,
-            projectId: projectId,
+            projectId: projectId as string,
+          },
+        });
+
+        return res.status(200).json(snippet);
+      } catch (error) {
+        console.error("Error creating snippet:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+    case "PATCH":
+      try {
+        const { title, language, content } = req.body as SnippetsCreateData;
+
+        const snippet = await prisma.snippet.update({
+          where: {
+            id: snippetId as string,
+          },
+          data: {
+            title,
+            language,
+            content,
+            authorId: user.id,
+            projectId: projectId as string,
           },
         });
 

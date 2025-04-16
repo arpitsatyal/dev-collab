@@ -1,4 +1,4 @@
-import { AppShell, NavLink } from "@mantine/core";
+import { AppShell, NavLink, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/router";
 
 import {
@@ -11,8 +11,8 @@ import {
 import { signOut } from "next-auth/react";
 import { Project, Snippet } from "../interfaces";
 import { useProjects } from "../hooks/projects";
-import SnippetList from "./SnippetList";
 import { useMemo } from "react";
+import SnippetList from "./SnippetList";
 
 interface ProjectProps {
   label: string;
@@ -63,18 +63,25 @@ const SideNav = () => {
     const projectsItem = items.find((item) => item.label === "Projects");
 
     if (projectsItem) {
-      projectsItem.children = [
-        ...projects.map((project: Project) => ({
-          label: project.title,
-          path: `/projects/${project.id}`,
-          icon: IconFolder,
-          snippets: project.snippets,
-        })),
-      ];
+      const uniqueProjects = Array.from(
+        new Map(
+          [
+            ...(projectsItem.children ?? []),
+            ...projects.map((project: Project) => ({
+              label: project.title,
+              path: `/projects/${project.id}`,
+              icon: IconFolder,
+              snippets: project.snippets,
+            })),
+          ].map((item) => [item.path, item])
+        ).values()
+      );
+
+      projectsItem.children = uniqueProjects;
     }
 
     return items;
-  }, [projects]);
+  }, [navItems, projects]);
 
   const handleNavClick = (path?: string, handler?: () => void) => {
     if (handler) {
@@ -93,8 +100,8 @@ const SideNav = () => {
       return true;
     }
 
-    if (router.query.id) {
-      return path.split("/")[2] === router.query.id;
+    if (router.query.projectId) {
+      return path.split("/")[2] === router.query.projectId;
     }
   };
 
@@ -113,12 +120,13 @@ const SideNav = () => {
               <NavLink
                 key={child.label}
                 active={isActive(child.path)}
+                opened={isActive(child.path)}
                 label={child.label}
                 leftSection={<child.icon size={16} stroke={1.5} />}
                 onClick={() => handleNavClick(child.path)}
               >
-                {child.snippets?.length && (
-                  <SnippetList snippets={child.snippets} />
+                {child.label !== "Create Project" && (
+                  <SnippetList snippets={child.snippets ?? []} />
                 )}
               </NavLink>
             ))}
