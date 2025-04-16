@@ -1,5 +1,5 @@
 import { Loader, Table, Text } from "@mantine/core";
-import { Project } from "../interfaces/project";
+import { Project } from "../interfaces";
 import Link from "next/link";
 
 interface ProjectsTable {

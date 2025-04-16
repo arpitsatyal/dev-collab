@@ -2,7 +2,7 @@ import { Box, Button, TextInput, Group } from "@mantine/core";
 import Layout from "../../components/Layout";
 import { useForm } from "@mantine/form";
 import axios from "axios";
-import { Project } from "../../interfaces/project";
+import { Project } from "../../interfaces";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 

@@ -38,6 +38,12 @@ export default async function handler(
           where: {
             ownerId: user.id,
           },
+          select: {
+            id: true,
+            title: true,
+            description: true,
+            snippets: true,
+          },
         });
         return res.status(200).json(projects);
       } catch (error) {

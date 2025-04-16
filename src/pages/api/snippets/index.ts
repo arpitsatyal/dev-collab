@@ -34,7 +34,32 @@ export default async function handler(
     return res.status(404).json({ error: "User not found." });
   }
 
-  switch (req.method) {
+  const {
+    query: { projectId },
+    method,
+  } = req;
+
+  switch (method) {
+    case "GET":
+      try {
+        const id = Array.isArray(projectId) ? projectId[0] : projectId;
+
+        if (!id) {
+          return res.status(400).json({ error: "Project ID is required" });
+        }
+
+        const snippets = await prisma.snippet.findMany({
+          where: {
+            projectId: id,
+          },
+        });
+
+        return res.status(200).json(snippets);
+      } catch (error) {
+        console.error("Error fetching snippets:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
     case "POST":
       try {
         const { title, language, content, projectId } =

@@ -8,8 +8,6 @@ export default function CodeEditor({
   code: string;
   setCode: (val: string) => void;
 }) {
-  console.log(code);
-
   return (
     <Editor
       height="70vh"
