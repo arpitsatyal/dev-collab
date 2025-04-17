@@ -1,6 +1,8 @@
 import { Box, Button, Stack, TextInput, Text } from "@mantine/core";
 import React from "react";
 import CodeEditor from "./CodeEditor";
+import { RoomProvider } from "@liveblocks/react";
+import { useRouter } from "next/router";
 
 interface SnippetBoxProps {
   title: string;
@@ -17,6 +19,7 @@ const SnippetBox = ({
   setCode,
   handleSaveSnippet,
 }: SnippetBoxProps) => {
+  const router = useRouter();
   return (
     <Stack p="md" style={{ maxWidth: 800, margin: "0 auto" }}>
       <Text size="xl">Project Workspace - {title}</Text>
@@ -29,7 +32,12 @@ const SnippetBox = ({
         aria-label="Snippet title input"
       />
       <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
-        <CodeEditor code={code} setCode={setCode} />
+        <RoomProvider
+          id={`snippet_${router.query.snippetId}`}
+          initialPresence={{ cursor: null, code }}
+        >
+          <CodeEditor code={code} setCode={setCode} />
+        </RoomProvider>
       </Box>
       <Button
         onClick={handleSaveSnippet}

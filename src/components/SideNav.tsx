@@ -1,4 +1,4 @@
-import { AppShell, NavLink, ScrollArea } from "@mantine/core";
+import { AppShell, NavLink } from "@mantine/core";
 import { useRouter } from "next/router";
 
 import {
@@ -11,40 +11,39 @@ import {
 import { signOut } from "next-auth/react";
 import { Project, Snippet } from "../interfaces";
 import { useProjects } from "../hooks/projects";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import SnippetList from "./SnippetList";
 
-interface ProjectProps {
+interface NavItemProps {
+  id: string;
+  icon: React.FC<any>;
   label: string;
-  icon: any;
-  path: string;
-  snippets?: Snippet[];
-}
-
-interface NavItemsProps {
-  label: string;
-  icon: any;
   path?: string;
   handler?: () => void;
-  children?: ProjectProps[];
+  children?: NavItemProps[];
+  snippets?: Snippet[];
 }
 
 const SideNav = () => {
   const router = useRouter();
   const projects = useProjects();
+  const [openItems, setOpenItems] = useState<Set<string>>(new Set());
 
-  const navItems: NavItemsProps[] = [
+  const navItems: NavItemProps[] = [
     {
+      id: "home",
       icon: IconGauge,
       label: "Home",
       path: "/dashboard",
     },
     {
+      id: "projects",
       icon: IconActivity,
       label: "Projects",
       path: "/projects",
       children: [
         {
+          id: "create-project",
           icon: IconPencil,
           label: "Create Project",
           path: "/projects/create",
@@ -52,6 +51,7 @@ const SideNav = () => {
       ],
     },
     {
+      id: "logout",
       icon: IconLogout,
       label: "Logout",
       handler: () => signOut(),
@@ -68,6 +68,7 @@ const SideNav = () => {
           [
             ...(projectsItem.children ?? []),
             ...projects.map((project: Project) => ({
+              id: project.id,
               label: project.title,
               path: `/projects/${project.id}`,
               icon: IconFolder,
@@ -91,7 +92,16 @@ const SideNav = () => {
     }
   };
 
-  // Determine if a nav item is active based on the current route
+  const toggleOpenItem = (projectId: string) => {
+    setOpenItems((prev) => {
+      const newSet = new Set<string>();
+      if (!prev.has(projectId)) {
+        newSet.add(projectId);
+      }
+      return newSet;
+    });
+  };
+
   const isActive = (path?: string) => {
     if (!path) return false;
     const pathName = router.pathname;
@@ -114,16 +124,21 @@ const SideNav = () => {
             active={isActive(item.path)}
             label={item.label}
             leftSection={<item.icon size={16} stroke={1.5} />}
-            onClick={() => handleNavClick(item.path, item.handler)}
+            onClick={() => {
+              handleNavClick(item.path, item.handler);
+            }}
           >
             {item.children?.map((child) => (
               <NavLink
                 key={child.label}
                 active={isActive(child.path)}
-                opened={isActive(child.path)}
+                opened={openItems.has(child.id)}
                 label={child.label}
                 leftSection={<child.icon size={16} stroke={1.5} />}
-                onClick={() => handleNavClick(child.path)}
+                onClick={() => {
+                  toggleOpenItem(child.id);
+                  handleNavClick(child.path);
+                }}
               >
                 {child.label !== "Create Project" && (
                   <SnippetList snippets={child.snippets ?? []} />

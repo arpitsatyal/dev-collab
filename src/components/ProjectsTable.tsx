@@ -19,7 +19,9 @@ const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
     </Table.Tr>
   ));
 
-  return (
+  return loading ? (
+    <Loading />
+  ) : (
     <Table>
       <Table.Thead>
         <Table.Tr>
@@ -28,13 +30,7 @@ const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
         </Table.Tr>
       </Table.Thead>
       <Table.Tbody>
-        {loading ? (
-          <Table.Tr>
-            <Table.Td colSpan={2} style={{ textAlign: "center" }}>
-              <Loading />
-            </Table.Td>
-          </Table.Tr>
-        ) : error ? (
+        {error ? (
           <Table.Tr>
             <Table.Td colSpan={2} style={{ textAlign: "center" }}>
               <Text c="red">{error}</Text>
