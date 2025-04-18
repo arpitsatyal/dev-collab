@@ -4,11 +4,20 @@ import { getServerSession } from "next-auth";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
 import { authOptions } from "./api/auth/[...nextauth]";
+import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
 
 const Home: NextPage = () => {
-  const handleSignIn = async () => {
+  const handleGithubSignIn = async () => {
     try {
       await signIn("github");
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn("google");
     } catch (error) {
       console.error(error);
     }
@@ -26,12 +35,25 @@ const Home: NextPage = () => {
         style={{
           height: "100vh",
           display: "flex",
+          flexDirection: "column",
           justifyContent: "center",
           alignItems: "center",
+          gap: 10,
         }}
       >
-        <Button variant="filled" onClick={handleSignIn}>
+        <Button
+          variant="filled"
+          onClick={handleGithubSignIn}
+          leftSection={<IconGitBranch />}
+        >
           Sign in with GitHub
+        </Button>
+        <Button
+          variant="filled"
+          onClick={handleGoogleSignIn}
+          leftSection={<IconBrandGoogle />}
+        >
+          Sign in with Google
         </Button>
       </Container>
     </>
