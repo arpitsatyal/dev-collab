@@ -7,6 +7,7 @@ import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 import { Notifications } from "@mantine/notifications";
 import { LiveblocksProvider } from "@liveblocks/react";
+import { MantineEmotionProvider } from "@mantine/emotion";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -21,13 +22,13 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <>
-      <LiveblocksProvider
-        publicApiKey={process.env.NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY!}
-      >
+      <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
         <SessionProvider session={pageProps.session}>
           <MantineProvider>
-            <Notifications position="top-right" />
-            {getLayout(<Component {...pageProps} />)}
+            <MantineEmotionProvider>
+              <Notifications position="top-right" />
+              {getLayout(<Component {...pageProps} />)}
+            </MantineEmotionProvider>
           </MantineProvider>
         </SessionProvider>
       </LiveblocksProvider>

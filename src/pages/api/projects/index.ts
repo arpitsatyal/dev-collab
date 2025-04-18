@@ -35,9 +35,6 @@ export default async function handler(
     case "GET":
       try {
         const projects = await prisma.project.findMany({
-          where: {
-            ownerId: user.id,
-          },
           select: {
             id: true,
             title: true,

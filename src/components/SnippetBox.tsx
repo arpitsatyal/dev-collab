@@ -3,6 +3,7 @@ import React from "react";
 import CodeEditor from "./CodeEditor";
 import { RoomProvider } from "@liveblocks/react";
 import { useRouter } from "next/router";
+import Loading from "./Loader";
 
 interface SnippetBoxProps {
   title: string;
@@ -20,6 +21,11 @@ const SnippetBox = ({
   handleSaveSnippet,
 }: SnippetBoxProps) => {
   const router = useRouter();
+
+  if (!router.query.snippetId) {
+    return <Loading />;
+  }
+
   return (
     <Stack p="md" style={{ maxWidth: 800, margin: "0 auto" }}>
       <Text size="xl">Project Workspace - {title}</Text>
@@ -34,9 +40,12 @@ const SnippetBox = ({
       <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
         <RoomProvider
           id={`snippet_${router.query.snippetId}`}
-          initialPresence={{ cursor: null, code }}
+          initialStorage={{ code: "" }}
+          initialPresence={{
+            cursor: null,
+          }}
         >
-          <CodeEditor code={code} setCode={setCode} />
+          <CodeEditor />
         </RoomProvider>
       </Box>
       <Button

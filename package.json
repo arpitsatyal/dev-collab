@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@liveblocks/client": "^2.23.1",
+    "@liveblocks/node": "^2.23.1",
     "@liveblocks/react": "^2.23.1",
     "@mantine/core": "^7.17.4",
+    "@mantine/emotion": "^7.17.4",
     "@mantine/form": "^7.17.4",
     "@mantine/hooks": "^7.17.4",
     "@mantine/notifications": "^7.17.4",
@@ -20,6 +22,7 @@
     "@prisma/client": "^6.6.0",
     "@tabler/icons-react": "^3.31.0",
     "axios": "^1.8.4",
+    "lodash": "^4.17.21",
     "next": "15.3.0",
     "next-auth": "^4.24.11",
     "react": "19.1.0",
