@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SnippetCreate } from "../../../../../interfaces";
+import { SnippetUpdate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
@@ -10,6 +10,7 @@ import Layout from "../../../../../components/Layout";
 import { useSnippet } from "../../../../../hooks/snippets";
 import Loading from "../../../../../components/Loader";
 import { RoomProvider, useStorage } from "@liveblocks/react";
+import { useSession } from "next-auth/react";
 
 const SnippetEdit = () => {
   const router = useRouter();
@@ -20,6 +21,7 @@ const SnippetEdit = () => {
   );
 
   const [title, setTitle] = useState("");
+  const session = useSession();
   const storageCode = useStorage((root) => root.code as string);
 
   useEffect(() => {
@@ -33,10 +35,11 @@ const SnippetEdit = () => {
   };
 
   const handleSaveSnippet = async () => {
-    const snippet: SnippetCreate = {
+    const snippet: SnippetUpdate = {
       title,
       content: JSON.stringify(storageCode),
       language: "javascript",
+      lastEditedById: session.data?.user.id ?? "",
     };
 
     try {

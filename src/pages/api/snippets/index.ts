@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
+import { Prisma } from "@prisma/client";
 
 interface SnippetsCreateData {
   title: string;
@@ -9,6 +10,10 @@ interface SnippetsCreateData {
   content: string;
   authorId: string;
   projectId: string;
+}
+
+interface SnippetsUpdateData extends SnippetsCreateData {
+  lastEditedById: string;
 }
 
 export default async function handler(
@@ -95,22 +100,31 @@ export default async function handler(
       }
     case "PATCH":
       try {
-        const { title, language, content } = req.body as SnippetsCreateData;
+        const { title, language, content, lastEditedById } =
+          (req.body as SnippetsUpdateData) || {};
 
-        const snippet = await prisma.snippet.update({
+        console.log({ lastEditedById });
+        const updateData: Prisma.SnippetUpdateInput = {};
+
+        if (title) updateData.title = title;
+        if (language) updateData.language = language;
+        if (content) updateData.content = content;
+
+        const updatedSnippet = await prisma.snippet.update({
           where: {
             id: snippetId as string,
           },
           data: {
-            title,
-            language,
-            content,
-            authorId: user.id,
-            projectId: projectId as string,
+            ...updateData,
+            lastEditedBy: {
+              connect: {
+                id: lastEditedById,
+              },
+            },
           },
         });
 
-        return res.status(200).json(snippet);
+        return res.status(200).json(updatedSnippet);
       } catch (error) {
         console.error("Error creating snippet:", error);
         return res.status(500).json({ error: "Internal Server Error" });

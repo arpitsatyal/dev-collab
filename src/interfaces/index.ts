@@ -4,6 +4,13 @@ export interface SnippetCreate {
   content: string;
 }
 
+export interface SnippetUpdate {
+  title: string;
+  language: string;
+  content: string;
+  lastEditedById: string;
+}
+
 export interface Snippet {
   id: string;
   title: string;

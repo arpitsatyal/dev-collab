@@ -8,16 +8,17 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(cuid())
-  email         String?   @unique
-  name          String?
-  image         String?
-  createdAt     DateTime  @default(now())
-  emailVerified DateTime?
-  accounts      Account[]
-  projects      Project[] @relation("ProjectOwner")
-  sessions      Session[]
-  snippets      Snippet[]
+  id                 String    @id @default(cuid())
+  email              String?   @unique
+  name               String?
+  image              String?
+  createdAt          DateTime  @default(now())
+  emailVerified      DateTime?
+  accounts           Account[]
+  projects           Project[] @relation("ProjectOwner")
+  sessions           Session[]
+  snippets           Snippet[] @relation("AuthorRelation")
+  lastEditedSnippets Snippet[] @relation("LastEditorRelation")
 }
 
 model Account {
@@ -67,14 +68,16 @@ model Project {
 }
 
 model Snippet {
-  id        String   @id @default(cuid())
-  title     String
-  language  String
-  content   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  projectId String
-  authorId  String?
-  author    User?    @relation(fields: [authorId], references: [id])
-  project   Project  @relation(fields: [projectId], references: [id])
+  id             String   @id @default(cuid())
+  title          String
+  language       String
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  projectId      String
+  authorId       String?
+  lastEditedById String?
+  author         User?    @relation("AuthorRelation", fields: [authorId], references: [id])
+  lastEditedBy   User?    @relation("LastEditorRelation", fields: [lastEditedById], references: [id])
+  project        Project  @relation(fields: [projectId], references: [id])
 }
