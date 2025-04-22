@@ -21,12 +21,14 @@ const SnippetEdit = () => {
   );
 
   const [title, setTitle] = useState("");
+  const [code, setCode] = useState("");
   const session = useSession();
   const storageCode = useStorage((root) => root.code as string);
 
   useEffect(() => {
     if (snippet && !loading) {
       setTitle(snippet.title ?? "");
+      setCode(JSON.parse(snippet.content) ?? "");
     }
   }, [snippet, loading]);
 
@@ -43,6 +45,7 @@ const SnippetEdit = () => {
     };
 
     try {
+      if (!storageCode) throw new Error("No code provided");
       await axios.patch(
         `/api/snippets?projectId=${projectId}&snippetId=${snippetId}`,
         snippet
@@ -70,6 +73,8 @@ const SnippetEdit = () => {
           isEdit={true}
           handleSaveSnippet={handleSaveSnippet}
           handleTitleChange={handleTitleChange}
+          code={code}
+          setCode={setCode}
         />
       )}
     </>

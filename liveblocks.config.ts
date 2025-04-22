@@ -1,5 +1,4 @@
 type UserInfo = {
-  userId: string; // Added for others.info.userId
   name: string;
   avatar: string;
   email: string;

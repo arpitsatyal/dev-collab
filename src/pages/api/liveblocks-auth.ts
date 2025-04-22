@@ -22,25 +22,24 @@ export default async function handler(
   }
 
   const { user } = session;
-
-  const userId = user.id || user.email;
-  const userInfo: Liveblocks["UserMeta"]["info"] = {
-    name: user.name || "Anonymous",
-    avatar: user.image || "",
-    email: user.email || "",
-  };
-
   try {
-    const { status, body } = await liveblocks.identifyUser(
-      {
-        userId,
-        groupIds: [],
-      },
-      {
-        userInfo,
-      }
-    );
+    const userId = user.id || user.email;
 
+    const userInfo: Liveblocks["UserMeta"]["info"] = {
+      name: user.name || "Anonymous",
+      avatar: user.image || "",
+      email: user.email || "",
+    };
+
+    const session = liveblocks.prepareSession(userId, { userInfo });
+
+    const { room } = await req.body;
+    // console.log("room", room);
+    if (room) {
+      session.allow(room, session.FULL_ACCESS);
+    }
+
+    const { body, status } = await session.authorize();
     return res.status(status).json(JSON.parse(body));
   } catch (error) {
     console.error("Liveblocks auth error:", error);

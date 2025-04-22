@@ -19,8 +19,8 @@ export default function CodeEditor({
   code,
   setCode,
 }: {
-  code?: string;
-  setCode?: (val: string) => void;
+  code: string;
+  setCode: (val: string) => void;
 }) {
   const editorRef = useRef<monacoType.editor.IStandaloneCodeEditor | null>(
     null
