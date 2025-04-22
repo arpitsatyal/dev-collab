@@ -9,32 +9,19 @@ import {
   useOthers,
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
-import { createStyles } from "@mantine/emotion";
+import { useCursorStyles } from "../utils/cursor";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
 });
 
-const useStyles = createStyles((theme) => ({
-  remoteCursor: {
-    position: "absolute",
-    borderLeft: `2px solid ${theme.colors.pink[6]}`,
-    pointerEvents: "none",
-    zIndex: 10,
-  },
-  remoteCursorLabel: {
-    "&::after": {
-      content: '"●"',
-      position: "absolute",
-      color: theme.colors.pink[6],
-      fontSize: 11,
-      marginLeft: 4,
-      top: "-1.2em",
-    },
-  },
-}));
-
-export default function CodeEditor() {
+export default function CodeEditor({
+  code,
+  setCode,
+}: {
+  code?: string;
+  setCode?: (val: string) => void;
+}) {
   const editorRef = useRef<monacoType.editor.IStandaloneCodeEditor | null>(
     null
   );
@@ -43,13 +30,16 @@ export default function CodeEditor() {
     Record<string, monacoType.editor.IEditorDecorationsCollection>
   >({});
 
-  const { classes } = useStyles();
+  const { classes } = useCursorStyles();
   const others = useOthers();
   const updateMyPresence = useUpdateMyPresence();
 
-  const code = useStorage((root) => root.code as string);
+  const storageCode = useStorage((root) => root.code as string);
   const updateCode = useMutation(({ storage }, val: string) => {
     storage.set("code", val);
+    if (setCode) {
+      setCode(val);
+    }
   }, []);
 
   const handleEditorMount = (
@@ -60,7 +50,6 @@ export default function CodeEditor() {
     monacoRef.current = monaco;
 
     editor.onDidChangeCursorPosition((e) => {
-      console.log("Cursor updated:", e.position);
       updateMyPresence({
         cursor: e.position,
       });
@@ -86,8 +75,6 @@ export default function CodeEditor() {
 
       if (!userId) return;
       const existingCollection = decorationsRef.current[userId];
-
-      console.log({ userId, existingCollection, cursor });
 
       if (!cursor) {
         if (existingCollection) {
@@ -134,7 +121,7 @@ export default function CodeEditor() {
       height="90vh"
       defaultLanguage="javascript"
       theme="vs-dark"
-      value={code ?? ""}
+      value={code ?? storageCode ?? ""}
       onChange={(val) => updateCode(val || "")}
       onMount={handleEditorMount}
     />

@@ -12,6 +12,7 @@
     "@liveblocks/client": "^2.23.1",
     "@liveblocks/node": "^2.23.1",
     "@liveblocks/react": "^2.23.1",
+    "@liveblocks/yjs": "^2.23.1",
     "@mantine/core": "^7.17.4",
     "@mantine/emotion": "^7.17.4",
     "@mantine/form": "^7.17.4",
@@ -26,9 +27,12 @@
     "next": "15.3.0",
     "next-auth": "^4.24.11",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "y-monaco": "^0.1.6",
+    "y-protocols": "^1.0.6"
   },
   "devDependencies": {
+    "@types/lodash": "^4.17.16",
     "@types/node": "22.14.1",
     "@types/react": "19.1.1",
     "@types/react-dom": "19.1.2",

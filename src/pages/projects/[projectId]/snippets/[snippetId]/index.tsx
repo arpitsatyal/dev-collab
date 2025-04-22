@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 import { SnippetCreate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
@@ -7,8 +9,9 @@ import SnippetBox from "../../../../../components/SnippetBox";
 import Layout from "../../../../../components/Layout";
 import { useSnippet } from "../../../../../hooks/snippets";
 import Loading from "../../../../../components/Loader";
+import { RoomProvider, useStorage } from "@liveblocks/react";
 
-const Snippet = () => {
+const SnippetEdit = () => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
   const { snippet, loading } = useSnippet(
@@ -17,12 +20,11 @@ const Snippet = () => {
   );
 
   const [title, setTitle] = useState("");
-  const [code, setCode] = useState("");
+  const storageCode = useStorage((root) => root.code as string);
 
   useEffect(() => {
     if (snippet && !loading) {
       setTitle(snippet.title ?? "");
-      setCode(JSON.parse(snippet.content) ?? "");
     }
   }, [snippet, loading]);
 
@@ -33,7 +35,7 @@ const Snippet = () => {
   const handleSaveSnippet = async () => {
     const snippet: SnippetCreate = {
       title,
-      content: JSON.stringify(code),
+      content: JSON.stringify(storageCode),
       language: "javascript",
     };
 
@@ -61,14 +63,28 @@ const Snippet = () => {
         <Loading />
       ) : (
         <SnippetBox
-          code={code ?? ""}
+          title={title ?? ""}
+          isEdit={true}
           handleSaveSnippet={handleSaveSnippet}
           handleTitleChange={handleTitleChange}
-          setCode={setCode}
-          title={title ?? ""}
         />
       )}
     </>
+  );
+};
+
+const Snippet = () => {
+  const router = useRouter();
+  return (
+    <RoomProvider
+      id={`snippet_${router.query.snippetId}`}
+      initialStorage={{ code: "" }}
+      initialPresence={{
+        cursor: null,
+      }}
+    >
+      <SnippetEdit />
+    </RoomProvider>
   );
 };
 

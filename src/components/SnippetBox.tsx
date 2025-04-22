@@ -1,3 +1,5 @@
+"use client";
+
 import { Box, Button, Stack, TextInput, Text } from "@mantine/core";
 import React from "react";
 import CodeEditor from "./CodeEditor";
@@ -7,22 +9,24 @@ import Loading from "./Loader";
 
 interface SnippetBoxProps {
   title: string;
-  code: string;
   handleTitleChange: (v: string) => void;
-  setCode: (code: string) => void;
   handleSaveSnippet: () => void;
+  isEdit: boolean;
+  code?: string;
+  setCode?: (v: string) => void;
 }
 
 const SnippetBox = ({
   title,
   handleTitleChange,
+  isEdit,
   code,
   setCode,
   handleSaveSnippet,
 }: SnippetBoxProps) => {
   const router = useRouter();
 
-  if (!router.query.snippetId) {
+  if (isEdit && !router.query.snippetId) {
     return <Loading />;
   }
 
@@ -40,12 +44,12 @@ const SnippetBox = ({
       <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
         <RoomProvider
           id={`snippet_${router.query.snippetId}`}
-          initialStorage={{ code: "" }}
+          initialStorage={{ code: "arpit" }}
           initialPresence={{
             cursor: null,
           }}
         >
-          <CodeEditor />
+          <CodeEditor code={code} setCode={setCode} />
         </RoomProvider>
       </Box>
       <Button

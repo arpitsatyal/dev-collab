@@ -45,6 +45,7 @@ const CreateSnippet = () => {
       handleTitleChange={handleTitleChange}
       setCode={setCode}
       title={title}
+      isEdit={false}
     />
   );
 };
