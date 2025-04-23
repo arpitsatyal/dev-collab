@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import {
   useStorage,
@@ -10,6 +10,7 @@ import {
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
 import { useCursorStyles } from "../utils/cursor";
+import { Box, Select, Stack } from "@mantine/core";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -35,12 +36,28 @@ export default function CodeEditor({
   const updateMyPresence = useUpdateMyPresence();
 
   const storageCode = useStorage((root) => root.code as string);
+  const rawLanguage = useStorage((root) => root.language);
+
+  const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
+
   const updateCode = useMutation(({ storage }, val: string) => {
     storage.set("code", val);
     if (setCode) {
       setCode(val);
     }
   }, []);
+
+  const updateLanguage = useMutation(({ storage }, val: string) => {
+    storage.set("language", val);
+  }, []);
+
+  const languageOptions = [
+    { value: "javascript", label: "JavaScript" },
+    { value: "typescript", label: "TypeScript" },
+    { value: "python", label: "Python" },
+    { value: "html", label: "HTML" },
+    { value: "json", label: "JSON" },
+  ];
 
   const handleEditorMount = (
     editor: monacoType.editor.IStandaloneCodeEditor,
@@ -116,14 +133,37 @@ export default function CodeEditor({
     };
   }, [others]);
 
+  const handleLanguageChange = (val: string | null) => {
+    if (val) {
+      updateLanguage(val);
+    }
+  };
+
   return (
-    <MonacoEditor
-      height="90vh"
-      defaultLanguage="javascript"
-      theme="vs-dark"
-      value={code ?? storageCode ?? ""}
-      onChange={(val) => updateCode(val || "")}
-      onMount={handleEditorMount}
-    />
+    <>
+      <Stack p="md" style={{ minHeight: "100vh" }} gap="sm">
+        <Box w={250} pb="xs">
+          <Select
+            label="Select Language"
+            placeholder="Pick a language"
+            data={languageOptions}
+            value={language}
+            onChange={handleLanguageChange}
+          />
+        </Box>
+
+        <Box style={{ flexGrow: 1, mt: 5 }}>
+          <MonacoEditor
+            key={language}
+            height="90vh"
+            defaultLanguage={language}
+            theme="vs-dark"
+            value={code ?? storageCode ?? ""}
+            onChange={(val) => updateCode(val || "")}
+            onMount={handleEditorMount}
+          />
+        </Box>
+      </Stack>
+    </>
   );
 }

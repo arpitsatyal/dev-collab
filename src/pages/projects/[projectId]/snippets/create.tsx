@@ -65,7 +65,7 @@ const CreateSnippet = () => {
   return (
     <RoomProvider
       id={`snippet_draft_${data?.user.id ?? "-"}`}
-      initialStorage={{ code: "" }}
+      initialStorage={{ code: "", language: "javascript" }}
       initialPresence={{
         cursor: null,
       }}

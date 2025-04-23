@@ -86,7 +86,7 @@ const Snippet = () => {
   return (
     <RoomProvider
       id={`snippet_${router.query.snippetId}`}
-      initialStorage={{ code: "" }}
+      initialStorage={{ code: "", language: "javascript" }}
       initialPresence={{
         cursor: null,
       }}

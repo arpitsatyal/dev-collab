@@ -166,32 +166,34 @@ const SideNav = () => {
                   handleNavClick(item.path, item.handler, item.label);
                 }}
               >
-                <ScrollArea.Autosize
-                  offsetScrollbars
-                  scrollbarSize={4}
-                  type="auto"
-                  mah={500}
-                >
-                  <Box pr="xs">
-                    {item.children?.map((child) => (
-                      <NavLink
-                        key={child.label}
-                        active={isActive(child.path)}
-                        opened={openItems.has(child.id)}
-                        label={child.label}
-                        leftSection={<child.icon size={16} stroke={1.5} />}
-                        onClick={() => {
-                          toggleOpenItem(child.id);
-                          handleNavClick(child.path);
-                        }}
-                      >
-                        {child.label !== "Create Project" && (
-                          <SnippetList snippets={child.snippets ?? []} />
-                        )}
-                      </NavLink>
-                    ))}
-                  </Box>
-                </ScrollArea.Autosize>
+                {item.label === "Projects" && (
+                  <ScrollArea.Autosize
+                    offsetScrollbars
+                    scrollbarSize={4}
+                    type="auto"
+                    mah={500}
+                  >
+                    <Box pr="xs">
+                      {item.children?.map((child) => (
+                        <NavLink
+                          key={child.label}
+                          active={isActive(child.path)}
+                          opened={openItems.has(child.id)}
+                          label={child.label}
+                          leftSection={<child.icon size={16} stroke={1.5} />}
+                          onClick={() => {
+                            toggleOpenItem(child.id);
+                            handleNavClick(child.path);
+                          }}
+                        >
+                          {child.label !== "Create Project" && (
+                            <SnippetList snippets={child.snippets ?? []} />
+                          )}
+                        </NavLink>
+                      ))}
+                    </Box>
+                  </ScrollArea.Autosize>
+                )}
               </NavLink>
             ))}
           </>

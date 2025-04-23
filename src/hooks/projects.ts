@@ -2,11 +2,13 @@ import axios from "axios";
 import { useEffect, useState } from "react";
 import { Project } from "../interfaces";
 
-export const useProject = (projectId: string) => {
+export const useProject = (projectId: string | null) => {
   const [loading, setLoading] = useState(true);
   const [project, setProject] = useState<Project>();
 
   useEffect(() => {
+    if (!projectId) return;
+
     const fetchProject = async () => {
       try {
         setLoading(true);

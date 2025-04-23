@@ -41,18 +41,10 @@ const Home: NextPage = () => {
           gap: 10,
         }}
       >
-        <Button
-          variant="filled"
-          onClick={handleGithubSignIn}
-          leftSection={<IconGitBranch />}
-        >
+        <Button onClick={handleGithubSignIn} leftSection={<IconGitBranch />}>
           Sign in with GitHub
         </Button>
-        <Button
-          variant="filled"
-          onClick={handleGoogleSignIn}
-          leftSection={<IconBrandGoogle />}
-        >
+        <Button onClick={handleGoogleSignIn} leftSection={<IconBrandGoogle />}>
           Sign in with Google
         </Button>
       </Container>

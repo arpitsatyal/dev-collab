@@ -8,11 +8,14 @@ const Project = () => {
   const router = useRouter();
   const { projectId } = router.query;
 
-  const { project, loading } = useProject(projectId as string);
+  const shouldFetch = typeof projectId === "string" && projectId.trim() !== "";
 
-  if (!projectId || loading) {
+  const { project, loading } = useProject(shouldFetch ? projectId : null) || {};
+
+  if (!shouldFetch || loading) {
     return <Loading />;
   }
+
   return (
     <Container size="md" p={{ base: "sm", sm: "md" }}>
       <Paper
