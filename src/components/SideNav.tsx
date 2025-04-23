@@ -1,4 +1,4 @@
-import { AppShell, NavLink } from "@mantine/core";
+import { AppShell, Box, NavLink, ScrollArea, Stack } from "@mantine/core";
 import { useRouter } from "next/router";
 
 import {
@@ -29,6 +29,7 @@ const SideNav = () => {
   const router = useRouter();
   const { projects, loading } = useProjects();
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
   useEffect(() => {
     const pathParts = router.asPath.split("/");
@@ -94,10 +95,18 @@ const SideNav = () => {
     return items;
   }, [navItems, projects]);
 
-  const handleNavClick = (path?: string, handler?: () => void) => {
-    if (handler) {
-      handler();
-    } else if (path) {
+  const handleNavClick = (
+    path?: string,
+    handler?: () => void,
+    label?: string
+  ) => {
+    if (handler) return handler();
+
+    if (path) {
+      if (label === "Projects") {
+        setProjectsOpen((prev) => (prev === null ? true : !prev));
+        setOpenItems(new Set());
+      }
       router.push(path);
     }
   };
@@ -127,11 +136,15 @@ const SideNav = () => {
 
   const isOpen = (item: NavItemProps) => {
     return (
-      (item.label === "Projects" &&
-        enhancedNavItems
-          .find((i) => i.label === "Projects")
-          ?.children?.some((child) => openItems.has(child.id))) ??
-      false
+      item.label === "Projects" &&
+      (projectsOpen !== null
+        ? projectsOpen // if user manually toggled it
+        : // fallback to automatic logic
+          enhancedNavItems
+            .find((i) => i.label === "Projects")
+            ?.children?.some(
+              (child) => openItems.has(child.id) || isActive(child.path)
+            ))
     );
   };
 
@@ -150,26 +163,35 @@ const SideNav = () => {
                 label={item.label}
                 leftSection={<item.icon size={16} stroke={1.5} />}
                 onClick={() => {
-                  handleNavClick(item.path, item.handler);
+                  handleNavClick(item.path, item.handler, item.label);
                 }}
               >
-                {item.children?.map((child) => (
-                  <NavLink
-                    key={child.label}
-                    active={isActive(child.path)}
-                    opened={openItems.has(child.id)}
-                    label={child.label}
-                    leftSection={<child.icon size={16} stroke={1.5} />}
-                    onClick={() => {
-                      toggleOpenItem(child.id);
-                      handleNavClick(child.path);
-                    }}
-                  >
-                    {child.label !== "Create Project" && (
-                      <SnippetList snippets={child.snippets ?? []} />
-                    )}
-                  </NavLink>
-                ))}
+                <ScrollArea.Autosize
+                  offsetScrollbars
+                  scrollbarSize={4}
+                  type="auto"
+                  mah={500}
+                >
+                  <Box pr="xs">
+                    {item.children?.map((child) => (
+                      <NavLink
+                        key={child.label}
+                        active={isActive(child.path)}
+                        opened={openItems.has(child.id)}
+                        label={child.label}
+                        leftSection={<child.icon size={16} stroke={1.5} />}
+                        onClick={() => {
+                          toggleOpenItem(child.id);
+                          handleNavClick(child.path);
+                        }}
+                      >
+                        {child.label !== "Create Project" && (
+                          <SnippetList snippets={child.snippets ?? []} />
+                        )}
+                      </NavLink>
+                    ))}
+                  </Box>
+                </ScrollArea.Autosize>
               </NavLink>
             ))}
           </>

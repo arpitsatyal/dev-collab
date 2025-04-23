@@ -22,5 +22,6 @@ export interface Snippet {
 export interface Project {
   title: string;
   id: string;
+  description?: string;
   snippets?: Snippet[];
 }

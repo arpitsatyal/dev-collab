@@ -6,6 +6,7 @@ import { authOptions } from "../auth/[...nextauth]";
 interface ProjectCreateData {
   title: string;
   ownerId: string;
+  description?: string;
 }
 
 export default async function handler(
@@ -31,9 +32,28 @@ export default async function handler(
     return res.status(404).json({ error: "User not found." });
   }
 
-  switch (req.method) {
+  const {
+    query: { projectId },
+    method,
+  } = req;
+
+  switch (method) {
     case "GET":
       try {
+        if (projectId) {
+          const project = await prisma.project.findUnique({
+            where: {
+              id: projectId as string,
+            },
+          });
+
+          if (!project) {
+            return res.status(404).json({ error: "project not found" });
+          }
+
+          return res.status(200).json(project);
+        }
+
         const projects = await prisma.project.findMany({
           select: {
             id: true,
@@ -50,11 +70,12 @@ export default async function handler(
 
     case "POST":
       try {
-        const { title } = req.body as ProjectCreateData;
+        const { title, description } = req.body as ProjectCreateData;
 
         const project = await prisma.project.create({
           data: {
             title,
+            description,
             ownerId: user.id,
           },
         });

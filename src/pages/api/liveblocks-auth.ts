@@ -33,9 +33,9 @@ export default async function handler(
 
     const session = liveblocks.prepareSession(userId, { userInfo });
 
-    const { room } = await req.body;
-    // console.log("room", room);
+    const { room } = req.body;
     if (room) {
+      //todo: add a better check
       session.allow(room, session.FULL_ACCESS);
     }
 
