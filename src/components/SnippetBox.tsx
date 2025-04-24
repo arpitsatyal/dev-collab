@@ -11,7 +11,7 @@ import {
   Avatar,
   Paper,
 } from "@mantine/core";
-import React from "react";
+import React, { useState } from "react";
 import CodeEditor from "./CodeEditor";
 import { useRouter } from "next/router";
 import Loading from "./Loader";
@@ -38,13 +38,14 @@ const SnippetBox = ({
   const router = useRouter();
   const others = useOthers();
   const session = useSession();
+  const [hasErrors, setHasErrors] = useState(false);
 
   if (isEdit && !router.query.snippetId) {
-    return <Loading />;
+    return <Loading isEditorLoading={true} />;
   }
 
   if (!isEdit && !session.data?.user.id) {
-    return <Loading />;
+    return <Loading isEditorLoading={true} />;
   }
 
   return (
@@ -121,7 +122,7 @@ const SnippetBox = ({
         </Paper>
       </Flex>
       <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
-        <CodeEditor code={code} setCode={setCode} />
+        <CodeEditor code={code} setCode={setCode} setHasErrors={setHasErrors} />
       </Box>
       <Button
         onClick={handleSaveSnippet}
@@ -129,6 +130,7 @@ const SnippetBox = ({
         color="blue"
         size="md"
         px="xl"
+        disabled={!title || hasErrors}
         style={{ alignSelf: "flex-start" }}
         aria-label="Save snippet button"
       >

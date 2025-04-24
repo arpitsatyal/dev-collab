@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SnippetUpdate } from "../../../../../interfaces";
+import { Snippet as ISnippet, SnippetUpdate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import axios from "axios";
@@ -9,28 +9,42 @@ import SnippetBox from "../../../../../components/SnippetBox";
 import Layout from "../../../../../components/Layout";
 import { useSnippet } from "../../../../../hooks/snippets";
 import Loading from "../../../../../components/Loader";
-import { RoomProvider, useStorage } from "@liveblocks/react";
+import {
+  RoomProvider,
+  useMutation,
+  useRoom,
+  useStorage,
+} from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 
-const SnippetEdit = () => {
+const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
-  const { snippet, loading } = useSnippet(
-    projectId as string,
-    snippetId as string
-  );
-
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
   const session = useSession();
   const storageCode = useStorage((root) => root.code as string);
+  const rawLanguage = useStorage((root) => root.language);
+  const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
+  const room = useRoom();
+  const status = room.getStorageStatus();
 
   useEffect(() => {
-    if (snippet && !loading) {
+    if (snippet) {
       setTitle(snippet.title ?? "");
       setCode(JSON.parse(snippet.content) ?? "");
     }
-  }, [snippet, loading]);
+  }, [snippet]);
+
+  const setLanguage = useMutation(({ storage }, val: string) => {
+    storage.set("language", val);
+  }, []);
+
+  useEffect(() => {
+    if (status === "synchronized" && snippet?.language) {
+      setLanguage(snippet.language);
+    }
+  }, [status, snippet?.language]);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -40,7 +54,7 @@ const SnippetEdit = () => {
     const snippet: SnippetUpdate = {
       title,
       content: JSON.stringify(storageCode),
-      language: "javascript",
+      language,
       lastEditedById: session.data?.user.id ?? "",
     };
 
@@ -63,35 +77,43 @@ const SnippetEdit = () => {
     }
   };
 
+  if (status === "loading") {
+    return <Loading isEditorLoading={true} />;
+  }
+
   return (
-    <>
-      {loading ? (
-        <Loading />
-      ) : (
-        <SnippetBox
-          title={title ?? ""}
-          isEdit={true}
-          handleSaveSnippet={handleSaveSnippet}
-          handleTitleChange={handleTitleChange}
-          code={code}
-          setCode={setCode}
-        />
-      )}
-    </>
+    <SnippetBox
+      title={title ?? ""}
+      isEdit={true}
+      handleSaveSnippet={handleSaveSnippet}
+      handleTitleChange={handleTitleChange}
+      code={code}
+      setCode={setCode}
+    />
   );
 };
 
 const Snippet = () => {
   const router = useRouter();
+  const { projectId, snippetId } = router.query;
+  const { snippet, loading } = useSnippet(
+    projectId as string,
+    snippetId as string
+  );
+
+  if (loading || !snippetId || !snippet) {
+    return <Loading isEditorLoading={true} />;
+  }
+
   return (
     <RoomProvider
-      id={`snippet_${router.query.snippetId}`}
+      id={`snippet_${snippetId}`}
       initialStorage={{ code: "", language: "javascript" }}
       initialPresence={{
         cursor: null,
       }}
     >
-      <SnippetEdit />
+      <SnippetEdit snippet={snippet} />
     </RoomProvider>
   );
 };

@@ -5,7 +5,7 @@ import { notifications } from "@mantine/notifications";
 import { SnippetCreate } from "../../../../interfaces";
 import Layout from "../../../../components/Layout";
 import SnippetBox from "../../../../components/SnippetBox";
-import { RoomProvider } from "@liveblocks/react";
+import { RoomProvider, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 
 const Create = () => {
@@ -13,6 +13,8 @@ const Create = () => {
   const { projectId } = router.query;
   const [code, setCode] = useState("");
   const [title, setTitle] = useState("");
+  const rawLanguage = useStorage((root) => root.language);
+  const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -24,7 +26,7 @@ const Create = () => {
       const snippet: SnippetCreate = {
         title,
         content: JSON.stringify(code),
-        language: "javascript",
+        language,
       };
       const { data } = await axios.post(
         `/api/snippets?projectId=${projectId}`,

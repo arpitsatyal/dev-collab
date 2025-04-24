@@ -1,6 +1,12 @@
-import { Box, Loader } from "@mantine/core";
+import { Box, Loader, Text, Group } from "@mantine/core";
+import spinnerSVG from "./../../public/infinite-spinner.svg";
+import Image from "next/image";
 
-const Loading = () => {
+const Loading = ({
+  isEditorLoading = false,
+}: {
+  isEditorLoading?: boolean;
+}) => {
   return (
     <Box
       style={{
@@ -10,7 +16,20 @@ const Loading = () => {
         height: "80vh",
       }}
     >
-      <Loader />
+      {isEditorLoading ? (
+        <Group>
+          <Image
+            priority
+            src={spinnerSVG}
+            alt="loading..."
+            height={36}
+            width={36}
+          />
+          <Text size="20">Loading Editor...</Text>
+        </Group>
+      ) : (
+        <Loader size="sm" />
+      )}
     </Box>
   );
 };

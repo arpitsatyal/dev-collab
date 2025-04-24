@@ -32,6 +32,37 @@ const SnippetList = ({ snippets }: { snippets: Snippet[] }) => {
     router.push(path);
   };
 
+  const languageMapper = [
+    {
+      name: "javascript",
+      extension: "js",
+    },
+    {
+      name: "typescript",
+      extension: "ts",
+    },
+    {
+      name: "python",
+      extension: "py",
+    },
+    {
+      name: "html",
+      extension: "html",
+    },
+    {
+      name: "json",
+      extension: "json",
+    },
+  ];
+  const getSnippetName = (snippet: Snippet) => {
+    if (!snippet.title) return "";
+    const language = languageMapper.find(
+      (lang) => snippet.language === lang.name
+    );
+    if (!language) return;
+    return `${snippet.title}.${language.extension}`;
+  };
+
   return (
     <>
       <NavLink
@@ -45,7 +76,7 @@ const SnippetList = ({ snippets }: { snippets: Snippet[] }) => {
         snippets.map((snippet) => (
           <NavLink
             key={snippet.id}
-            label={snippet.title}
+            label={getSnippetName(snippet)}
             leftSection={<IconFile size={16} />}
             active={activeItem === snippet.id}
             opened={activeItem === snippet.id}

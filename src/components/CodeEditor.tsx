@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 import {
   useStorage,
@@ -19,9 +19,11 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 export default function CodeEditor({
   code,
   setCode,
+  setHasErrors,
 }: {
   code: string;
   setCode: (val: string) => void;
+  setHasErrors: (val: boolean) => void;
 }) {
   const editorRef = useRef<monacoType.editor.IStandaloneCodeEditor | null>(
     null
@@ -59,6 +61,14 @@ export default function CodeEditor({
     { value: "json", label: "JSON" },
   ];
 
+  const checkForErrors = (monaco: typeof monacoType) => {
+    const markers = monaco.editor.getModelMarkers({ owner: language });
+    const errorsExist = markers.some(
+      (marker) => marker.severity === monaco.MarkerSeverity.Error
+    );
+    setHasErrors(errorsExist);
+  };
+
   const handleEditorMount = (
     editor: monacoType.editor.IStandaloneCodeEditor,
     monaco: typeof monacoType
@@ -70,6 +80,11 @@ export default function CodeEditor({
       updateMyPresence({
         cursor: e.position,
       });
+    });
+
+    checkForErrors(monaco);
+    monaco.editor.onDidChangeMarkers(() => {
+      checkForErrors(monaco);
     });
   };
 
