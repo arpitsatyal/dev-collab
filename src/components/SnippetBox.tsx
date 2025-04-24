@@ -41,11 +41,11 @@ const SnippetBox = ({
   const [hasErrors, setHasErrors] = useState(false);
 
   if (isEdit && !router.query.snippetId) {
-    return <Loading isEditorLoading={true} />;
+    return <Loading isEditorLoading />;
   }
 
   if (!isEdit && !session.data?.user.id) {
-    return <Loading isEditorLoading={true} />;
+    return <Loading isEditorLoading />;
   }
 
   return (

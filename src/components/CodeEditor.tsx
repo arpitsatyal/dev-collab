@@ -7,10 +7,12 @@ import {
   useMutation,
   useUpdateMyPresence,
   useOthers,
+  useRoom,
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
 import { useCursorStyles } from "../utils/cursor";
 import { Box, Select, Stack } from "@mantine/core";
+import Loading from "./Loader";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -41,6 +43,8 @@ export default function CodeEditor({
   const rawLanguage = useStorage((root) => root.language);
 
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
+  const room = useRoom();
+  const status = room.getStorageStatus();
 
   const updateCode = useMutation(({ storage }, val: string) => {
     storage.set("code", val);
@@ -153,6 +157,10 @@ export default function CodeEditor({
       updateLanguage(val);
     }
   };
+
+  if (status === "loading") {
+    return <Loading isEditorLoading />;
+  }
 
   return (
     <>

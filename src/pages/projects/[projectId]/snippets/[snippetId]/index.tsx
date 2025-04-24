@@ -78,7 +78,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   };
 
   if (status === "loading") {
-    return <Loading isEditorLoading={true} />;
+    return <Loading isEditorLoading />;
   }
 
   return (
@@ -102,13 +102,13 @@ const Snippet = () => {
   );
 
   if (loading || !snippetId || !snippet) {
-    return <Loading isEditorLoading={true} />;
+    return <Loading isEditorLoading />;
   }
 
   return (
     <RoomProvider
       id={`snippet_${snippetId}`}
-      initialStorage={{ code: "", language: "javascript" }}
+      initialStorage={{ code: "", language: snippet.language }}
       initialPresence={{
         cursor: null,
       }}
