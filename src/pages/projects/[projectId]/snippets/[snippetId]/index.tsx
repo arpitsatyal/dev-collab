@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { Snippet as ISnippet, SnippetUpdate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
-import axios from "axios";
 import SnippetBox from "../../../../../components/SnippetBox";
 import Layout from "../../../../../components/Layout";
-import { useSnippet } from "../../../../../hooks/snippets";
 import Loading from "../../../../../components/Loader";
 import {
   RoomProvider,
@@ -16,6 +14,10 @@ import {
   useStorage,
 } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
+import {
+  useEditSnippetMutation,
+  useGetSnippetQuery,
+} from "../../../../../store/api/snippetApi";
 
 const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const router = useRouter();
@@ -28,6 +30,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
   const status = room.getStorageStatus();
+  const [editSnippet] = useEditSnippetMutation();
 
   useEffect(() => {
     if (snippet) {
@@ -60,10 +63,12 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
 
     try {
       if (!storageCode) throw new Error("No code provided");
-      await axios.patch(
-        `/api/snippets?projectId=${projectId}&snippetId=${snippetId}`,
-        snippet
-      );
+      await editSnippet({
+        projectId: projectId as string,
+        snippet,
+        snippetId: snippetId as string,
+      });
+      // todo: handle error
       notifications.show({
         title: "done!",
         message: "Snippet updated successfully! 🌟",
@@ -96,19 +101,30 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
 const Snippet = () => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
-  const { snippet, loading } = useSnippet(
-    projectId as string,
-    snippetId as string
+  const shouldFetch =
+    typeof projectId === "string" &&
+    projectId.trim() !== "" &&
+    typeof snippetId === "string" &&
+    snippetId.trim() != "";
+
+  const { data: snippet, isLoading } = useGetSnippetQuery(
+    {
+      projectId: projectId as string,
+      snippetId: snippetId as string,
+    },
+    {
+      skip: !shouldFetch,
+    }
   );
 
-  if (loading || !snippetId || !snippet) {
+  if (!shouldFetch || isLoading || !snippetId || !snippet) {
     return <Loading isEditorLoading />;
   }
 
   return (
     <RoomProvider
       id={`snippet_${snippetId}`}
-      initialStorage={{ code: "", language: snippet.language }}
+      initialStorage={{ code: snippet.content, language: snippet.language }}
       initialPresence={{
         cursor: null,
       }}

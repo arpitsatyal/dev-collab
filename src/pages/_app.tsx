@@ -8,6 +8,8 @@ import { NextPage } from "next";
 import { Notifications } from "@mantine/notifications";
 import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
+import { Provider } from "react-redux";
+import { store } from "../store/store";
 
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
   getLayout?: (page: ReactElement) => ReactNode;
@@ -22,16 +24,18 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   return (
     <>
-      <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-        <SessionProvider session={pageProps.session}>
-          <MantineProvider>
-            <MantineEmotionProvider>
-              <Notifications position="top-right" />
-              {getLayout(<Component {...pageProps} />)}
-            </MantineEmotionProvider>
-          </MantineProvider>
-        </SessionProvider>
-      </LiveblocksProvider>
+      <Provider store={store}>
+        <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
+          <SessionProvider session={pageProps.session}>
+            <MantineProvider>
+              <MantineEmotionProvider>
+                <Notifications position="top-right" />
+                {getLayout(<Component {...pageProps} />)}
+              </MantineEmotionProvider>
+            </MantineProvider>
+          </SessionProvider>
+        </LiveblocksProvider>
+      </Provider>
     </>
   );
 }

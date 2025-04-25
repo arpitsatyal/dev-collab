@@ -54,14 +54,7 @@ export default async function handler(
           return res.status(200).json(project);
         }
 
-        const projects = await prisma.project.findMany({
-          select: {
-            id: true,
-            title: true,
-            description: true,
-            snippets: true,
-          },
-        });
+        const projects = await prisma.project.findMany();
         return res.status(200).json(projects);
       } catch (error) {
         console.error("Error fetching projects:", error);

@@ -1,5 +1,4 @@
 import { useRouter } from "next/router";
-import axios from "axios";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { SnippetCreate } from "../../../../interfaces";
@@ -7,6 +6,7 @@ import Layout from "../../../../components/Layout";
 import SnippetBox from "../../../../components/SnippetBox";
 import { RoomProvider, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
+import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
 
 const Create = () => {
   const router = useRouter();
@@ -15,6 +15,8 @@ const Create = () => {
   const [title, setTitle] = useState("");
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
+
+  const [createSnippet] = useCreateSnippetMutation();
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -28,15 +30,17 @@ const Create = () => {
         content: JSON.stringify(code),
         language,
       };
-      const { data } = await axios.post(
-        `/api/snippets?projectId=${projectId}`,
-        snippet
-      );
+
+      const { data } = await createSnippet({
+        snippet,
+        projectId: projectId as string,
+      });
+      //todo: handle error
       notifications.show({
         title: "done!",
         message: "Snippet saved successfully! 🌟",
       });
-      if (data.id) {
+      if (data?.id) {
         router.push(`/projects/${projectId}/snippets/${data.id}`);
       }
     } catch (error) {

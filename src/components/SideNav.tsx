@@ -1,4 +1,4 @@
-import { AppShell, Box, NavLink, ScrollArea, Stack } from "@mantine/core";
+import { AppShell, Box, NavLink, ScrollArea } from "@mantine/core";
 import { useRouter } from "next/router";
 
 import {
@@ -10,10 +10,11 @@ import {
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import { Project, Snippet } from "../interfaces";
-import { useProjects } from "../hooks/projects";
 import { useEffect, useMemo, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
+import { useGetProjectsQuery } from "../store/api/projectApi";
+import { useGetSnippetsQuery } from "../store/api/snippetApi";
 
 interface NavItemProps {
   id: string;
@@ -27,15 +28,24 @@ interface NavItemProps {
 
 const SideNav = () => {
   const router = useRouter();
-  const { projects, loading } = useProjects();
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
-  useEffect(() => {
-    const pathParts = router.asPath.split("/");
+  const { data: projects = [], isLoading } = useGetProjectsQuery();
+  const pathParts = router.asPath.split("/");
+  const projectId = pathParts[2];
 
+  const { data: snippets, isLoading: isSnippetLoading } = useGetSnippetsQuery(
+    {
+      projectId,
+    },
+    {
+      skip: !projectId,
+    }
+  );
+
+  useEffect(() => {
     if (pathParts[1] === "projects" && pathParts[2]) {
-      const projectId = pathParts[2];
       setOpenItems(new Set([projectId]));
     }
   }, [router.asPath]);
@@ -83,7 +93,7 @@ const SideNav = () => {
               label: project.title,
               path: `/projects/${project.id}`,
               icon: IconFolder,
-              snippets: project.snippets,
+              snippets: snippets ?? [],
             })),
           ].map((item) => [item.path, item])
         ).values()
@@ -93,7 +103,7 @@ const SideNav = () => {
     }
 
     return items;
-  }, [navItems, projects]);
+  }, [navItems, projects, snippets]);
 
   const handleNavClick = (
     path?: string,
@@ -123,15 +133,8 @@ const SideNav = () => {
 
   const isActive = (path?: string) => {
     if (!path) return false;
-    const pathName = router.pathname;
 
-    if (path === pathName) {
-      return true;
-    }
-
-    if (router.query.projectId) {
-      return path.split("/")[2] === router.query.projectId;
-    }
+    return router.pathname === path || router.asPath === path;
   };
 
   const isOpen = (item: NavItemProps) => {
@@ -151,7 +154,7 @@ const SideNav = () => {
   return (
     <AppShell.Navbar p="md">
       <AppShell.Section grow my="md">
-        {loading ? (
+        {isLoading ? (
           <Loading />
         ) : (
           <>
@@ -187,7 +190,7 @@ const SideNav = () => {
                           }}
                         >
                           {child.label !== "Create Project" && (
-                            <SnippetList snippets={child.snippets ?? []} />
+                            <SnippetList snippets={snippets ?? []} />
                           )}
                         </NavLink>
                       ))}

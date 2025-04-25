@@ -1,10 +1,10 @@
 import { Box, Button, TextInput, Group, Textarea, Paper } from "@mantine/core";
 import Layout from "../../components/Layout";
 import { useForm } from "@mantine/form";
-import axios from "axios";
 import { Project } from "../../interfaces";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
+import { useCreateProjectMutation } from "../../store/api/projectApi";
 
 const CreateProject = () => {
   const router = useRouter();
@@ -16,9 +16,11 @@ const CreateProject = () => {
     },
   });
 
+  const [createProject, { isLoading }] = useCreateProjectMutation();
+
   const handleSubmit = async () => {
     try {
-      await axios.post(`/api/projects/`, form.values);
+      await createProject(form.values);
       router.push("/projects");
       notifications.show({
         title: "Job done!",
@@ -87,6 +89,7 @@ const CreateProject = () => {
               type="submit"
               size="md"
               variant="gradient"
+              loading={isLoading}
               gradient={{ from: "blue", to: "cyan", deg: 90 }}
               disabled={form.values.title.length === 0}
               fullWidth={true}

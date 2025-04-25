@@ -6,20 +6,20 @@ import { useEffect, useState } from "react";
 
 const SnippetList = ({ snippets }: { snippets: Snippet[] }) => {
   const router = useRouter();
+  const pathParts = router.asPath.split("/");
+  const snippetId = pathParts[4];
 
   const [activeItem, setActiveItem] = useState<string | null>(null);
 
   useEffect(() => {
-    const { pathname } = router;
-    if (pathname.includes("/snippets/create")) {
+    if (pathParts[4] === "create") {
       setActiveItem("create");
-    } else if (pathname.includes("/snippets/")) {
-      const snippetId = router.query.snippetId as string;
+    } else if (pathParts[3] === "snippets") {
       setActiveItem(snippetId);
     } else {
       setActiveItem(null);
     }
-  }, [router.pathname]);
+  }, [router.asPath]);
 
   const handleCreateClick = () => {
     const createPath = `/projects/${router.query.projectId}/snippets/create`;

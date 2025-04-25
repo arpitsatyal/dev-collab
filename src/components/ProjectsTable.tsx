@@ -1,15 +1,15 @@
-import { Loader, Table, Text } from "@mantine/core";
+import { Table, Text } from "@mantine/core";
 import { Project } from "../interfaces";
 import Link from "next/link";
 import Loading from "./Loader";
 
 interface ProjectsTable {
-  loading: boolean;
+  isLoading: boolean;
   error: any;
   projects: Project[];
 }
 
-const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
+const ProjectsTable = ({ isLoading, error, projects }: ProjectsTable) => {
   const rows = projects.map((project) => (
     <Table.Tr key={project.id}>
       <Table.Td>
@@ -19,7 +19,7 @@ const ProjectsTable = ({ loading, error, projects }: ProjectsTable) => {
     </Table.Tr>
   ));
 
-  return loading ? (
+  return isLoading ? (
     <Loading />
   ) : (
     <Table>

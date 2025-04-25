@@ -1,8 +1,9 @@
 import { useRouter } from "next/router";
 import Layout from "../../../components/Layout";
-import { useProject } from "../../../hooks/projects";
 import Loading from "../../../components/Loader";
 import { Container, Paper, Stack, Text } from "@mantine/core";
+import { useGetProjectQuery } from "../../../store/api/projectApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 const Project = () => {
   const router = useRouter();
@@ -10,9 +11,11 @@ const Project = () => {
 
   const shouldFetch = typeof projectId === "string" && projectId.trim() !== "";
 
-  const { project, loading } = useProject(shouldFetch ? projectId : null) || {};
+  const { data: project, isLoading } = useGetProjectQuery(
+    shouldFetch ? projectId : skipToken
+  );
 
-  if (!shouldFetch || loading) {
+  if (!shouldFetch || isLoading) {
     return <Loading />;
   }
 
