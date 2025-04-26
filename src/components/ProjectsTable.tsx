@@ -10,8 +10,9 @@ interface ProjectsTable {
 }
 
 const ProjectsTable = ({ isLoading, error, projects }: ProjectsTable) => {
-  const rows = projects.map((project) => (
+  const rows = projects.map((project, index) => (
     <Table.Tr key={project.id}>
+      <Table.Td>{index + 1}</Table.Td>
       <Table.Td>
         <Link href={`/projects/${project.id}`}>{project.id}</Link>
       </Table.Td>
@@ -25,6 +26,7 @@ const ProjectsTable = ({ isLoading, error, projects }: ProjectsTable) => {
     <Table>
       <Table.Thead>
         <Table.Tr>
+          <Table.Th>S.No</Table.Th>
           <Table.Th>ID</Table.Th>
           <Table.Th>Title</Table.Th>
         </Table.Tr>

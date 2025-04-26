@@ -47,11 +47,27 @@ const SideNav = () => {
 
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
+  const fetchSnippets = async (projectId: string) => {
+    if (!loadedSnippets[projectId]) {
+      setLoadingProjectId(projectId);
+      try {
+        const result = await triggerGetSnippets({ projectId }).unwrap();
+        dispatch(setSnippets({ projectId, snippets: result }));
+      } catch (e) {
+        console.error("Failed to load snippets", e);
+      } finally {
+        setLoadingProjectId(null);
+      }
+    }
+  };
+
   useEffect(() => {
     if (pathParts[1] === "projects" && pathParts[2]) {
       setOpenItems(new Set([projectId]));
+      setProjectsOpen(true);
+      fetchSnippets(projectId);
     }
-  }, [router.asPath]);
+  }, [router.asPath, projectId]);
 
   const navItems: NavItemProps[] = [
     {
@@ -133,17 +149,7 @@ const SideNav = () => {
       return newSet;
     });
 
-    if (!loadedSnippets[projectId]) {
-      setLoadingProjectId(projectId);
-      try {
-        const result = await triggerGetSnippets({ projectId }).unwrap();
-        dispatch(setSnippets({ projectId, snippets: result }));
-      } catch (e) {
-        console.error("Failed to load snippets", e);
-      } finally {
-        setLoadingProjectId(null);
-      }
-    }
+    await fetchSnippets(projectId);
   };
 
   const isActive = (path?: string) => {
