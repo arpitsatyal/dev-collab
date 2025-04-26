@@ -37,7 +37,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
   const status = room.getStorageStatus();
-  const [editSnippet] = useEditSnippetMutation();
+  const [editSnippet, { isLoading }] = useEditSnippetMutation();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -83,6 +83,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
           editedSnippet: snippet,
         })
       );
+      window.scrollTo({ top: 0, behavior: "smooth" });
       // todo: handle error
       notifications.show({
         title: "done!",
@@ -109,6 +110,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
       handleTitleChange={handleTitleChange}
       code={code}
       setCode={setCode}
+      loading={isLoading}
     />
   );
 };

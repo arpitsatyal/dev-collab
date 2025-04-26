@@ -18,7 +18,7 @@ const Create = () => {
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
 
-  const [createSnippet] = useCreateSnippetMutation();
+  const [createSnippet, { isLoading }] = useCreateSnippetMutation();
   const dispatch = useAppDispatch();
 
   const handleTitleChange = (value: string) => {
@@ -71,6 +71,7 @@ const Create = () => {
       setCode={setCode}
       title={title}
       isEdit={false}
+      loading={isLoading}
     />
   );
 };

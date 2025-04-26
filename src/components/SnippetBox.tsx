@@ -25,6 +25,7 @@ interface SnippetBoxProps {
   isEdit: boolean;
   code: string;
   setCode: (v: string) => void;
+  loading: boolean;
 }
 
 const SnippetBox = ({
@@ -34,6 +35,7 @@ const SnippetBox = ({
   code,
   setCode,
   handleSaveSnippet,
+  loading,
 }: SnippetBoxProps) => {
   const router = useRouter();
   const others = useOthers();
@@ -130,6 +132,7 @@ const SnippetBox = ({
         color="blue"
         size="md"
         px="xl"
+        loading={loading}
         disabled={!title || hasErrors}
         style={{ alignSelf: "flex-start" }}
         aria-label="Save snippet button"

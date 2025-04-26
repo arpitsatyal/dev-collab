@@ -103,7 +103,6 @@ export default async function handler(
         const { title, language, content, lastEditedById } =
           (req.body as SnippetsUpdateData) || {};
 
-        console.log({ lastEditedById });
         const updateData: Prisma.SnippetUpdateInput = {};
 
         if (title) updateData.title = title;

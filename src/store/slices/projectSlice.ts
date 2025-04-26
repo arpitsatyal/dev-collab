@@ -1,5 +1,4 @@
 import { createSlice } from "@reduxjs/toolkit";
-import type { PayloadAction } from "@reduxjs/toolkit";
 import { Project } from "../../interfaces";
 
 export interface IProjectState {
@@ -13,13 +12,7 @@ const initialState: IProjectState = {
 export const ProjectSlice = createSlice({
   name: "project",
   initialState,
-  reducers: {
-    addProject: (state, action: PayloadAction<Project>) => {
-      state.data.push(action.payload);
-    },
-  },
+  reducers: {},
 });
-
-export const { addProject } = ProjectSlice.actions;
 
 export default ProjectSlice.reducer;
