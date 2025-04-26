@@ -17,9 +17,6 @@ export const snippetApi = createApi({
     >({
       query: ({ projectId, snippetId }) =>
         `snippets?projectId=${projectId}&snippetId=${snippetId}`,
-      providesTags: (result, error, { projectId, snippetId }) => [
-        { type: "Snippets", id: `${projectId}-${snippetId}` },
-      ],
     }),
 
     createSnippet: builder.mutation<
@@ -46,15 +43,12 @@ export const snippetApi = createApi({
         method: "PATCH",
         body: snippet,
       }),
-      invalidatesTags: (result, error, { projectId, snippetId }) => [
-        { type: "Snippets", id: `${projectId}-${snippetId}` },
-      ],
     }),
   }),
 });
 
 export const {
-  useGetSnippetsQuery,
+  useLazyGetSnippetsQuery,
   useGetSnippetQuery,
   useCreateSnippetMutation,
   useEditSnippetMutation,

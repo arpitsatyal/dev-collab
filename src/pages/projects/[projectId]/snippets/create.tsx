@@ -7,6 +7,8 @@ import SnippetBox from "../../../../components/SnippetBox";
 import { RoomProvider, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
+import { useAppDispatch } from "../../../../store/hooks";
+import { addSnippet } from "../../../../store/slices/snippetSlice";
 
 const Create = () => {
   const router = useRouter();
@@ -17,6 +19,7 @@ const Create = () => {
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
 
   const [createSnippet] = useCreateSnippetMutation();
+  const dispatch = useAppDispatch();
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -35,6 +38,14 @@ const Create = () => {
         snippet,
         projectId: projectId as string,
       });
+      if (data) {
+        dispatch(
+          addSnippet({
+            projectId: projectId as string,
+            snippet: data,
+          })
+        );
+      }
       //todo: handle error
       notifications.show({
         title: "done!",

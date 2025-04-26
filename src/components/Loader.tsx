@@ -4,8 +4,10 @@ import Image from "next/image";
 
 const Loading = ({
   isEditorLoading = false,
+  loaderHeight,
 }: {
   isEditorLoading?: boolean;
+  loaderHeight?: string;
 }) => {
   return (
     <Box
@@ -13,7 +15,7 @@ const Loading = ({
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: "80vh",
+        height: loaderHeight ?? "80vh",
       }}
     >
       {isEditorLoading ? (

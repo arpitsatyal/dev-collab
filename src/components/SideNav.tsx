@@ -14,7 +14,10 @@ import { useEffect, useMemo, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
 import { useGetProjectsQuery } from "../store/api/projectApi";
-import { useGetSnippetsQuery } from "../store/api/snippetApi";
+import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "../store/store";
+import { setSnippets } from "../store/slices/snippetSlice";
 
 interface NavItemProps {
   id: string;
@@ -31,18 +34,18 @@ const SideNav = () => {
   const [openItems, setOpenItems] = useState<Set<string>>(new Set());
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
+  const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+
   const { data: projects = [], isLoading } = useGetProjectsQuery();
   const pathParts = router.asPath.split("/");
   const projectId = pathParts[2];
 
-  const { data: snippets, isLoading: isSnippetLoading } = useGetSnippetsQuery(
-    {
-      projectId,
-    },
-    {
-      skip: !projectId,
-    }
+  const dispatch = useDispatch();
+  const loadedSnippets = useSelector(
+    (state: RootState) => state.snippet.loadedSnippets
   );
+
+  const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
   useEffect(() => {
     if (pathParts[1] === "projects" && pathParts[2]) {
@@ -93,7 +96,7 @@ const SideNav = () => {
               label: project.title,
               path: `/projects/${project.id}`,
               icon: IconFolder,
-              snippets: snippets ?? [],
+              snippets: loadedSnippets[project.id] ?? [],
             })),
           ].map((item) => [item.path, item])
         ).values()
@@ -103,7 +106,7 @@ const SideNav = () => {
     }
 
     return items;
-  }, [navItems, projects, snippets]);
+  }, [navItems, projects, loadedSnippets]);
 
   const handleNavClick = (
     path?: string,
@@ -121,7 +124,7 @@ const SideNav = () => {
     }
   };
 
-  const toggleOpenItem = (projectId: string) => {
+  const toggleOpenItem = async (projectId: string) => {
     setOpenItems((prev) => {
       const newSet = new Set<string>();
       if (!prev.has(projectId)) {
@@ -129,6 +132,18 @@ const SideNav = () => {
       }
       return newSet;
     });
+
+    if (!loadedSnippets[projectId]) {
+      setLoadingProjectId(projectId);
+      try {
+        const result = await triggerGetSnippets({ projectId }).unwrap();
+        dispatch(setSnippets({ projectId, snippets: result }));
+      } catch (e) {
+        console.error("Failed to load snippets", e);
+      } finally {
+        setLoadingProjectId(null);
+      }
+    }
   };
 
   const isActive = (path?: string) => {
@@ -189,9 +204,18 @@ const SideNav = () => {
                             handleNavClick(child.path);
                           }}
                         >
-                          {child.label !== "Create Project" && (
-                            <SnippetList snippets={snippets ?? []} />
-                          )}
+                          {child.label !== "Create Project" &&
+                            (loadingProjectId === child.id ? (
+                              <Loading loaderHeight="5vh" />
+                            ) : (
+                              <SnippetList
+                                snippets={loadedSnippets[child.id] ?? []}
+                                isVisible={
+                                  openItems.has(child.id) &&
+                                  !!loadedSnippets[child.id]
+                                }
+                              />
+                            ))}
                         </NavLink>
                       ))}
                     </Box>

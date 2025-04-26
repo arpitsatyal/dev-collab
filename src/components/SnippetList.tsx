@@ -4,7 +4,13 @@ import { NavLink } from "@mantine/core";
 import { IconFile, IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 
-const SnippetList = ({ snippets }: { snippets: Snippet[] }) => {
+const SnippetList = ({
+  snippets,
+  isVisible,
+}: {
+  snippets: Snippet[];
+  isVisible: boolean;
+}) => {
   const router = useRouter();
   const pathParts = router.asPath.split("/");
   const snippetId = pathParts[4];
@@ -62,6 +68,10 @@ const SnippetList = ({ snippets }: { snippets: Snippet[] }) => {
     if (!language) return;
     return `${snippet.title}.${language.extension}`;
   };
+
+  if (!isVisible) {
+    return <></>;
+  }
 
   return (
     <>

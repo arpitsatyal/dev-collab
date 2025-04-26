@@ -16,8 +16,15 @@ import {
 import { useSession } from "next-auth/react";
 import {
   useEditSnippetMutation,
-  useGetSnippetQuery,
+  useLazyGetSnippetsQuery,
 } from "../../../../../store/api/snippetApi";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../../../store/store";
+import { useAppDispatch } from "../../../../../store/hooks";
+import {
+  setSnippets,
+  updateSnippet,
+} from "../../../../../store/slices/snippetSlice";
 
 const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const router = useRouter();
@@ -31,6 +38,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const room = useRoom();
   const status = room.getStorageStatus();
   const [editSnippet] = useEditSnippetMutation();
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (snippet) {
@@ -68,6 +76,13 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
         snippet,
         snippetId: snippetId as string,
       });
+      dispatch(
+        updateSnippet({
+          projectId: projectId as string,
+          snippetId: snippetId as string,
+          editedSnippet: snippet,
+        })
+      );
       // todo: handle error
       notifications.show({
         title: "done!",
@@ -107,17 +122,40 @@ const Snippet = () => {
     typeof snippetId === "string" &&
     snippetId.trim() != "";
 
-  const { data: snippet, isLoading } = useGetSnippetQuery(
-    {
-      projectId: projectId as string,
-      snippetId: snippetId as string,
-    },
-    {
-      skip: !shouldFetch,
-    }
+  const [snippet, setSnippet] = useState<ISnippet | null>();
+  const loadedSnippets = useSelector(
+    (state: RootState) => state.snippet.loadedSnippets
   );
+  const dispatch = useAppDispatch();
+  const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
-  if (!shouldFetch || isLoading || !snippetId || !snippet) {
+  useEffect(() => {
+    const fetchSnippets = async () => {
+      if (projectId && shouldFetch) {
+        if (loadedSnippets[projectId]) {
+          const foundSnippet = loadedSnippets[projectId].find(
+            (s) => s.id === snippetId
+          );
+          setSnippet(foundSnippet || null);
+        } else {
+          try {
+            const result = await triggerGetSnippets({
+              projectId,
+            }).unwrap();
+            dispatch(setSnippets({ projectId, snippets: result }));
+            const foundSnippet = result.find((s) => s.id === snippetId);
+            setSnippet(foundSnippet || null);
+          } catch (e) {
+            console.error("Failed to load snippets", e);
+          }
+        }
+      }
+    };
+
+    fetchSnippets();
+  }, [projectId, snippetId, loadedSnippets, triggerGetSnippets, dispatch]);
+
+  if (!shouldFetch || !snippetId || !snippet) {
     return <Loading isEditorLoading />;
   }
 
