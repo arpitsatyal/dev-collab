@@ -1,8 +1,8 @@
 import { useRouter } from "next/router";
-import { Snippet } from "../interfaces";
 import { NavLink } from "@mantine/core";
 import { IconFile, IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
+import { Snippet } from "@prisma/client";
 
 const SnippetList = ({
   snippets,

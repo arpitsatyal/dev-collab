@@ -9,14 +9,15 @@ import { useSession } from "next-auth/react";
 import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
 import { useAppDispatch } from "../../../../store/hooks";
 import { addSnippet } from "../../../../store/slices/snippetSlice";
+import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 
 const Create = () => {
   const router = useRouter();
-  const { projectId } = router.query;
   const [code, setCode] = useState("");
   const [title, setTitle] = useState("");
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
+  const projectId = getSingleQueryParam(router.query.projectId);
 
   const [createSnippet, { isLoading }] = useCreateSnippetMutation();
   const dispatch = useAppDispatch();
@@ -27,7 +28,7 @@ const Create = () => {
 
   const handleSaveSnippet = async () => {
     try {
-      if (!code) throw new Error("No code provided");
+      if (!code || !projectId) throw new Error("Something went wrong");
       const snippet: SnippetCreate = {
         title,
         content: JSON.stringify(code),
@@ -36,12 +37,12 @@ const Create = () => {
 
       const { data } = await createSnippet({
         snippet,
-        projectId: projectId as string,
+        projectId,
       });
       if (data) {
         dispatch(
           addSnippet({
-            projectId: projectId as string,
+            projectId,
             snippet: data,
           })
         );

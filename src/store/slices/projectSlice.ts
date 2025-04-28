@@ -1,5 +1,5 @@
+import { Project } from "@prisma/client";
 import { createSlice } from "@reduxjs/toolkit";
-import { Project } from "../../interfaces";
 
 export interface IProjectState {
   data: Project[];

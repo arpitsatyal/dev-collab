@@ -1,14 +1,14 @@
 import { Box, Button, TextInput, Group, Textarea, Paper } from "@mantine/core";
 import Layout from "../../components/Layout";
 import { useForm } from "@mantine/form";
-import { Project } from "../../interfaces";
+import { ProjectCreate } from "../../interfaces";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { useCreateProjectMutation } from "../../store/api/projectApi";
 
 const CreateProject = () => {
   const router = useRouter();
-  const form = useForm<Project>({
+  const form = useForm<ProjectCreate>({
     initialValues: {
       title: "",
       description: "",

@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Snippet, SnippetCreate } from "../../interfaces";
+import { SnippetCreate } from "../../interfaces";
+import { Snippet } from "@prisma/client";
 
 export const snippetApi = createApi({
   reducerPath: "snippetApi",

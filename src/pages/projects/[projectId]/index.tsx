@@ -5,7 +5,7 @@ import { Container, Paper, Stack, Text } from "@mantine/core";
 import { useGetProjectQuery } from "../../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 
-const Project = () => {
+const ProjectPage = () => {
   const router = useRouter();
   const { projectId } = router.query;
 
@@ -47,6 +47,6 @@ const Project = () => {
   );
 };
 
-Project.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+ProjectPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
-export default Project;
+export default ProjectPage;

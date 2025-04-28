@@ -1,6 +1,6 @@
+import { Snippet } from "@prisma/client";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
-import { Snippet } from "../../interfaces";
 
 interface SnippetsState {
   loadedSnippets: Record<string, Snippet[]>;

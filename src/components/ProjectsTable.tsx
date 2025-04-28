@@ -1,7 +1,7 @@
 import { Table, Text } from "@mantine/core";
-import { Project } from "../interfaces";
 import Link from "next/link";
 import Loading from "./Loader";
+import { Project } from "@prisma/client";
 
 interface ProjectsTable {
   isLoading: boolean;

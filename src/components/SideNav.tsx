@@ -9,15 +9,14 @@ import {
   IconFolder,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
-import { Project, Snippet } from "../interfaces";
 import { useEffect, useMemo, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
 import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../store/store";
 import { setSnippets } from "../store/slices/snippetSlice";
+import { Project, Snippet } from "@prisma/client";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 
 interface NavItemProps {
   id: string;
@@ -40,9 +39,9 @@ const SideNav = () => {
   const pathParts = router.asPath.split("/");
   const projectId = pathParts[2];
 
-  const dispatch = useDispatch();
-  const loadedSnippets = useSelector(
-    (state: RootState) => state.snippet.loadedSnippets
+  const dispatch = useAppDispatch();
+  const loadedSnippets = useAppSelector(
+    (state) => state.snippet.loadedSnippets
   );
 
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();

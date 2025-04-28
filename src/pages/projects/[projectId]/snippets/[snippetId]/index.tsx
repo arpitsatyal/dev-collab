@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Snippet as ISnippet, SnippetUpdate } from "../../../../../interfaces";
+import { SnippetUpdate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import SnippetBox from "../../../../../components/SnippetBox";
@@ -18,17 +18,16 @@ import {
   useEditSnippetMutation,
   useLazyGetSnippetsQuery,
 } from "../../../../../store/api/snippetApi";
-import { useSelector } from "react-redux";
-import { RootState } from "../../../../../store/store";
-import { useAppDispatch } from "../../../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import {
   setSnippets,
   updateSnippet,
 } from "../../../../../store/slices/snippetSlice";
+import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
+import { Snippet } from "@prisma/client";
 
-const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
+const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
-  const { projectId, snippetId } = router.query;
   const [title, setTitle] = useState("");
   const [code, setCode] = useState("");
   const session = useSession();
@@ -39,6 +38,9 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   const status = room.getStorageStatus();
   const [editSnippet, { isLoading }] = useEditSnippetMutation();
   const dispatch = useAppDispatch();
+
+  const projectId = getSingleQueryParam(router.query.projectId);
+  const snippetId = getSingleQueryParam(router.query.snippetId);
 
   useEffect(() => {
     if (snippet) {
@@ -70,16 +72,17 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
     };
 
     try {
-      if (!storageCode) throw new Error("No code provided");
+      if (!projectId || !snippetId || !storageCode)
+        throw new Error("Something went wrong");
       await editSnippet({
-        projectId: projectId as string,
+        projectId,
         snippet,
-        snippetId: snippetId as string,
+        snippetId,
       });
       dispatch(
         updateSnippet({
-          projectId: projectId as string,
-          snippetId: snippetId as string,
+          projectId,
+          snippetId,
           editedSnippet: snippet,
         })
       );
@@ -115,7 +118,7 @@ const SnippetEdit = ({ snippet }: { snippet: ISnippet }) => {
   );
 };
 
-const Snippet = () => {
+const SnippetPage = () => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
   const shouldFetch =
@@ -124,9 +127,9 @@ const Snippet = () => {
     typeof snippetId === "string" &&
     snippetId.trim() != "";
 
-  const [snippet, setSnippet] = useState<ISnippet | null>();
-  const loadedSnippets = useSelector(
-    (state: RootState) => state.snippet.loadedSnippets
+  const [snippet, setSnippet] = useState<Snippet | null>();
+  const loadedSnippets = useAppSelector(
+    (state) => state.snippet.loadedSnippets
   );
   const dispatch = useAppDispatch();
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
@@ -174,6 +177,6 @@ const Snippet = () => {
   );
 };
 
-Snippet.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+SnippetPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
-export default Snippet;
+export default SnippetPage;

@@ -11,17 +11,8 @@ export interface SnippetUpdate {
   lastEditedById: string;
 }
 
-export interface Snippet {
-  id: string;
-  title: string;
-  language: string;
-  content: string;
-  projectId: string;
-}
-
-export interface Project {
+export interface ProjectCreate {
   title: string;
   id: string;
   description?: string;
-  snippets?: Snippet[];
 }

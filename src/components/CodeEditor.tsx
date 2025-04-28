@@ -11,8 +11,12 @@ import {
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
 import { useCursorStyles } from "../utils/cursor";
-import { Box, Select, Stack } from "@mantine/core";
+import { Avatar, Box, Flex, Tooltip, Select, Stack, Text } from "@mantine/core";
 import Loading from "./Loader";
+import { useSnippetFromRouter } from "../hooks/useSnippetFromRouter";
+import { useAppSelector } from "../store/hooks";
+import { format } from "date-fns";
+import { useUser } from "../hooks/useUser";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -38,7 +42,12 @@ export default function CodeEditor({
   const { classes } = useCursorStyles();
   const others = useOthers();
   const updateMyPresence = useUpdateMyPresence();
+  const loadedSnippets = useAppSelector(
+    (state) => state.snippet.loadedSnippets
+  );
 
+  const snippet = useSnippetFromRouter(loadedSnippets);
+  const { user, loading: userLoading } = useUser(snippet?.lastEditedById) || {};
   const storageCode = useStorage((root) => root.code as string);
   const rawLanguage = useStorage((root) => root.language);
 
@@ -158,14 +167,14 @@ export default function CodeEditor({
     }
   };
 
-  if (status === "loading") {
+  if (status === "loading" || userLoading) {
     return <Loading isEditorLoading />;
   }
 
   return (
     <>
       <Stack p="md" style={{ minHeight: "100vh" }} gap="sm">
-        <Box w={250} pb="xs">
+        <Flex pb="xs" justify="space-between">
           <Select
             label="Select Language"
             placeholder="Pick a language"
@@ -173,7 +182,37 @@ export default function CodeEditor({
             value={language}
             onChange={handleLanguageChange}
           />
-        </Box>
+
+          {snippet && user ? (
+            <Flex key={snippet?.id} direction="column" gap="2">
+              <Tooltip label={user.name ?? "-"}>
+                <Avatar
+                  src={user.image}
+                  alt={user.name ?? "-"}
+                  radius="xl"
+                  size="md"
+                  style={{
+                    alignSelf: "flex-end",
+                  }}
+                />
+              </Tooltip>
+              <Text
+                size="sm"
+                mt="xs"
+                c="dark"
+                style={{
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
+              >
+                Last Edited At:{" "}
+                {format(snippet.updatedAt, "MMMM d, yyyy 'at' h:mm a")}
+              </Text>
+            </Flex>
+          ) : (
+            <></>
+          )}
+        </Flex>
 
         <Box style={{ flexGrow: 1, mt: 5 }}>
           <MonacoEditor
