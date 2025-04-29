@@ -10,15 +10,17 @@ const ProjectSearch = () => {
   const router = useRouter();
   const { data: projects = [], isLoading } = useGetProjectsQuery();
 
-  const actions: SpotlightActionData[] = projects.map((project) => ({
-    id: project.id,
-    label: project.title,
-    description: project.description
-      ? truncateByWords(project.description, 30)
-      : "-",
-    onClick: () => router.push(`/projects/${project.id}`),
-    leftSection: <IconFolder size={24} stroke={1.5} />,
-  }));
+  const actions: SpotlightActionData[] = projects
+    .filter((project) => project.id !== router.query?.projectId)
+    .map((project) => ({
+      id: project.id,
+      label: project.title,
+      description: project.description
+        ? truncateByWords(project.description, 30)
+        : "-",
+      onClick: () => router.push(`/projects/${project.id}`),
+      leftSection: <IconFolder size={24} stroke={1.5} />,
+    }));
 
   return (
     <>

@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 
 export function useSyncLoading(
-  loading: boolean,
+  loading: boolean = false,
   setLoading: (loading: boolean) => void
 ) {
   useEffect(() => {

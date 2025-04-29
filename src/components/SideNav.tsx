@@ -9,7 +9,7 @@ import {
   IconFolder,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
 import { useGetProjectsQuery } from "../store/api/projectApi";
@@ -34,6 +34,8 @@ const SideNav = () => {
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
+  const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const { data: projects = [], isLoading } = useGetProjectsQuery();
   const pathParts = router.asPath.split("/");
@@ -64,6 +66,7 @@ const SideNav = () => {
     if (pathParts[1] === "projects" && pathParts[2]) {
       setOpenItems(new Set([projectId]));
       setProjectsOpen(true);
+      scrollItemIntoView(projectId);
       fetchSnippets(projectId);
     }
   }, [router.asPath, projectId]);
@@ -171,6 +174,22 @@ const SideNav = () => {
     );
   };
 
+  const scrollItemIntoView = (id: string) => {
+    const el = itemRefs.current[id];
+    const viewport = viewportRef.current;
+
+    if (!el || !viewport) return;
+
+    const elTop = el.offsetTop;
+    const elHeight = el.offsetHeight;
+    const elCenter = elTop + elHeight / 2;
+
+    const viewportHeight = viewport.clientHeight;
+    const scrollTarget = elCenter - viewportHeight / 2;
+
+    viewport.scrollTo({ top: scrollTarget, behavior: "smooth" });
+  };
+
   return (
     <AppShell.Navbar p="md">
       <AppShell.Section grow my="md">
@@ -191,6 +210,7 @@ const SideNav = () => {
                 scrollbarSize={4}
                 type="auto"
                 mah={500}
+                viewportRef={viewportRef}
               >
                 <Box pr="xs">
                   {item.children?.map((child) => (
@@ -203,10 +223,14 @@ const SideNav = () => {
                           active={isActive(child.path)}
                           opened={openItems.has(child.id)}
                           label={child.label}
+                          ref={(el: HTMLAnchorElement | null) => {
+                            itemRefs.current[child.id] = el;
+                          }}
                           leftSection={<child.icon size={16} stroke={1.5} />}
                           onClick={() => {
                             toggleOpenItem(child.id);
                             handleNavClick(child.path);
+                            scrollItemIntoView(child.id);
                           }}
                         >
                           {child.label !== "Create Project" &&
