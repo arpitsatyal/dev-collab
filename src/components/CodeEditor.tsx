@@ -11,12 +11,23 @@ import {
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
 import { useCursorStyles } from "../utils/cursor";
-import { Avatar, Box, Flex, Tooltip, Select, Stack, Text } from "@mantine/core";
+import {
+  Avatar,
+  Box,
+  Flex,
+  Tooltip,
+  Select,
+  Stack,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import Loading from "./Loader";
 import { useSnippetFromRouter } from "../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../store/hooks";
 import { format } from "date-fns";
 import { useUser } from "../hooks/useUser";
+import { useMediaQuery } from "@mantine/hooks";
+import { useSyncLoading } from "../hooks/useSyncLoading";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -26,10 +37,12 @@ export default function CodeEditor({
   code,
   setCode,
   setHasErrors,
+  setLoading,
 }: {
   code: string;
   setCode: (val: string) => void;
   setHasErrors: (val: boolean) => void;
+  setLoading: (val: boolean) => void;
 }) {
   const editorRef = useRef<monacoType.editor.IStandaloneCodeEditor | null>(
     null
@@ -47,13 +60,18 @@ export default function CodeEditor({
   );
 
   const snippet = useSnippetFromRouter(loadedSnippets);
-  const { user, loading: userLoading } = useUser(snippet?.lastEditedById) || {};
+  const { user, loading: userLoading } =
+    useUser(snippet?.lastEditedById ?? snippet?.authorId) || {};
   const storageCode = useStorage((root) => root.code as string);
   const rawLanguage = useStorage((root) => root.language);
 
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
   const status = room.getStorageStatus();
+  const theme = useMantineTheme();
+  const isSmallScreen = useMediaQuery("(max-width: 600px)");
+
+  useSyncLoading(userLoading, setLoading);
 
   const updateCode = useMutation(({ storage }, val: string) => {
     storage.set("code", val);
@@ -174,7 +192,7 @@ export default function CodeEditor({
   return (
     <>
       <Stack p="md" style={{ minHeight: "100vh" }} gap="sm">
-        <Flex pb="xs" justify="space-between">
+        <Flex pb="xs" justify="space-between" wrap="wrap">
           <Select
             label="Select Language"
             placeholder="Pick a language"
@@ -184,29 +202,36 @@ export default function CodeEditor({
           />
 
           {snippet && user ? (
-            <Flex key={snippet?.id} direction="column" gap="2">
-              <Tooltip label={user.name ?? "-"}>
+            <Flex
+              key={snippet.id}
+              direction="column"
+              align={isSmallScreen ? "flex-start" : "flex-end"}
+              gap="xs"
+              style={{
+                width: "100%",
+                maxWidth: isSmallScreen ? "100%" : "200px",
+                padding: isSmallScreen ? theme.spacing.md : 0,
+              }}
+            >
+              <Tooltip label={user.name ?? "Unknown User"} withinPortal>
                 <Avatar
                   src={user.image}
-                  alt={user.name ?? "-"}
+                  alt={user.name ?? "User avatar"}
                   radius="xl"
-                  size="md"
-                  style={{
-                    alignSelf: "flex-end",
-                  }}
+                  size={isSmallScreen ? "sm" : "md"}
                 />
               </Tooltip>
               <Text
-                size="sm"
-                mt="xs"
-                c="dark"
+                size={isSmallScreen ? "xs" : "sm"}
+                truncate
                 style={{
+                  whiteSpace: "nowrap",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
               >
-                Last Edited At:{" "}
-                {format(snippet.updatedAt, "MMMM d, yyyy 'at' h:mm a")}
+                Last Edited:{" "}
+                {format(snippet.updatedAt, "MMM d, yyyy 'at' h:mm a")}
               </Text>
             </Flex>
           ) : (
@@ -214,7 +239,7 @@ export default function CodeEditor({
           )}
         </Flex>
 
-        <Box style={{ flexGrow: 1, mt: 5 }}>
+        <Box style={{ flexGrow: 1 }}>
           <MonacoEditor
             key={language}
             height="90vh"

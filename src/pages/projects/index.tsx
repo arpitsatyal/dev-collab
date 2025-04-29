@@ -1,16 +1,20 @@
+import { Box, Text } from "@mantine/core";
 import Layout from "../../components/Layout";
-import ProjectsTable from "../../components/ProjectsTable";
-import { useGetProjectsQuery } from "../../store/api/projectApi";
 
 const Projects = () => {
-  const { data: projects, isLoading, error } = useGetProjectsQuery();
-
   return (
-    <ProjectsTable
-      isLoading={isLoading}
-      error={error}
-      projects={projects ?? []}
-    />
+    <Box
+      style={{
+        display: "flex",
+        justifyContent: "center",
+        alignItems: "center",
+        height: "80vh",
+      }}
+    >
+      <Text>
+        Please select a project from the sidebar or use the search to find one.
+      </Text>
+    </Box>
   );
 };
 

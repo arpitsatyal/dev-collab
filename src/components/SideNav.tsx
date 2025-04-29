@@ -174,30 +174,30 @@ const SideNav = () => {
   return (
     <AppShell.Navbar p="md">
       <AppShell.Section grow my="md">
-        {isLoading ? (
-          <Loading />
-        ) : (
-          <>
-            {enhancedNavItems.map((item) => (
-              <NavLink
-                key={item.label}
-                active={isActive(item.path)}
-                opened={isOpen(item)}
-                label={item.label}
-                leftSection={<item.icon size={16} stroke={1.5} />}
-                onClick={() => {
-                  handleNavClick(item.path, item.handler, item.label);
-                }}
+        {enhancedNavItems.map((item) => (
+          <NavLink
+            key={item.label}
+            active={isActive(item.path)}
+            opened={isOpen(item)}
+            label={item.label}
+            leftSection={<item.icon size={16} stroke={1.5} />}
+            onClick={() => {
+              handleNavClick(item.path, item.handler, item.label);
+            }}
+          >
+            {item.label === "Projects" && (
+              <ScrollArea.Autosize
+                offsetScrollbars
+                scrollbarSize={4}
+                type="auto"
+                mah={500}
               >
-                {item.label === "Projects" && (
-                  <ScrollArea.Autosize
-                    offsetScrollbars
-                    scrollbarSize={4}
-                    type="auto"
-                    mah={500}
-                  >
-                    <Box pr="xs">
-                      {item.children?.map((child) => (
+                <Box pr="xs">
+                  {item.children?.map((child) => (
+                    <>
+                      {isLoading ? (
+                        <Loading />
+                      ) : (
                         <NavLink
                           key={child.label}
                           active={isActive(child.path)}
@@ -222,14 +222,14 @@ const SideNav = () => {
                               />
                             ))}
                         </NavLink>
-                      ))}
-                    </Box>
-                  </ScrollArea.Autosize>
-                )}
-              </NavLink>
-            ))}
-          </>
-        )}
+                      )}
+                    </>
+                  ))}
+                </Box>
+              </ScrollArea.Autosize>
+            )}
+          </NavLink>
+        ))}
       </AppShell.Section>
     </AppShell.Navbar>
   );

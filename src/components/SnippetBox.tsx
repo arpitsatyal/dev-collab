@@ -41,6 +41,7 @@ const SnippetBox = ({
   const others = useOthers();
   const session = useSession();
   const [hasErrors, setHasErrors] = useState(false);
+  const [isButtonLoading, setIsButtonLoading] = useState(false);
 
   if (isEdit && !router.query.snippetId) {
     return <Loading isEditorLoading />;
@@ -124,7 +125,12 @@ const SnippetBox = ({
         </Paper>
       </Flex>
       <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
-        <CodeEditor code={code} setCode={setCode} setHasErrors={setHasErrors} />
+        <CodeEditor
+          code={code}
+          setCode={setCode}
+          setHasErrors={setHasErrors}
+          setLoading={setIsButtonLoading}
+        />
       </Box>
       <Button
         onClick={handleSaveSnippet}
@@ -133,7 +139,7 @@ const SnippetBox = ({
         size="md"
         px="xl"
         loading={loading}
-        disabled={!title || hasErrors}
+        disabled={!title || hasErrors || isButtonLoading}
         style={{ alignSelf: "flex-start" }}
         aria-label="Save snippet button"
       >
