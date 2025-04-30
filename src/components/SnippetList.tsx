@@ -3,6 +3,7 @@ import { NavLink } from "@mantine/core";
 import { IconFile, IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Snippet } from "@prisma/client";
+import { getFileName } from "../utils/getFileName";
 
 const SnippetList = ({
   snippets,
@@ -38,37 +39,6 @@ const SnippetList = ({
     router.push(path);
   };
 
-  const languageMapper = [
-    {
-      name: "javascript",
-      extension: "js",
-    },
-    {
-      name: "typescript",
-      extension: "ts",
-    },
-    {
-      name: "python",
-      extension: "py",
-    },
-    {
-      name: "html",
-      extension: "html",
-    },
-    {
-      name: "json",
-      extension: "json",
-    },
-  ];
-  const getSnippetName = (snippet: Snippet) => {
-    if (!snippet.title) return "";
-    const language = languageMapper.find(
-      (lang) => snippet.language === lang.name
-    );
-    if (!language) return;
-    return `${snippet.title}.${language.extension}`;
-  };
-
   if (!isVisible) {
     return <></>;
   }
@@ -86,7 +56,7 @@ const SnippetList = ({
         snippets.map((snippet) => (
           <NavLink
             key={snippet.id}
-            label={getSnippetName(snippet)}
+            label={getFileName(snippet) ?? "-"}
             leftSection={<IconFile size={16} />}
             active={activeItem === snippet.id}
             opened={activeItem === snippet.id}

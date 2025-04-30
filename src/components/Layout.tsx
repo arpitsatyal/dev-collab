@@ -1,11 +1,11 @@
 import { AppShell, Box, Burger, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "./SideNav";
-import ProjectSearch from "./ProjectSearch";
+import SpotlightSearch from "./SpotlightSearch";
 
 export default function Layout({ children }: any) {
   const [opened, { toggle }] = useDisclosure();
-  const isSmallScreen = useMediaQuery("(max-width: 600px)");
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   return (
     <AppShell
@@ -20,7 +20,7 @@ export default function Layout({ children }: any) {
       <AppShell.Header>
         <Flex
           align="center"
-          justify={!isSmallScreen ? "flex-end" : "space-between"}
+          justify={isSmallScreen ? "space-between" : "flex-end"}
           p={15}
           style={{
             width: "100%",
@@ -29,7 +29,7 @@ export default function Layout({ children }: any) {
           <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
 
           <Box>
-            <ProjectSearch />
+            <SpotlightSearch />
           </Box>
         </Flex>
       </AppShell.Header>
