@@ -83,7 +83,18 @@ const SnippetBox = ({
           withBorder
           style={{ flex: "1 1 300px", maxWidth: "500px" }}
         >
-          <Text size="xl" fw={600} mb="sm" c="dimmed">
+          <Text
+            size="xl"
+            fw={600}
+            mb="sm"
+            c="dimmed"
+            style={{
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              wordWrap: "break-word",
+              whiteSpace: "normal",
+            }}
+          >
             Project Workspace - {title}
           </Text>
           <TextInput

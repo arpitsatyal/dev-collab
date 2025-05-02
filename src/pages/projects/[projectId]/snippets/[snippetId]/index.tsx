@@ -89,6 +89,8 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
           editedSnippet: snippet,
         })
       );
+      setLanguage(snippet.language);
+
       window.scrollTo({ top: 0, behavior: "smooth" });
       // todo: handle error
       notifications.show({

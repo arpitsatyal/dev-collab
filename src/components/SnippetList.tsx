@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { NavLink } from "@mantine/core";
+import { NavLink, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Snippet } from "@prisma/client";
@@ -56,7 +56,19 @@ const SnippetList = ({
         snippets.map((snippet) => (
           <NavLink
             key={snippet.id}
-            label={`${snippet.title}.${snippet.extension ?? ""}`}
+            label={
+              <Text
+                style={{
+                  fontSize: "sm",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  maxWidth: "150px",
+                }}
+                title={`${snippet.title}.${snippet.extension ?? ""}`}
+              >
+                {`${snippet.title}.${snippet.extension ?? ""}`}
+              </Text>
+            }
             leftSection={<FileIcon snippet={snippet} />}
             active={activeItem === snippet.id}
             opened={activeItem === snippet.id}

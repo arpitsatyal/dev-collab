@@ -58,7 +58,6 @@ const SpotlightSearch = () => {
         title: `${snippet.title}.${snippet.extension ?? ""}`,
         description: snippet.language,
         icon: <FileIcon snippet={snippet} />,
-        type: "snippet",
       };
     });
   }, [matchedResults]);
@@ -198,6 +197,17 @@ const SpotlightSearch = () => {
                   {snippetItems}
                 </Spotlight.ActionsGroup>
               )}
+              {query.length > 0 &&
+                projectItems.length + snippetItems.length > 0 && (
+                  <Text style={{ textAlign: "center" }}>
+                    {projectItems.length + snippetItems.length}{" "}
+                    {projectItems.length + snippetItems.length === 1
+                      ? "Result"
+                      : "Results"}{" "}
+                    Found
+                  </Text>
+                )}
+
               {projectItems.length === 0 && snippetItems.length === 0 && (
                 <Spotlight.Empty>Nothing found...</Spotlight.Empty>
               )}

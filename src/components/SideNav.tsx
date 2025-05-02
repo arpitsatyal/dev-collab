@@ -208,7 +208,7 @@ const SideNav = () => {
               <ScrollArea.Autosize
                 offsetScrollbars
                 scrollbarSize={4}
-                type="auto"
+                type={isLoading ? "never" : "auto"}
                 mah={500}
                 viewportRef={viewportRef}
               >
