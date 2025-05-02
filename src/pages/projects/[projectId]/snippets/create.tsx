@@ -10,6 +10,7 @@ import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
 import { useAppDispatch } from "../../../../store/hooks";
 import { addSnippet } from "../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
+import { languageMapper } from "../../../../utils/languageMapper";
 
 const Create = () => {
   const router = useRouter();
@@ -33,6 +34,9 @@ const Create = () => {
         title,
         content: JSON.stringify(code),
         language,
+        extension:
+          languageMapper.find((lang) => lang.name === language)?.extension ??
+          "-",
       };
 
       const { data } = await createSnippet({

@@ -40,6 +40,7 @@ const SnippetBox = ({
   const router = useRouter();
   const others = useOthers();
   const session = useSession();
+  const [nameError, setNameError] = useState("");
   const [hasErrors, setHasErrors] = useState(false);
   const [isButtonLoading, setIsButtonLoading] = useState(false);
 
@@ -50,6 +51,18 @@ const SnippetBox = ({
   if (!isEdit && !session.data?.user.id) {
     return <Loading isEditorLoading />;
   }
+
+  const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleTitleChange(e.target.value);
+
+    const isValid = /^[a-zA-Z0-9._-]+$/.test(e.target.value);
+
+    if (!isValid) {
+      setNameError("File name cannot contain spaces or special characters.");
+    } else {
+      setNameError("");
+    }
+  };
 
   return (
     <Stack p="md" style={{ maxWidth: 800, margin: "0 auto" }}>
@@ -75,12 +88,13 @@ const SnippetBox = ({
           </Text>
           <TextInput
             value={title}
-            onChange={(e) => handleTitleChange(e.target.value)}
-            label="Snippet Title"
-            placeholder="Enter a title for your snippet"
+            onChange={(e) => handleNameChange(e)}
+            label="Snippet Name"
+            placeholder="Enter the name of your snippet"
             size="md"
-            aria-label="Snippet title input"
+            aria-label="Snippet name input"
             variant="filled"
+            error={nameError}
           />
         </Paper>
 
@@ -139,7 +153,7 @@ const SnippetBox = ({
         size="md"
         px="xl"
         loading={loading}
-        disabled={!title || hasErrors || isButtonLoading}
+        disabled={!title || hasErrors || !!nameError || isButtonLoading}
         style={{ alignSelf: "flex-start" }}
         aria-label="Save snippet button"
       >

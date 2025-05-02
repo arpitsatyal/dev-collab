@@ -77,6 +77,7 @@ model Snippet {
   projectId      String
   authorId       String?
   lastEditedById String?
+  extension      String?
   author         User?    @relation("AuthorRelation", fields: [authorId], references: [id])
   lastEditedBy   User?    @relation("LastEditorRelation", fields: [lastEditedById], references: [id])
   project        Project  @relation(fields: [projectId], references: [id])

@@ -10,10 +10,12 @@ interface SnippetsCreateData {
   content: string;
   authorId: string;
   projectId: string;
+  extension?: string;
 }
 
 interface SnippetsUpdateData extends SnippetsCreateData {
   lastEditedById: string;
+  extension?: string;
 }
 
 export default async function handler(
@@ -81,13 +83,15 @@ export default async function handler(
 
     case "POST":
       try {
-        const { title, language, content } = req.body as SnippetsCreateData;
+        const { title, language, content, extension } =
+          req.body as SnippetsCreateData;
 
         const snippet = await prisma.snippet.create({
           data: {
             title,
             language,
             content,
+            extension,
             authorId: user.id,
             projectId: projectId as string,
           },
@@ -100,7 +104,7 @@ export default async function handler(
       }
     case "PATCH":
       try {
-        const { title, language, content, lastEditedById } =
+        const { title, language, content, lastEditedById, extension } =
           (req.body as SnippetsUpdateData) || {};
 
         const updateData: Prisma.SnippetUpdateInput = {};
@@ -108,6 +112,7 @@ export default async function handler(
         if (title) updateData.title = title;
         if (language) updateData.language = language;
         if (content) updateData.content = content;
+        if (extension) updateData.extension = extension;
 
         const updatedSnippet = await prisma.snippet.update({
           where: {

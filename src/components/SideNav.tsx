@@ -212,7 +212,7 @@ const SideNav = () => {
                 mah={500}
                 viewportRef={viewportRef}
               >
-                <Box pr="xs">
+                <Box pr="xs" key={item.id}>
                   {item.children?.map((child) => (
                     <>
                       {isLoading ? (

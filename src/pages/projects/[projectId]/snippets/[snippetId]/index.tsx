@@ -25,6 +25,7 @@ import {
 } from "../../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
+import { languageMapper } from "../../../../../utils/languageMapper";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
@@ -69,6 +70,8 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
       content: JSON.stringify(storageCode),
       language,
       lastEditedById: session.data?.user.id ?? "",
+      extension:
+        languageMapper.find((lang) => lang.name === language)?.extension ?? "-",
     };
 
     try {
