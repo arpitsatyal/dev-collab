@@ -77,16 +77,17 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
     try {
       if (!projectId || !snippetId || !storageCode)
         throw new Error("Something went wrong");
-      await editSnippet({
+      const { data, error } = await editSnippet({
         projectId,
         snippet,
         snippetId,
       });
+      if (error) throw new Error("Something went wrong");
       dispatch(
         updateSnippet({
           projectId,
           snippetId,
-          editedSnippet: snippet,
+          editedSnippet: data,
         })
       );
       setLanguage(snippet.language);

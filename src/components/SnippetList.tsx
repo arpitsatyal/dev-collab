@@ -58,6 +58,7 @@ const SnippetList = ({
             key={snippet.id}
             label={
               <Text
+                fz="sm"
                 style={{
                   fontSize: "sm",
                   overflow: "hidden",
