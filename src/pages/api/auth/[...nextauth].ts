@@ -25,7 +25,9 @@ export const authOptions: AuthOptions = {
       return session;
     },
     async redirect({ url, baseUrl }) {
-      // Ensure redirects use NEXTAUTH_URL
+      const redirectUri = `${baseUrl}/api/auth/callback/github`;
+      console.log("NextAuth Redirect URI:", redirectUri);
+      console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
       return baseUrl;
     },
   },
