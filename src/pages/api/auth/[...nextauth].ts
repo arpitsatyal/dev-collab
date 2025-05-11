@@ -24,6 +24,10 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
+    async redirect({ url, baseUrl }) {
+      // Ensure redirects use NEXTAUTH_URL
+      return baseUrl;
+    },
   },
 };
 
