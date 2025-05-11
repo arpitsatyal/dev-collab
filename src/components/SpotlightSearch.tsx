@@ -103,7 +103,7 @@ const SpotlightSearch = () => {
 
   const snippetItems = snippetData.map((item) => {
     return (
-      <Spotlight.Action>
+      <Spotlight.Action key={item.snippetId}>
         <Group wrap="nowrap" w="100%">
           {item.icon}
 
@@ -132,7 +132,7 @@ const SpotlightSearch = () => {
 
   const projectItems = projectData.map((item) => {
     return (
-      <Spotlight.Action>
+      <Spotlight.Action key={item.projectId}>
         <Group wrap="nowrap" w="100%">
           {item.icon}
 

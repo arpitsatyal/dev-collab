@@ -9,7 +9,7 @@ import {
   IconFolder,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
 import { useGetProjectsQuery } from "../store/api/projectApi";
@@ -48,19 +48,22 @@ const SideNav = () => {
 
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
-  const fetchSnippets = async (projectId: string) => {
-    if (!loadedSnippets[projectId]) {
-      setLoadingProjectId(projectId);
-      try {
-        const result = await triggerGetSnippets({ projectId }).unwrap();
-        dispatch(setSnippets({ projectId, snippets: result }));
-      } catch (e) {
-        console.error("Failed to load snippets", e);
-      } finally {
-        setLoadingProjectId(null);
+  const fetchSnippets = useCallback(
+    async (projectId: string) => {
+      if (!loadedSnippets[projectId]) {
+        setLoadingProjectId(projectId);
+        try {
+          const result = await triggerGetSnippets({ projectId }).unwrap();
+          dispatch(setSnippets({ projectId, snippets: result }));
+        } catch (e) {
+          console.error("Failed to load snippets", e);
+        } finally {
+          setLoadingProjectId(null);
+        }
       }
-    }
-  };
+    },
+    [loadedSnippets, triggerGetSnippets, dispatch]
+  );
 
   useEffect(() => {
     if (pathParts[1] === "projects" && pathParts[2]) {
@@ -69,36 +72,39 @@ const SideNav = () => {
       scrollItemIntoView(projectId);
       fetchSnippets(projectId);
     }
-  }, [router.asPath, projectId]);
+  }, [router.asPath, projectId, fetchSnippets, pathParts]);
 
-  const navItems: NavItemProps[] = [
-    {
-      id: "home",
-      icon: IconGauge,
-      label: "Home",
-      path: "/dashboard",
-    },
-    {
-      id: "projects",
-      icon: IconActivity,
-      label: "Projects",
-      path: "/projects",
-      children: [
-        {
-          id: "create-project",
-          icon: IconPencil,
-          label: "Create Project",
-          path: "/projects/create",
-        },
-      ],
-    },
-    {
-      id: "logout",
-      icon: IconLogout,
-      label: "Logout",
-      handler: () => signOut(),
-    },
-  ];
+  const navItems = useMemo<NavItemProps[]>(
+    () => [
+      {
+        id: "home",
+        icon: IconGauge,
+        label: "Home",
+        path: "/dashboard",
+      },
+      {
+        id: "projects",
+        icon: IconActivity,
+        label: "Projects",
+        path: "/projects",
+        children: [
+          {
+            id: "create-project",
+            icon: IconPencil,
+            label: "Create Project",
+            path: "/projects/create",
+          },
+        ],
+      },
+      {
+        id: "logout",
+        icon: IconLogout,
+        label: "Logout",
+        handler: () => signOut(),
+      },
+    ],
+    []
+  );
 
   const enhancedNavItems = useMemo(() => {
     const items = [...navItems];

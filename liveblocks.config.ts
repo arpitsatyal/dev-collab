@@ -2,14 +2,7 @@ type UserInfo = {
   name: string;
   avatar: string;
   email: string;
-  color: string;
 };
-
-export type UserAwareness = {
-  user?: UserInfo;
-};
-
-export type AwarenessList = [number, UserAwareness][];
 
 declare global {
   interface Liveblocks {

@@ -177,7 +177,12 @@ export default function CodeEditor({
       });
       decorationsRef.current = {};
     };
-  }, [others]);
+  }, [
+    others,
+    classes.remoteCursor,
+    classes.remoteCursorLabel,
+    updateMyPresence,
+  ]);
 
   const handleLanguageChange = (val: string | null) => {
     if (val) {

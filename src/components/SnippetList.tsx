@@ -26,7 +26,7 @@ const SnippetList = ({
     } else {
       setActiveItem(null);
     }
-  }, [router.asPath]);
+  }, [router.asPath, pathParts, snippetId]);
 
   const handleCreateClick = () => {
     const createPath = `/projects/${router.query.projectId}/snippets/create`;

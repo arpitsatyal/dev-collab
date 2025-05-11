@@ -58,7 +58,7 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
     if (status === "synchronized" && snippet?.language) {
       setLanguage(snippet.language);
     }
-  }, [status, snippet?.language]);
+  }, [status, snippet?.language, setLanguage]);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
@@ -164,7 +164,14 @@ const SnippetPage = () => {
     };
 
     fetchSnippets();
-  }, [projectId, snippetId, loadedSnippets, triggerGetSnippets, dispatch]);
+  }, [
+    projectId,
+    snippetId,
+    loadedSnippets,
+    triggerGetSnippets,
+    dispatch,
+    shouldFetch,
+  ]);
 
   if (!shouldFetch || !snippetId || !snippet) {
     return <Loading isEditorLoading />;

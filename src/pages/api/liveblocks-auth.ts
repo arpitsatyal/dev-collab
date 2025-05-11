@@ -25,7 +25,7 @@ export default async function handler(
   try {
     const userId = user.id || user.email;
 
-    const userInfo: Liveblocks["UserMeta"]["info"] = {
+    const userInfo = {
       name: user.name || "Anonymous",
       avatar: user.image || "",
       email: user.email || "",
