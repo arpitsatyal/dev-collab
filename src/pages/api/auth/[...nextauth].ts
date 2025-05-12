@@ -28,7 +28,7 @@ export const authOptions: AuthOptions = {
       console.log("URL", url);
       console.log("base url", baseUrl);
       console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-      return baseUrl;
+      return url;
     },
   },
 };
