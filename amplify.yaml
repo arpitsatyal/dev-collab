@@ -4,18 +4,23 @@ applications:
       phases:
         preBuild:
           commands:
+            - nvm use 18 # Use Node.js 18.x
             - npm install --legacy-peer-deps
+            - npx prisma generate # Generate Prisma Client
         build:
           commands:
             - npm run build
       artifacts:
-        baseDirectory: .next
+        baseDirectory: .
         files:
           - "**/*"
+          - node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node
+          - node_modules/.prisma/client/schema.prisma
       cache:
         paths:
           - node_modules/**/*
       environment:
+        PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
         NEXTAUTH_URL: $NEXTAUTH_URL
         NEXTAUTH_SECRET: $NEXTAUTH_SECRET
         GITHUB_CLIENT_ID: $GITHUB_CLIENT_ID
