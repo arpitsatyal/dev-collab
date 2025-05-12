@@ -38,7 +38,8 @@ const SideNav = () => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const { data: projects = [], isLoading } = useGetProjectsQuery();
-  const pathParts = router.asPath.split("/");
+  const pathParts = useMemo(() => router.asPath.split("/"), [router.asPath]);
+
   const projectId = pathParts[2];
 
   const dispatch = useAppDispatch();
@@ -67,7 +68,15 @@ const SideNav = () => {
 
   useEffect(() => {
     if (pathParts[1] === "projects" && pathParts[2]) {
-      setOpenItems(new Set([projectId]));
+      setOpenItems((prev) => {
+        const newSet = new Set(prev);
+        if (!newSet.has(projectId)) {
+          newSet.add(projectId);
+          return newSet;
+        }
+        return prev; // no state change if already present
+      });
+
       setProjectsOpen(true);
       scrollItemIntoView(projectId);
       fetchSnippets(projectId);

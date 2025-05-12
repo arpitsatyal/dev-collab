@@ -7,6 +7,7 @@ applications:
             - nvm use 18 # Use Node.js 18.x to match Lambda runtime
             - npm ci
             - npx prisma generate # Generate Prisma Client with rhel-openssl-1.0.x engine
+            - npx prisma db pull
         build:
           commands:
             - npm run build # Build Next.js app
