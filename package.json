@@ -37,15 +37,15 @@
   },
   "devDependencies": {
     "@types/lodash": "^4.17.16",
-    "@types/node": "22.14.1",
-    "@types/react": "19.1.1",
+    "@types/node": "^22.14.1",
+    "@types/react": "^19.1.1",
     "@types/react-dom": "19.1.2",
-    "eslint": "9.24.0",
+    "eslint": "^9.24.0",
     "eslint-config-next": "15.3.0",
     "postcss": "^8.5.3",
     "postcss-preset-mantine": "^1.17.0",
     "postcss-simple-vars": "^7.0.1",
     "prisma": "^6.6.0",
-    "typescript": "5.8.3"
+    "typescript": "^5.8.3"
   }
 }

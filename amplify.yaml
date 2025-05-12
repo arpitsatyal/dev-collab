@@ -5,7 +5,7 @@ applications:
         preBuild:
           commands:
             - nvm use 18 # Use Node.js 18.x to match Lambda runtime
-            - npm install --legacy-peer-deps
+            - npm ci
             - npx prisma generate # Generate Prisma Client with rhel-openssl-1.0.x engine
         build:
           commands:
