@@ -19,6 +19,7 @@ export const authOptions: AuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   callbacks: {
     async session({ session, user }) {
+      console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
       if (session) {
         session.user.id = user.id;
       }
