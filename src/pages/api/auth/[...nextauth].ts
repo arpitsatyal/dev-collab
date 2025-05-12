@@ -24,12 +24,6 @@ export const authOptions: AuthOptions = {
       }
       return session;
     },
-    async redirect({ url, baseUrl }) {
-      console.log("URL", url);
-      console.log("base url", baseUrl);
-      console.log("NEXTAUTH_URL:", process.env.NEXTAUTH_URL);
-      return url;
-    },
   },
 };
 
