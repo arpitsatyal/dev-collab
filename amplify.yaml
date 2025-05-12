@@ -4,18 +4,21 @@ applications:
       phases:
         preBuild:
           commands:
-            - nvm use 18 # Use Node.js 18.x
+            - nvm use 18 # Use Node.js 18.x to match Lambda runtime
             - npm install --legacy-peer-deps
-            - npx prisma generate # Generate Prisma Client
+            - npx prisma generate # Generate Prisma Client with rhel-openssl-1.0.x engine
         build:
           commands:
-            - npm run build
+            - npm run build # Build Next.js app
+        postBuild:
+          commands:
+            - ls -la node_modules/.prisma/client # Debug: Verify Query Engine binary
       artifacts:
-        baseDirectory: .
+        baseDirectory: .next
         files:
           - "**/*"
-          - node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node
-          - node_modules/.prisma/client/schema.prisma
+          - node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node # Include Query Engine
+          - node_modules/.prisma/client/schema.prisma # Include schema for Prisma
       cache:
         paths:
           - node_modules/**/*
@@ -30,5 +33,9 @@ applications:
         GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
         LIVEBLOCKS_SECRET_KEY: $LIVEBLOCKS_SECRET_KEY
         NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY: $NEXT_PUBLIC_LIVEBLOCKS_PUBLIC_KEY
-
-    appRoot: .
+backend:
+  phases:
+    preBuild:
+      commands:
+        - amplifyPush # Provision backend resources (if using Amplify backend)
+  appRoot: .
