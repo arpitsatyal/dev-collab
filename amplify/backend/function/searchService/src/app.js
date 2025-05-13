@@ -42,7 +42,7 @@ const esClient = new Client({
 app.post("/search", async function (req, res) {
   try {
     const { query } = req.query || {};
-    if (!query) throw new Error("query isnt provided");
+    if (!query) res.status(400).json({ msg: "Please provide a search query!" });
     const result = await esClient.search({
       index: "snippets",
       body: {
@@ -75,12 +75,12 @@ app.post("/search", async function (req, res) {
     res.json(hits);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Search failed");
+    res.status(500).send("Search failed, try again later!");
   }
 });
 
 app.all("*", (req, res) => {
-  res.status(200).json({ message: `Handled ${req.method} request` });
+  res.status(404).json({ message: "Route not found" });
 });
 
 app.listen(3000, function () {
