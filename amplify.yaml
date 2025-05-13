@@ -13,9 +13,6 @@ applications:
             - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL >> .env.production
             - npm run build # Build Next.js app
             - npm ci --production # Reinstall only production dependencies
-        postBuild:
-          commands:
-            - ls -la node_modules/.prisma/client # Debug: Verify Query Engine binary
       artifacts:
         baseDirectory: .next
         files:
@@ -27,15 +24,6 @@ applications:
           - node_modules/**/*
       environment:
         PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
-        NEXTAUTH_URL: $NEXTAUTH_URL
-        NEXTAUTH_SECRET: $NEXTAUTH_SECRET
-        GITHUB_CLIENT_ID: $GITHUB_CLIENT_ID
-        GITHUB_CLIENT_SECRET: $GITHUB_CLIENT_SECRET
-        DATABASE_URL: $DATABASE_URL
-        GOOGLE_CLIENT_ID: $GOOGLE_CLIENT_ID
-        GOOGLE_CLIENT_SECRET: $GOOGLE_CLIENT_SECRET
-        LIVEBLOCKS_SECRET_KEY: $LIVEBLOCKS_SECRET_KEY
-        LIVEBLOCKS_PUBLIC_KEY: $LIVEBLOCKS_PUBLIC_KEY
 backend:
   phases:
     preBuild:
