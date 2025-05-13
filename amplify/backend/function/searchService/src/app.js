@@ -42,7 +42,8 @@ const esClient = new Client({
 app.post("/search", async function (req, res) {
   try {
     const { query } = req.query || {};
-    if (!query) res.status(400).json({ msg: "Please provide a search query!" });
+    if (!query)
+      return res.status(400).json({ msg: "Please provide a search query!" });
     const result = await esClient.search({
       index: "snippets",
       body: {

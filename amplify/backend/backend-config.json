@@ -1,6 +1,6 @@
 {
   "api": {
-    "mysearchapi": {
+    "searchapi": {
       "dependsOn": [
         {
           "attributes": [
