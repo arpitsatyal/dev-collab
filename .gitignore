@@ -1,7 +1,11 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
 # dependencies
-/node_modules
+# Ignore all node_modules by default
+node_modules/
+# But keep the one in your layer
+!amplify/backend/function/devcollabsearchApiLayer/opt/nodejs/node_modules/
+
 /.pnp
 .pnp.js
 

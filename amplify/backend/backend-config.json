@@ -16,6 +16,11 @@
     }
   },
   "function": {
+    "devcollabsearch": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
+    },
     "searchService": {
       "build": true,
       "dependsOn": [],
@@ -24,6 +29,22 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_devcollabsearch_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabsearch"
+        }
+      ]
+    },
+    "AMPLIFY_function_devcollabsearch_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabsearch"
+        }
+      ]
+    },
     "AMPLIFY_function_searchService_deploymentBucketName": {
       "usedBy": [
         {

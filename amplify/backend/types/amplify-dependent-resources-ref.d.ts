@@ -7,6 +7,9 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
+    "devcollabsearch": {
+      "Arn": "string"
+    },
     "searchService": {
       "Arn": "string",
       "LambdaExecutionRole": "string",

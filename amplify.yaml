@@ -29,4 +29,8 @@ backend:
     preBuild:
       commands:
         - amplifyPush # Provision backend resources (if using Amplify backend)
+    build:
+      commands:
+        - cd amplify/backend/function/devcollabsearch/lib/nodejs
+        - npm install
   appRoot: .
