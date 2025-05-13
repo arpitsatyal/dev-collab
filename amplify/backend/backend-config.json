@@ -1,1 +1,68 @@
-{}
+{
+  "api": {
+    "mysearchapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "searchService": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_searchService_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_elasticsearchUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_esApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    }
+  }
+}

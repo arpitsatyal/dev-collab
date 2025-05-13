@@ -10,6 +10,20 @@
       "StackName": "amplify-devcollab-dev-49913",
       "StackId": "arn:aws:cloudformation:us-east-2:360308275964:stack/amplify-devcollab-dev-49913/f83206f0-2e68-11f0-849b-0a77d5e6aa71",
       "AmplifyAppId": "dgvpb7720ksa0"
+    },
+    "categories": {
+      "function": {
+        "searchService": {
+          "elasticsearchUrl": "https://db9bfdd4cc704d2c90cd53a2aed84d19.us-central1.gcp.cloud.es.io:443",
+          "esApiKey": "MEMxcGhwWUJIMUpiN29vbm5fYWE6b0RxMUxXX1FBUlgwOVh0ZTN3YlVQdw",
+          "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/searchService-53687a6b684b3462644c-build.zip"
+        }
+      },
+      "api": {
+        "mysearchapi": {}
+      }
     }
   }
 }
