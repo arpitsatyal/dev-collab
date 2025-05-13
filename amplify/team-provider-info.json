@@ -22,7 +22,7 @@
         },
         "devcollabsearch": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/devcollabsearch-LambdaLayerVersion26652388-build.zip"
+          "s3Key": "amplify-builds/devcollabsearch-LambdaLayerVersionec482a17-build.zip"
         }
       },
       "api": {
