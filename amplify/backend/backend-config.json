@@ -13,6 +13,20 @@
       ],
       "providerPlugin": "awscloudformation",
       "service": "API Gateway"
+    },
+    "syncapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
     }
   },
   "function": {
@@ -57,6 +71,14 @@
         }
       ]
     },
+    "AMPLIFY_function_elasticIndexWebhook_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
     "AMPLIFY_function_elasticIndexWebhook_elasticsearchUrl": {
       "usedBy": [
         {
@@ -74,6 +96,14 @@
       ]
     },
     "AMPLIFY_function_elasticIndexWebhook_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
+    "AMPLIFY_function_elasticIndexWebhook_s3Key": {
       "usedBy": [
         {
           "category": "function",

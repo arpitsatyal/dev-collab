@@ -17,6 +17,14 @@ Amplify Params - DO NOT EDIT */
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
+const { Client } = require("@elastic/elasticsearch");
+
+const esClient = new Client({
+  node: process.env.ELASTICSEARCH_URL,
+  auth: {
+    apiKey: process.env.ES_API_KEY,
+  },
+});
 
 // declare a new express app
 const app = express();
@@ -34,9 +42,34 @@ app.use(function (req, res, next) {
  * Example get method *
  **********************/
 
-app.get("/item", function (req, res) {
-  // Add your code here
-  res.json({ success: "get call succeed!", url: req.url });
+app.post("/sync-index", async function (req, res) {
+  try {
+    const snippet = req.body.snippet;
+    if (!snippet) {
+      return res.status(404).json({ msg: "Snippet not found!" });
+    }
+    const snippetId = snippet.id;
+
+    await esClient.index({
+      index: "snippets",
+      id: snippetId,
+      body: {
+        title: snippet.title,
+        content: snippet.content,
+        language: snippet.language,
+        createdAt: snippet.createdAt,
+        updatedAt: snippet.updatedAt,
+        projectId: snippet.projectId,
+        authorId: snippet.authorId,
+        lastEditedById: snippet.lastEditedById,
+      },
+    });
+    console.log(`✅ Snippet ${snippet.id} indexed`);
+    return res.status(200).json({ msg: `✅ Snippet ${snippetId} indexed` });
+  } catch (err) {
+    console.error(`❌ Failed to index snippet`, err.message);
+    return res.status(400).json({ msg: `❌ Failed to index snippet` });
+  }
 });
 
 app.listen(3000, function () {

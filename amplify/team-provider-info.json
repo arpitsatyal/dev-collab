@@ -34,11 +34,14 @@
         "elasticIndexWebhook": {
           "elasticsearchUrl": "https://db9bfdd4cc704d2c90cd53a2aed84d19.us-central1.gcp.cloud.es.io:443",
           "esApiKey": "MEMxcGhwWUJIMUpiN29vbm5fYWE6b0RxMUxXX1FBUlgwOVh0ZTN3YlVQdw",
-          "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+          "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/elasticIndexWebhook-4a3735646936754e3457-build.zip"
         }
       },
       "api": {
-        "searchapi": {}
+        "searchapi": {},
+        "syncapi": {}
       }
     }
   }

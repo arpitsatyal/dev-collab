@@ -27,6 +27,7 @@ import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
+import axios from "axios";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
@@ -92,6 +93,12 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
         })
       );
       setLanguage(snippet.language);
+
+      try {
+        await axios.post(process.env.SYNC_SERVICE_URL ?? "", data);
+      } catch (syncError) {
+        console.warn("Sync service failed:", syncError);
+      }
 
       window.scrollTo({ top: 0, behavior: "smooth" });
       // todo: handle error

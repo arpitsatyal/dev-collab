@@ -12,6 +12,7 @@ import { addSnippet } from "../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { languageMapper } from "../../../../utils/languageMapper";
 import { withAuth } from "../../../../guards/withAuth";
+import axios from "axios";
 
 const Create = () => {
   const router = useRouter();
@@ -51,6 +52,11 @@ const Create = () => {
             snippet: result,
           })
         );
+        try {
+          await axios.post(process.env.SYNC_SERVICE_URL ?? "", result);
+        } catch (syncError) {
+          console.warn("Sync service failed:", syncError);
+        }
       }
       //todo: handle error
       notifications.show({

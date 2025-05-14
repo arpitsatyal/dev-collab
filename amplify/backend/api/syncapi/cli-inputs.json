@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "paths": {
+    "/sync-index": {
+      "name": "/sync-index",
+      "lambdaFunction": "elasticIndexWebhook",
+      "permissions": {
+        "setting": "open"
+      }
+    }
+  }
+}
