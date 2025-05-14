@@ -1,6 +1,6 @@
 {
   "api": {
-    "searchapi": {
+    "devcollabapi": {
       "dependsOn": [
         {
           "attributes": [
@@ -9,13 +9,7 @@
           ],
           "category": "function",
           "resourceName": "searchService"
-        }
-      ],
-      "providerPlugin": "awscloudformation",
-      "service": "API Gateway"
-    },
-    "syncapi": {
-      "dependsOn": [
+        },
         {
           "attributes": [
             "Name",

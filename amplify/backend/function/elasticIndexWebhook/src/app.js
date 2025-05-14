@@ -42,7 +42,7 @@ app.use(function (req, res, next) {
  * Example get method *
  **********************/
 
-app.post("/sync-index", async function (req, res) {
+app.post("/sync", async function (req, res) {
   try {
     const snippet = req.body.snippet;
     if (!snippet) {

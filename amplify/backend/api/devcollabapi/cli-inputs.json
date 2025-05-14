@@ -7,6 +7,13 @@
       "permissions": {
         "setting": "open"
       }
+    },
+    "/sync": {
+      "name": "/sync",
+      "lambdaFunction": "elasticIndexWebhook",
+      "permissions": {
+        "setting": "open"
+      }
     }
   }
 }

@@ -1,11 +1,6 @@
 export type AmplifyDependentResourcesAttributes = {
   "api": {
-    "searchapi": {
-      "ApiId": "string",
-      "ApiName": "string",
-      "RootUrl": "string"
-    },
-    "syncapi": {
+    "devcollabapi": {
       "ApiId": "string",
       "ApiName": "string",
       "RootUrl": "string"

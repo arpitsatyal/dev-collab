@@ -36,12 +36,11 @@
           "esApiKey": "MEMxcGhwWUJIMUpiN29vbm5fYWE6b0RxMUxXX1FBUlgwOVh0ZTN3YlVQdw",
           "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/elasticIndexWebhook-4a3735646936754e3457-build.zip"
+          "s3Key": "amplify-builds/elasticIndexWebhook-7a732f614e5149586a6b-build.zip"
         }
       },
       "api": {
-        "searchapi": {},
-        "syncapi": {}
+        "devcollabapi": {}
       }
     }
   }

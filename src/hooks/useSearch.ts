@@ -20,7 +20,7 @@ export const useSearch = (term: string) => {
       try {
         const encodedQuery = encodeURIComponent(query);
         const { data } = await axios.post(
-          `${process.env.SEARCH_SERVICE_URL}/search?query=${encodedQuery}`,
+          `${process.env.API_GATEWAY_URL}/search?query=${encodedQuery}`,
           {},
           { signal: controller.signal }
         );

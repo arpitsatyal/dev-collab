@@ -53,10 +53,7 @@ const Create = () => {
           })
         );
         try {
-          await axios.post(
-            `${process.env.SYNC_SERVICE_URL}/sync-index`,
-            result
-          );
+          await axios.post(`${process.env.API_GATEWAY_URL}/sync`, result);
         } catch (syncError) {
           console.warn("Sync service failed:", syncError);
         }
