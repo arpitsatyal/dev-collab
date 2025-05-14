@@ -109,7 +109,10 @@ const SideNav = () => {
         id: "logout",
         icon: IconLogout,
         label: "Logout",
-        handler: () => signOut(),
+        handler: () => {
+          signOut();
+          router.push("/");
+        },
       },
     ],
     []

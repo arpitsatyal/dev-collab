@@ -1,0 +1,121 @@
+{
+  "providers": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-devcollab-dev-49913-authRole",
+      "UnauthRoleArn": "arn:aws:iam::360308275964:role/amplify-devcollab-dev-49913-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::360308275964:role/amplify-devcollab-dev-49913-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+      "UnauthRoleName": "amplify-devcollab-dev-49913-unauthRole",
+      "StackName": "amplify-devcollab-dev-49913",
+      "StackId": "arn:aws:cloudformation:us-east-2:360308275964:stack/amplify-devcollab-dev-49913/f83206f0-2e68-11f0-849b-0a77d5e6aa71",
+      "AmplifyAppId": "dgvpb7720ksa0"
+    }
+  },
+  "api": {
+    "searchapi": {
+      "service": "API Gateway",
+      "providerPlugin": "awscloudformation",
+      "dependsOn": [
+        {
+          "category": "function",
+          "resourceName": "searchService",
+          "attributes": [
+            "Name",
+            "Arn"
+          ]
+        }
+      ],
+      "output": {
+        "ApiName": "searchapi",
+        "RootUrl": "https://cm4l7ckgxe.execute-api.us-east-2.amazonaws.com/dev",
+        "ApiId": "cm4l7ckgxe"
+      },
+      "lastPushTimeStamp": "2025-05-14T08:35:11.138Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-devcollab-dev-49913-deployment/amplify-cfn-templates/api/searchapi-cloudformation-template.json",
+        "logicalId": "apisearchapi"
+      },
+      "lastPushDirHash": "KNNprOXaIVV31CV1/izO9O9iJrg="
+    }
+  },
+  "function": {
+    "devcollabsearch": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer",
+      "output": {
+        "Arn": "arn:aws:lambda:us-east-2:360308275964:layer:devcollabsearch-dev:6"
+      },
+      "lastPushTimeStamp": "2025-05-14T08:35:11.142Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-devcollab-dev-49913-deployment/amplify-cfn-templates/function/devcollabsearch-awscloudformation-template.json",
+        "logicalId": "functiondevcollabsearch"
+      },
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+        "s3Key": "amplify-builds/devcollabsearch-LambdaLayerVersion06435c4b-build.zip"
+      },
+      "lastBuildTimeStamp": "2025-05-14T07:09:40.779Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2025-05-13T15:35:33.134Z",
+      "distZipFilename": "devcollabsearch-LambdaLayerVersion06435c4b-build.zip",
+      "latestPushedVersionHash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "searchService": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::360308275964:role/devcollabLambdaRolea837cb8a-dev",
+        "Region": "us-east-2",
+        "Arn": "arn:aws:lambda:us-east-2:360308275964:function:searchService-dev",
+        "Name": "searchService-dev",
+        "LambdaExecutionRole": "devcollabLambdaRolea837cb8a-dev"
+      },
+      "lastPushTimeStamp": "2025-05-14T08:35:11.196Z",
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-devcollab-dev-49913-deployment/amplify-cfn-templates/function/searchService-cloudformation-template.json",
+        "logicalId": "functionsearchService"
+      },
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+        "s3Key": "amplify-builds/searchService-4d54664f473641664667-build.zip"
+      },
+      "lastBuildTimeStamp": "2025-05-14T08:33:30.395Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2025-05-14T08:33:30.433Z",
+      "distZipFilename": "searchService-4d54664f473641664667-build.zip",
+      "lastPushDirHash": "+/VoLNwfn9Chbn3PxdVTu1OkiPM="
+    },
+    "snippetsCronJob": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda",
+      "dependsOn": [],
+      "lastBuildTimeStamp": "2025-05-14T08:34:22.095Z",
+      "lastBuildType": "PROD",
+      "lastPackageTimeStamp": "2025-05-14T08:34:24.412Z",
+      "distZipFilename": "snippetsCronJob-4d47362b6e4c7a724e45-build.zip",
+      "s3Bucket": {
+        "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+        "s3Key": "amplify-builds/snippetsCronJob-4d47362b6e4c7a724e45-build.zip"
+      },
+      "providerMetadata": {
+        "s3TemplateURL": "https://s3.amazonaws.com/amplify-devcollab-dev-49913-deployment/amplify-cfn-templates/function/snippetsCronJob-cloudformation-template.json",
+        "logicalId": "functionsnippetsCronJob"
+      },
+      "lastPushTimeStamp": "2025-05-14T08:35:12.257Z",
+      "output": {
+        "LambdaExecutionRoleArn": "arn:aws:iam::360308275964:role/devcollabLambdaRolecbc9ce8b-dev",
+        "Region": "us-east-2",
+        "CloudWatchEventRule": "amplify-devcollab-dev-49913-functio-CloudWatchEvent-JUAW78RWKZis",
+        "Arn": "arn:aws:lambda:us-east-2:360308275964:function:snippetsCronJob-dev",
+        "Name": "snippetsCronJob-dev",
+        "LambdaExecutionRole": "devcollabLambdaRolecbc9ce8b-dev"
+      },
+      "lastPushDirHash": "jKs/kq4P6XU4v3X4n3kv1l0LxHo="
+    }
+  }
+}

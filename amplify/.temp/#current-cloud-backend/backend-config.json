@@ -1,0 +1,135 @@
+{
+  "api": {
+    "searchapi": {
+      "dependsOn": [
+        {
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "API Gateway"
+    }
+  },
+  "function": {
+    "devcollabsearch": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
+    },
+    "searchService": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
+    "snippetsCronJob": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    }
+  },
+  "parameters": {
+    "AMPLIFY_function_devcollabsearch_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabsearch"
+        }
+      ]
+    },
+    "AMPLIFY_function_devcollabsearch_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabsearch"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_elasticsearchUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_esApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_searchService_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_elasticsearchUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_esApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    }
+  }
+}

@@ -20,7 +20,7 @@ const CreateProject = () => {
 
   const handleSubmit = async () => {
     try {
-      await createProject(form.values);
+      await createProject(form.values).unwrap();
       router.push("/projects");
       notifications.show({
         title: "Job done!",

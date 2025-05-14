@@ -26,6 +26,12 @@
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "snippetsCronJob": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
     }
   },
   "parameters": {
@@ -82,6 +88,46 @@
         {
           "category": "function",
           "resourceName": "searchService"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_elasticsearchUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_esApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
         }
       ]
     }

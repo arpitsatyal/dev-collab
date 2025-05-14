@@ -77,12 +77,12 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
     try {
       if (!projectId || !snippetId || !storageCode)
         throw new Error("Something went wrong");
-      const { data, error } = await editSnippet({
+      const data = await editSnippet({
         projectId,
         snippet,
         snippetId,
-      });
-      if (error) throw new Error("Something went wrong");
+      }).unwrap();
+
       dispatch(
         updateSnippet({
           projectId,

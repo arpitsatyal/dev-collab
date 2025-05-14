@@ -39,15 +39,15 @@ const Create = () => {
           "-",
       };
 
-      const { data } = await createSnippet({
+      const result = await createSnippet({
         snippet,
         projectId,
-      });
-      if (data) {
+      }).unwrap();
+      if (result) {
         dispatch(
           addSnippet({
             projectId,
-            snippet: data,
+            snippet: result,
           })
         );
       }
@@ -56,8 +56,8 @@ const Create = () => {
         title: "done!",
         message: "Snippet saved successfully! 🌟",
       });
-      if (data?.id) {
-        router.push(`/projects/${projectId}/snippets/${data.id}`);
+      if (result?.id) {
+        router.push(`/projects/${projectId}/snippets/${result.id}`);
       }
     } catch (error) {
       console.error(error);
