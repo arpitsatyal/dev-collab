@@ -21,6 +21,12 @@
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer"
     },
+    "elasticIndexWebhook": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "searchService": {
       "build": true,
       "dependsOn": [],
@@ -48,6 +54,30 @@
         {
           "category": "function",
           "resourceName": "devcollabsearch"
+        }
+      ]
+    },
+    "AMPLIFY_function_elasticIndexWebhook_elasticsearchUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
+    "AMPLIFY_function_elasticIndexWebhook_esApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
+    "AMPLIFY_function_elasticIndexWebhook_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
         }
       ]
     },
