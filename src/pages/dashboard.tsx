@@ -1,23 +1,20 @@
-import { getServerSession, User } from "next-auth";
-import { GetServerSideProps } from "next";
-import { authOptions } from "./api/auth/[...nextauth]";
+import { useSession } from "next-auth/react";
 import Layout from "../components/Layout";
+import { withAuth } from "../guards/withAuth";
+import { Session } from "next-auth";
 
-const Dashboard = ({ user }: { user: User }) => {
-  return <p>welcome, {user.name}</p>;
+const Dashboard = ({ user }: { user: Session["user"] }) => {
+  const session = useSession();
+  return <p>welcome, {user.name ?? ""}</p>;
 };
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  const user = session?.user ?? null;
 
-  if (!user) {
-    return { redirect: { destination: "/", permanent: false } };
-  }
-
+export const getServerSideProps = withAuth(async (_ctx, session) => {
   return {
-    props: { user },
+    props: {
+      user: session.user,
+    },
   };
-};
+});
 
 Dashboard.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 

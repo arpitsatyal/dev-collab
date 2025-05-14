@@ -5,6 +5,7 @@ import { ProjectCreate } from "../../interfaces";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { useCreateProjectMutation } from "../../store/api/projectApi";
+import { withAuth } from "../../guards/withAuth";
 
 const CreateProject = () => {
   const router = useRouter();
@@ -107,5 +108,11 @@ const CreateProject = () => {
 };
 
 CreateProject.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+
+export const getServerSideProps = withAuth(async () => {
+  return {
+    props: {},
+  };
+});
 
 export default CreateProject;

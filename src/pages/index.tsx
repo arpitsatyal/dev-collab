@@ -1,10 +1,9 @@
 import { Button, Container } from "@mantine/core";
-import type { GetServerSideProps, NextPage } from "next";
-import { getServerSession } from "next-auth";
+import type { NextPage } from "next";
 import { signIn } from "next-auth/react";
 import Head from "next/head";
-import { authOptions } from "./api/auth/[...nextauth]";
 import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
+import { withoutAuth } from "../guards/withoutAuth";
 
 const Home: NextPage = () => {
   const handleGithubSignIn = async () => {
@@ -52,17 +51,10 @@ const Home: NextPage = () => {
   );
 };
 
-export const getServerSideProps: GetServerSideProps = async (context) => {
-  const session = await getServerSession(context.req, context.res, authOptions);
-  const user = session?.user ?? null;
-
-  if (user) {
-    return { redirect: { destination: "/dashboard", permanent: false } };
-  }
-
+export const getServerSideProps = withoutAuth(async () => {
   return {
     props: {},
   };
-};
+});
 
 export default Home;

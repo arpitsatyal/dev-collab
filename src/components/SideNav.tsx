@@ -83,6 +83,11 @@ const SideNav = () => {
     }
   }, [router.asPath, projectId, fetchSnippets, pathParts]);
 
+  const handleLogout = () => {
+    signOut();
+    router.push("/");
+  };
+
   const navItems = useMemo<NavItemProps[]>(
     () => [
       {
@@ -109,10 +114,7 @@ const SideNav = () => {
         id: "logout",
         icon: IconLogout,
         label: "Logout",
-        handler: () => {
-          signOut();
-          router.push("/");
-        },
+        handler: handleLogout,
       },
     ],
     []
@@ -232,7 +234,7 @@ const SideNav = () => {
               >
                 <Box pr="xs" key={item.id}>
                   {item.children?.map((child) => (
-                    <>
+                    <Box key={child.id}>
                       {isLoading ? (
                         <Loading />
                       ) : (
@@ -265,7 +267,7 @@ const SideNav = () => {
                             ))}
                         </NavLink>
                       )}
-                    </>
+                    </Box>
                   ))}
                 </Box>
               </ScrollArea.Autosize>

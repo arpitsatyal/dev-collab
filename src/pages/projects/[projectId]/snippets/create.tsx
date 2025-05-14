@@ -11,6 +11,7 @@ import { useAppDispatch } from "../../../../store/hooks";
 import { addSnippet } from "../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { languageMapper } from "../../../../utils/languageMapper";
+import { withAuth } from "../../../../guards/withAuth";
 
 const Create = () => {
   const router = useRouter();
@@ -99,5 +100,11 @@ const CreateSnippet = () => {
 };
 
 CreateSnippet.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+
+export const getServerSideProps = withAuth(async () => {
+  return {
+    props: {},
+  };
+});
 
 export default CreateSnippet;

@@ -32,15 +32,16 @@ exports.handler = async (event) => {
     await pg.query(`
       CREATE TABLE IF NOT EXISTS "CronJobStatus" (
         job_name TEXT PRIMARY KEY,
-        last_run_at TIMESTAMP
+        last_run_at TIMESTAMP NOT NULL DEFAULT '1970-01-01'
       );
     `);
 
+    // 2. Insert job row on first run
     await pg.query(`
-      INSERT INTO "CronJobStatus" (job_name, last_run_at)
-      VALUES ('snippets_cron', NULL)
-      ON CONFLICT (job_name) DO NOTHING;
-    `);
+    INSERT INTO "CronJobStatus" (job_name)
+    VALUES ('snippets_cron')
+    ON CONFLICT (job_name) DO NOTHING;
+  `);
 
     // 2. Fetch last run time
     const { rows: statusRows } = await pg.query(`
@@ -49,17 +50,11 @@ exports.handler = async (event) => {
 
     const lastRunAt = statusRows[0]?.last_run_at;
 
-    if (!lastRunAt) {
-      console.log("🔁 First run detected. Indexing all snippets.");
-      snippetsQuery = `SELECT * FROM "Snippet"`;
-      queryParams = [];
-    } else {
-      snippetsQuery = `SELECT * FROM "Snippet" WHERE "updatedAt" > $1`;
-      queryParams = [lastRunAt];
-    }
-
     // 3. Get snippets updated since last run
-    const { rows: snippets } = await pg.query(snippetsQuery, queryParams);
+    const { rows: snippets } = await pg.query(
+      `SELECT * FROM "Snippet" WHERE "updatedAt" > $1`,
+      [lastRunAt]
+    );
 
     if (!snippets.length) {
       console.log("❕ No new or updated snippets since last run.");

@@ -26,6 +26,7 @@ import {
 import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
+import { withAuth } from "../../../../../guards/withAuth";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
@@ -191,5 +192,11 @@ const SnippetPage = () => {
 };
 
 SnippetPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+
+export const getServerSideProps = withAuth(async () => {
+  return {
+    props: {},
+  };
+});
 
 export default SnippetPage;

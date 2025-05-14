@@ -4,6 +4,7 @@ import Loading from "../../../components/Loader";
 import { Container, Paper, Stack, Text } from "@mantine/core";
 import { useGetProjectQuery } from "../../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { withAuth } from "../../../guards/withAuth";
 
 const ProjectPage = () => {
   const router = useRouter();
@@ -48,5 +49,11 @@ const ProjectPage = () => {
 };
 
 ProjectPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+
+export const getServerSideProps = withAuth(async () => {
+  return {
+    props: {},
+  };
+});
 
 export default ProjectPage;
