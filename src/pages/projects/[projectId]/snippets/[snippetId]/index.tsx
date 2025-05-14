@@ -95,7 +95,7 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
       setLanguage(snippet.language);
 
       try {
-        await axios.post(process.env.SYNC_SERVICE_URL ?? "", data);
+        await axios.post(`${process.env.SYNC_SERVICE_URL}/sync-index`, data);
       } catch (syncError) {
         console.warn("Sync service failed:", syncError);
       }
