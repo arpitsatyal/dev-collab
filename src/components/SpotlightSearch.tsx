@@ -206,17 +206,8 @@ const SpotlightSearch = () => {
       if (apiSnippets.includes(snippet)) {
         dispatch(addSnippet({ projectId: snippet.projectId, snippet }));
       }
-      // Fetch project if not in loadedProjects
-      if (!loadedProjects[snippet.projectId]) {
-        triggerGetProject(snippet.projectId).then(({ data }) => {
-          if (data) {
-            setLoadedProjects((prev) => ({
-              ...prev,
-              [snippet.projectId]: data,
-            }));
-          }
-        });
-      }
+      fetchProjectForSnippets(snippet.projectId);
+
       return {
         projectId: snippet.projectId,
         snippetId: snippet.id,
