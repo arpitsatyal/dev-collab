@@ -74,7 +74,7 @@ const SideNav = () => {
           newSet.add(projectId);
           return newSet;
         }
-        return prev; // no state change if already present
+        return prev; 
       });
 
       setProjectsOpen(true);

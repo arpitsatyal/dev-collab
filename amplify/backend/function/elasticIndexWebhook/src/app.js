@@ -18,7 +18,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
 const { Client } = require("@elastic/elasticsearch");
-const cors = require("cors");
 
 const esClient = new Client({
   node: process.env.ELASTICSEARCH_URL,
@@ -29,8 +28,6 @@ const esClient = new Client({
 
 // declare a new express app
 const app = express();
-
-app.use(cors());
 
 // ✅ CORS middleware for all requests
 app.use((req, res, next) => {
@@ -69,6 +66,7 @@ app.post("/sync", async function (req, res) {
         updatedAt: snippet.updatedAt,
         projectId: snippet.projectId,
         authorId: snippet.authorId,
+        extension: snippet.extension,
         lastEditedById: snippet.lastEditedById,
       },
     });

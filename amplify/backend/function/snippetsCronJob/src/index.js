@@ -78,6 +78,7 @@ exports.handler = async (event) => {
             updatedAt: snippet.updatedAt,
             projectId: snippet.projectId,
             authorId: snippet.authorId,
+            extension: snippet.extension,
             lastEditedById: snippet.lastEditedById,
           },
         });

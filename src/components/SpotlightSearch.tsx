@@ -1,158 +1,193 @@
+import { useRouter } from "next/router";
+import { useState, useMemo, useCallback, JSX } from "react";
+
+import { IconSearch, IconFolder } from "@tabler/icons-react";
+import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
-import { IconFolder, IconSearch } from "@tabler/icons-react";
+import { truncateByWords } from "../utils/truncateByWords";
+import { useAppDispatch, useAppSelector } from "../store/hooks";
 import {
   useGetProjectsQuery,
   useLazyGetProjectQuery,
 } from "../store/api/projectApi";
-import Loading from "./Loader";
-import { truncateByWords } from "../utils/truncateByWords";
-import { useRouter } from "next/router";
-import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { useSearch } from "../hooks/useSearch";
-import React, { useEffect, useMemo, useState } from "react";
-import { Project, Snippet } from "@prisma/client";
+import Loading from "./Loader";
 import FileIcon from "./FileIcon";
+import { addSnippet } from "../store/slices/snippetSlice";
+import { Project, Snippet } from "@prisma/client";
 
-interface IData {
+interface DataItem {
   projectId: string;
+  snippetId?: string;
   title: string;
   description: string;
-  icon: React.ReactNode;
-  snippetId?: string;
+  icon: JSX.Element;
 }
+
+// Utility function to filter snippets
+const filterSnippetsByQuery = (
+  snippets: Snippet[],
+  query: string
+): Snippet[] => {
+  if (!query) return [];
+  const lowerQuery = query.toLowerCase().trim();
+  return snippets.filter((snippet) =>
+    snippet.title.toLowerCase().includes(lowerQuery)
+  );
+};
+
+// Component to render a single action item
+const ActionItem = ({
+  item,
+  onClick,
+  projectTitle,
+}: {
+  item: DataItem;
+  onClick: () => void;
+  projectTitle?: string;
+}) => (
+  <Spotlight.Action>
+    <Group wrap="nowrap" w="100%">
+      {item.icon}
+      <Box style={{ flex: 1 }} p={3} onClick={onClick}>
+        <Text>{item.title}</Text>
+        {item.snippetId ? (
+          <Group gap="xs">
+            <IconFolder size={16} />
+            <Text size="xs" opacity={0.6}>
+              {projectTitle ?? "Loading..."}
+            </Text>
+          </Group>
+        ) : (
+          item.description && (
+            <Text opacity={0.6} size="xs">
+              {truncateByWords(item.description, 30)}
+            </Text>
+          )
+        )}
+      </Box>
+    </Group>
+  </Spotlight.Action>
+);
 
 const SpotlightSearch = () => {
   const router = useRouter();
-  const { data: projects = [], isLoading } = useGetProjectsQuery();
+  const dispatch = useAppDispatch();
+  const { data: projects = [], isLoading: isProjectsLoading } =
+    useGetProjectsQuery();
   const [triggerGetProject] = useLazyGetProjectQuery();
   const [query, setQuery] = useState("");
-
-  const { matchedResults, loading } = useSearch(query);
+  const [matchedSnippets, setMatchedSnippets] = useState<Snippet[]>([]);
+  const loadedSnippets = useAppSelector(
+    (state) => state.snippet.loadedSnippets
+  );
   const [loadedProjects, setLoadedProjects] = useState<Record<string, Project>>(
     {}
   );
+  const currentProjectId = router.query.projectId as string | undefined;
 
-  const projectData: IData[] = useMemo(
-    () =>
-      projects
-        .filter((project) =>
-          project.title.toLowerCase().includes(query.toLowerCase().trim())
-        )
-        .map((project) => ({
-          projectId: project.id,
-          title: project.title,
-          description: project.description ?? "-",
-          icon: <IconFolder size={24} stroke={1.5} />,
-        })),
-    [projects, query]
+  // Skip API call if matchedSnippets exists
+  const { matchedResults, loading: isSearchLoading } = useSearch(
+    matchedSnippets.length > 0 ? "" : query
   );
 
-  const snippetData: IData[] = useMemo(() => {
-    if (!matchedResults?.length) return [];
+  // Handle query changes
+  const handleQueryChange = useCallback(
+    (newQuery: string) => {
+      setQuery(newQuery);
 
-    return matchedResults.map((result) => {
-      const snippet: Snippet = result._source;
+      let matched: Snippet[] = [];
+
+      if (newQuery) {
+        // Prioritize current project if available
+        if (currentProjectId && loadedSnippets[currentProjectId]) {
+          matched = filterSnippetsByQuery(
+            loadedSnippets[currentProjectId],
+            newQuery
+          );
+        }
+
+        // If no matches or no current project, search all projects
+        if (!matched.length) {
+          matched = Object.keys(loadedSnippets).reduce((acc, projectId) => {
+            const snippets = filterSnippetsByQuery(
+              loadedSnippets[projectId],
+              newQuery
+            );
+            return [...acc, ...snippets];
+          }, [] as Snippet[]);
+        }
+      }
+    },
+    [loadedSnippets]
+  );
+
+  const fetchProjectForSnippets = (projectId: string) => {
+    const localProject = projects.find((p) => p.id === projectId);
+
+    if (localProject) {
+      setLoadedProjects((prev) => ({
+        ...prev,
+        [projectId]: localProject,
+      }));
+    } else {
+      triggerGetProject(projectId).then(({ data }) => {
+        if (data) {
+          setLoadedProjects((prev) => ({
+            ...prev,
+            [projectId]: data,
+          }));
+        }
+      });
+    }
+  };
+
+  // Process project data
+  const projectItems = useMemo(() => {
+    if (!query) return [];
+    const lowerQuery = query.toLowerCase().trim();
+    return projects
+      .filter((project) => project.title.toLowerCase().includes(lowerQuery))
+      .map((project) => ({
+        projectId: project.id,
+        title: project.title,
+        description: project.description ?? "-",
+        icon: <IconFolder size={24} stroke={1.5} />,
+        onClick: () => router.push(`/projects/${project.id}`),
+      }));
+  }, [projects, query, router]);
+
+  // Process snippet data
+  const snippetItems = useMemo(() => {
+    const snippets =
+      matchedSnippets.length > 0
+        ? matchedSnippets
+        : matchedResults?.map((result) => result._source) || [];
+
+    if (!snippets.length) return [];
+
+    return snippets.map((snippet) => {
+      if (matchedSnippets.length === 0) {
+        dispatch(addSnippet({ projectId: snippet.projectId, snippet }));
+      }
+
+      fetchProjectForSnippets(snippet.projectId);
+
       return {
         projectId: snippet.projectId,
-        snippetId: result._id,
+        snippetId: snippet.id,
         title: `${snippet.title}.${snippet.extension ?? ""}`,
         description: snippet.language,
         icon: <FileIcon snippet={snippet} />,
+        onClick: () =>
+          router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
+        projectTitle: loadedProjects[snippet.projectId]?.title,
       };
     });
-  }, [matchedResults]);
+  }, [matchedSnippets, matchedResults, dispatch, router]);
 
-  useEffect(() => {
-    const fetchMissingProjects = async () => {
-      const toFetch = snippetData.filter(
-        (snippet) => !loadedProjects[snippet.projectId]
-      );
-
-      for (const snippet of toFetch) {
-        const localProject = projects.find((p) => p.id === snippet.projectId);
-        if (localProject) {
-          setLoadedProjects((prev) => ({
-            ...prev,
-            [snippet.projectId]: localProject,
-          }));
-        } else {
-          try {
-            const response = await triggerGetProject(snippet.projectId);
-            if (response.data) {
-              const project = response.data;
-              setLoadedProjects((prev) => ({
-                ...prev,
-                [snippet.projectId]: project,
-              }));
-            }
-          } catch (err) {
-            console.error("Failed to fetch project", err);
-          }
-        }
-      }
-    };
-
-    if (snippetData.length > 0) {
-      fetchMissingProjects();
-    }
-  }, [snippetData, projects, loadedProjects, triggerGetProject]);
-
-  const handleQueryChange = (query: string) => {
-    setQuery(query);
-  };
-
-  const snippetItems = snippetData.map((item) => {
-    return (
-      <Spotlight.Action key={item.snippetId}>
-        <Group wrap="nowrap" w="100%">
-          {item.icon}
-
-          <Box
-            style={{ flex: 1 }}
-            p={3}
-            onClick={() =>
-              router.push(
-                `/projects/${item.projectId}/snippets/${item.snippetId}`
-              )
-            }
-          >
-            <Text>{item.title}</Text>
-
-            <Group gap="xs">
-              <IconFolder size={16} />
-              <Text size="xs" opacity={0.6}>
-                {loadedProjects[item.projectId]?.title ?? "Loading..."}
-              </Text>
-            </Group>
-          </Box>
-        </Group>
-      </Spotlight.Action>
-    );
-  });
-
-  const projectItems = projectData.map((item) => {
-    return (
-      <Spotlight.Action key={item.projectId}>
-        <Group wrap="nowrap" w="100%">
-          {item.icon}
-
-          <Box
-            style={{ flex: 1 }}
-            p={3}
-            onClick={() => router.push(`/projects/${item.projectId}`)}
-          >
-            <Text>{item.title}</Text>
-
-            {item.description && (
-              <Text opacity={0.6} size="xs">
-                {truncateByWords(item.description, 30)}
-              </Text>
-            )}
-          </Box>
-        </Group>
-      </Spotlight.Action>
-    );
-  });
+  // Combine items for rendering
+  const allItems = [...projectItems, ...snippetItems];
 
   return (
     <>
@@ -163,14 +198,11 @@ const SpotlightSearch = () => {
         size="lg"
         style={{
           transition: "background-color 150ms ease",
-          "&:hover": {
-            backgroundColor: "#f0f0f0",
-          },
+          "&:hover": { backgroundColor: "#f0f0f0" },
         }}
       >
         <IconSearch />
       </ActionIcon>
-
       <Spotlight.Root
         query={query}
         onQueryChange={handleQueryChange}
@@ -181,34 +213,41 @@ const SpotlightSearch = () => {
           placeholder="Search..."
           leftSection={<IconSearch stroke={1.5} />}
         />
-
         <Spotlight.ActionsList>
-          {isLoading || loading ? (
+          {isProjectsLoading || isSearchLoading ? (
             <Loading loaderHeight="10vh" />
           ) : (
             <>
               {projectItems.length > 0 && (
                 <Spotlight.ActionsGroup label="Projects">
-                  {projectItems}
+                  {projectItems.map((item) => (
+                    <ActionItem
+                      key={item.projectId}
+                      item={item}
+                      onClick={item.onClick}
+                    />
+                  ))}
                 </Spotlight.ActionsGroup>
               )}
               {snippetItems.length > 0 && query.length > 0 && (
                 <Spotlight.ActionsGroup label="Snippets">
-                  {snippetItems}
+                  {snippetItems.map((item) => (
+                    <ActionItem
+                      key={item.snippetId}
+                      item={item}
+                      onClick={item.onClick}
+                      projectTitle={item.projectTitle}
+                    />
+                  ))}
                 </Spotlight.ActionsGroup>
               )}
-              {query.length > 0 &&
-                projectItems.length + snippetItems.length > 0 && (
-                  <Text style={{ textAlign: "center" }}>
-                    {projectItems.length + snippetItems.length}{" "}
-                    {projectItems.length + snippetItems.length === 1
-                      ? "Result"
-                      : "Results"}{" "}
-                    Found
-                  </Text>
-                )}
-
-              {projectItems.length === 0 && snippetItems.length === 0 && (
+              {query.length > 0 && allItems.length > 0 && (
+                <Text style={{ textAlign: "center" }}>
+                  {allItems.length}{" "}
+                  {allItems.length === 1 ? "Result" : "Results"} Found
+                </Text>
+              )}
+              {query.length > 0 && allItems.length === 0 && (
                 <Spotlight.Empty>Nothing found...</Spotlight.Empty>
               )}
             </>

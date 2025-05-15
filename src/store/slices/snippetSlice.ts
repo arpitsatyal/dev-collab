@@ -26,10 +26,12 @@ export const SnippetSlice = createSlice({
       action: PayloadAction<{ projectId: string; snippet: Snippet }>
     ) => {
       const { projectId, snippet } = action.payload;
-      state.loadedSnippets[projectId] = [
-        ...(state.loadedSnippets[projectId] || []),
-        snippet,
-      ];
+      if (!state.loadedSnippets[projectId]) {
+        state.loadedSnippets[projectId] = [
+          ...(state.loadedSnippets[projectId] || []),
+          snippet,
+        ];
+      }
     },
     updateSnippet: (
       state,
