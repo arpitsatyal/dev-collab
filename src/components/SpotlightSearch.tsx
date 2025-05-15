@@ -87,39 +87,53 @@ const SpotlightSearch = () => {
   const currentProjectId = router.query.projectId as string | undefined;
 
   // Skip API call if matchedSnippets exists
-  const { matchedResults, loading: isSearchLoading } = useSearch(
-    matchedSnippets.length > 0 ? "" : query
-  );
+  const { matchedResults, loading: isSearchLoading } = useSearch(query);
 
   // Handle query changes
   const handleQueryChange = useCallback(
     (newQuery: string) => {
       setQuery(newQuery);
 
-      let matched: Snippet[] = [];
+      if (!newQuery) {
+        setMatchedSnippets([]);
+        return;
+      }
 
-      if (newQuery) {
-        // Prioritize current project if available
-        if (currentProjectId && loadedSnippets[currentProjectId]) {
-          matched = filterSnippetsByQuery(
-            loadedSnippets[currentProjectId],
+      // Search all projects in loadedSnippets
+      const allMatches = Object.keys(loadedSnippets).reduce(
+        (acc, projectId) => {
+          const snippets = filterSnippetsByQuery(
+            loadedSnippets[projectId],
             newQuery
           );
-        }
+          return [
+            ...acc,
+            ...snippets.map((snippet) => ({ ...snippet, projectId })),
+          ];
+        },
+        [] as Snippet[]
+      );
 
-        // If no matches or no current project, search all projects
-        if (!matched.length) {
-          matched = Object.keys(loadedSnippets).reduce((acc, projectId) => {
-            const snippets = filterSnippetsByQuery(
-              loadedSnippets[projectId],
-              newQuery
-            );
-            return [...acc, ...snippets];
-          }, [] as Snippet[]);
+      // Sort to prioritize current project
+      const sortedMatches = allMatches.sort((a, b) => {
+        if (currentProjectId) {
+          if (
+            a.projectId === currentProjectId &&
+            b.projectId !== currentProjectId
+          )
+            return -1;
+          if (
+            b.projectId === currentProjectId &&
+            a.projectId !== currentProjectId
+          )
+            return 1;
         }
-      }
+        return a.title.localeCompare(b.title);
+      });
+
+      setMatchedSnippets(sortedMatches);
     },
-    [loadedSnippets]
+    [loadedSnippets, currentProjectId]
   );
 
   const fetchProjectForSnippets = (projectId: string) => {
@@ -144,7 +158,6 @@ const SpotlightSearch = () => {
 
   // Process project data
   const projectItems = useMemo(() => {
-    if (!query) return [];
     const lowerQuery = query.toLowerCase().trim();
     return projects
       .filter((project) => project.title.toLowerCase().includes(lowerQuery))
@@ -159,20 +172,51 @@ const SpotlightSearch = () => {
 
   // Process snippet data
   const snippetItems = useMemo(() => {
-    const snippets =
-      matchedSnippets.length > 0
-        ? matchedSnippets
-        : matchedResults?.map((result) => result._source) || [];
+    // Combine local and API results, avoiding duplicates
+    const localSnippets = matchedSnippets;
+    const apiSnippets = (
+      matchedResults?.map((result) => result._source) || []
+    ).filter(
+      (apiSnippet) => !localSnippets.some((local) => local.id === apiSnippet.id)
+    );
 
-    if (!snippets.length) return [];
+    const allSnippets = [...localSnippets, ...apiSnippets];
 
-    return snippets.map((snippet) => {
-      if (matchedSnippets.length === 0) {
+    if (!allSnippets.length) return [];
+
+    // Sort to prioritize current project
+    allSnippets.sort((a, b) => {
+      if (currentProjectId) {
+        if (
+          a.projectId === currentProjectId &&
+          b.projectId !== currentProjectId
+        )
+          return -1;
+        if (
+          b.projectId === currentProjectId &&
+          a.projectId !== currentProjectId
+        )
+          return 1;
+      }
+      return a.title.localeCompare(b.title);
+    });
+
+    return allSnippets.map((snippet) => {
+      // Dispatch for API results only
+      if (apiSnippets.includes(snippet)) {
         dispatch(addSnippet({ projectId: snippet.projectId, snippet }));
       }
-
-      fetchProjectForSnippets(snippet.projectId);
-
+      // Fetch project if not in loadedProjects
+      if (!loadedProjects[snippet.projectId]) {
+        triggerGetProject(snippet.projectId).then(({ data }) => {
+          if (data) {
+            setLoadedProjects((prev) => ({
+              ...prev,
+              [snippet.projectId]: data,
+            }));
+          }
+        });
+      }
       return {
         projectId: snippet.projectId,
         snippetId: snippet.id,
@@ -181,10 +225,21 @@ const SpotlightSearch = () => {
         icon: <FileIcon snippet={snippet} />,
         onClick: () =>
           router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
-        projectTitle: loadedProjects[snippet.projectId]?.title,
+        projectTitle:
+          projects.find((p) => p.id === snippet.projectId)?.title ||
+          loadedProjects[snippet.projectId]?.title,
       };
     });
-  }, [matchedSnippets, matchedResults, dispatch, router]);
+  }, [
+    matchedSnippets,
+    matchedResults,
+    dispatch,
+    router,
+    loadedProjects,
+    projects,
+    triggerGetProject,
+    currentProjectId,
+  ]);
 
   // Combine items for rendering
   const allItems = [...projectItems, ...snippetItems];
@@ -218,17 +273,15 @@ const SpotlightSearch = () => {
             <Loading loaderHeight="10vh" />
           ) : (
             <>
-              {projectItems.length > 0 && (
-                <Spotlight.ActionsGroup label="Projects">
-                  {projectItems.map((item) => (
-                    <ActionItem
-                      key={item.projectId}
-                      item={item}
-                      onClick={item.onClick}
-                    />
-                  ))}
-                </Spotlight.ActionsGroup>
-              )}
+              <Spotlight.ActionsGroup label="Projects">
+                {projectItems.map((item) => (
+                  <ActionItem
+                    key={item.projectId}
+                    item={item}
+                    onClick={item.onClick}
+                  />
+                ))}
+              </Spotlight.ActionsGroup>
               {snippetItems.length > 0 && query.length > 0 && (
                 <Spotlight.ActionsGroup label="Snippets">
                   {snippetItems.map((item) => (
