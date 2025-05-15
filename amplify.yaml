@@ -10,7 +10,7 @@ applications:
             - npx prisma db pull
         build:
           commands:
-            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL -e API_GATEWAY_URL >> .env.production
+            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL >> .env.production
             - npm run build # Build Next.js app
             - npm ci --production # Reinstall only production dependencies
       artifacts:

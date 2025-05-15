@@ -18,6 +18,7 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
 const { Client } = require("@elastic/elasticsearch");
+const cors = require("cors");
 
 const esClient = new Client({
   node: process.env.ELASTICSEARCH_URL,
@@ -28,15 +29,22 @@ const esClient = new Client({
 
 // declare a new express app
 const app = express();
-app.use(bodyParser.json());
-app.use(awsServerlessExpressMiddleware.eventContext());
 
-// Enable CORS for all methods
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
+app.use(cors());
+
+// ✅ CORS middleware for all requests
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // or your domain
   res.header("Access-Control-Allow-Headers", "*");
+  res.header("Access-Control-Allow-Methods", "OPTIONS,POST,GET");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200); // ✅ Important: respond to preflight
+  }
   next();
 });
+
+app.use(bodyParser.json());
+app.use(awsServerlessExpressMiddleware.eventContext());
 
 /**********************
  * Example get method *

@@ -20,7 +20,7 @@
     }
   },
   "Resources": {
-    "LambdaLayerVersion46b47de9": {
+    "LambdaLayerVersion335a55e8": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
         "CompatibleRuntimes": [
@@ -30,9 +30,9 @@
           "S3Bucket": {
             "Ref": "deploymentBucketName"
           },
-          "S3Key": "amplify-builds/devcollabsearch-LambdaLayerVersion46b47de9-build.zip"
+          "S3Key": "amplify-builds/devcollabsearch-LambdaLayerVersion335a55e8-build.zip"
         },
-        "Description": "Updated layer version 2025-05-14T14:07:25.306Z",
+        "Description": "Updated layer version 2025-05-14T15:44:17.380Z",
         "LayerName": {
           "Fn::Sub": [
             "devcollabsearch-${env}",
@@ -47,11 +47,11 @@
       "DeletionPolicy": "Delete",
       "UpdateReplacePolicy": "Retain"
     },
-    "LambdaLayerPermissionPrivate46b47de9": {
+    "LambdaLayerPermissionPrivate335a55e8": {
       "Type": "AWS::Lambda::LayerVersionPermission",
       "Properties": {
         "Action": "lambda:GetLayerVersion",
-        "LayerVersionArn": "arn:aws:lambda:us-east-2:360308275964:layer:devcollabsearch-dev:12",
+        "LayerVersionArn": "arn:aws:lambda:us-east-2:360308275964:layer:devcollabsearch-dev:14",
         "Principal": {
           "Ref": "AWS::AccountId"
         }
@@ -61,7 +61,7 @@
   "Outputs": {
     "Arn": {
       "Value": {
-        "Ref": "LambdaLayerVersion46b47de9"
+        "Ref": "LambdaLayerVersion335a55e8"
       }
     }
   }

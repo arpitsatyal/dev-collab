@@ -52,11 +52,6 @@ const Create = () => {
             snippet: result,
           })
         );
-        try {
-          await axios.post(`${process.env.API_GATEWAY_URL}/sync`, result);
-        } catch (syncError) {
-          console.warn("Sync service failed:", syncError);
-        }
       }
       //todo: handle error
       notifications.show({
@@ -65,6 +60,22 @@ const Create = () => {
       });
       if (result?.id) {
         router.push(`/projects/${projectId}/snippets/${result.id}`);
+      }
+
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
+          {
+            snippet: result,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (syncError) {
+        console.warn("Sync service failed:", syncError);
       }
     } catch (error) {
       console.error(error);

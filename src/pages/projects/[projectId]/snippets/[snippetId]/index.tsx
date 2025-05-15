@@ -94,18 +94,28 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
       );
       setLanguage(snippet.language);
 
-      try {
-        await axios.post(`${process.env.API_GATEWAY_URL}/sync`, data);
-      } catch (syncError) {
-        console.warn("Sync service failed:", syncError);
-      }
-
       window.scrollTo({ top: 0, behavior: "smooth" });
       // todo: handle error
       notifications.show({
         title: "done!",
         message: "Snippet updated successfully! 🌟",
       });
+
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
+          {
+            snippet: data,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (syncError) {
+        console.warn("Sync service failed:", syncError);
+      }
     } catch (error) {
       console.error(error);
       notifications.show({
