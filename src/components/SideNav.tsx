@@ -30,7 +30,8 @@ interface NavItemProps {
 
 const SideNav = () => {
   const router = useRouter();
-  const [openItems, setOpenItems] = useState<Set<string>>(new Set());
+  const [openItem, setOpenItem] = useState<string | null>(null);
+
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
@@ -39,7 +40,6 @@ const SideNav = () => {
 
   const { data: projects = [], isLoading } = useGetProjectsQuery();
   const pathParts = useMemo(() => router.asPath.split("/"), [router.asPath]);
-
   const projectId = pathParts[2];
 
   const dispatch = useAppDispatch();
@@ -67,21 +67,23 @@ const SideNav = () => {
   );
 
   useEffect(() => {
-    if (pathParts[1] === "projects" && pathParts[2]) {
-      setOpenItems((prev) => {
-        const newSet = new Set(prev);
-        if (!newSet.has(projectId)) {
-          newSet.add(projectId);
-          return newSet;
-        }
-        return prev;
-      });
+    const currentProjectId = router.asPath.split("/")[2];
+    if (!currentProjectId) return;
 
-      setProjectsOpen(true);
-      scrollItemIntoView(projectId);
-      fetchSnippets(projectId);
-    }
-  }, [router.asPath, projectId, fetchSnippets, pathParts]);
+    setOpenItem(currentProjectId);
+    setProjectsOpen(true);
+
+    const timeout = setTimeout(() => {
+      scrollItemIntoView(currentProjectId);
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [router.asPath]);
+
+  useEffect(() => {
+    if (!openItem || loadedSnippets[openItem]) return;
+    fetchSnippets(openItem);
+  }, [openItem, loadedSnippets, fetchSnippets]);
 
   const handleLogout = () => {
     signOut();
@@ -156,23 +158,14 @@ const SideNav = () => {
     if (path) {
       if (label === "Projects") {
         setProjectsOpen((prev) => (prev === null ? true : !prev));
-        setOpenItems(new Set());
+        setOpenItem("");
       }
       router.push(path);
     }
   };
 
-  const toggleOpenItem = async (projectId: string) => {
-    setOpenItems((prev) => {
-      const newSet = new Set(prev);
-      if (!newSet.has(projectId)) {
-        newSet.add(projectId);
-        return newSet;
-      }
-      return prev;
-    });
-
-    await fetchSnippets(projectId);
+  const toggleOpenItem = (projectId: string) => {
+    setOpenItem((prev) => (prev === projectId ? null : projectId));
   };
 
   const isActive = (path?: string) => {
@@ -190,7 +183,7 @@ const SideNav = () => {
           enhancedNavItems
             .find((i) => i.label === "Projects")
             ?.children?.some(
-              (child) => openItems.has(child.id) || isActive(child.path)
+              (child) => openItem === child.id || isActive(child.path)
             ))
     );
   };
@@ -242,7 +235,7 @@ const SideNav = () => {
                         <NavLink
                           key={child.label}
                           active={isActive(child.path)}
-                          opened={openItems.has(child.id)}
+                          opened={openItem === child.id}
                           label={child.label}
                           ref={(el: HTMLAnchorElement | null) => {
                             itemRefs.current[child.id] = el;
@@ -261,7 +254,7 @@ const SideNav = () => {
                               <SnippetList
                                 snippets={loadedSnippets[child.id] ?? []}
                                 isVisible={
-                                  openItems.has(child.id) &&
+                                  openItem === child.id &&
                                   !!loadedSnippets[child.id]
                                 }
                               />
