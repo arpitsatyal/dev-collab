@@ -238,7 +238,10 @@ const SpotlightSearch = () => {
                   />
                 ))}
               </Spotlight.ActionsGroup>
-              {snippetItems.length > 0 && query.length > 0 && (
+              {(snippetItems.length > 0 &&
+                query.length > 0 &&
+                !isSearchLoading) ||
+              (isSearchLoading && matchedSnippets.length > 0) ? (
                 <Spotlight.ActionsGroup label="Snippets">
                   {snippetItems.map((item) => (
                     <ActionItem
@@ -249,8 +252,10 @@ const SpotlightSearch = () => {
                     />
                   ))}
                 </Spotlight.ActionsGroup>
-              )}
+              ) : null}
+
               {isSearchLoading && <Loading loaderHeight="10vh" />}
+
               {query.length > 0 && allItems.length > 0 && (
                 <Text style={{ textAlign: "center", paddingTop: 1 }}>
                   {allItems.length}{" "}

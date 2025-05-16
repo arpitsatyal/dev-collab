@@ -164,11 +164,12 @@ const SideNav = () => {
 
   const toggleOpenItem = async (projectId: string) => {
     setOpenItems((prev) => {
-      const newSet = new Set<string>();
-      if (!prev.has(projectId)) {
+      const newSet = new Set(prev);
+      if (!newSet.has(projectId)) {
         newSet.add(projectId);
+        return newSet;
       }
-      return newSet;
+      return prev;
     });
 
     await fetchSnippets(projectId);
