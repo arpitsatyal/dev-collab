@@ -74,7 +74,7 @@ const SideNav = () => {
           newSet.add(projectId);
           return newSet;
         }
-        return prev; 
+        return prev;
       });
 
       setProjectsOpen(true);
@@ -117,7 +117,7 @@ const SideNav = () => {
         handler: handleLogout,
       },
     ],
-    []
+    [handleLogout]
   );
 
   const enhancedNavItems = useMemo(() => {

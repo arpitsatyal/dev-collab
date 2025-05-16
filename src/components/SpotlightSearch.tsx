@@ -13,8 +13,7 @@ import {
 import { useSearch } from "../hooks/useSearch";
 import Loading from "./Loader";
 import FileIcon from "./FileIcon";
-import { addSnippet } from "../store/slices/snippetSlice";
-import { Project, Snippet } from "@prisma/client";
+import { Snippet } from "@prisma/client";
 
 interface DataItem {
   projectId: string;
@@ -81,9 +80,7 @@ const SpotlightSearch = () => {
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
-  const [loadedProjects, setLoadedProjects] = useState<Record<string, Project>>(
-    {}
-  );
+
   const currentProjectId = router.query.projectId as string | undefined;
 
   // Skip API call if matchedSnippets exists
@@ -136,26 +133,6 @@ const SpotlightSearch = () => {
     [loadedSnippets, currentProjectId]
   );
 
-  const fetchProjectForSnippets = (projectId: string) => {
-    const localProject = projects.find((p) => p.id === projectId);
-
-    if (localProject) {
-      setLoadedProjects((prev) => ({
-        ...prev,
-        [projectId]: localProject,
-      }));
-    } else {
-      triggerGetProject(projectId).then(({ data }) => {
-        if (data) {
-          setLoadedProjects((prev) => ({
-            ...prev,
-            [projectId]: data,
-          }));
-        }
-      });
-    }
-  };
-
   // Process project data
   const projectItems = useMemo(() => {
     const lowerQuery = query.toLowerCase().trim();
@@ -202,12 +179,6 @@ const SpotlightSearch = () => {
     });
 
     return allSnippets.map((snippet) => {
-      // Dispatch for API results only
-      if (apiSnippets.includes(snippet)) {
-        dispatch(addSnippet({ projectId: snippet.projectId, snippet }));
-      }
-      fetchProjectForSnippets(snippet.projectId);
-
       return {
         projectId: snippet.projectId,
         snippetId: snippet.id,
@@ -216,9 +187,7 @@ const SpotlightSearch = () => {
         icon: <FileIcon snippet={snippet} />,
         onClick: () =>
           router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
-        projectTitle:
-          projects.find((p) => p.id === snippet.projectId)?.title ||
-          loadedProjects[snippet.projectId]?.title,
+        projectTitle: projects.find((p) => p.id === snippet.projectId)?.title,
       };
     });
   }, [
@@ -226,7 +195,6 @@ const SpotlightSearch = () => {
     matchedResults,
     dispatch,
     router,
-    loadedProjects,
     projects,
     triggerGetProject,
     currentProjectId,
@@ -260,7 +228,7 @@ const SpotlightSearch = () => {
           leftSection={<IconSearch stroke={1.5} />}
         />
         <Spotlight.ActionsList>
-          {isProjectsLoading || isSearchLoading ? (
+          {isProjectsLoading ? (
             <Loading loaderHeight="10vh" />
           ) : (
             <>
@@ -285,8 +253,9 @@ const SpotlightSearch = () => {
                   ))}
                 </Spotlight.ActionsGroup>
               )}
+              {isSearchLoading && <Loading loaderHeight="10vh" />}
               {query.length > 0 && allItems.length > 0 && (
-                <Text style={{ textAlign: "center" }}>
+                <Text style={{ textAlign: "center", paddingTop: 1 }}>
                   {allItems.length}{" "}
                   {allItems.length === 1 ? "Result" : "Results"} Found
                 </Text>
