@@ -6,10 +6,7 @@ import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../utils/truncateByWords";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import {
-  useGetProjectsQuery,
-  useLazyGetProjectQuery,
-} from "../store/api/projectApi";
+import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useSearch } from "../hooks/useSearch";
 import Loading from "./Loader";
 import FileIcon from "./FileIcon";
@@ -54,7 +51,7 @@ const ActionItem = ({
           <Group gap="xs">
             <IconFolder size={16} />
             <Text size="xs" opacity={0.6}>
-              {projectTitle ?? "Loading..."}
+              {projectTitle ?? ""}
             </Text>
           </Group>
         ) : (
@@ -74,7 +71,6 @@ const SpotlightSearch = () => {
   const dispatch = useAppDispatch();
   const { data: projects = [], isLoading: isProjectsLoading } =
     useGetProjectsQuery();
-  const [triggerGetProject] = useLazyGetProjectQuery();
   const [query, setQuery] = useState("");
   const [matchedSnippets, setMatchedSnippets] = useState<Snippet[]>([]);
   const loadedSnippets = useAppSelector(
@@ -83,7 +79,6 @@ const SpotlightSearch = () => {
 
   const currentProjectId = router.query.projectId as string | undefined;
 
-  // Skip API call if matchedSnippets exists
   const { matchedResults, loading: isSearchLoading } = useSearch(query);
 
   // Handle query changes
@@ -152,7 +147,10 @@ const SpotlightSearch = () => {
     // Combine local and API results, avoiding duplicates
     const localSnippets = matchedSnippets;
     const apiSnippets = (
-      matchedResults?.map((result) => result._source) || []
+      matchedResults?.map((result) => ({
+        id: result._id,
+        ...result._source,
+      })) || []
     ).filter(
       (apiSnippet) => !localSnippets.some((local) => local.id === apiSnippet.id)
     );
@@ -196,7 +194,6 @@ const SpotlightSearch = () => {
     dispatch,
     router,
     projects,
-    triggerGetProject,
     currentProjectId,
   ]);
 
