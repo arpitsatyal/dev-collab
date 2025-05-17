@@ -262,9 +262,11 @@ const SpotlightSearch = () => {
                   {allItems.length === 1 ? "Result" : "Results"} Found
                 </Text>
               )}
-              {query.length > 0 && allItems.length === 0 && (
-                <Spotlight.Empty>Nothing found...</Spotlight.Empty>
-              )}
+              {query.length > 0 &&
+                allItems.length === 0 &&
+                !isSearchLoading && (
+                  <Spotlight.Empty>Nothing found...</Spotlight.Empty>
+                )}
             </>
           )}
         </Spotlight.ActionsList>
