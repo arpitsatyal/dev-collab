@@ -256,17 +256,15 @@ const SpotlightSearch = () => {
 
               {isSearchLoading && <Loading loaderHeight="10vh" />}
 
-              {query.length > 0 && allItems.length > 0 && (
+              {query.length > 0 && allItems.length > 0 && !isSearchLoading && (
                 <Text style={{ textAlign: "center", paddingTop: 1 }}>
                   {allItems.length}{" "}
                   {allItems.length === 1 ? "Result" : "Results"} Found
                 </Text>
               )}
-              {query.length > 0 &&
-                allItems.length === 0 &&
-                !isSearchLoading && (
-                  <Spotlight.Empty>Nothing found...</Spotlight.Empty>
-                )}
+              {query.length > 0 && allItems.length === 0 && (
+                <Spotlight.Empty>Nothing found...</Spotlight.Empty>
+              )}
             </>
           )}
         </Spotlight.ActionsList>

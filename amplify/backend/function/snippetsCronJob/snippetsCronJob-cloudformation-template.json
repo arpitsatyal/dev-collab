@@ -16,13 +16,13 @@
     "s3Key": {
       "Type": "String"
     },
-    "elasticsearchUrl": {
+    "neonDbUrl": {
       "Type": "String"
     },
     "esApiKey": {
       "Type": "String"
     },
-    "neonDbUrl": {
+    "elasticsearchUrl": {
       "Type": "String"
     }
   },
@@ -79,14 +79,14 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "ELASTICSEARCH_URL": {
-              "Ref": "elasticsearchUrl"
+            "NEON_DB_URL": {
+              "Ref": "neonDbUrl"
             },
             "ES_API_KEY": {
               "Ref": "esApiKey"
             },
-            "NEON_DB_URL": {
-              "Ref": "neonDbUrl"
+            "ELASTICSEARCH_URL": {
+              "Ref": "elasticsearchUrl"
             }
           }
         },
