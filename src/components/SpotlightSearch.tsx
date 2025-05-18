@@ -1,57 +1,74 @@
-import { useRouter } from "next/router";
+import { NextRouter, useRouter } from "next/router";
 import { useState, useMemo, useCallback, JSX } from "react";
-
 import { IconSearch, IconFolder } from "@tabler/icons-react";
 import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../utils/truncateByWords";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { useAppSelector } from "../store/hooks";
 import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useSearch } from "../hooks/useSearch";
 import Loading from "./Loader";
 import FileIcon from "./FileIcon";
-import { Snippet } from "@prisma/client";
+import { Project, Snippet } from "@prisma/client";
 
 interface DataItem {
-  projectId: string;
-  snippetId?: string;
+  id: string;
   title: string;
-  description: string;
+  description?: string;
   icon: JSX.Element;
+  onClick: () => void;
+  groupLabel: string;
+  meta?: Record<string, any>;
 }
 
-// Utility function to filter snippets
-const filterSnippetsByQuery = (
-  snippets: Snippet[],
-  query: string
-): Snippet[] => {
+interface DataSource<T = any> {
+  name: string;
+  groupLabel: string;
+  data: T[];
+  filterData: (data: T[], query: string, context: any) => T[];
+  toDataItem: (item: T, context: any) => DataItem;
+}
+
+const filterByQuery = <T extends { title: string }>(
+  items: T[],
+  query: string,
+  showAllOnEmpty: boolean = false,
+  field: keyof T = "title"
+): T[] => {
+  if (!query && showAllOnEmpty) return items;
   if (!query) return [];
   const lowerQuery = query.toLowerCase().trim();
-  return snippets.filter((snippet) =>
-    snippet.title.toLowerCase().includes(lowerQuery)
+  return items.filter((item) =>
+    String(item[field]).toLowerCase().includes(lowerQuery)
   );
 };
 
-// Component to render a single action item
-const ActionItem = ({
-  item,
-  onClick,
-  projectTitle,
-}: {
-  item: DataItem;
-  onClick: () => void;
-  projectTitle?: string;
-}) => (
+const sortByCurrentProject = <T extends { title: string; projectId?: string }>(
+  items: T[],
+  currentProjectId?: string
+): T[] => {
+  if (!currentProjectId)
+    return items.sort((a, b) => a.title.localeCompare(b.title));
+  return items.sort((a, b) => {
+    if (a.projectId === currentProjectId && b.projectId !== currentProjectId)
+      return -1;
+    if (b.projectId === currentProjectId && a.projectId !== currentProjectId)
+      return 1;
+    return a.title.localeCompare(b.title);
+  });
+};
+
+const ActionItem = ({ item }: { item: DataItem }) => (
   <Spotlight.Action>
     <Group wrap="nowrap" w="100%">
       {item.icon}
-      <Box style={{ flex: 1 }} p={3} onClick={onClick}>
+      <Box style={{ flex: 1 }} p={3} onClick={item.onClick}>
         <Text>{item.title}</Text>
-        {item.snippetId ? (
+        {item.meta?.projectTitle ? (
           <Group gap="xs">
             <IconFolder size={16} />
             <Text size="xs" opacity={0.6}>
-              {projectTitle ?? ""}
+              {item.meta.projectTitle}
             </Text>
           </Group>
         ) : (
@@ -66,139 +83,100 @@ const ActionItem = ({
   </Spotlight.Action>
 );
 
-const SpotlightSearch = () => {
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const { data: projects = [], isLoading: isProjectsLoading } =
-    useGetProjectsQuery();
-  const [query, setQuery] = useState("");
-  const [matchedSnippets, setMatchedSnippets] = useState<Snippet[]>([]);
-  const loadedSnippets = useAppSelector(
-    (state) => state.snippet.loadedSnippets
-  );
+const projectDataSource: Omit<DataSource<Project>, "data"> = {
+  name: "projects",
+  groupLabel: "Projects",
+  filterData: (projects, query) => filterByQuery(projects, query, true),
+  toDataItem: (project, { router }: { router: NextRouter }) => ({
+    id: project.id,
+    title: project.title,
+    description: project.description ?? "-",
+    icon: <IconFolder size={24} stroke={1.5} />,
+    onClick: () => router.push(`/projects/${project.id}`),
+    groupLabel: "Projects",
+  }),
+};
 
-  const currentProjectId = router.query.projectId as string | undefined;
-
-  const { matchedResults, loading: isSearchLoading } = useSearch(query);
-
-  // Handle query changes
-  const handleQueryChange = useCallback(
-    (newQuery: string) => {
-      setQuery(newQuery);
-
-      if (!newQuery) {
-        setMatchedSnippets([]);
-        return;
-      }
-
-      // Search all projects in loadedSnippets
-      const allMatches = Object.keys(loadedSnippets).reduce(
-        (acc, projectId) => {
-          const snippets = filterSnippetsByQuery(
-            loadedSnippets[projectId],
-            newQuery
-          );
-          return [
-            ...acc,
-            ...snippets.map((snippet) => ({ ...snippet, projectId })),
-          ];
-        },
-        [] as Snippet[]
-      );
-
-      // Sort to prioritize current project
-      const sortedMatches = allMatches.sort((a, b) => {
-        if (currentProjectId) {
-          if (
-            a.projectId === currentProjectId &&
-            b.projectId !== currentProjectId
-          )
-            return -1;
-          if (
-            b.projectId === currentProjectId &&
-            a.projectId !== currentProjectId
-          )
-            return 1;
-        }
-        return a.title.localeCompare(b.title);
-      });
-
-      setMatchedSnippets(sortedMatches);
-    },
-    [loadedSnippets, currentProjectId]
-  );
-
-  // Process project data
-  const projectItems = useMemo(() => {
-    const lowerQuery = query.toLowerCase().trim();
-    return projects
-      .filter((project) => project.title.toLowerCase().includes(lowerQuery))
-      .map((project) => ({
-        projectId: project.id,
-        title: project.title,
-        description: project.description ?? "-",
-        icon: <IconFolder size={24} stroke={1.5} />,
-        onClick: () => router.push(`/projects/${project.id}`),
-      }));
-  }, [projects, query, router]);
-
-  // Process snippet data
-  const snippetItems = useMemo(() => {
-    // Combine local and API results, avoiding duplicates
-    const localSnippets = matchedSnippets;
+const snippetDataSource: Omit<DataSource<Snippet>, "data"> = {
+  name: "snippets",
+  groupLabel: "Snippets",
+  filterData: (snippets, query, { matchedResults, currentProjectId }) => {
+    const localSnippets = filterByQuery(snippets, query);
     const apiSnippets = (
-      matchedResults?.map((result) => ({
+      matchedResults?.map((result: any) => ({
         id: result._id,
         ...result._source,
       })) || []
     ).filter(
-      (apiSnippet) => !localSnippets.some((local) => local.id === apiSnippet.id)
+      (apiSnippet: Snippet) =>
+        !localSnippets.some((local) => local.id === apiSnippet.id)
     );
-
     const allSnippets = [...localSnippets, ...apiSnippets];
+    return sortByCurrentProject(allSnippets, currentProjectId);
+  },
+  toDataItem: (
+    snippet,
+    { router, projects }: { router: NextRouter; projects: Project[] }
+  ) => ({
+    id: snippet.id,
+    title: `${snippet.title}.${snippet.extension ?? ""}`,
+    description: snippet.language,
+    icon: <FileIcon snippet={snippet} />,
+    onClick: () =>
+      router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
+    groupLabel: "Snippets",
+    meta: {
+      projectTitle: projects.find((p) => p.id === snippet.projectId)?.title,
+    },
+  }),
+};
 
-    if (!allSnippets.length) return [];
+const SpotlightSearch = () => {
+  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const { data: projects = [], isLoading: isProjectsLoading } =
+    useGetProjectsQuery();
+  const { matchedResults, loading: isSearchLoading } = useSearch(query);
+  const currentProjectId = router.query.projectId as string | undefined;
 
-    // Sort to prioritize current project
-    allSnippets.sort((a, b) => {
-      if (currentProjectId) {
-        if (
-          a.projectId === currentProjectId &&
-          b.projectId !== currentProjectId
-        )
-          return -1;
-        if (
-          b.projectId === currentProjectId &&
-          a.projectId !== currentProjectId
-        )
-          return 1;
-      }
-      return a.title.localeCompare(b.title);
+  const snippets = Object.values(
+    useAppSelector((state) => state.snippet.loadedSnippets)
+  ).flat();
+
+  const dataSources: DataSource[] = [
+    {
+      ...projectDataSource,
+      data: projects,
+    },
+    { ...snippetDataSource, data: snippets },
+  ];
+
+  const handleQueryChange = useCallback((newQuery: string) => {
+    setQuery(newQuery);
+  }, []);
+
+  const context = useMemo(
+    () => ({
+      router,
+      projects,
+      matchedResults,
+      currentProjectId,
+      isSearchLoading,
+    }),
+    [router, projects, matchedResults, currentProjectId, isSearchLoading]
+  );
+
+  const allItems = useMemo(() => {
+    const items: DataItem[] = [];
+    dataSources.forEach((source) => {
+      const filteredData = source.filterData(source.data, query, context);
+      const sourceItems = filteredData.map((item) =>
+        source.toDataItem(item, context)
+      );
+      items.push(...sourceItems);
     });
-
-    return allSnippets.map((snippet) => {
-      return {
-        projectId: snippet.projectId,
-        snippetId: snippet.id,
-        title: `${snippet.title}.${snippet.extension ?? ""}`,
-        description: snippet.language,
-        icon: <FileIcon snippet={snippet} />,
-        onClick: () =>
-          router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
-        projectTitle: projects.find((p) => p.id === snippet.projectId)?.title,
-      };
-    });
-  }, [
-    matchedSnippets,
-    matchedResults,
-    dispatch,
-    router,
-    projects,
-    currentProjectId,
-  ]);
-
-  // Combine items for rendering
-  const allItems = [...projectItems, ...snippetItems];
+    return items;
+  }, [query, context]);
 
   return (
     <>
@@ -229,30 +207,26 @@ const SpotlightSearch = () => {
             <Loading loaderHeight="10vh" />
           ) : (
             <>
-              <Spotlight.ActionsGroup label="Projects">
-                {projectItems.map((item) => (
-                  <ActionItem
-                    key={item.projectId}
-                    item={item}
-                    onClick={item.onClick}
-                  />
-                ))}
-              </Spotlight.ActionsGroup>
-              {(snippetItems.length > 0 &&
-                query.length > 0 &&
-                !isSearchLoading) ||
-              (isSearchLoading && matchedSnippets.length > 0) ? (
-                <Spotlight.ActionsGroup label="Snippets">
-                  {snippetItems.map((item) => (
-                    <ActionItem
-                      key={item.snippetId}
-                      item={item}
-                      onClick={item.onClick}
-                      projectTitle={item.projectTitle}
-                    />
-                  ))}
-                </Spotlight.ActionsGroup>
-              ) : null}
+              {dataSources.map((source) => {
+                const filteredData = source.filterData(
+                  source.data,
+                  query,
+                  context
+                );
+                const items = filteredData.map((item) =>
+                  source.toDataItem(item, context)
+                );
+                return (
+                  <Spotlight.ActionsGroup
+                    key={source.name}
+                    label={source.groupLabel}
+                  >
+                    {items.map((item) => (
+                      <ActionItem key={item.id} item={item} />
+                    ))}
+                  </Spotlight.ActionsGroup>
+                );
+              })}
 
               {isSearchLoading && <Loading loaderHeight="10vh" />}
 
