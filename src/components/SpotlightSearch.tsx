@@ -59,7 +59,7 @@ const sortByCurrentProject = <T extends { title: string; projectId?: string }>(
 };
 
 const ActionItem = ({ item }: { item: DataItem }) => (
-  <Spotlight.Action>
+  <Spotlight.Action highlightQuery>
     <Group wrap="nowrap" w="100%">
       {item.icon}
       <Box style={{ flex: 1 }} p={3} onClick={item.onClick}>
@@ -83,7 +83,7 @@ const ActionItem = ({ item }: { item: DataItem }) => (
   </Spotlight.Action>
 );
 
-const projectDataSource: Omit<DataSource<Project>, "data"> = {
+const projectSource: Omit<DataSource<Project>, "data"> = {
   name: "projects",
   groupLabel: "Projects",
   filterData: (projects, query) => filterByQuery(projects, query, true),
@@ -97,20 +97,30 @@ const projectDataSource: Omit<DataSource<Project>, "data"> = {
   }),
 };
 
-const snippetDataSource: Omit<DataSource<Snippet>, "data"> = {
+const snippetSource: Omit<DataSource<Snippet>, "data"> = {
   name: "snippets",
   groupLabel: "Snippets",
-  filterData: (snippets, query, { matchedResults, currentProjectId }) => {
+  filterData: (
+    snippets,
+    query,
+    { matchedResults, currentProjectId, isSearchLoading }
+  ) => {
     const localSnippets = filterByQuery(snippets, query);
-    const apiSnippets = (
-      matchedResults?.map((result: any) => ({
-        id: result._id,
-        ...result._source,
-      })) || []
-    ).filter(
-      (apiSnippet: Snippet) =>
-        !localSnippets.some((local) => local.id === apiSnippet.id)
-    );
+    // Only include API snippets if not loading and results exist
+    const apiSnippets =
+      !isSearchLoading && matchedResults?.length > 0
+        ? matchedResults
+            .map((result: any) => ({
+              id: result._id,
+              ...result._source,
+            }))
+            .filter(
+              (apiSnippet: Snippet) =>
+                !localSnippets.some(
+                  (local: Snippet) => local.id === apiSnippet.id
+                )
+            )
+        : [];
     const allSnippets = [...localSnippets, ...apiSnippets];
     return sortByCurrentProject(allSnippets, currentProjectId);
   },
@@ -136,7 +146,11 @@ const SpotlightSearch = () => {
   const [query, setQuery] = useState("");
   const { data: projects = [], isLoading: isProjectsLoading } =
     useGetProjectsQuery();
-  const { matchedResults, loading: isSearchLoading } = useSearch(query);
+  const {
+    matchedResults,
+    loading: isSearchLoading,
+    isTyping,
+  } = useSearch(query);
   const currentProjectId = router.query.projectId as string | undefined;
 
   const snippets = Object.values(
@@ -145,10 +159,10 @@ const SpotlightSearch = () => {
 
   const dataSources: DataSource[] = [
     {
-      ...projectDataSource,
+      ...projectSource,
       data: projects,
     },
-    { ...snippetDataSource, data: snippets },
+    { ...snippetSource, data: snippets },
   ];
 
   const handleQueryChange = useCallback((newQuery: string) => {
@@ -196,6 +210,7 @@ const SpotlightSearch = () => {
         query={query}
         onQueryChange={handleQueryChange}
         scrollable
+        fullScreen
         shortcut={["mod + K", "mod + P", "/"]}
       >
         <Spotlight.Search
@@ -203,43 +218,38 @@ const SpotlightSearch = () => {
           leftSection={<IconSearch stroke={1.5} />}
         />
         <Spotlight.ActionsList>
-          {isProjectsLoading ? (
-            <Loading loaderHeight="10vh" />
-          ) : (
-            <>
-              {dataSources.map((source) => {
-                const filteredData = source.filterData(
-                  source.data,
-                  query,
-                  context
-                );
-                const items = filteredData.map((item) =>
-                  source.toDataItem(item, context)
-                );
-                return (
-                  <Spotlight.ActionsGroup
-                    key={source.name}
-                    label={source.groupLabel}
-                  >
-                    {items.map((item) => (
-                      <ActionItem key={item.id} item={item} />
-                    ))}
-                  </Spotlight.ActionsGroup>
-                );
-              })}
+          {dataSources.map((source) => {
+            const filteredData = source.filterData(source.data, query, context);
+            const items = filteredData.map((item) =>
+              source.toDataItem(item, context)
+            );
+            return (
+              <Spotlight.ActionsGroup
+                key={source.name}
+                label={source.groupLabel}
+              >
+                {items.map((item) => (
+                  <ActionItem key={item.id} item={item} />
+                ))}
+              </Spotlight.ActionsGroup>
+            );
+          })}
 
-              {isSearchLoading && <Loading loaderHeight="10vh" />}
+          {(isProjectsLoading || isSearchLoading) && (
+            <Loading loaderHeight="5vh" />
+          )}
 
-              {query.length > 0 && allItems.length > 0 && !isSearchLoading && (
-                <Text style={{ textAlign: "center", paddingTop: 1 }}>
-                  {allItems.length}{" "}
-                  {allItems.length === 1 ? "Result" : "Results"} Found
-                </Text>
-              )}
-              {query.length > 0 && allItems.length === 0 && (
-                <Spotlight.Empty>Nothing found...</Spotlight.Empty>
-              )}
-            </>
+          {query.length > 0 && allItems.length > 0 && (
+            <Text style={{ textAlign: "center", paddingTop: 1 }}>
+              {allItems.length} {allItems.length === 1 ? "Result" : "Results"}{" "}
+              Found
+            </Text>
+          )}
+
+          {query.length > 0 && allItems.length === 0 && !isSearchLoading && (
+            <Spotlight.Empty>
+              {isTyping ? "Searching..." : "Nothing found..."}
+            </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>
       </Spotlight.Root>

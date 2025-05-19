@@ -2,29 +2,40 @@ import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
 
+const searchCache = new Map<string, any[]>();
+
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
-  const [snippets, setSnippets] = useState<any[]>([]);
+  const [matched, setMatched] = useState<any[]>([]);
+  const [isTyping, setIsTyping] = useState(false);
 
   const debouncedFetch = useMemo(() => {
     let controller: AbortController | null = null;
 
     const fetchData = async (query: string) => {
+      const trimmedQuery = query.trim();
+      if (searchCache.has(trimmedQuery)) {
+        setMatched(searchCache.get(trimmedQuery)!);
+        setIsTyping(false);
+        return;
+      }
+
       if (controller) {
-        controller.abort(); // Abort previous request
+        controller.abort();
       }
 
       controller = new AbortController();
-      setLoading(true);
 
       try {
-        const encodedQuery = encodeURIComponent(query);
+        setLoading(true);
+        const encodedQuery = encodeURIComponent(trimmedQuery);
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/search?query=${encodedQuery}`,
           {},
           { signal: controller.signal }
         );
-        setSnippets(data);
+        setMatched(data);
+        searchCache.set(trimmedQuery, data);
       } catch (err: any) {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
@@ -33,12 +44,12 @@ export const useSearch = (term: string) => {
         }
       } finally {
         setLoading(false);
+        setIsTyping(false);
       }
     };
 
     const debounced = debounce(fetchData, 500);
 
-    // Attach cancel method for useEffect cleanup
     (debounced as any).cancelController = () => {
       if (controller) controller.abort();
       debounced.cancel();
@@ -48,14 +59,31 @@ export const useSearch = (term: string) => {
   }, []);
 
   useEffect(() => {
-    if (!term) return;
+    if (!term) {
+      setMatched([]);
+      setLoading(false);
+      setIsTyping(false);
+      return;
+    }
 
-    debouncedFetch(term);
+    setIsTyping(true);
+    const trimmedTerm = term.trim();
+    if (searchCache.has(trimmedTerm)) {
+      setMatched(searchCache.get(trimmedTerm)!);
+      setIsTyping(false);
+      return;
+    }
+
+    debouncedFetch(trimmedTerm);
 
     return () => {
       (debouncedFetch as any).cancelController?.();
     };
   }, [term, debouncedFetch]);
 
-  return { matchedResults: snippets, loading };
+  return {
+    matchedResults: matched,
+    loading,
+    isTyping,
+  };
 };

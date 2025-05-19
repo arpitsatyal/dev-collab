@@ -26,13 +26,15 @@ export const SnippetSlice = createSlice({
       action: PayloadAction<{ projectId: string; snippet: Snippet }>
     ) => {
       const { projectId, snippet } = action.payload;
-      if (!state.loadedSnippets[projectId]) {
-        state.loadedSnippets[projectId] = [
-          ...(state.loadedSnippets[projectId] || []),
-          snippet,
-        ];
+      const existingSnippets = state.loadedSnippets[projectId] || [];
+
+      const alreadyExists = existingSnippets.some((s) => s.id === snippet.id);
+
+      if (!alreadyExists) {
+        state.loadedSnippets[projectId] = [...existingSnippets, snippet];
       }
     },
+
     updateSnippet: (
       state,
       action: PayloadAction<{

@@ -58,10 +58,8 @@ const Create = () => {
         title: "done!",
         message: "Snippet saved successfully! 🌟",
       });
-      if (result?.id) {
-        router.push(`/projects/${projectId}/snippets/${result.id}`);
-      }
 
+      window.scrollTo({ top: 0, behavior: "smooth" });
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
@@ -76,6 +74,10 @@ const Create = () => {
         );
       } catch (syncError) {
         console.warn("Sync service failed:", syncError);
+      }
+
+      if (result?.id) {
+        router.push(`/projects/${projectId}/snippets/${result.id}`);
       }
     } catch (error) {
       console.error(error);
