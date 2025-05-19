@@ -1,7 +1,6 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
-import { SnippetCreate } from "../../../../interfaces";
 import Layout from "../../../../components/Layout";
 import SnippetBox from "../../../../components/SnippetBox";
 import { RoomProvider, useStorage } from "@liveblocks/react";
@@ -13,6 +12,7 @@ import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { languageMapper } from "../../../../utils/languageMapper";
 import { withAuth } from "../../../../guards/withAuth";
 import axios from "axios";
+import { SnippetsCreateData } from "../../../api/snippets";
 
 const Create = () => {
   const router = useRouter();
@@ -32,10 +32,11 @@ const Create = () => {
   const handleSaveSnippet = async () => {
     try {
       if (!code || !projectId) throw new Error("Something went wrong");
-      const snippet: SnippetCreate = {
+      const snippet: Omit<SnippetsCreateData, "authorId"> = {
         title,
         content: JSON.stringify(code),
         language,
+        projectId,
         extension:
           languageMapper.find((lang) => lang.name === language)?.extension ??
           "-",

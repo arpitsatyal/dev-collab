@@ -7,6 +7,7 @@ import {
   IconPencil,
   IconLogout,
   IconFolder,
+  IconSubtask,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -26,6 +27,7 @@ interface NavItemProps {
   handler?: () => void;
   children?: NavItemProps[];
   snippets?: Snippet[];
+  tasks?: any[];
 }
 
 const SideNav = () => {
@@ -39,8 +41,6 @@ const SideNav = () => {
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const { data: projects = [], isLoading } = useGetProjectsQuery();
-  const pathParts = useMemo(() => router.asPath.split("/"), [router.asPath]);
-  const projectId = pathParts[2];
 
   const dispatch = useAppDispatch();
   const loadedSnippets = useAppSelector(
@@ -137,6 +137,7 @@ const SideNav = () => {
               path: `/projects/${project.id}`,
               icon: IconFolder,
               snippets: loadedSnippets[project.id] ?? [],
+              tasks: [],
             })),
           ].map((item) => [item.path, item])
         ).values()
@@ -251,13 +252,25 @@ const SideNav = () => {
                             (loadingProjectId === child.id ? (
                               <Loading loaderHeight="5vh" />
                             ) : (
-                              <SnippetList
-                                snippets={loadedSnippets[child.id] ?? []}
-                                isVisible={
-                                  openItem === child.id &&
-                                  !!loadedSnippets[child.id]
-                                }
-                              />
+                              <>
+                                <NavLink
+                                  label="Tasks"
+                                  active={isActive(
+                                    `/projects/${child.id}/tasks`
+                                  )}
+                                  leftSection={<IconSubtask size={16} />}
+                                  onClick={() =>
+                                    router.push(`/projects/${child.id}/tasks`)
+                                  }
+                                />
+                                <SnippetList
+                                  snippets={loadedSnippets[child.id] ?? []}
+                                  isVisible={
+                                    openItem === child.id &&
+                                    !!loadedSnippets[child.id]
+                                  }
+                                />
+                              </>
                             ))}
                         </NavLink>
                       )}

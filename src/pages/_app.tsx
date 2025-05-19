@@ -2,6 +2,7 @@ import type { AppProps } from "next/app";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/spotlight/styles.css";
+import "@mantine/dates/styles.css";
 import { MantineProvider } from "@mantine/core";
 import { SessionProvider } from "next-auth/react";
 import { ReactElement, ReactNode } from "react";
