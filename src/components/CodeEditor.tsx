@@ -24,10 +24,10 @@ import {
 import Loading from "./Loader";
 import { useSnippetFromRouter } from "../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../store/hooks";
-import { format } from "date-fns";
 import { useUser } from "../hooks/useUser";
 import { useMediaQuery } from "@mantine/hooks";
 import { useSyncLoading } from "../hooks/useSyncLoading";
+import dayjs from "dayjs";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -236,7 +236,7 @@ export default function CodeEditor({
                 }}
               >
                 Last Edited:{" "}
-                {format(snippet.updatedAt, "MMM d, yyyy 'at' h:mm a")}
+                {dayjs(snippet.updatedAt).format("MMM D, YYYY [at] h:mm a")}
               </Text>
             </Flex>
           ) : (

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SnippetUpdate } from "../../../../../interfaces";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import SnippetBox from "../../../../../components/SnippetBox";
@@ -28,6 +27,7 @@ import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
 import axios from "axios";
+import { SnippetsUpdateData } from "../../../../api/snippets";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
@@ -67,18 +67,21 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   };
 
   const handleSaveSnippet = async () => {
-    const snippet: SnippetUpdate = {
-      title,
-      content: JSON.stringify(storageCode),
-      language,
-      lastEditedById: session.data?.user.id ?? "",
-      extension:
-        languageMapper.find((lang) => lang.name === language)?.extension ?? "-",
-    };
-
     try {
       if (!projectId || !snippetId || !storageCode)
         throw new Error("Something went wrong");
+
+      const snippet: Omit<SnippetsUpdateData, "authorId"> = {
+        title,
+        content: JSON.stringify(storageCode),
+        language,
+        projectId,
+        lastEditedById: session.data?.user.id ?? "",
+        extension:
+          languageMapper.find((lang) => lang.name === language)?.extension ??
+          "-",
+      };
+
       const data = await editSnippet({
         projectId,
         snippet,

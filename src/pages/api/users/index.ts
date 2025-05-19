@@ -33,6 +33,8 @@ export default async function handler(
 
           return res.status(200).json(user);
         }
+        const users = await prisma.user.findMany();
+        return res.status(200).json(users);
       } catch (error) {
         console.error("Error fetching users:", error);
         return res.status(500).json({ error: "Internal Server Error" });

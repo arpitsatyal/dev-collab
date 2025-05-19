@@ -2,11 +2,15 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
+import { TaskStatus } from "@prisma/client";
 
-export interface ProjectCreateData {
+export interface TaskCreateData {
   title: string;
-  ownerId: string;
-  description?: string;
+  projectId: string;
+  status: TaskStatus;
+  description: string | undefined;
+  assignedToId: string | undefined;
+  dueDate: Date | null;
 }
 
 export default async function handler(
@@ -38,44 +42,26 @@ export default async function handler(
   } = req;
 
   switch (method) {
-    case "GET":
-      try {
-        if (projectId) {
-          const project = await prisma.project.findUnique({
-            where: {
-              id: projectId as string,
-            },
-          });
-
-          if (!project) {
-            return res.status(404).json({ error: "project not found" });
-          }
-
-          return res.status(200).json(project);
-        }
-
-        const projects = await prisma.project.findMany();
-        return res.status(200).json(projects);
-      } catch (error) {
-        console.error("Error fetching projects:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
-      }
-
     case "POST":
       try {
-        const { title, description } = req.body as ProjectCreateData;
+        const { title, description, assignedToId, dueDate, status } =
+          (req.body as TaskCreateData) ?? {};
 
-        const project = await prisma.project.create({
+        const task = await prisma.task.create({
           data: {
             title,
             description,
-            ownerId: user.id,
+            dueDate,
+            status,
+            projectId: projectId as string,
+            assignedToId,
+            authorId: user.id,
           },
         });
 
-        return res.status(200).json(project);
+        return res.status(200).json(task);
       } catch (error) {
-        console.error("Error creating project:", error);
+        console.error("Error creating task:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
 

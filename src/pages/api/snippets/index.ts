@@ -4,7 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { Prisma } from "@prisma/client";
 
-interface SnippetsCreateData {
+export interface SnippetsCreateData {
   title: string;
   language: string;
   content: string;
@@ -13,7 +13,7 @@ interface SnippetsCreateData {
   extension?: string;
 }
 
-interface SnippetsUpdateData extends SnippetsCreateData {
+export interface SnippetsUpdateData extends SnippetsCreateData {
   lastEditedById: string;
   extension?: string;
 }

@@ -7,24 +7,70 @@ import { withAuth } from "../../../../guards/withAuth";
 import Layout from "../../../../components/Layout";
 import CreateTaskModal from "../../../../components/CreateTaskModal";
 import TaskBoard from "../../../../components/TaskBoard";
+import { TaskStatus } from "@prisma/client";
+import { useCreateTaskMutation } from "../../../../store/api/taskApi";
+import dayjs from "dayjs";
+import { notifications } from "@mantine/notifications";
+
+export interface TaskForm {
+  title: string;
+  description: string | undefined;
+  status: TaskStatus;
+  assignedToId: string | undefined;
+  dueDate: string | null;
+  projectId: string;
+}
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
+  const [createTask, { isLoading }] = useCreateTaskMutation();
 
-  const [taskForm, setTaskForm] = useState({
+  const [taskForm, setTaskForm] = useState<TaskForm>({
     title: "",
-    description: "",
-    assignee: "",
+    description: undefined,
+    status: TaskStatus.TODO,
+    assignedToId: undefined,
+    dueDate: null,
+    projectId: "",
   });
 
-  const handleInputChange = (field: string, value: string) => {
+  const handleInputChange = <K extends keyof TaskForm>(
+    field: K,
+    value: TaskForm[K]
+  ) => {
     setTaskForm((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleSubmit = () => {
-    console.log("Task submitted:", taskForm);
-    setTaskForm({ title: "", description: "", assignee: "" });
-    close();
+  const handleSubmit = async () => {
+    try {
+      setTaskForm({
+        title: "",
+        description: undefined,
+        status: TaskStatus.TODO,
+        assignedToId: undefined,
+        dueDate: null,
+        projectId: "",
+      });
+
+      await createTask({
+        task: {
+          ...taskForm,
+          dueDate: taskForm.dueDate ? dayjs(taskForm.dueDate).toDate() : null,
+        },
+        projectId: taskForm.projectId,
+      }).unwrap();
+      notifications.show({
+        title: "Job done!",
+        message: "Task created successfully! 🌟",
+      });
+      close();
+    } catch (error) {
+      console.error(error);
+      notifications.show({
+        title: "Whooops",
+        message: "Task could be created.",
+      });
+    }
   };
 
   return (
@@ -53,6 +99,7 @@ const TasksPage = () => {
         handleInputChange={handleInputChange}
         handleSubmit={handleSubmit}
         taskForm={taskForm}
+        isLoading={isLoading}
       />
 
       <TaskBoard />

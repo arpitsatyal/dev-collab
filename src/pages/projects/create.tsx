@@ -1,19 +1,19 @@
 import { Box, Button, TextInput, Group, Textarea, Paper } from "@mantine/core";
 import Layout from "../../components/Layout";
 import { useForm } from "@mantine/form";
-import { ProjectCreate } from "../../interfaces";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { useCreateProjectMutation } from "../../store/api/projectApi";
 import { withAuth } from "../../guards/withAuth";
+import { ProjectCreateData } from "../api/projects";
 
 const CreateProject = () => {
   const router = useRouter();
-  const form = useForm<ProjectCreate>({
+  const form = useForm<ProjectCreateData>({
     initialValues: {
       title: "",
       description: "",
-      id: "",
+      ownerId: "",
     },
   });
 
@@ -31,7 +31,7 @@ const CreateProject = () => {
       console.error(error);
       notifications.show({
         title: "Whooops",
-        message: "Project cannot be created.",
+        message: "Project could be created.",
       });
     }
   };
