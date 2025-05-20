@@ -46,11 +46,9 @@ const TaskBoard = () => {
   const theme = useMantineTheme();
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
+  const { data, isLoading } = useGetTasksForProjectQuery(projectId ?? "");
 
-  if (!projectId) return <Loading />;
-  const { data, isLoading } = useGetTasksForProjectQuery(projectId);
-
-  if (isLoading) return <Loading />;
+  if (!projectId || isLoading) return <Loading />;
 
   if (!data || data.length === 0) {
     return (

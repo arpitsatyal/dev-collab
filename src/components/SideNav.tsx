@@ -89,10 +89,12 @@ const SideNav = () => {
     fetchSnippets(openItem);
   }, [openItem, loadedSnippets, fetchSnippets]);
 
-  const handleLogout = () => {
-    signOut();
-    router.push("/");
-  };
+  const handleLogout = useCallback(() => {
+    () => {
+      signOut();
+      router.push("/");
+    };
+  }, [router]);
 
   useEffect(() => {
     dispatch(fetchProjects());

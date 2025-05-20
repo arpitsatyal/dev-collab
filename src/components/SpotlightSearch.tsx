@@ -159,13 +159,19 @@ const SpotlightSearch = () => {
     useAppSelector((state) => state.snippet.loadedSnippets)
   ).flat();
 
-  const dataSources: DataSource[] = [
-    {
-      ...projectSource,
-      data: loadedProjects,
-    },
-    { ...snippetSource, data: snippets },
-  ];
+  const dataSources = useMemo<DataSource[]>(
+    () => [
+      {
+        ...projectSource,
+        data: loadedProjects,
+      },
+      {
+        ...snippetSource,
+        data: snippets,
+      },
+    ],
+    [loadedProjects, snippets]
+  );
 
   const handleQueryChange = useCallback((newQuery: string) => {
     setQuery(newQuery);
@@ -192,7 +198,7 @@ const SpotlightSearch = () => {
       items.push(...sourceItems);
     });
     return items;
-  }, [query, context]);
+  }, [query, context, dataSources]);
 
   return (
     <>
