@@ -13,11 +13,12 @@ import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import SnippetList from "./SnippetList";
 import Loading from "./Loader";
-import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { setSnippets } from "../store/slices/snippetSlice";
-import { Project, Snippet } from "@prisma/client";
+import { Snippet, Task } from "@prisma/client";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
+import { fetchProjects } from "../store/util";
+import { RootState } from "../store/store";
 
 interface NavItemProps {
   id: string;
@@ -27,7 +28,7 @@ interface NavItemProps {
   handler?: () => void;
   children?: NavItemProps[];
   snippets?: Snippet[];
-  tasks?: any[];
+  tasks?: Task[];
 }
 
 const SideNav = () => {
@@ -40,9 +41,12 @@ const SideNav = () => {
   const viewportRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
-  const { data: projects = [], isLoading } = useGetProjectsQuery();
-
   const dispatch = useAppDispatch();
+
+  const { loadedProjects, isLoading } = useAppSelector(
+    (state: RootState) => state.project
+  );
+
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
@@ -90,6 +94,10 @@ const SideNav = () => {
     router.push("/");
   };
 
+  useEffect(() => {
+    dispatch(fetchProjects());
+  }, [dispatch]);
+
   const navItems = useMemo<NavItemProps[]>(
     () => [
       {
@@ -131,7 +139,7 @@ const SideNav = () => {
         new Map(
           [
             ...(projectsItem.children ?? []),
-            ...projects.map((project: Project) => ({
+            ...loadedProjects.map((project) => ({
               id: project.id,
               label: project.title,
               path: `/projects/${project.id}`,
@@ -147,7 +155,7 @@ const SideNav = () => {
     }
 
     return items;
-  }, [navItems, projects, loadedSnippets]);
+  }, [navItems, loadedProjects, loadedSnippets]);
 
   const handleNavClick = (
     path?: string,

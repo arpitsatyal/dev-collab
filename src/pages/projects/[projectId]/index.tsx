@@ -2,21 +2,18 @@ import { useRouter } from "next/router";
 import Layout from "../../../components/Layout";
 import Loading from "../../../components/Loader";
 import { Container, Paper, Stack, Text } from "@mantine/core";
-import { useGetProjectQuery } from "../../../store/api/projectApi";
-import { skipToken } from "@reduxjs/toolkit/query";
 import { withAuth } from "../../../guards/withAuth";
+import { useAppSelector } from "../../../store/hooks";
 
 const ProjectPage = () => {
   const router = useRouter();
   const { projectId } = router.query;
 
   const shouldFetch = typeof projectId === "string" && projectId.trim() !== "";
+  const projects = useAppSelector((state) => state.project.loadedProjects);
+  const project = projects.find((project) => project.id === projectId);
 
-  const { data: project, isLoading } = useGetProjectQuery(
-    shouldFetch ? projectId : skipToken
-  );
-
-  if (!shouldFetch || isLoading) {
+  if (!shouldFetch || !project) {
     return <Loading />;
   }
 

@@ -3,9 +3,10 @@ import Layout from "../../components/Layout";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
-import { useCreateProjectMutation } from "../../store/api/projectApi";
 import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
+import { createNewProject } from "../../store/util";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const CreateProject = () => {
   const router = useRouter();
@@ -17,16 +18,17 @@ const CreateProject = () => {
     },
   });
 
-  const [createProject, { isLoading }] = useCreateProjectMutation();
+  const dispatch = useAppDispatch();
+  const isLoading = useAppSelector((state) => state.project.isCreating);
 
   const handleSubmit = async () => {
     try {
-      await createProject(form.values).unwrap();
-      router.push("/projects");
+      const newProject = await dispatch(createNewProject(form.values));
       notifications.show({
         title: "Job done!",
         message: "Project created successfully! 🌟",
       });
+      router.push(`/projects/${newProject.id}`);
     } catch (error) {
       console.error(error);
       notifications.show({

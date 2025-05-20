@@ -5,11 +5,11 @@ import { ActionIcon, Box, Group, Text } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../utils/truncateByWords";
 import { useAppSelector } from "../store/hooks";
-import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useSearch } from "../hooks/useSearch";
 import Loading from "./Loader";
 import FileIcon from "./FileIcon";
 import { Project, Snippet } from "@prisma/client";
+import { RootState } from "../store/store";
 
 interface DataItem {
   id: string;
@@ -144,8 +144,10 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
 const SpotlightSearch = () => {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const { data: projects = [], isLoading: isProjectsLoading } =
-    useGetProjectsQuery();
+
+  const { loadedProjects, isLoading: isProjectsLoading } = useAppSelector(
+    (state: RootState) => state.project
+  );
   const {
     matchedResults,
     loading: isSearchLoading,
@@ -160,7 +162,7 @@ const SpotlightSearch = () => {
   const dataSources: DataSource[] = [
     {
       ...projectSource,
-      data: projects,
+      data: loadedProjects,
     },
     { ...snippetSource, data: snippets },
   ];
@@ -172,12 +174,12 @@ const SpotlightSearch = () => {
   const context = useMemo(
     () => ({
       router,
-      projects,
+      loadedProjects,
       matchedResults,
       currentProjectId,
       isSearchLoading,
     }),
-    [router, projects, matchedResults, currentProjectId, isSearchLoading]
+    [router, loadedProjects, matchedResults, currentProjectId, isSearchLoading]
   );
 
   const allItems = useMemo(() => {

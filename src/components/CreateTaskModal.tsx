@@ -8,22 +8,23 @@ import {
   TextInput,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { TaskForm } from "../pages/projects/[projectId]/tasks";
-import { useGetProjectsQuery } from "../store/api/projectApi";
 import { useGetUsersQuery } from "../store/api/userApi";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { TaskStatus } from "@prisma/client";
+import { useAppSelector } from "../store/hooks";
+import { RootState } from "../store/store";
+import { TaskCreateData } from "../pages/api/tasks";
 
 interface CreateTaskModalProps {
-  handleInputChange: <K extends keyof TaskForm>(
+  handleInputChange: <K extends keyof TaskCreateData>(
     field: K,
-    value: TaskForm[K]
+    value: TaskCreateData[K]
   ) => void;
   handleSubmit: () => void;
   opened: boolean;
   close: () => void;
-  taskForm: TaskForm;
+  taskForm: TaskCreateData;
   isLoading: boolean;
 }
 
@@ -35,7 +36,9 @@ const CreateTaskModal = ({
   taskForm,
   isLoading,
 }: CreateTaskModalProps) => {
-  const { data: projects = [] } = useGetProjectsQuery();
+  const { loadedProjects } = useAppSelector(
+    (state: RootState) => state.project
+  );
   const { data: users = [] } = useGetUsersQuery();
   const [errors, setErrors] = useState<{
     title?: string;
@@ -120,13 +123,17 @@ const CreateTaskModal = ({
       </Input.Wrapper>
       <Select
         label="Project"
-        placeholder="Select project"
+        placeholder={
+          loadedProjects.find((project) => project.id === taskForm.projectId)
+            ?.title ?? "Select Project"
+        }
         data={
-          projects?.map((project) => ({
+          loadedProjects?.map((project) => ({
             value: project.id,
             label: project.title,
           })) ?? []
         }
+        disabled
         value={taskForm.projectId}
         onChange={(value) => handleInputChange("projectId", value || "")}
         mb="md"

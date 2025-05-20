@@ -1,6 +1,6 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { SnippetCreate } from "../../interfaces";
 import { Snippet } from "@prisma/client";
+import { SnippetsCreateData } from "../../pages/api/snippets";
 
 export const snippetApi = createApi({
   reducerPath: "snippetApi",
@@ -22,7 +22,7 @@ export const snippetApi = createApi({
 
     createSnippet: builder.mutation<
       Snippet,
-      { projectId: string; snippet: SnippetCreate }
+      { projectId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
     >({
       query: ({ projectId, snippet }) => ({
         url: `snippets?projectId=${projectId}`,

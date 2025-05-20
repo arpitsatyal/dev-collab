@@ -9,34 +9,32 @@ import CreateTaskModal from "../../../../components/CreateTaskModal";
 import TaskBoard from "../../../../components/TaskBoard";
 import { TaskStatus } from "@prisma/client";
 import { useCreateTaskMutation } from "../../../../store/api/taskApi";
-import dayjs from "dayjs";
 import { notifications } from "@mantine/notifications";
-
-export interface TaskForm {
-  title: string;
-  description: string | undefined;
-  status: TaskStatus;
-  assignedToId: string | undefined;
-  dueDate: string | null;
-  projectId: string;
-}
+import { useAppSelector } from "../../../../store/hooks";
+import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
+import { useRouter } from "next/router";
+import { TaskCreateData } from "../../../api/tasks";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
+  const router = useRouter();
+  const projectId = getSingleQueryParam(router.query.projectId);
+  const projects = useAppSelector((state) => state.project.loadedProjects);
+  const project = projects.find((project) => project.id === projectId);
 
-  const [taskForm, setTaskForm] = useState<TaskForm>({
+  const [taskForm, setTaskForm] = useState<TaskCreateData>({
     title: "",
-    description: undefined,
+    description: null,
     status: TaskStatus.TODO,
-    assignedToId: undefined,
+    assignedToId: null,
     dueDate: null,
-    projectId: "",
+    projectId: projectId ?? "",
   });
 
-  const handleInputChange = <K extends keyof TaskForm>(
+  const handleInputChange = <K extends keyof TaskCreateData>(
     field: K,
-    value: TaskForm[K]
+    value: TaskCreateData[K]
   ) => {
     setTaskForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -45,18 +43,15 @@ const TasksPage = () => {
     try {
       setTaskForm({
         title: "",
-        description: undefined,
+        description: null,
         status: TaskStatus.TODO,
-        assignedToId: undefined,
+        assignedToId: null,
         dueDate: null,
         projectId: "",
       });
 
       await createTask({
-        task: {
-          ...taskForm,
-          dueDate: taskForm.dueDate ? dayjs(taskForm.dueDate).toDate() : null,
-        },
+        task: taskForm,
         projectId: taskForm.projectId,
       }).unwrap();
       notifications.show({
@@ -80,7 +75,7 @@ const TasksPage = () => {
           size="xl"
           fw={600}
           mb="sm"
-          c="dark"
+          c="dimmed"
           style={{
             overflow: "hidden",
             textOverflow: "ellipsis",
@@ -88,7 +83,7 @@ const TasksPage = () => {
             whiteSpace: "normal",
           }}
         >
-          Project Workspace
+          Project Workspace {project?.title}
         </Text>
         <Button onClick={open}>Create Task</Button>
       </Group>
