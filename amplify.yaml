@@ -12,7 +12,7 @@ applications:
           commands:
             - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL >> .env.production
             - npm run build # Build Next.js app
-            - npm i --production # Reinstall only production dependencies
+            - npm i --legacy-peer-deps --production # Reinstall only production dependencies
       artifacts:
         baseDirectory: .next
         files:
