@@ -17,7 +17,7 @@ import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { setSnippets } from "../store/slices/snippetSlice";
 import { Snippet, Task } from "@prisma/client";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchProjects } from "../store/util";
+import { fetchProjects } from "../store/thunks";
 import { RootState } from "../store/store";
 
 interface NavItemProps {
@@ -90,10 +90,8 @@ const SideNav = () => {
   }, [openItem, loadedSnippets, fetchSnippets]);
 
   const handleLogout = useCallback(() => {
-    () => {
-      signOut();
-      router.push("/");
-    };
+    signOut();
+    router.push("/");
   }, [router]);
 
   useEffect(() => {

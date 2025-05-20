@@ -14,6 +14,7 @@ export const createNewProject =
       ).unwrap();
       return result;
     } catch (error) {
+      console.error(error);
       throw error;
     }
   };

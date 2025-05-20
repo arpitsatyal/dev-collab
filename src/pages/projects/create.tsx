@@ -5,7 +5,7 @@ import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
-import { createNewProject } from "../../store/util";
+import { createNewProject } from "../../store/thunks";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 
 const CreateProject = () => {
@@ -30,7 +30,6 @@ const CreateProject = () => {
       });
       router.push(`/projects/${newProject.id}`);
     } catch (error) {
-      console.error(error);
       notifications.show({
         title: "Whooops",
         message: "Project could be created.",

@@ -20,7 +20,7 @@ export default function Layout({ children }: any) {
       <AppShell.Header>
         <Flex
           align="center"
-          justify={isSmallScreen ? "space-between" : "flex-end"}
+          justify={isSmallScreen ? "space-between" : "center"}
           p={15}
           style={{
             width: "100%",
@@ -28,8 +28,13 @@ export default function Layout({ children }: any) {
         >
           <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
 
-          <Box>
-            <SpotlightSearch />
+          <Box
+            style={{
+              width: isSmallScreen ? "auto" : "50%",
+              maxWidth: isSmallScreen ? "none" : 500,
+            }}
+          >
+            <SpotlightSearch isSmallScreen={isSmallScreen ?? false} />
           </Box>
         </Flex>
       </AppShell.Header>

@@ -1,7 +1,15 @@
 import { NextRouter, useRouter } from "next/router";
 import { useState, useMemo, useCallback, JSX } from "react";
 import { IconSearch, IconFolder } from "@tabler/icons-react";
-import { ActionIcon, Box, Group, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  Box,
+  Group,
+  Paper,
+  Text,
+  TextInput,
+  useMantineTheme,
+} from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../utils/truncateByWords";
 import { useAppSelector } from "../store/hooks";
@@ -136,18 +144,25 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
       router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
     groupLabel: "Snippets",
     meta: {
-      projectTitle: projects.find((p) => p.id === snippet.projectId)?.title,
+      projectTitle:
+        projects?.find((p) => p.id === snippet.projectId)?.title ?? "",
     },
   }),
 };
 
-const SpotlightSearch = () => {
+const SpotlightSearch = ({
+  isSmallScreen = false,
+}: {
+  isSmallScreen: boolean;
+}) => {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const theme = useMantineTheme();
 
   const { loadedProjects, isLoading: isProjectsLoading } = useAppSelector(
     (state: RootState) => state.project
   );
+
   const {
     matchedResults,
     loading: isSearchLoading,
@@ -202,18 +217,68 @@ const SpotlightSearch = () => {
 
   return (
     <>
-      <ActionIcon
-        variant="subtle"
-        onClick={spotlight.open}
-        radius="xl"
-        size="lg"
-        style={{
-          transition: "background-color 150ms ease",
-          "&:hover": { backgroundColor: "#f0f0f0" },
-        }}
-      >
-        <IconSearch />
-      </ActionIcon>
+      <Box>
+        {!isSmallScreen ? (
+          <TextInput
+            placeholder="Search"
+            leftSection={
+              <IconSearch
+                size={18}
+                style={{
+                  cursor: "pointer",
+                }}
+                onClick={() => spotlight.open()}
+              />
+            }
+            rightSection={
+              <Box
+                style={{
+                  paddingRight: "40px",
+                  cursor: "pointer",
+                }}
+                onClick={() => spotlight.open()}
+              >
+                <Paper
+                  shadow="xs"
+                  style={{
+                    width: "60px",
+                    padding: "5px",
+                    backgroundColor: theme.colors.gray[0],
+                  }}
+                >
+                  <Text size="xs" fw={700} lh={1}>
+                    Ctrl + K
+                  </Text>
+                </Paper>
+              </Box>
+            }
+            radius="md"
+            styles={{
+              input: {
+                cursor: "pointer",
+                "&:focus": {
+                  outline: "none",
+                },
+              },
+            }}
+            onClick={() => spotlight.open()}
+            onFocus={(e) => e.target.blur()}
+            readOnly
+          />
+        ) : (
+          <ActionIcon
+            variant="subtle"
+            onClick={() => spotlight.open()}
+            radius="md"
+            size="lg"
+            style={{
+              backgroundColor: "#ffffff",
+            }}
+          >
+            <IconSearch size={24} />
+          </ActionIcon>
+        )}
+      </Box>
       <Spotlight.Root
         query={query}
         onQueryChange={handleQueryChange}

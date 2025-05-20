@@ -42,20 +42,24 @@ export default async function handler(
   } = req;
 
   switch (method) {
-    case "GET":
-      if (projectId) {
-        const tasks = await prisma.task.findMany({
-          where: {
-            projectId: projectId as string,
-          },
-        });
-
-        if (!tasks) {
-          return res.status(404).json({ error: "Tasks not found" });
-        }
-
-        return res.status(200).json(tasks);
+    case "GET": {
+      if (!projectId) {
+        return res.status(400).json({ error: "Project ID is required" });
       }
+
+      const tasks = await prisma.task.findMany({
+        where: {
+          projectId: projectId as string,
+        },
+      });
+
+      if (!tasks) {
+        return res.status(404).json({ error: "Tasks not found" });
+      }
+
+      return res.status(200).json(tasks);
+    }
+
     case "POST":
       try {
         const { title, description, assignedToId, dueDate, status } =
