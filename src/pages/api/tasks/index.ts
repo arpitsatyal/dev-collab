@@ -37,9 +37,13 @@ export default async function handler(
   }
 
   const {
-    query: { projectId },
+    query: { projectId, taskId },
     method,
   } = req;
+
+  if (!projectId) {
+    return res.status(400).json({ error: "Project ID is required" });
+  }
 
   switch (method) {
     case "GET": {
@@ -80,6 +84,33 @@ export default async function handler(
         return res.status(200).json(task);
       } catch (error) {
         console.error("Error creating task:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
+    case "PATCH":
+      try {
+        if (!taskId) {
+          return res.status(400).json({ error: "Task ID is required" });
+        }
+
+        if (!req.body.newStatus) {
+          return res
+            .status(400)
+            .json({ error: "Please provide a new status." });
+        }
+
+        const updatedTask = await prisma.task.update({
+          where: {
+            id: taskId as string,
+          },
+          data: {
+            status: req.body.newStatus as TaskStatus,
+          },
+        });
+
+        return res.status(200).json(updatedTask);
+      } catch (error) {
+        console.error("Error updating task:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
 

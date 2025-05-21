@@ -1,4 +1,4 @@
-import { Task } from "@prisma/client";
+import { Task, TaskStatus } from "@prisma/client";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { TaskCreateData } from "../../pages/api/tasks";
 import dayjs from "dayjs";
@@ -63,7 +63,26 @@ export const taskApi = createApi({
         }
       },
     }),
+
+    updateStatus: builder.mutation<
+      Task,
+      {
+        projectId: string;
+        taskId: string;
+        newStatus: TaskStatus;
+      }
+    >({
+      query: ({ projectId, taskId, newStatus }) => ({
+        url: `tasks?projectId=${projectId}&taskId=${taskId}`,
+        method: "PATCH",
+        body: { newStatus },
+      }),
+    }),
   }),
 });
 
-export const { useGetTasksForProjectQuery, useCreateTaskMutation } = taskApi;
+export const {
+  useGetTasksForProjectQuery,
+  useCreateTaskMutation,
+  useUpdateStatusMutation,
+} = taskApi;

@@ -46,13 +46,13 @@ export default async function handler(
     method,
   } = req;
 
+  if (!projectId) {
+    return res.status(400).json({ error: "Project ID is required" });
+  }
+
   switch (method) {
     case "GET":
       try {
-        if (!projectId) {
-          return res.status(400).json({ error: "Project ID is required" });
-        }
-
         //single snippet
         if (snippetId) {
           const snippet = await prisma.snippet.findUnique({
