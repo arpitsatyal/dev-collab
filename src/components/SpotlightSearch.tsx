@@ -283,7 +283,6 @@ const SpotlightSearch = ({
         query={query}
         onQueryChange={handleQueryChange}
         scrollable
-        fullScreen
         shortcut={["mod + K", "mod + P", "/"]}
       >
         <Spotlight.Search

@@ -32,7 +32,6 @@
     "monaco-editor": "^0.52.2",
     "next": "15.3.0",
     "next-auth": "^4.24.11",
-    "npm": "^11.4.0",
     "react": "19.1.0",
     "react-dnd": "^16.0.1",
     "react-dnd-touch-backend": "^16.0.1",

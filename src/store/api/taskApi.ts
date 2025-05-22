@@ -10,6 +10,7 @@ export const taskApi = createApi({
   endpoints: (builder) => ({
     getTasksForProject: builder.query<Task[], string>({
       query: (id) => `tasks?projectId=${id}`,
+      providesTags: (result) => (result ? [{ type: "Tasks", id: "LIST" }] : []),
     }),
     createTask: builder.mutation<
       Task,
@@ -77,6 +78,7 @@ export const taskApi = createApi({
         method: "PATCH",
         body: { newStatus },
       }),
+      invalidatesTags: [{ type: "Tasks", id: "LIST" }],
     }),
   }),
 });

@@ -40,7 +40,7 @@ const TaskBoard = () => {
 
   if (!projectId || isLoading) return <Loading />;
 
-  if (!data || data.length === 0) {
+  if (data?.length === 0) {
     return (
       <Center>
         <Text c="dimmed" size="lg">

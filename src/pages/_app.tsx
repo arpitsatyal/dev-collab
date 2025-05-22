@@ -12,6 +12,7 @@ import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
+import "../global.css";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {

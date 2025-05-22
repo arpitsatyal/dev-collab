@@ -15,6 +15,7 @@ import { TaskStatus } from "@prisma/client";
 import { useAppSelector } from "../store/hooks";
 import { RootState } from "../store/store";
 import { TaskCreateData } from "../pages/api/tasks";
+import dayjs from "dayjs";
 
 interface CreateTaskModalProps {
   handleInputChange: <K extends keyof TaskCreateData>(
@@ -119,6 +120,7 @@ const CreateTaskModal = ({
           value={taskForm.dueDate}
           onChange={(date) => handleInputChange("dueDate", date)}
           allowDeselect
+          minDate={dayjs().startOf("day").toDate()}
         />
       </Input.Wrapper>
       <Select
