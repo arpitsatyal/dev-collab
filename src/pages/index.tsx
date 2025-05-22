@@ -82,7 +82,7 @@ const Home: NextPage = () => {
               </Button>
             </Stack>
             <Text size="sm" c="dimmed" ta="center">
-              Don't have an account? Sign up with one click above!
+              Don&apos;t have an account? Sign up with one click above!
             </Text>
           </Stack>
         </Card>
