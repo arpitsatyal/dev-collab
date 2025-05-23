@@ -13,30 +13,28 @@
     },
     "categories": {
       "function": {
-        "searchService": {
-          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/searchService-4d54664f473641664667-build.zip",
-          "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
-          "esApiKey": "WF9LWTRwWUJUbjF2b2JPZml2R1U6YkFHWDhSejcwTVN2ZnA5YnVSb3h6QQ==",
-          "elasticsearchUrl": "https://3365602f40e2443ab0b48b9481826d06.us-central1.gcp.cloud.es.io:443"
-        },
-        "devcollabsearch": {
-          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/devcollabsearch-LambdaLayerVersion06435c4b-build.zip"
-        },
         "snippetsCronJob": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
           "s3Key": "amplify-builds/snippetsCronJob-4f57696538527243682b-build.zip",
           "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
           "esApiKey": "WF9LWTRwWUJUbjF2b2JPZml2R1U6YkFHWDhSejcwTVN2ZnA5YnVSb3h6QQ==",
-          "elasticsearchUrl": "https://3365602f40e2443ab0b48b9481826d06.us-central1.gcp.cloud.es.io:443"
+          "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
         },
         "elasticIndexWebhook": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/elasticIndexWebhook-5052666c63493177672b-build.zip",
+          "s3Key": "amplify-builds/elasticIndexWebhook-36706f6d567143764a4c-build.zip",
           "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
           "esApiKey": "WF9LWTRwWUJUbjF2b2JPZml2R1U6YkFHWDhSejcwTVN2ZnA5YnVSb3h6QQ==",
-          "elasticsearchUrl": "https://3365602f40e2443ab0b48b9481826d06.us-central1.gcp.cloud.es.io:443"
+          "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
+        },
+        "devcollabsearchservicelayer": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/devcollabsearchservicelayer-LambdaLayerVersion44f282a6-build.zip"
+        },
+        "search": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/search-366961496d747a6e7158-build.zip",
+          "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
         }
       },
       "api": {

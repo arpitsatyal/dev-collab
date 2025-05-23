@@ -3,7 +3,7 @@
   "paths": {
     "/search": {
       "name": "/search",
-      "lambdaFunction": "searchService",
+      "lambdaFunction": "search",
       "permissions": {
         "setting": "open"
       }

@@ -12,6 +12,8 @@ import TaskColumn from "./TaskColumn";
 import { DndProvider } from "react-dnd";
 import { notifications } from "@mantine/notifications";
 import { TouchBackend } from "react-dnd-touch-backend";
+import { HTML5Backend } from "react-dnd-html5-backend";
+import { useMediaQuery } from "@mantine/hooks";
 
 const TaskBoard = () => {
   const theme = useMantineTheme();
@@ -20,6 +22,7 @@ const TaskBoard = () => {
   const { data, isLoading } = useGetTasksForProjectQuery(projectId ?? "");
   const [localTasks, setLocalTasks] = useState<Task[]>([]);
   const [updateStatus] = useUpdateStatusMutation();
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   const todoTasks = useMemo(
     () => localTasks.filter((task) => task.status === TaskStatus.TODO),
@@ -81,7 +84,7 @@ const TaskBoard = () => {
   };
 
   return (
-    <DndProvider backend={TouchBackend}>
+    <DndProvider backend={isSmallScreen ? TouchBackend : HTML5Backend}>
       <Grid gutter="lg">
         <TaskColumn
           title="To Do"

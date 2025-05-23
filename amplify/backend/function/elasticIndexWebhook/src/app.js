@@ -17,14 +17,9 @@ Amplify Params - DO NOT EDIT */
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
-const { Client } = require("@elastic/elasticsearch");
-
-const esClient = new Client({
-  node: process.env.ELASTICSEARCH_URL,
-  auth: {
-    apiKey: process.env.ES_API_KEY,
-  },
-});
+const { Client  } = require("@opensearch-project/opensearch");
+const { defaultProvider } = require("@aws-sdk/credential-provider-node");
+const { AwsSigv4Signer } = require("@opensearch-project/opensearch/aws");
 
 // declare a new express app
 const app = express();
@@ -43,6 +38,21 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(awsServerlessExpressMiddleware.eventContext());
 
+
+const client = new Client({
+  ...AwsSigv4Signer({
+    region: 'us-east-2',
+    service: 'es',
+    getCredentials: () => {
+      const credentialsProvider = defaultProvider();
+      return credentialsProvider();
+    },
+  }),
+  requestTimeout: 60000, 
+  node: process.env.OPENSEARCH_ENDPOINT,
+})
+
+
 /**********************
  * Example get method *
  **********************/
@@ -55,7 +65,7 @@ app.post("/sync", async function (req, res) {
     }
     const snippetId = snippet.id;
 
-    await esClient.index({
+    await client.index({
       index: "snippets",
       id: snippetId,
       body: {

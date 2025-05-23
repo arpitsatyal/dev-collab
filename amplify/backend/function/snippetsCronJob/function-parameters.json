@@ -10,8 +10,8 @@
       "environmentVariableName": "ES_API_KEY"
     },
     {
-      "cloudFormationParameterName": "elasticsearchUrl",
-      "environmentVariableName": "ELASTICSEARCH_URL"
+      "cloudFormationParameterName": "opensearchEndpoint",
+      "environmentVariableName": "OPENSEARCH_ENDPOINT"
     }
   ]
 }

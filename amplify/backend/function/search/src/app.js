@@ -9,7 +9,7 @@ See the License for the specific language governing permissions and limitations 
 /* Amplify Params - DO NOT EDIT
 	ENV
 	REGION
-	ELASTICSEARCH_URL
+	OPENSEARCH_ENDPOINT
 	ES_API_KEY
 	NEON_DB_URL
 Amplify Params - DO NOT EDIT */
@@ -17,7 +17,9 @@ Amplify Params - DO NOT EDIT */
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
-const { Client } = require("@elastic/elasticsearch");
+const { Client } = require("@opensearch-project/opensearch");
+const { defaultProvider } = require("@aws-sdk/credential-provider-node");
+const { AwsSigv4Signer } = require("@opensearch-project/opensearch/aws");
 
 // declare a new express app
 const app = express();
@@ -26,25 +28,43 @@ app.use(bodyParser.json());
 app.use(awsServerlessExpressMiddleware.eventContext());
 
 // Enable CORS for all methods
-app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "*");
+app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*"); // Or specify your Amplify app's domain
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader(
+    "Access-Control-Allow-Headers",
+    "Content-Type, Authorization, *"
+  );
+  // Handle preflight requests
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
   next();
 });
 
-const esClient = new Client({
-  node: process.env.ELASTICSEARCH_URL,
-  auth: {
-    apiKey: process.env.ES_API_KEY,
-  },
+const client = new Client({
+  ...AwsSigv4Signer({
+    region: "us-east-2",
+    service: "es",
+    getCredentials: () => {
+      const credentialsProvider = defaultProvider();
+      return credentialsProvider();
+    },
+  }),
+  requestTimeout: 60000,
+  node: process.env.OPENSEARCH_ENDPOINT,
 });
 
-app.post("/search", async function (req, res) {
+app.post("/search", async (req, res) => {
+  const { query } = req.query || {};
   try {
-    const { query } = req.query || {};
     if (!query)
       return res.status(400).json({ msg: "Please provide a search query!" });
-    const result = await esClient.search({
+
+    const result = await client.search({
       index: "snippets",
       body: {
         query: {
@@ -72,17 +92,16 @@ app.post("/search", async function (req, res) {
       },
     });
 
-    const hits = result.hits.hits;
+    const hits = result.body.hits.hits;
     res.json(hits);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Search failed, try again later!");
+    res.status(500).send("Search failed");
   }
 });
-
-app.all("*", (req, res) => {
-  res.status(404).json({ message: "Route not found" });
-});
+// app.all("*", (req, res) => {
+//   res.status(404).json({ message: "Route not found" });
+// });
 
 app.listen(3000, function () {
   console.log("App started");

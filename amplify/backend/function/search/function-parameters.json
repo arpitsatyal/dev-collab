@@ -1,4 +1,5 @@
 {
+  "permissions": {},
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
@@ -9,14 +10,6 @@
     }
   ],
   "environmentVariableList": [
-    {
-      "cloudFormationParameterName": "neonDbUrl",
-      "environmentVariableName": "NEON_DB_URL"
-    },
-    {
-      "cloudFormationParameterName": "esApiKey",
-      "environmentVariableName": "ES_API_KEY"
-    },
     {
       "cloudFormationParameterName": "opensearchEndpoint",
       "environmentVariableName": "OPENSEARCH_ENDPOINT"

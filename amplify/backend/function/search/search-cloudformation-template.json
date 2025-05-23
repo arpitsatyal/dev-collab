@@ -1,6 +1,6 @@
 {
   "AWSTemplateFormatVersion": "2010-09-09",
-  "Description": "Lambda Function resource stack creation using Amplify CLI",
+  "Description": "{\"createdOn\":\"Windows\",\"createdBy\":\"Amplify\",\"createdWith\":\"13.0.1\",\"stackType\":\"function-Lambda\",\"metadata\":{\"whyContinueWithGen1\":\"\"}}",
   "Parameters": {
     "CloudWatchRule": {
       "Type": "String",
@@ -16,13 +16,11 @@
     "s3Key": {
       "Type": "String"
     },
-    "neonDbUrl": {
-      "Type": "String"
+    "functiondevcollabsearchservicelayerArn": {
+      "Type": "String",
+      "Default": "functiondevcollabsearchservicelayerArn"
     },
-    "esApiKey": {
-      "Type": "String"
-    },
-    "elasticsearchUrl": {
+    "opensearchEndpoint": {
       "Type": "String"
     }
   },
@@ -56,12 +54,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "searchService",
+            "search",
             {
               "Fn::Join": [
                 "",
                 [
-                  "searchService",
+                  "search",
                   "-",
                   {
                     "Ref": "env"
@@ -79,14 +77,8 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "NEON_DB_URL": {
-              "Ref": "neonDbUrl"
-            },
-            "ES_API_KEY": {
-              "Ref": "esApiKey"
-            },
-            "ELASTICSEARCH_URL": {
-              "Ref": "elasticsearchUrl"
+            "OPENSEARCH_ENDPOINT": {
+              "Ref": "opensearchEndpoint"
             }
           }
         },
@@ -97,7 +89,11 @@
           ]
         },
         "Runtime": "nodejs22.x",
-        "Layers": [],
+        "Layers": [
+          {
+            "Ref": "functiondevcollabsearchservicelayerArn"
+          }
+        ],
         "Timeout": 25
       }
     },
@@ -107,12 +103,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "devcollabLambdaRolea837cb8a",
+            "devcollabLambdaRole9f3f234e",
             {
               "Fn::Join": [
                 "",
                 [
-                  "devcollabLambdaRolea837cb8a",
+                  "devcollabLambdaRole9f3f234e",
                   "-",
                   {
                     "Ref": "env"

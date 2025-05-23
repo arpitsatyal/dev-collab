@@ -8,7 +8,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "searchService"
+          "resourceName": "search"
         },
         {
           "attributes": [
@@ -24,20 +24,36 @@
     }
   },
   "function": {
-    "devcollabsearch": {
+    "devcollabsearchservicelayer": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer"
     },
     "elasticIndexWebhook": {
       "build": true,
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "devcollabsearchservicelayer"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
-    "searchService": {
+    "search": {
       "build": true,
-      "dependsOn": [],
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "devcollabsearchservicelayer"
+        }
+      ],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
     },
@@ -49,31 +65,23 @@
     }
   },
   "parameters": {
-    "AMPLIFY_function_devcollabsearch_deploymentBucketName": {
+    "AMPLIFY_function_devcollabsearchservicelayer_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "devcollabsearch"
+          "resourceName": "devcollabsearchservicelayer"
         }
       ]
     },
-    "AMPLIFY_function_devcollabsearch_s3Key": {
+    "AMPLIFY_function_devcollabsearchservicelayer_s3Key": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "devcollabsearch"
+          "resourceName": "devcollabsearchservicelayer"
         }
       ]
     },
     "AMPLIFY_function_elasticIndexWebhook_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "elasticIndexWebhook"
-        }
-      ]
-    },
-    "AMPLIFY_function_elasticIndexWebhook_elasticsearchUrl": {
       "usedBy": [
         {
           "category": "function",
@@ -97,6 +105,14 @@
         }
       ]
     },
+    "AMPLIFY_function_elasticIndexWebhook_opensearchEndpoint": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
     "AMPLIFY_function_elasticIndexWebhook_s3Key": {
       "usedBy": [
         {
@@ -105,55 +121,31 @@
         }
       ]
     },
-    "AMPLIFY_function_searchService_deploymentBucketName": {
+    "AMPLIFY_function_search_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "searchService"
+          "resourceName": "search"
         }
       ]
     },
-    "AMPLIFY_function_searchService_elasticsearchUrl": {
+    "AMPLIFY_function_search_opensearchEndpoint": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "searchService"
+          "resourceName": "search"
         }
       ]
     },
-    "AMPLIFY_function_searchService_esApiKey": {
+    "AMPLIFY_function_search_s3Key": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "searchService"
-        }
-      ]
-    },
-    "AMPLIFY_function_searchService_neonDbUrl": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "searchService"
-        }
-      ]
-    },
-    "AMPLIFY_function_searchService_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "searchService"
+          "resourceName": "search"
         }
       ]
     },
     "AMPLIFY_function_snippetsCronJob_deploymentBucketName": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "snippetsCronJob"
-        }
-      ]
-    },
-    "AMPLIFY_function_snippetsCronJob_elasticsearchUrl": {
       "usedBy": [
         {
           "category": "function",
@@ -170,6 +162,14 @@
       ]
     },
     "AMPLIFY_function_snippetsCronJob_neonDbUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "snippetsCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_snippetsCronJob_opensearchEndpoint": {
       "usedBy": [
         {
           "category": "function",

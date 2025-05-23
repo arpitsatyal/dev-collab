@@ -16,13 +16,17 @@
     "s3Key": {
       "Type": "String"
     },
+    "functiondevcollabsearchservicelayerArn": {
+      "Type": "String",
+      "Default": "functiondevcollabsearchservicelayerArn"
+    },
     "neonDbUrl": {
       "Type": "String"
     },
     "esApiKey": {
       "Type": "String"
     },
-    "elasticsearchUrl": {
+    "opensearchEndpoint": {
       "Type": "String"
     }
   },
@@ -85,8 +89,8 @@
             "ES_API_KEY": {
               "Ref": "esApiKey"
             },
-            "ELASTICSEARCH_URL": {
-              "Ref": "elasticsearchUrl"
+            "OPENSEARCH_ENDPOINT": {
+              "Ref": "opensearchEndpoint"
             }
           }
         },
@@ -97,7 +101,11 @@
           ]
         },
         "Runtime": "nodejs22.x",
-        "Layers": [],
+        "Layers": [
+          {
+            "Ref": "functiondevcollabsearchservicelayerArn"
+          }
+        ],
         "Timeout": 25
       }
     },

@@ -22,7 +22,7 @@
     "esApiKey": {
       "Type": "String"
     },
-    "elasticsearchUrl": {
+    "opensearchEndpoint": {
       "Type": "String"
     }
   },
@@ -85,8 +85,8 @@
             "ES_API_KEY": {
               "Ref": "esApiKey"
             },
-            "ELASTICSEARCH_URL": {
-              "Ref": "elasticsearchUrl"
+            "OPENSEARCH_ENDPOINT": {
+              "Ref": "opensearchEndpoint"
             }
           }
         },
