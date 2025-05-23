@@ -1,15 +1,14 @@
-import { Grid, Paper, Text, useMantineTheme } from "@mantine/core";
+import { Grid, Paper, Text, useMantineColorScheme } from "@mantine/core";
 import { Task, TaskStatus } from "@prisma/client";
-import { ConnectDropTarget, useDrop } from "react-dnd";
+import { useDrop } from "react-dnd";
 import TaskItem from "./TaskItem";
 
 interface TaskColumnProps {
   title: string;
   tasks: Task[];
-  theme: ReturnType<typeof useMantineTheme>;
   onDropTask: (taskId: string, taskStatus: TaskStatus) => void;
 }
-const TaskColumn = ({ title, tasks, theme, onDropTask }: TaskColumnProps) => {
+const TaskColumn = ({ title, tasks, onDropTask }: TaskColumnProps) => {
   const status =
     title === "To Do"
       ? TaskStatus.TODO
@@ -29,19 +28,19 @@ const TaskColumn = ({ title, tasks, theme, onDropTask }: TaskColumnProps) => {
     }),
   });
 
+  const { colorScheme } = useMantineColorScheme();
+  const backgroundColor = colorScheme === "dark" ? "dark.6" : "gray.0";
+  const titleColor = colorScheme === "dark" ? "gray.0" : "gray.8";
+  const noTasksColor = colorScheme === "dark" ? "gray.5" : "dimmed";
+
   return (
     <Grid.Col span={{ base: 12, md: 4 }}>
-      <Paper
-        ref={dropRef as any} //todo: FIX TYPE ERROR
-        p="md"
-        shadow="xs"
-        style={{ backgroundColor: theme.colors.gray[0] }}
-      >
-        <Text fw={500} size="lg" mb="md">
+      <Paper ref={dropRef as any} p="md" shadow="xs" bg={backgroundColor}>
+        <Text fw={500} size="lg" mb="md" c={titleColor}>
           {title}
         </Text>
         {tasks.length === 0 ? (
-          <Text c="dimmed" size="sm">
+          <Text c={noTasksColor} size="sm">
             No tasks in this column
           </Text>
         ) : (

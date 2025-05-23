@@ -4,6 +4,7 @@ import SideNav from "./SideNav";
 import SpotlightSearch from "./SpotlightSearch";
 import { useRouter } from "next/router";
 import DevCollabIcon from "./DevCollabIcon";
+import ThemeToggle from "./ThemeToggle";
 
 export default function Layout({ children }: any) {
   const [opened, { toggle }] = useDisclosure();
@@ -44,7 +45,7 @@ export default function Layout({ children }: any) {
             <SpotlightSearch isSmallScreen={isSmallScreen ?? false} />
           </Box>
 
-          {!isSmallScreen ? <Box></Box> : <></>}
+          {!isSmallScreen ? <ThemeToggle /> : <></>}
         </Flex>
       </AppShell.Header>
       <SideNav />

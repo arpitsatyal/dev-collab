@@ -10,7 +10,10 @@ export const userApi = createApi({
       query: () => "users",
       providesTags: (result) => (result ? [{ type: "Users", id: "LIST" }] : []),
     }),
+    getUser: builder.query<User, string>({
+      query: (id) => `users?userId=${id}`,
+    }),
   }),
 });
 
-export const { useGetUsersQuery } = userApi;
+export const { useGetUsersQuery, useGetUserQuery } = userApi;

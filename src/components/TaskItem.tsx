@@ -1,4 +1,4 @@
-import { Text, Paper } from "@mantine/core";
+import { Text, Paper, useMantineColorScheme } from "@mantine/core";
 import { Task } from "@prisma/client";
 import { useDrag } from "react-dnd";
 import dayjs from "dayjs";
@@ -12,21 +12,33 @@ const TaskItem = ({ task }: { task: Task }) => {
     }),
   });
 
+  const { colorScheme } = useMantineColorScheme();
+
+  const backgroundColor = colorScheme === "dark" ? "dark.5" : "white";
+  const textColor = colorScheme === "dark" ? "gray.0" : "gray.8";
+  const secondaryTextColor = colorScheme === "dark" ? "gray.2" : "gray.7";
+
   return (
     <Paper
-      ref={dragRef as any} //todo: FIX TYPE ERROR
+      ref={dragRef as any}
       p="sm"
       mb="sm"
+      bg={backgroundColor}
       style={{
-        backgroundColor: "#ffffff",
         opacity: isDragging ? 0.5 : 1,
         cursor: "move",
       }}
     >
-      <Text>{task.title}</Text>
-      {task.description && <Text size="sm">{task.description}</Text>}
+      <Text c={textColor}>{task.title}</Text>
+      {task.description && (
+        <Text size="sm" c={secondaryTextColor}>
+          {task.description}
+        </Text>
+      )}
       {task.dueDate && (
-        <Text size="xs">Due: {dayjs(task.dueDate).format("MMM D, YYYY")}</Text>
+        <Text size="xs" c={secondaryTextColor}>
+          Due: {dayjs(task.dueDate).format("MMM D, YYYY")}
+        </Text>
       )}
     </Paper>
   );

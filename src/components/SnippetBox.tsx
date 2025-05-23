@@ -101,6 +101,7 @@ const SnippetBox = ({
             value={title}
             onChange={(e) => handleNameChange(e)}
             label="Snippet Name"
+            labelProps={{ style: { marginBottom: "12px" } }}
             placeholder="Enter the name of your snippet"
             size="md"
             aria-label="Snippet name input"

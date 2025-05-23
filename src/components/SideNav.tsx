@@ -19,6 +19,8 @@ import { Snippet, Task } from "@prisma/client";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchProjects } from "../store/thunks";
 import { RootState } from "../store/store";
+import ThemeToggle from "./ThemeToggle";
+import { useMediaQuery } from "@mantine/hooks";
 
 interface NavItemProps {
   id: string;
@@ -33,6 +35,7 @@ interface NavItemProps {
 
 const SideNav = () => {
   const router = useRouter();
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const [openItem, setOpenItem] = useState<string | null>(null);
 
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
@@ -290,6 +293,12 @@ const SideNav = () => {
           </NavLink>
         ))}
       </AppShell.Section>
+
+      {isSmallScreen && (
+        <Box p={5}>
+          <ThemeToggle />
+        </Box>
+      )}
     </AppShell.Navbar>
   );
 };

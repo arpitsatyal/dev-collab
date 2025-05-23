@@ -8,6 +8,7 @@ import {
   Paper,
   Text,
   TextInput,
+  useMantineColorScheme,
   useMantineTheme,
 } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
@@ -158,6 +159,7 @@ const SpotlightSearch = ({
   const router = useRouter();
   const [query, setQuery] = useState("");
   const theme = useMantineTheme();
+  const { colorScheme } = useMantineColorScheme();
 
   const { loadedProjects, isLoading: isProjectsLoading } = useAppSelector(
     (state: RootState) => state.project
@@ -169,6 +171,9 @@ const SpotlightSearch = ({
     isTyping,
   } = useSearch(query);
   const currentProjectId = router.query.projectId as string | undefined;
+
+  const backgroundColor = colorScheme === "dark" ? "dark.6" : "white";
+  const iconColor = colorScheme === "dark" ? "gray.0" : "gray.7";
 
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
@@ -243,7 +248,10 @@ const SpotlightSearch = ({
                   style={{
                     width: "60px",
                     padding: "5px",
-                    backgroundColor: theme.colors.gray[0],
+                    backgroundColor:
+                      colorScheme === "dark"
+                        ? theme.colors.dark[7]
+                        : theme.colors.gray[0],
                   }}
                 >
                   <Text size="xs" fw={700} lh={1}>
@@ -271,9 +279,8 @@ const SpotlightSearch = ({
             onClick={() => spotlight.open()}
             radius="md"
             size="lg"
-            style={{
-              backgroundColor: "#ffffff",
-            }}
+            bg={backgroundColor}
+            c={iconColor}
           >
             <IconSearch size={24} />
           </ActionIcon>

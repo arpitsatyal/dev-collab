@@ -1,4 +1,4 @@
-import { Center, Grid, Text, useMantineTheme } from "@mantine/core";
+import { Center, Grid, Text } from "@mantine/core";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
 import { getSingleQueryParam } from "../utils/getSingleQueryParam";
@@ -16,7 +16,6 @@ import { HTML5Backend } from "react-dnd-html5-backend";
 import { useMediaQuery } from "@mantine/hooks";
 
 const TaskBoard = () => {
-  const theme = useMantineTheme();
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
   const { data, isLoading } = useGetTasksForProjectQuery(projectId ?? "");
@@ -89,19 +88,16 @@ const TaskBoard = () => {
         <TaskColumn
           title="To Do"
           tasks={todoTasks}
-          theme={theme}
           onDropTask={handleDropTask}
         />
         <TaskColumn
           title="In Progress"
           tasks={inProgressTasks}
-          theme={theme}
           onDropTask={handleDropTask}
         />
         <TaskColumn
           title="Done"
           tasks={doneTasks}
-          theme={theme}
           onDropTask={handleDropTask}
         />
       </Grid>

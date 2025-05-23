@@ -20,14 +20,15 @@ import {
   Stack,
   Text,
   useMantineTheme,
+  useMantineColorScheme,
 } from "@mantine/core";
 import Loading from "./Loader";
 import { useSnippetFromRouter } from "../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../store/hooks";
-import { useUser } from "../hooks/useUser";
 import { useMediaQuery } from "@mantine/hooks";
 import { useSyncLoading } from "../hooks/useSyncLoading";
 import dayjs from "dayjs";
+import { useGetUserQuery } from "../store/api/userApi";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -60,10 +61,12 @@ export default function CodeEditor({
   );
 
   const snippet = useSnippetFromRouter(loadedSnippets);
-  const { user, loading: userLoading } =
-    useUser(snippet?.lastEditedById ?? snippet?.authorId) || {};
+  const { data: user, isLoading: userLoading } = useGetUserQuery(
+    snippet?.lastEditedById ?? snippet?.authorId ?? ""
+  );
   const storageCode = useStorage((root) => root.code as string);
   const rawLanguage = useStorage((root) => root.language);
+  const { colorScheme } = useMantineColorScheme();
 
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
@@ -249,7 +252,7 @@ export default function CodeEditor({
             key={language}
             height="90vh"
             defaultLanguage={language}
-            theme="vs-dark"
+            theme={colorScheme === "dark" ? "vs-dark" : "vs-light"}
             value={code ?? storageCode ?? ""}
             onChange={(val) => updateCode(val || "")}
             onMount={handleEditorMount}
