@@ -8,14 +8,15 @@ import {
   TextInput,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { useGetUsersQuery } from "../store/api/userApi";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { TaskStatus } from "@prisma/client";
-import { useAppSelector } from "../store/hooks";
-import { RootState } from "../store/store";
-import { TaskCreateData } from "../pages/api/tasks";
 import dayjs from "dayjs";
+import { TaskCreateData } from "../../pages/api/tasks";
+import { useAppSelector } from "../../store/hooks";
+import { useGetUsersQuery } from "../../store/api/userApi";
+import { RootState } from "../../store/store";
+import classes from "./Task.module.css";
 
 interface CreateTaskModalProps {
   handleInputChange: <K extends keyof TaskCreateData>(
@@ -137,13 +138,16 @@ const CreateTaskModal = ({
         }
         disabled
         value={taskForm.projectId}
-        onChange={(value) => handleInputChange("projectId", value || "")}
         mb="md"
         required
         error={errors.projectId}
       />
       <Group justify="right">
-        <Button variant="outline" onClick={close}>
+        <Button
+          variant="outline"
+          onClick={close}
+          className={classes.cancelButton}
+        >
           Cancel
         </Button>
         <Button onClick={onSubmit} loading={isLoading}>

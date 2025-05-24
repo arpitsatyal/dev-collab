@@ -1,24 +1,16 @@
 import { NextRouter, useRouter } from "next/router";
 import { useState, useMemo, useCallback, JSX } from "react";
 import { IconSearch, IconFolder } from "@tabler/icons-react";
-import {
-  ActionIcon,
-  Box,
-  Group,
-  Paper,
-  Text,
-  TextInput,
-  useMantineColorScheme,
-  useMantineTheme,
-} from "@mantine/core";
+import { ActionIcon, Box, Group, Paper, Text, TextInput } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
-import { truncateByWords } from "../utils/truncateByWords";
-import { useAppSelector } from "../store/hooks";
-import { useSearch } from "../hooks/useSearch";
-import Loading from "./Loader";
-import FileIcon from "./FileIcon";
+import { truncateByWords } from "../../utils/truncateByWords";
+import { useAppSelector } from "../../store/hooks";
+import { useSearch } from "../../hooks/useSearch";
+import Loading from "../Loader";
+import FileIcon from "../FileIcon";
 import { Project, Snippet } from "@prisma/client";
-import { RootState } from "../store/store";
+import { RootState } from "../../store/store";
+import classes from "./SpotlightSearch.module.css";
 
 interface DataItem {
   id: string;
@@ -158,8 +150,6 @@ const SpotlightSearch = ({
 }) => {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const theme = useMantineTheme();
-  const { colorScheme } = useMantineColorScheme();
 
   const { loadedProjects, isLoading: isProjectsLoading } = useAppSelector(
     (state: RootState) => state.project
@@ -171,9 +161,6 @@ const SpotlightSearch = ({
     isTyping,
   } = useSearch(query);
   const currentProjectId = router.query.projectId as string | undefined;
-
-  const backgroundColor = colorScheme === "dark" ? "dark.6" : "white";
-  const iconColor = colorScheme === "dark" ? "gray.0" : "gray.7";
 
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
@@ -248,11 +235,8 @@ const SpotlightSearch = ({
                   style={{
                     width: "60px",
                     padding: "5px",
-                    backgroundColor:
-                      colorScheme === "dark"
-                        ? theme.colors.dark[7]
-                        : theme.colors.gray[0],
                   }}
+                  className={classes.shortcut}
                 >
                   <Text size="xs" fw={700} lh={1}>
                     Ctrl + K
@@ -279,8 +263,7 @@ const SpotlightSearch = ({
             onClick={() => spotlight.open()}
             radius="md"
             size="lg"
-            bg={backgroundColor}
-            c={iconColor}
+            className={classes.icon}
           >
             <IconSearch size={24} />
           </ActionIcon>

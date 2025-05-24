@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
-import SnippetBox from "../../../../../components/SnippetBox";
 import Layout from "../../../../../components/Layout";
 import Loading from "../../../../../components/Loader";
 import {
@@ -28,6 +27,7 @@ import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
 import axios from "axios";
 import { SnippetsUpdateData } from "../../../../api/snippets";
+import SnippetBox from "../../../../../components/Snippets/SnippetBox";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();

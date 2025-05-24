@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { Button, Group, Container, Text } from "@mantine/core";
+import { Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { withAuth } from "../../../../guards/withAuth";
 import Layout from "../../../../components/Layout";
-import CreateTaskModal from "../../../../components/CreateTaskModal";
-import TaskBoard from "../../../../components/TaskBoard";
 import { TaskStatus } from "@prisma/client";
 import { useCreateTaskMutation } from "../../../../store/api/taskApi";
 import { notifications } from "@mantine/notifications";
@@ -14,6 +12,10 @@ import { useAppSelector } from "../../../../store/hooks";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { useRouter } from "next/router";
 import { TaskCreateData } from "../../../api/tasks";
+import CreateTaskModal from "../../../../components/Task/CreateTaskModal";
+import TaskBoard from "../../../../components/Task/TaskBoard";
+import TaskInfo from "../../../../components/Task/TaskInfo";
+import Loading from "../../../../components/Loader";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -68,25 +70,13 @@ const TasksPage = () => {
     }
   };
 
+  if (!projectId || !project) {
+    return <Loading />;
+  }
+
   return (
     <Container size="xl" py="md">
-      <Group justify="space-between" mb="lg">
-        <Text
-          size="xl"
-          fw={600}
-          mb="sm"
-          c="dimmed"
-          style={{
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            wordWrap: "break-word",
-            whiteSpace: "normal",
-          }}
-        >
-          Project Workspace {project?.title}
-        </Text>
-        <Button onClick={open}>Create Task</Button>
-      </Group>
+      <TaskInfo project={project} open={open} />
 
       <CreateTaskModal
         opened={opened}

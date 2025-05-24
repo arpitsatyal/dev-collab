@@ -3,7 +3,7 @@ import { NavLink, Text } from "@mantine/core";
 import { IconPlus } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import { Snippet } from "@prisma/client";
-import FileIcon from "./FileIcon";
+import FileIcon from "../FileIcon";
 
 const SnippetList = ({
   snippets,

@@ -12,7 +12,8 @@ import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
-import "../global.css";
+import "../index.css";
+import { theme } from "../utils/theme";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -31,7 +32,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <Provider store={store}>
         <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
           <SessionProvider session={pageProps.session}>
-            <MantineProvider>
+            <MantineProvider theme={theme} withGlobalClasses>
               <MantineEmotionProvider>
                 <Notifications position="top-right" />
                 {getLayout(<Component {...pageProps} />)}

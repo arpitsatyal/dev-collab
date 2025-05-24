@@ -2,7 +2,6 @@ import { useRouter } from "next/router";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
 import Layout from "../../../../components/Layout";
-import SnippetBox from "../../../../components/SnippetBox";
 import { RoomProvider, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
@@ -13,6 +12,7 @@ import { languageMapper } from "../../../../utils/languageMapper";
 import { withAuth } from "../../../../guards/withAuth";
 import axios from "axios";
 import { SnippetsCreateData } from "../../../api/snippets";
+import SnippetBox from "../../../../components/Snippets/SnippetBox";
 
 const Create = () => {
   const router = useRouter();

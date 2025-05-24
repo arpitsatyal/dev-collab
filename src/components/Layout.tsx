@@ -1,10 +1,10 @@
 import { AppShell, Box, Burger, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "./SideNav";
-import SpotlightSearch from "./SpotlightSearch";
+import SpotlightSearch from "./Search/SpotlightSearch";
 import { useRouter } from "next/router";
 import DevCollabIcon from "./DevCollabIcon";
-import ThemeToggle from "./ThemeToggle";
+import ThemeToggle from "./Theme/ThemeToggle";
 
 export default function Layout({ children }: any) {
   const [opened, { toggle }] = useDisclosure();

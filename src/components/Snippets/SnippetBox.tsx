@@ -12,11 +12,12 @@ import {
   Paper,
 } from "@mantine/core";
 import React, { useState } from "react";
-import CodeEditor from "./CodeEditor";
 import { useRouter } from "next/router";
-import Loading from "./Loader";
 import { useOthers } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
+import Loading from "../Loader";
+import CodeEditor from "../CodeEditor/CodeEditor";
+import classes from "./Snippet.module.css";
 
 interface SnippetBoxProps {
   title: string;
@@ -87,13 +88,13 @@ const SnippetBox = ({
             size="xl"
             fw={600}
             mb="sm"
-            c="dimmed"
             style={{
               overflow: "hidden",
               textOverflow: "ellipsis",
               wordWrap: "break-word",
               whiteSpace: "normal",
             }}
+            className={classes.title}
           >
             Project Workspace - {title}
           </Text>
@@ -117,7 +118,7 @@ const SnippetBox = ({
           withBorder
           style={{ flex: "1 1 200px", maxWidth: "300px" }}
         >
-          <Text size="sm" fw={500} mb="xs" c="dimmed">
+          <Text size="sm" fw={500} mb="xs" className={classes.title}>
             Active Users
           </Text>
           {others.length ? (
@@ -144,13 +145,13 @@ const SnippetBox = ({
               ))}
             </Stack>
           ) : (
-            <Text size="sm" c="dimmed" fs="italic">
+            <Text size="sm" fs="italic" className={classes.secondary}>
               No active users
             </Text>
           )}
         </Paper>
       </Flex>
-      <Box style={{ border: "1px solid #e0e0e0", borderRadius: 4 }}>
+      <Box className={classes.editorBorder}>
         <CodeEditor
           code={code}
           setCode={setCode}

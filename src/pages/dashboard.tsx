@@ -3,7 +3,7 @@ import { withAuth } from "../guards/withAuth";
 import { Session } from "next-auth";
 
 const Dashboard = ({ user }: { user: Session["user"] }) => {
-  return <p>welcome, {user.name ?? ""}</p>;
+  return <p>Welcome, {user.name ?? ""}</p>;
 };
 
 export const getServerSideProps = withAuth(async (_ctx, session) => {

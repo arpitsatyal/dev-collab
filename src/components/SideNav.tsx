@@ -11,7 +11,6 @@ import {
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import SnippetList from "./SnippetList";
 import Loading from "./Loader";
 import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { setSnippets } from "../store/slices/snippetSlice";
@@ -19,8 +18,9 @@ import { Snippet, Task } from "@prisma/client";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { fetchProjects } from "../store/thunks";
 import { RootState } from "../store/store";
-import ThemeToggle from "./ThemeToggle";
 import { useMediaQuery } from "@mantine/hooks";
+import SnippetList from "./Snippets/SnippetList";
+import ThemeToggle from "./Theme/ThemeToggle";
 
 interface NavItemProps {
   id: string;

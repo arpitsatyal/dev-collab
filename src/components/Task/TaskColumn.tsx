@@ -1,7 +1,8 @@
-import { Grid, Paper, Text, useMantineColorScheme } from "@mantine/core";
+import { Grid, Paper, Text } from "@mantine/core";
 import { Task, TaskStatus } from "@prisma/client";
 import { useDrop } from "react-dnd";
 import TaskItem from "./TaskItem";
+import classes from "./Task.module.css";
 
 interface TaskColumnProps {
   title: string;
@@ -28,19 +29,14 @@ const TaskColumn = ({ title, tasks, onDropTask }: TaskColumnProps) => {
     }),
   });
 
-  const { colorScheme } = useMantineColorScheme();
-  const backgroundColor = colorScheme === "dark" ? "dark.6" : "gray.0";
-  const titleColor = colorScheme === "dark" ? "gray.0" : "gray.8";
-  const noTasksColor = colorScheme === "dark" ? "gray.5" : "dimmed";
-
   return (
     <Grid.Col span={{ base: 12, md: 4 }}>
-      <Paper ref={dropRef as any} p="md" shadow="xs" bg={backgroundColor}>
-        <Text fw={500} size="lg" mb="md" c={titleColor}>
+      <Paper ref={dropRef as any} p="md" shadow="xs" className={classes.column}>
+        <Text fw={500} size="lg" mb="md">
           {title}
         </Text>
         {tasks.length === 0 ? (
-          <Text c={noTasksColor} size="sm">
+          <Text size="sm" className={classes.secondary}>
             No tasks in this column
           </Text>
         ) : (

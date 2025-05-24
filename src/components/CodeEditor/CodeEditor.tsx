@@ -10,7 +10,6 @@ import {
   useRoom,
 } from "@liveblocks/react";
 import type * as monacoType from "monaco-editor";
-import { useCursorStyles } from "../utils/cursor";
 import {
   Avatar,
   Box,
@@ -20,15 +19,16 @@ import {
   Stack,
   Text,
   useMantineTheme,
-  useMantineColorScheme,
+  useComputedColorScheme,
 } from "@mantine/core";
-import Loading from "./Loader";
-import { useSnippetFromRouter } from "../hooks/useSnippetFromRouter";
-import { useAppSelector } from "../store/hooks";
 import { useMediaQuery } from "@mantine/hooks";
-import { useSyncLoading } from "../hooks/useSyncLoading";
 import dayjs from "dayjs";
-import { useGetUserQuery } from "../store/api/userApi";
+import { useAppSelector } from "../../store/hooks";
+import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
+import { useGetUserQuery } from "../../store/api/userApi";
+import { useSyncLoading } from "../../hooks/useSyncLoading";
+import Loading from "../Loader";
+import { useCursorStyles } from "../../utils/cursor";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -66,13 +66,14 @@ export default function CodeEditor({
   );
   const storageCode = useStorage((root) => root.code as string);
   const rawLanguage = useStorage((root) => root.language);
-  const { colorScheme } = useMantineColorScheme();
 
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
   const status = room.getStorageStatus();
   const theme = useMantineTheme();
-  const isSmallScreen = useMediaQuery("(max-width: 600px)");
+  const computedColorScheme = useComputedColorScheme("light", {
+    getInitialValueInEffect: true,
+  });
 
   useSyncLoading(userLoading, setLoading);
 
@@ -199,38 +200,44 @@ export default function CodeEditor({
 
   return (
     <>
-      <Stack p="md" style={{ minHeight: "100vh" }} gap="sm">
-        <Flex pb="xs" justify="space-between" wrap="wrap">
+      <Stack p="md" mih="100vh" gap="sm">
+        <Flex
+          justify="space-between"
+          align={{ base: "flex-start", md: "center" }}
+          direction={{ base: "column", md: "row" }}
+          gap="sm"
+        >
           <Select
             label="Select Language"
             placeholder="Pick a language"
             data={languageOptions}
             value={language}
             onChange={handleLanguageChange}
+            w={{ base: "100%", md: "auto" }}
+            styles={{
+              label: { marginBottom: 12 },
+            }}
           />
 
-          {snippet && user ? (
+          {snippet && user && (
             <Flex
               key={snippet.id}
               direction="column"
-              align={isSmallScreen ? "flex-start" : "flex-end"}
+              align={{ base: "flex-start", md: "flex-end" }}
               gap="xs"
-              style={{
-                width: "100%",
-                maxWidth: isSmallScreen ? "100%" : "200px",
-                padding: isSmallScreen ? theme.spacing.md : 0,
-              }}
+              w={{ base: "100%", md: "auto" }}
+              maw={{ md: 200 }}
             >
               <Tooltip label={user.name ?? "Unknown User"} withinPortal>
                 <Avatar
                   src={user.image}
                   alt={user.name ?? "User avatar"}
                   radius="xl"
-                  size={isSmallScreen ? "sm" : "md"}
                 />
               </Tooltip>
               <Text
-                size={isSmallScreen ? "xs" : "sm"}
+                fs="italic"
+                fz="xs"
                 truncate
                 style={{
                   whiteSpace: "nowrap",
@@ -242,19 +249,17 @@ export default function CodeEditor({
                 {dayjs(snippet.updatedAt).format("MMM D, YYYY [at] h:mm a")}
               </Text>
             </Flex>
-          ) : (
-            <></>
           )}
         </Flex>
 
-        <Box style={{ flexGrow: 1 }}>
+        <Box style={{ flexGrow: 1, height: "90vh" }}>
           <MonacoEditor
             key={language}
-            height="90vh"
+            height="100%"
             defaultLanguage={language}
-            theme={colorScheme === "dark" ? "vs-dark" : "vs-light"}
+            theme={computedColorScheme === "dark" ? "vs-dark" : "vs-light"}
             value={code ?? storageCode ?? ""}
-            onChange={(val) => updateCode(val || "")}
+            onChange={(val) => updateCode(val ?? "")}
             onMount={handleEditorMount}
           />
         </Box>

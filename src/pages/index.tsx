@@ -1,9 +1,7 @@
-import { Button, Card, Container, Stack, Text, Title } from "@mantine/core";
 import type { NextPage } from "next";
 import { signIn } from "next-auth/react";
-import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
 import { withoutAuth } from "../guards/withoutAuth";
-import DevCollabIcon from "../components/DevCollabIcon";
+import SignIn from "../components/SignIn/SignIn";
 
 const Home: NextPage = () => {
   const handleGithubSignIn = async () => {
@@ -23,61 +21,10 @@ const Home: NextPage = () => {
   };
 
   return (
-    <Container
-      fluid
-      style={{
-        minHeight: "100vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        backgroundColor: "#f8fafc",
-      }}
-      p="md"
-    >
-      <Card
-        shadow="sm"
-        padding="xl"
-        radius="md"
-        withBorder
-        style={{ maxWidth: 400, width: "100%" }}
-      >
-        <Stack align="center" gap="xl">
-          <DevCollabIcon />
-
-          <Title order={2} ta="center" c="dark">
-            Welcome to Dev-Collab
-          </Title>
-          <Text size="md" c="dimmed" ta="center">
-            Sign in to collaborate, share, and build amazing projects together.
-          </Text>
-          <Stack w="100%" gap="md">
-            <Button
-              onClick={handleGithubSignIn}
-              leftSection={<IconGitBranch size={20} />}
-              variant="filled"
-              color="dark"
-              radius="md"
-              fullWidth
-            >
-              Sign in with GitHub
-            </Button>
-            <Button
-              onClick={handleGoogleSignIn}
-              leftSection={<IconBrandGoogle size={20} />}
-              variant="outline"
-              color="blue"
-              radius="md"
-              fullWidth
-            >
-              Sign in with Google
-            </Button>
-          </Stack>
-          <Text size="sm" c="dimmed" ta="center">
-            Don&apos;t have an account? Sign up with one click above!
-          </Text>
-        </Stack>
-      </Card>
-    </Container>
+    <SignIn
+      handleGithubSignIn={handleGithubSignIn}
+      handleGoogleSignIn={handleGoogleSignIn}
+    />
   );
 };
 

@@ -1,0 +1,33 @@
+.item {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-5)
+  );
+
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+}
+
+.column {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-6)
+  );
+
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+}
+
+.title {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
+}
+
+.secondary {
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
+}
+
+.cancelButton {
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
+  border-color: light-dark(
+    var(--mantine-color-gray-6),
+    var(--mantine-color-gray-5)
+  );
+}

@@ -1,19 +1,21 @@
 import { Center, Grid, Text } from "@mantine/core";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
-import { getSingleQueryParam } from "../utils/getSingleQueryParam";
-import {
-  useGetTasksForProjectQuery,
-  useUpdateStatusMutation,
-} from "../store/api/taskApi";
-import Loading from "./Loader";
+
 import { Task, TaskStatus } from "@prisma/client";
-import TaskColumn from "./TaskColumn";
 import { DndProvider } from "react-dnd";
 import { notifications } from "@mantine/notifications";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useMediaQuery } from "@mantine/hooks";
+import { getSingleQueryParam } from "../../utils/getSingleQueryParam";
+import {
+  useGetTasksForProjectQuery,
+  useUpdateStatusMutation,
+} from "../../store/api/taskApi";
+import Loading from "../Loader";
+import TaskColumn from "./TaskColumn";
+import classes from "./Task.module.css";
 
 const TaskBoard = () => {
   const router = useRouter();
@@ -44,10 +46,8 @@ const TaskBoard = () => {
 
   if (data?.length === 0) {
     return (
-      <Center>
-        <Text c="dimmed" size="lg">
-          No tasks yet, create one to get started!
-        </Text>
+      <Center className={classes.secondary}>
+        <Text size="lg">No tasks yet, create one to get started!</Text>
       </Center>
     );
   }
