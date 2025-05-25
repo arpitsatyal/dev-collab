@@ -18,7 +18,9 @@ const ProjectDetail = ({ project }: { project: Project }) => {
             {project?.title}
           </Text>
           {project?.description ? (
-            <Text size="md">{project.description}</Text>
+            <Text size="md" className={classes.description}>
+              {project.description}
+            </Text>
           ) : (
             <Text size="md" fs="italic" className={classes.noDescription}>
               No description available

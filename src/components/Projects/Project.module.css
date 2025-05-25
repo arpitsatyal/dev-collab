@@ -4,33 +4,25 @@
     var(--mantine-color-dark-6)
   );
 
-   color: light-dark(
-    var(--mantine-color-gray-7),
-    var(--mantine-color-gray-0)
-  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
 }
 
 .cancelButton {
-      color: light-dark(
-    var(--mantine-color-gray-6),
-    var(--mantine-color-gray-5)
-  );
-   border-color: light-dark(
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
+  border-color: light-dark(
     var(--mantine-color-gray-6),
     var(--mantine-color-gray-5)
   );
 }
 
-.noDescription {
-  color: light-dark(
-    var(--mantine-color-gray-5),
-    var(--mantine-color-gray-5)
-  );
-}
- 
 .title {
-   color: light-dark(
-    var(--mantine-color-gray-7),
-    var(--mantine-color-gray-4)
-  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
+}
+
+.description {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
+}
+
+.noDescription {
+  color: light-dark(var(--mantine-color-gray-5), var(--mantine-color-gray-5));
 }
