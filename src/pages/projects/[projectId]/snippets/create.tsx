@@ -65,7 +65,8 @@ const Create = () => {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
           {
-            snippet: result,
+            doc: result,
+            type: "snippet",
           },
           {
             headers: {

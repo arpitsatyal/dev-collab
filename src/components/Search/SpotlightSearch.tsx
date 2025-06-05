@@ -1,6 +1,6 @@
 import { NextRouter, useRouter } from "next/router";
 import { useState, useMemo, useCallback, JSX } from "react";
-import { IconSearch, IconFolder } from "@tabler/icons-react";
+import { IconSearch, IconFolder, IconSubtask } from "@tabler/icons-react";
 import { ActionIcon, Box, Group, Paper, Text, TextInput } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../../utils/truncateByWords";
@@ -8,17 +8,18 @@ import { useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader";
 import FileIcon from "../FileIcon";
-import { Project, Snippet } from "@prisma/client";
+import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
+import { WithType } from "../../types/withType";
 
 interface DataItem {
   id: string;
   title: string;
-  description?: string;
   icon: JSX.Element;
   onClick: () => void;
   groupLabel: string;
+  description?: string;
   meta?: Record<string, any>;
 }
 
@@ -29,6 +30,11 @@ interface DataSource<T = any> {
   filterData: (data: T[], query: string, context: any) => T[];
   toDataItem: (item: T, context: any) => DataItem;
 }
+
+type TypedSnippet = WithType<Snippet, "snippet">;
+type TypedTask = WithType<Task, "task">;
+
+type MeiliSearchResponse = TypedSnippet | TypedTask;
 
 const filterByQuery = <T extends { title: string }>(
   items: T[],
@@ -110,17 +116,11 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
     // Only include API snippets if not loading and results exist
     const apiSnippets =
       !isSearchLoading && matchedResults?.length > 0
-        ? matchedResults
-            .map((result: any) => ({
-              id: result._id,
-              ...result._source,
-            }))
-            .filter(
-              (apiSnippet: Snippet) =>
-                !localSnippets.some(
-                  (local: Snippet) => local.id === apiSnippet.id
-                )
-            )
+        ? matchedResults.filter(
+            (apiResult: MeiliSearchResponse) =>
+              apiResult.type === "snippet" &&
+              !localSnippets.some((local: Snippet) => local.id === apiResult.id)
+          )
         : [];
     const allSnippets = [...localSnippets, ...apiSnippets];
     return sortByCurrentProject(allSnippets, currentProjectId);
@@ -131,14 +131,47 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
   ) => ({
     id: snippet.id,
     title: `${snippet.title}.${snippet.extension ?? ""}`,
-    description: snippet.language,
     icon: <FileIcon snippet={snippet} />,
     onClick: () =>
       router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
     groupLabel: "Snippets",
     meta: {
       projectTitle:
-        projects?.find((p) => p.id === snippet.projectId)?.title ?? "",
+        projects.find((project) => project.id === snippet.projectId)?.title ??
+        "",
+    },
+  }),
+};
+
+const taskSource: Omit<DataSource<Task>, "data"> = {
+  name: "tasks",
+  groupLabel: "Tasks",
+  filterData: (
+    _,
+    __,
+    { matchedResults, currentProjectId, isSearchLoading }
+  ) => {
+    const apiTasks =
+      !isSearchLoading && matchedResults?.length > 0
+        ? matchedResults.filter(
+            (apiResult: MeiliSearchResponse) => apiResult.type === "task"
+          )
+        : [];
+    return sortByCurrentProject(apiTasks, currentProjectId);
+  },
+  toDataItem: (
+    task,
+    { router, projects }: { router: NextRouter; projects: Project[] }
+  ) => ({
+    id: task.id,
+    title: task.title,
+    description: task.description ?? "-",
+    icon: <IconSubtask />,
+    onClick: () => router.push(`/projects/${task.projectId}/tasks`),
+    groupLabel: "tasks",
+    meta: {
+      projectTitle:
+        projects.find((project) => project.id === task.projectId)?.title ?? "",
     },
   }),
 };
@@ -176,6 +209,10 @@ const SpotlightSearch = ({
         ...snippetSource,
         data: snippets,
       },
+      {
+        ...taskSource,
+        data: [],
+      },
     ],
     [loadedProjects, snippets]
   );
@@ -187,7 +224,7 @@ const SpotlightSearch = ({
   const context = useMemo(
     () => ({
       router,
-      loadedProjects,
+      projects: loadedProjects,
       matchedResults,
       currentProjectId,
       isSearchLoading,

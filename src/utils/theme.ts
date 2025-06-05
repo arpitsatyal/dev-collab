@@ -18,5 +18,8 @@ export const theme: MantineThemeOverride = {
     custom: myPrimaryColor as any, // 'custom' is the name of the color
   },
   primaryColor: "custom", // use the custom palette
-  primaryShade: 5,
+  primaryShade: {
+    light: 5,
+    dark: 8,
+  },
 };

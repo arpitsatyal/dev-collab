@@ -24,7 +24,7 @@
     }
   },
   "function": {
-    "devcollabsearchservicelayer": {
+    "devcollabsearchlayer": {
       "build": true,
       "providerPlugin": "awscloudformation",
       "service": "LambdaLayer"
@@ -37,7 +37,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "devcollabsearchservicelayer"
+          "resourceName": "devcollabsearchlayer"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -51,7 +51,7 @@
             "Arn"
           ],
           "category": "function",
-          "resourceName": "devcollabsearchservicelayer"
+          "resourceName": "devcollabsearchlayer"
         }
       ],
       "providerPlugin": "awscloudformation",
@@ -65,19 +65,19 @@
     }
   },
   "parameters": {
-    "AMPLIFY_function_devcollabsearchservicelayer_deploymentBucketName": {
+    "AMPLIFY_function_devcollabsearchlayer_deploymentBucketName": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "devcollabsearchservicelayer"
+          "resourceName": "devcollabsearchlayer"
         }
       ]
     },
-    "AMPLIFY_function_devcollabsearchservicelayer_s3Key": {
+    "AMPLIFY_function_devcollabsearchlayer_s3Key": {
       "usedBy": [
         {
           "category": "function",
-          "resourceName": "devcollabsearchservicelayer"
+          "resourceName": "devcollabsearchlayer"
         }
       ]
     },
@@ -89,7 +89,7 @@
         }
       ]
     },
-    "AMPLIFY_function_elasticIndexWebhook_esApiKey": {
+    "AMPLIFY_function_elasticIndexWebhook_meilisearchServer": {
       "usedBy": [
         {
           "category": "function",
@@ -98,14 +98,6 @@
       ]
     },
     "AMPLIFY_function_elasticIndexWebhook_neonDbUrl": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "elasticIndexWebhook"
-        }
-      ]
-    },
-    "AMPLIFY_function_elasticIndexWebhook_opensearchEndpoint": {
       "usedBy": [
         {
           "category": "function",
@@ -129,7 +121,7 @@
         }
       ]
     },
-    "AMPLIFY_function_search_opensearchEndpoint": {
+    "AMPLIFY_function_search_meilisearchServer": {
       "usedBy": [
         {
           "category": "function",

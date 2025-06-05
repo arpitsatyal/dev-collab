@@ -20,7 +20,11 @@
       "Type": "String",
       "Default": "functiondevcollabsearchservicelayerArn"
     },
-    "opensearchEndpoint": {
+    "functiondevcollabsearchlayerArn": {
+      "Type": "String",
+      "Default": "functiondevcollabsearchlayerArn"
+    },
+    "meilisearchServer": {
       "Type": "String"
     }
   },
@@ -77,8 +81,8 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "OPENSEARCH_ENDPOINT": {
-              "Ref": "opensearchEndpoint"
+            "MEILISEARCH_SERVER": {
+              "Ref": "meilisearchServer"
             }
           }
         },
@@ -91,7 +95,7 @@
         "Runtime": "nodejs22.x",
         "Layers": [
           {
-            "Ref": "functiondevcollabsearchservicelayerArn"
+            "Ref": "functiondevcollabsearchlayerArn"
           }
         ],
         "Timeout": 25

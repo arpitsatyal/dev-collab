@@ -9,17 +9,13 @@ See the License for the specific language governing permissions and limitations 
 /* Amplify Params - DO NOT EDIT
 	ENV
 	REGION
-	ELASTICSEARCH_URL
-	ES_API_KEY
 	NEON_DB_URL
 Amplify Params - DO NOT EDIT */
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
-const { Client  } = require("@opensearch-project/opensearch");
-const { defaultProvider } = require("@aws-sdk/credential-provider-node");
-const { AwsSigv4Signer } = require("@opensearch-project/opensearch/aws");
+const { Meilisearch } = require("meilisearch");
 
 // declare a new express app
 const app = express();
@@ -38,53 +34,29 @@ app.use((req, res, next) => {
 app.use(bodyParser.json());
 app.use(awsServerlessExpressMiddleware.eventContext());
 
-
-const client = new Client({
-  ...AwsSigv4Signer({
-    region: 'us-east-2',
-    service: 'es',
-    getCredentials: () => {
-      const credentialsProvider = defaultProvider();
-      return credentialsProvider();
-    },
-  }),
-  requestTimeout: 60000, 
-  node: process.env.OPENSEARCH_ENDPOINT,
-})
-
-
 /**********************
  * Example get method *
  **********************/
 
+const client = new Meilisearch({
+  host: process.env.MEILISEARCH_SERVER,
+});
+
+const index = client.index("docs");
+
 app.post("/sync", async function (req, res) {
   try {
-    const snippet = req.body.snippet;
-    if (!snippet) {
-      return res.status(404).json({ msg: "Snippet not found!" });
+    const doc = req.body.doc;
+    if (!doc) {
+      return res.status(404).json({ msg: "doc not found!" });
     }
-    const snippetId = snippet.id;
+    const document = { ...doc, type: req.body.type };
+    await index.addDocuments([document]);
 
-    await client.index({
-      index: "snippets",
-      id: snippetId,
-      body: {
-        title: snippet.title,
-        content: snippet.content,
-        language: snippet.language,
-        createdAt: snippet.createdAt,
-        updatedAt: snippet.updatedAt,
-        projectId: snippet.projectId,
-        authorId: snippet.authorId,
-        extension: snippet.extension,
-        lastEditedById: snippet.lastEditedById,
-      },
-    });
-    console.log(`✅ Snippet ${snippet.id} indexed`);
-    return res.status(200).json({ msg: `✅ Snippet ${snippetId} indexed` });
+    return res.status(200).json({ msg: `✅ doc ${doc.id} indexed` });
   } catch (err) {
-    console.error(`❌ Failed to index snippet`, err.message);
-    return res.status(400).json({ msg: `❌ Failed to index snippet` });
+    console.error(`❌ Failed to index doc`, err.message);
+    return res.status(400).json({ msg: `❌ Failed to index doc` });
   }
 });
 

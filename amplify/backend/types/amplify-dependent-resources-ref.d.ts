@@ -7,7 +7,7 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
-    "devcollabsearchservicelayer": {
+    "devcollabsearchlayer": {
       "Arn": "string"
     },
     "elasticIndexWebhook": {

@@ -9,17 +9,13 @@ See the License for the specific language governing permissions and limitations 
 /* Amplify Params - DO NOT EDIT
 	ENV
 	REGION
-	OPENSEARCH_ENDPOINT
-	ES_API_KEY
 	NEON_DB_URL
 Amplify Params - DO NOT EDIT */
 
 const express = require("express");
 const bodyParser = require("body-parser");
 const awsServerlessExpressMiddleware = require("aws-serverless-express/middleware");
-const { Client } = require("@opensearch-project/opensearch");
-const { defaultProvider } = require("@aws-sdk/credential-provider-node");
-const { AwsSigv4Signer } = require("@opensearch-project/opensearch/aws");
+const { Meilisearch } = require("meilisearch");
 
 // declare a new express app
 const app = express();
@@ -45,63 +41,27 @@ app.use((req, res, next) => {
   next();
 });
 
-const client = new Client({
-  ...AwsSigv4Signer({
-    region: "us-east-2",
-    service: "es",
-    getCredentials: () => {
-      const credentialsProvider = defaultProvider();
-      return credentialsProvider();
-    },
-  }),
-  requestTimeout: 60000,
-  node: process.env.OPENSEARCH_ENDPOINT,
+const client = new Meilisearch({
+  host: process.env.MEILISEARCH_SERVER,
 });
+
+const index = client.index("docs");
 
 app.post("/search", async (req, res) => {
   const { query } = req.query || {};
   try {
-    if (!query)
-      return res.status(400).json({ msg: "Please provide a search query!" });
-
-    const result = await client.search({
-      index: "snippets",
-      body: {
-        query: {
-          bool: {
-            should: [
-              {
-                match_phrase_prefix: {
-                  "title.autocomplete": {
-                    query,
-                    analyzer: "underscore_analyzer", // Use the same analyzer for searching
-                  },
-                },
-              },
-              {
-                match: {
-                  extension: {
-                    query,
-                    analyzer: "standard", // Standard analyzer works fine for exact matches here
-                  },
-                },
-              },
-            ],
-          },
-        },
-      },
+    if (!query) throw new Error("query isnt provided");
+    const result = await index.search(query, {
+      attributesToHighlight: ["title"],
+      cropLength: 20,
     });
 
-    const hits = result.body.hits.hits;
-    res.json(hits);
+    res.json(result.hits);
   } catch (err) {
     console.error(err);
     res.status(500).send("Search failed");
   }
 });
-// app.all("*", (req, res) => {
-//   res.status(404).json({ message: "Route not found" });
-// });
 
 app.listen(3000, function () {
   console.log("App started");

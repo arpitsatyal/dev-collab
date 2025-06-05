@@ -20,13 +20,14 @@
       "Type": "String",
       "Default": "functiondevcollabsearchservicelayerArn"
     },
+    "functiondevcollabsearchlayerArn": {
+      "Type": "String",
+      "Default": "functiondevcollabsearchlayerArn"
+    },
     "neonDbUrl": {
       "Type": "String"
     },
-    "esApiKey": {
-      "Type": "String"
-    },
-    "opensearchEndpoint": {
+    "meilisearchServer": {
       "Type": "String"
     }
   },
@@ -86,11 +87,8 @@
             "NEON_DB_URL": {
               "Ref": "neonDbUrl"
             },
-            "ES_API_KEY": {
-              "Ref": "esApiKey"
-            },
-            "OPENSEARCH_ENDPOINT": {
-              "Ref": "opensearchEndpoint"
+            "MEILISEARCH_SERVER": {
+              "Ref": "meilisearchServer"
             }
           }
         },
@@ -103,7 +101,7 @@
         "Runtime": "nodejs22.x",
         "Layers": [
           {
-            "Ref": "functiondevcollabsearchservicelayerArn"
+            "Ref": "functiondevcollabsearchlayerArn"
           }
         ],
         "Timeout": 25

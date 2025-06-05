@@ -108,7 +108,8 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
           {
-            snippet: data,
+            doc: data,
+            type: "snippet",
           },
           {
             headers: {

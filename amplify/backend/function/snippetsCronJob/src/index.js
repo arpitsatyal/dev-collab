@@ -28,7 +28,6 @@ exports.handler = async (event) => {
     await pg.connect();
     console.log("✅ Connected to Neon");
 
-    // 1. Ensure CronJobStatus table exists and is initialized
     await pg.query(`
       CREATE TABLE IF NOT EXISTS "CronJobStatus" (
         job_name TEXT PRIMARY KEY,
@@ -36,21 +35,20 @@ exports.handler = async (event) => {
       );
     `);
 
-    // 2. Insert job row on first run
     await pg.query(`
     INSERT INTO "CronJobStatus" (job_name)
     VALUES ('snippets_cron')
     ON CONFLICT (job_name) DO NOTHING;
   `);
 
-    // 2. Fetch last run time
+    await pg.query("BEGIN");
+
     const { rows: statusRows } = await pg.query(`
       SELECT last_run_at FROM "CronJobStatus" WHERE job_name = 'snippets_cron';
     `);
 
     const lastRunAt = statusRows[0]?.last_run_at;
 
-    // 3. Get snippets updated since last run
     const { rows: snippets } = await pg.query(
       `SELECT * FROM "Snippet" WHERE "updatedAt" > $1`,
       [lastRunAt]
@@ -64,7 +62,6 @@ exports.handler = async (event) => {
       };
     }
 
-    // 4. Index snippets into Elasticsearch
     for (const snippet of snippets) {
       try {
         await esClient.index({
@@ -92,7 +89,6 @@ exports.handler = async (event) => {
       }
     }
 
-    // 5. Update the last run timestamp
     await pg.query(`
       UPDATE "CronJobStatus"
       SET last_run_at = NOW()
@@ -100,17 +96,20 @@ exports.handler = async (event) => {
     `);
 
     console.log("✅ Cron job completed.");
+    await pg.query("COMMIT");
     return {
       statusCode: 200,
       body: JSON.stringify("Cron Job Completed"),
     };
   } catch (error) {
+    await pg.query("ROLLBACK");
     console.error("🚨 Cron job error:", error.message);
     return {
       statusCode: 400,
       body: JSON.stringify("Cron Job Failed"),
     };
   } finally {
+    pg.release(); // Important: return connection to pool
     await pg.end();
   }
 };

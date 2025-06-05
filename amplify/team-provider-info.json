@@ -15,26 +15,25 @@
       "function": {
         "snippetsCronJob": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/snippetsCronJob-4f57696538527243682b-build.zip",
+          "s3Key": "amplify-builds/snippetsCronJob-646a316851335348336b-build.zip",
           "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
           "esApiKey": "WF9LWTRwWUJUbjF2b2JPZml2R1U6YkFHWDhSejcwTVN2ZnA5YnVSb3h6QQ==",
           "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
         },
         "elasticIndexWebhook": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/elasticIndexWebhook-36706f6d567143764a4c-build.zip",
+          "s3Key": "amplify-builds/elasticIndexWebhook-7365795a65327a584739-build.zip",
           "neonDbUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require",
-          "esApiKey": "WF9LWTRwWUJUbjF2b2JPZml2R1U6YkFHWDhSejcwTVN2ZnA5YnVSb3h6QQ==",
-          "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
-        },
-        "devcollabsearchservicelayer": {
-          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/devcollabsearchservicelayer-LambdaLayerVersion44f282a6-build.zip"
+          "meilisearchServer": "driving-caye-arpitsatyal-5f715ac6.koyeb.app"
         },
         "search": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/search-366961496d747a6e7158-build.zip",
-          "opensearchEndpoint": "https://search-devcollabsearchdomain-wj2rdymc3ulyuvitd2nfgggxkq.aos.us-east-2.on.aws"
+          "s3Key": "amplify-builds/search-484b733061556c56694d-build.zip",
+          "meilisearchServer": "driving-caye-arpitsatyal-5f715ac6.koyeb.app"
+        },
+        "devcollabsearchlayer": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/devcollabsearchlayer-LambdaLayerVersion9d513440-build.zip"
         }
       },
       "api": {

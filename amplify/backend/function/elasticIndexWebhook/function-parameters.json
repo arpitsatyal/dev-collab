@@ -2,7 +2,7 @@
   "lambdaLayers": [
     {
       "type": "ProjectLayer",
-      "resourceName": "devcollabsearchservicelayer",
+      "resourceName": "devcollabsearchlayer",
       "env": "dev",
       "version": "Always choose latest version",
       "isLatestVersionSelected": true
@@ -14,12 +14,8 @@
       "environmentVariableName": "NEON_DB_URL"
     },
     {
-      "cloudFormationParameterName": "esApiKey",
-      "environmentVariableName": "ES_API_KEY"
-    },
-    {
-      "cloudFormationParameterName": "opensearchEndpoint",
-      "environmentVariableName": "OPENSEARCH_ENDPOINT"
+      "cloudFormationParameterName": "meilisearchServer",
+      "environmentVariableName": "MEILISEARCH_SERVER"
     }
   ]
 }

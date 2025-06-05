@@ -16,6 +16,7 @@ import CreateTaskModal from "../../../../components/Task/CreateTaskModal";
 import TaskBoard from "../../../../components/Task/TaskBoard";
 import TaskInfo from "../../../../components/Task/TaskInfo";
 import Loading from "../../../../components/Loader";
+import axios from "axios";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -52,7 +53,7 @@ const TasksPage = () => {
         projectId: "",
       });
 
-      await createTask({
+      const data = await createTask({
         task: taskForm,
         projectId: taskForm.projectId,
       }).unwrap();
@@ -60,6 +61,24 @@ const TasksPage = () => {
         title: "Job done!",
         message: "Task created successfully! 🌟",
       });
+
+      try {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
+          {
+            doc: data,
+            type: "task",
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } catch (syncError) {
+        console.warn("Sync service failed:", syncError);
+      }
+
       close();
     } catch (error) {
       console.error(error);
