@@ -1,7 +1,7 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { notifications } from "@mantine/notifications";
-import Layout from "../../../../components/Layout";
+import Layout from "../../../../components/Layout/Layout";
 import { RoomProvider, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";

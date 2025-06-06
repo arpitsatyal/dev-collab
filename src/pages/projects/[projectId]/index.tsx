@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import Layout from "../../../components/Layout";
+import Layout from "../../../components/Layout/Layout";
 import Loading from "../../../components/Loader";
 import { withAuth } from "../../../guards/withAuth";
 import { useAppSelector } from "../../../store/hooks";

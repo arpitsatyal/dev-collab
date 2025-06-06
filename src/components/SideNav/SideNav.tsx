@@ -219,7 +219,7 @@ const SideNav = () => {
   };
 
   return (
-    <AppShell.Navbar p="md">
+    <>
       <AppShell.Section grow my="md" className={classes.section}>
         {enhancedNavItems.map((item) => (
           <NavLink
@@ -310,7 +310,7 @@ const SideNav = () => {
           {isSmallScreen && <ThemeToggle />}
         </Group>
       </Box>
-    </AppShell.Navbar>
+    </>
   );
 };
 

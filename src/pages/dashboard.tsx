@@ -1,4 +1,4 @@
-import Layout from "../components/Layout";
+import Layout from "../components/Layout/Layout";
 import { withAuth } from "../guards/withAuth";
 import { Session } from "next-auth";
 

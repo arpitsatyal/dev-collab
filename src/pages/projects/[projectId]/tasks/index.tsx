@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { withAuth } from "../../../../guards/withAuth";
-import Layout from "../../../../components/Layout";
+import Layout from "../../../../components/Layout/Layout";
 import { TaskStatus } from "@prisma/client";
 import { useCreateTaskMutation } from "../../../../store/api/taskApi";
 import { notifications } from "@mantine/notifications";

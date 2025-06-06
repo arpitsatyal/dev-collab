@@ -1,6 +1,6 @@
 import { Box, Text } from "@mantine/core";
-import Layout from "../../components/Layout";
 import { withAuth } from "../../guards/withAuth";
+import Layout from "../../components/Layout/Layout";
 
 const Projects = () => {
   return (
