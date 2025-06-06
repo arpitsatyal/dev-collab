@@ -62,6 +62,8 @@ const TasksPage = () => {
         message: "Task created successfully! 🌟",
       });
 
+      close();
+
       try {
         await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
@@ -78,8 +80,6 @@ const TasksPage = () => {
       } catch (syncError) {
         console.warn("Sync service failed:", syncError);
       }
-
-      close();
     } catch (error) {
       console.error(error);
       notifications.show({

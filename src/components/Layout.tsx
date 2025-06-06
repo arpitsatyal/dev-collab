@@ -1,6 +1,6 @@
 import { AppShell, Box, Burger, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
-import SideNav from "./SideNav";
+import SideNav from "./SideNav/SideNav";
 import SpotlightSearch from "./Search/SpotlightSearch";
 import { useRouter } from "next/router";
 import DevCollabIcon from "./DevCollabIcon";

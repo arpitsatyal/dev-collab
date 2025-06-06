@@ -1,26 +1,34 @@
-import { AppShell, Box, NavLink, ScrollArea } from "@mantine/core";
+import {
+  AppShell,
+  Box,
+  Button,
+  Group,
+  NavLink,
+  ScrollArea,
+} from "@mantine/core";
 import { useRouter } from "next/router";
 
 import {
-  IconGauge,
   IconActivity,
   IconPencil,
   IconLogout,
   IconFolder,
   IconSubtask,
+  IconGauge,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Loading from "./Loader";
-import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
-import { setSnippets } from "../store/slices/snippetSlice";
+import Loading from "../Loader";
+import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
+import { setSnippets } from "../../store/slices/snippetSlice";
 import { Snippet, Task } from "@prisma/client";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { fetchProjects } from "../store/thunks";
-import { RootState } from "../store/store";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { fetchProjects } from "../../store/thunks";
+import { RootState } from "../../store/store";
 import { useMediaQuery } from "@mantine/hooks";
-import SnippetList from "./Snippets/SnippetList";
-import ThemeToggle from "./Theme/ThemeToggle";
+import SnippetList from "../Snippets/SnippetList";
+import ThemeToggle from "../Theme/ThemeToggle";
+import classes from "./SideNav.module.css";
 
 interface NavItemProps {
   id: string;
@@ -123,14 +131,8 @@ const SideNav = () => {
           },
         ],
       },
-      {
-        id: "logout",
-        icon: IconLogout,
-        label: "Logout",
-        handler: handleLogout,
-      },
     ],
-    [handleLogout]
+    []
   );
 
   const enhancedNavItems = useMemo(() => {
@@ -218,7 +220,7 @@ const SideNav = () => {
 
   return (
     <AppShell.Navbar p="md">
-      <AppShell.Section grow my="md">
+      <AppShell.Section grow my="md" className={classes.section}>
         {enhancedNavItems.map((item) => (
           <NavLink
             key={item.label}
@@ -294,11 +296,20 @@ const SideNav = () => {
         ))}
       </AppShell.Section>
 
-      {isSmallScreen && (
-        <Box p={5}>
-          <ThemeToggle />
-        </Box>
-      )}
+      <Box className={classes.bottomDiv}>
+        <Group justify="space-between" gap="sm">
+          <Button
+            variant="subtle"
+            color="red"
+            onClick={handleLogout}
+            leftSection={<IconLogout size={18} />}
+          >
+            Logout
+          </Button>
+
+          {isSmallScreen && <ThemeToggle />}
+        </Group>
+      </Box>
     </AppShell.Navbar>
   );
 };
