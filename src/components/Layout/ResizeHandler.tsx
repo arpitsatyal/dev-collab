@@ -1,5 +1,5 @@
 import classes from "./Layout.module.css";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 const MIN_WIDTH = 200;
 const MAX_WIDTH = 1000;
@@ -20,15 +20,18 @@ export default function ResizeHandle({
     document.body.style.cursor = "col-resize";
   };
 
-  const handleMouseMove = (e: MouseEvent) => {
-    if (isDragging.current && navbarRef.current) {
-      const newWidth =
-        e.clientX - navbarRef.current.getBoundingClientRect().left;
-      if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
-        setNavWidth(newWidth);
+  const handleMouseMove = useCallback(
+    (e: MouseEvent) => {
+      if (isDragging.current && navbarRef.current) {
+        const newWidth =
+          e.clientX - navbarRef.current.getBoundingClientRect().left;
+        if (newWidth >= MIN_WIDTH && newWidth <= MAX_WIDTH) {
+          setNavWidth(newWidth);
+        }
       }
-    }
-  };
+    },
+    [isDragging, navbarRef, setNavWidth]
+  );
 
   const handleMouseUp = () => {
     isDragging.current = false;
@@ -42,7 +45,7 @@ export default function ResizeHandle({
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     };
-  }, []);
+  }, [handleMouseMove]);
 
   return <div className={classes.resizeHandle} onMouseDown={handleMouseDown} />;
 }

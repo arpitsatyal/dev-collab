@@ -6,7 +6,7 @@ const searchCache = new Map<string, any[]>();
 
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
-  const [matched, setMatched] = useState<any[]>([]);
+  const [matchedResults, setMatchedResults] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
 
   const debouncedFetch = useMemo(() => {
@@ -15,7 +15,7 @@ export const useSearch = (term: string) => {
     const fetchData = async (query: string) => {
       const trimmedQuery = query.trim();
       if (searchCache.has(trimmedQuery)) {
-        setMatched(searchCache.get(trimmedQuery)!);
+        setMatchedResults(searchCache.get(trimmedQuery)!);
         setIsTyping(false);
         return;
       }
@@ -34,7 +34,7 @@ export const useSearch = (term: string) => {
           {},
           { signal: controller.signal }
         );
-        setMatched(data);
+        setMatchedResults(data);
         searchCache.set(trimmedQuery, data);
       } catch (err: any) {
         if (axios.isCancel(err)) {
@@ -60,7 +60,7 @@ export const useSearch = (term: string) => {
 
   useEffect(() => {
     if (!term) {
-      setMatched([]);
+      setMatchedResults([]);
       setLoading(false);
       setIsTyping(false);
       return;
@@ -69,7 +69,7 @@ export const useSearch = (term: string) => {
     setIsTyping(true);
     const trimmedTerm = term.trim();
     if (searchCache.has(trimmedTerm)) {
-      setMatched(searchCache.get(trimmedTerm)!);
+      setMatchedResults(searchCache.get(trimmedTerm)!);
       setIsTyping(false);
       return;
     }
@@ -82,7 +82,8 @@ export const useSearch = (term: string) => {
   }, [term, debouncedFetch]);
 
   return {
-    matchedResults: matched,
+    matchedResults,
+    searchCache,
     loading,
     isTyping,
   };

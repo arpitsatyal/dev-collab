@@ -1,5 +1,5 @@
 import { NextRouter, useRouter } from "next/router";
-import { useState, useMemo, useCallback, JSX } from "react";
+import { useState, useMemo, useCallback, JSX, useEffect } from "react";
 import { IconSearch, IconFolder, IconSubtask } from "@tabler/icons-react";
 import { ActionIcon, Box, Group, Paper, Text, TextInput } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
@@ -12,6 +12,7 @@ import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
 import { WithType } from "../../types/withType";
+import { useRecentItems } from "../../hooks/useRecentItems";
 
 interface DataItem {
   id: string;
@@ -31,6 +32,7 @@ interface DataSource<T = any> {
   toDataItem: (item: T, context: any) => DataItem;
 }
 
+type TypedProject = WithType<Project, "project">;
 type TypedSnippet = WithType<Snippet, "snippet">;
 type TypedTask = WithType<Task, "task">;
 
@@ -45,7 +47,7 @@ const filterByQuery = <T extends { title: string }>(
   if (!query && showAllOnEmpty) return items;
   if (!query) return [];
   const lowerQuery = query.toLowerCase().trim();
-  return items.filter((item) =>
+  return items?.filter((item) =>
     String(item[field]).toLowerCase().includes(lowerQuery)
   );
 };
@@ -93,7 +95,7 @@ const ActionItem = ({ item }: { item: DataItem }) => (
 const projectSource: Omit<DataSource<Project>, "data"> = {
   name: "projects",
   groupLabel: "Projects",
-  filterData: (projects, query) => filterByQuery(projects, query, true),
+  filterData: (projects, query) => filterByQuery(projects, query),
   toDataItem: (project, { router }: { router: NextRouter }) => ({
     id: project.id,
     title: project.title,
@@ -176,6 +178,113 @@ const taskSource: Omit<DataSource<Task>, "data"> = {
   }),
 };
 
+const cacheSource: Omit<
+  DataSource<TypedProject | TypedSnippet | TypedTask>,
+  "data"
+> = {
+  name: "cacheResults",
+  groupLabel: "Recently Searched",
+  filterData: (results, query, context) => {
+    const {
+      matchedResults,
+      projects,
+      snippets,
+      recentProjects,
+      recentSearchOrder,
+    } = context;
+    // Only show cache if no results from other sources
+    const hasOtherResults =
+      filterByQuery(projects, query)?.length > 0 ||
+      filterByQuery(snippets, query)?.length > 0 ||
+      (matchedResults?.length > 0 &&
+        matchedResults.some(
+          (result: MeiliSearchResponse) =>
+            result.type === "snippet" || result.type === "task"
+        ));
+
+    if (hasOtherResults) {
+      return [];
+    }
+
+    // Combine recent projects with cached snippets and tasks
+    const combinedResults = [
+      ...(recentProjects ?? []).map((project: Project) => ({
+        ...project,
+        type: "project" as const,
+      })),
+      ...results,
+    ];
+
+    // Sort by recency based on recentSearchOrder
+    combinedResults.sort((a, b) => {
+      const aKey = `${a.type}:${a.id}`;
+      const bKey = `${b.type}:${b.id}`;
+      const aIndex = recentSearchOrder?.indexOf(aKey) ?? -1;
+      const bIndex = recentSearchOrder?.indexOf(bKey) ?? -1;
+      // Items not in recentSearchOrder go to the end
+      if (aIndex === -1 && bIndex === -1) return 0;
+      if (aIndex === -1) return 1;
+      if (bIndex === -1) return -1;
+      return aIndex - bIndex; // Earlier index (more recent) comes first
+    });
+
+    return filterByQuery(combinedResults, query, true);
+  },
+  toDataItem: (
+    item,
+    { router, projects }: { router: NextRouter; projects: Project[] }
+  ) => {
+    if (item.type === "project") {
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description ?? "-",
+        icon: <IconFolder size={24} stroke={1.5} />,
+        onClick: () => router.push(`/projects/${item.id}`),
+        groupLabel: "Recently Searched",
+      };
+    } else if (item.type === "snippet") {
+      return {
+        id: item.id,
+        title: `${item.title}.${item.extension ?? ""}`,
+        icon: <FileIcon snippet={item} />,
+        onClick: () =>
+          router.push(`/projects/${item.projectId}/snippets/${item.id}`),
+        groupLabel: "Recently Searched",
+        meta: {
+          projectTitle:
+            projects.find((project) => project.id === item.projectId)?.title ??
+            "",
+        },
+      };
+    } else if (item.type === "task") {
+      return {
+        id: item.id,
+        title: item.title,
+        description: item.description ?? "-",
+        icon: <IconSubtask />,
+        onClick: () => router.push(`/projects/${item.projectId}/tasks`),
+        groupLabel: "Recently Searched",
+        meta: {
+          projectTitle:
+            projects.find((project) => project.id === item.projectId)?.title ??
+            "",
+        },
+      };
+    }
+
+    return {
+      id: "",
+      title: "",
+      description: "",
+      icon: <IconFolder />,
+      onClick: () => {},
+      groupLabel: "",
+      meta: {},
+    };
+  },
+};
+
 const SpotlightSearch = ({
   isSmallScreen = false,
 }: {
@@ -192,12 +301,18 @@ const SpotlightSearch = ({
     matchedResults,
     loading: isSearchLoading,
     isTyping,
+    searchCache,
   } = useSearch(query);
+
+  const { addRecentItems, recentProjects, recentSearchOrder } =
+    useRecentItems();
   const currentProjectId = router.query.projectId as string | undefined;
 
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
   ).flat();
+
+  const searchCacheArray = Array.from(searchCache.values()).flat();
 
   const dataSources = useMemo<DataSource[]>(
     () => [
@@ -213,15 +328,19 @@ const SpotlightSearch = ({
         ...taskSource,
         data: [],
       },
+      {
+        ...cacheSource,
+        data: searchCacheArray,
+      },
     ],
-    [loadedProjects, snippets]
+    [loadedProjects, snippets, searchCacheArray]
   );
 
   const handleQueryChange = useCallback((newQuery: string) => {
     setQuery(newQuery);
   }, []);
 
-  const context = useMemo(
+  const baseContext = useMemo(
     () => ({
       router,
       projects: loadedProjects,
@@ -230,6 +349,45 @@ const SpotlightSearch = ({
       isSearchLoading,
     }),
     [router, loadedProjects, matchedResults, currentProjectId, isSearchLoading]
+  );
+
+  // Compute filtered results
+  const filteredProjects = useMemo(
+    () => projectSource.filterData(loadedProjects, query, baseContext),
+    [loadedProjects, query, baseContext]
+  );
+
+  const filteredSnippets = useMemo(
+    () => snippetSource.filterData(snippets, query, baseContext),
+    [snippets, query, baseContext]
+  );
+
+  const filteredTasks = useMemo(
+    () => taskSource.filterData([], query, baseContext),
+    [query, baseContext]
+  );
+
+  useEffect(() => {
+    const itemsToTrack = [
+      ...filteredProjects.map((p) => ({ ...p, type: "project" })),
+      ...filteredSnippets.map((s) => ({ ...s, type: "snippet" })),
+      ...filteredTasks.map((t) => ({ ...t, type: "task" })),
+    ];
+    if (itemsToTrack.length > 0) {
+      const timeout = setTimeout(() => {
+        addRecentItems(itemsToTrack);
+      }, 300);
+      return () => clearTimeout(timeout);
+    }
+  }, [filteredProjects, filteredSnippets, filteredTasks, addRecentItems]);
+
+  const context = useMemo(
+    () => ({
+      ...baseContext,
+      recentProjects,
+      recentSearchOrder,
+    }),
+    [baseContext, recentProjects, recentSearchOrder]
   );
 
   const allItems = useMemo(() => {
@@ -334,7 +492,7 @@ const SpotlightSearch = ({
             );
           })}
 
-          {(isProjectsLoading || isSearchLoading) && (
+          {query.length > 0 && (isProjectsLoading || isSearchLoading) && (
             <Loading loaderHeight="5vh" />
           )}
 
@@ -348,6 +506,12 @@ const SpotlightSearch = ({
           {query.length > 0 && allItems.length === 0 && !isSearchLoading && (
             <Spotlight.Empty>
               {isTyping ? "Searching..." : "Nothing found..."}
+            </Spotlight.Empty>
+          )}
+
+          {query.length === 0 && allItems.length === 0 && (
+            <Spotlight.Empty>
+              Search for any Projects, Snippets or Tasks!
             </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>
