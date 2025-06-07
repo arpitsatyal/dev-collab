@@ -1,5 +1,5 @@
 import { NextRouter, useRouter } from "next/router";
-import { useState, useMemo, useCallback, JSX, useEffect } from "react";
+import { useState, useMemo, useCallback, JSX } from "react";
 import { IconSearch, IconFolder, IconSubtask } from "@tabler/icons-react";
 import { ActionIcon, Box, Group, Paper, Text, TextInput } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
@@ -11,8 +11,8 @@ import FileIcon from "../FileIcon";
 import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
-import { WithType } from "../../types/withType";
 import { useRecentItems } from "../../hooks/useRecentItems";
+import { BaseItems, MeiliSearchResponse, TypedItems } from "../../types";
 
 interface DataItem {
   id: string;
@@ -31,12 +31,6 @@ interface DataSource<T = any> {
   filterData: (data: T[], query: string, context: any) => T[];
   toDataItem: (item: T, context: any) => DataItem;
 }
-
-type TypedProject = WithType<Project, "project">;
-type TypedSnippet = WithType<Snippet, "snippet">;
-type TypedTask = WithType<Task, "task">;
-
-type MeiliSearchResponse = TypedSnippet | TypedTask;
 
 const filterByQuery = <T extends { title: string }>(
   items: T[],
@@ -95,13 +89,22 @@ const ActionItem = ({ item }: { item: DataItem }) => (
 const projectSource: Omit<DataSource<Project>, "data"> = {
   name: "projects",
   groupLabel: "Projects",
-  filterData: (projects, query) => filterByQuery(projects, query),
-  toDataItem: (project, { router }: { router: NextRouter }) => ({
+  filterData: (projects, query) => filterByQuery(projects, query, false),
+  toDataItem: (
+    project,
+    {
+      router,
+      addRecentItems,
+    }: { router: NextRouter; addRecentItems: (items: TypedItems[]) => void }
+  ) => ({
     id: project.id,
     title: project.title,
     description: project.description ?? "-",
     icon: <IconFolder size={24} stroke={1.5} />,
-    onClick: () => router.push(`/projects/${project.id}`),
+    onClick: () => {
+      addRecentItems([{ ...project, type: "project" }]);
+      router.push(`/projects/${project.id}`);
+    },
     groupLabel: "Projects",
   }),
 };
@@ -129,13 +132,23 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
   },
   toDataItem: (
     snippet,
-    { router, projects }: { router: NextRouter; projects: Project[] }
+    {
+      router,
+      projects,
+      addRecentItems,
+    }: {
+      router: NextRouter;
+      projects: Project[];
+      addRecentItems: (items: TypedItems[]) => void;
+    }
   ) => ({
     id: snippet.id,
     title: `${snippet.title}.${snippet.extension ?? ""}`,
     icon: <FileIcon snippet={snippet} />,
-    onClick: () =>
-      router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`),
+    onClick: () => {
+      addRecentItems([{ ...snippet, type: "snippet" }]);
+      router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`);
+    },
     groupLabel: "Snippets",
     meta: {
       projectTitle:
@@ -163,13 +176,24 @@ const taskSource: Omit<DataSource<Task>, "data"> = {
   },
   toDataItem: (
     task,
-    { router, projects }: { router: NextRouter; projects: Project[] }
+    {
+      router,
+      projects,
+      addRecentItems,
+    }: {
+      router: NextRouter;
+      projects: Project[];
+      addRecentItems: (items: TypedItems[]) => void;
+    }
   ) => ({
     id: task.id,
     title: task.title,
     description: task.description ?? "-",
     icon: <IconSubtask />,
-    onClick: () => router.push(`/projects/${task.projectId}/tasks`),
+    onClick: () => {
+      addRecentItems([{ ...task, type: "task" }]);
+      router.push(`/projects/${task.projectId}/tasks`);
+    },
     groupLabel: "tasks",
     meta: {
       projectTitle:
@@ -178,20 +202,11 @@ const taskSource: Omit<DataSource<Task>, "data"> = {
   }),
 };
 
-const cacheSource: Omit<
-  DataSource<TypedProject | TypedSnippet | TypedTask>,
-  "data"
-> = {
+const cacheSource: Omit<DataSource<TypedItems>, "data"> = {
   name: "cacheResults",
   groupLabel: "Recently Searched",
   filterData: (results, query, context) => {
-    const {
-      matchedResults,
-      projects,
-      snippets,
-      recentProjects,
-      recentSearchOrder,
-    } = context;
+    const { matchedResults, projects, snippets, recentSearchOrder } = context;
     // Only show cache if no results from other sources
     const hasOtherResults =
       filterByQuery(projects, query)?.length > 0 ||
@@ -206,17 +221,8 @@ const cacheSource: Omit<
       return [];
     }
 
-    // Combine recent projects with cached snippets and tasks
-    const combinedResults = [
-      ...(recentProjects ?? []).map((project: Project) => ({
-        ...project,
-        type: "project" as const,
-      })),
-      ...results,
-    ];
-
     // Sort by recency based on recentSearchOrder
-    combinedResults.sort((a, b) => {
+    results.sort((a, b) => {
       const aKey = `${a.type}:${a.id}`;
       const bKey = `${b.type}:${b.id}`;
       const aIndex = recentSearchOrder?.indexOf(aKey) ?? -1;
@@ -228,7 +234,7 @@ const cacheSource: Omit<
       return aIndex - bIndex; // Earlier index (more recent) comes first
     });
 
-    return filterByQuery(combinedResults, query, true);
+    return filterByQuery(results, query, true);
   },
   toDataItem: (
     item,
@@ -304,8 +310,7 @@ const SpotlightSearch = ({
     searchCache,
   } = useSearch(query);
 
-  const { addRecentItems, recentProjects, recentSearchOrder } =
-    useRecentItems();
+  const { addRecentItems, recentSearchOrder } = useRecentItems();
   const currentProjectId = router.query.projectId as string | undefined;
 
   const snippets = Object.values(
@@ -313,6 +318,36 @@ const SpotlightSearch = ({
   ).flat();
 
   const searchCacheArray = Array.from(searchCache.values()).flat();
+
+  const uniqueCacheResults = Array.from(
+    new Map(searchCacheArray.map((item) => [item.id, item])).values()
+  );
+
+  const recentItems = useMemo(() => {
+    const itemsMap = new Map<string, BaseItems>();
+
+    recentSearchOrder.forEach((key) => {
+      const [type, id] = key.split(":");
+      let item;
+
+      if (type === "project") {
+        item = loadedProjects.find((p) => p.id === id);
+      } else if (type === "snippet") {
+        item =
+          snippets.find((s) => s.id === id) ||
+          uniqueCacheResults.find((r) => r.type === "snippet" && r.id === id);
+      } else if (type === "task") {
+        item = uniqueCacheResults.find((r) => r.type === "task" && r.id === id);
+      }
+
+      if (item) {
+        itemsMap.set(`${type}:${id}`, { ...item, type });
+      }
+    });
+
+    // Now return in the same order
+    return recentSearchOrder.map((key) => itemsMap.get(key)).filter(Boolean); // remove nulls
+  }, [recentSearchOrder, loadedProjects, snippets, uniqueCacheResults]);
 
   const dataSources = useMemo<DataSource[]>(
     () => [
@@ -330,10 +365,10 @@ const SpotlightSearch = ({
       },
       {
         ...cacheSource,
-        data: searchCacheArray,
+        data: recentItems,
       },
     ],
-    [loadedProjects, snippets, searchCacheArray]
+    [loadedProjects, snippets, recentItems]
   );
 
   const handleQueryChange = useCallback((newQuery: string) => {
@@ -351,43 +386,13 @@ const SpotlightSearch = ({
     [router, loadedProjects, matchedResults, currentProjectId, isSearchLoading]
   );
 
-  // Compute filtered results
-  const filteredProjects = useMemo(
-    () => projectSource.filterData(loadedProjects, query, baseContext),
-    [loadedProjects, query, baseContext]
-  );
-
-  const filteredSnippets = useMemo(
-    () => snippetSource.filterData(snippets, query, baseContext),
-    [snippets, query, baseContext]
-  );
-
-  const filteredTasks = useMemo(
-    () => taskSource.filterData([], query, baseContext),
-    [query, baseContext]
-  );
-
-  useEffect(() => {
-    const itemsToTrack = [
-      ...filteredProjects.map((p) => ({ ...p, type: "project" })),
-      ...filteredSnippets.map((s) => ({ ...s, type: "snippet" })),
-      ...filteredTasks.map((t) => ({ ...t, type: "task" })),
-    ];
-    if (itemsToTrack.length > 0) {
-      const timeout = setTimeout(() => {
-        addRecentItems(itemsToTrack);
-      }, 300);
-      return () => clearTimeout(timeout);
-    }
-  }, [filteredProjects, filteredSnippets, filteredTasks, addRecentItems]);
-
   const context = useMemo(
     () => ({
       ...baseContext,
-      recentProjects,
       recentSearchOrder,
+      addRecentItems,
     }),
-    [baseContext, recentProjects, recentSearchOrder]
+    [baseContext, recentSearchOrder, addRecentItems]
   );
 
   const allItems = useMemo(() => {
