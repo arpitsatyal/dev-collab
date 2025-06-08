@@ -1,41 +1,41 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/indexedDB";
+import { normalizeQuery } from "../utils/normalizeQuery";
+import { MeiliSearchResponse } from "../types";
 
 const MAX_CACHE_SIZE = 50;
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
-interface SearchResult {
-  id: string;
-  type: "snippet" | "task";
-  [key: string]: any;
-}
-
 interface CacheEntry {
   query: string;
-  results: SearchResult[];
+  results: MeiliSearchResponse[];
   timestamp: number;
 }
 
-const searchCache = new Map<string, any[]>();
+const searchCache = new Map<string, MeiliSearchResponse[]>();
 
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
-  const [matchedResults, setMatchedResults] = useState<any[]>([]);
+  const [matchedResults, setMatchedResults] = useState<MeiliSearchResponse[]>(
+    []
+  );
   const [isTyping, setIsTyping] = useState(false);
   const dbRef = useRef<IDBPDatabase | null>(null);
 
   // Save to IndexedDB
-  const saveToDB = async (query: string, results: SearchResult[]) => {
+  const saveToDB = async (query: string, results: MeiliSearchResponse[]) => {
     if (!dbRef.current) return;
 
     try {
       const tx = dbRef.current.transaction("searchCache", "readwrite");
       const store = tx.objectStore("searchCache");
+      const normalizedQuery = normalizeQuery(query);
+
       await store.put({
-        query,
+        query: normalizedQuery,
         results,
         timestamp: Date.now(),
       });
@@ -68,11 +68,7 @@ export const useSearch = (term: string) => {
 
     const fetchData = async (query: string) => {
       const trimmedQuery = query.trim();
-      if (searchCache.has(trimmedQuery)) {
-        setMatchedResults(searchCache.get(trimmedQuery)!);
-        setIsTyping(false);
-        return;
-      }
+      const normalizedQuery = normalizeQuery(trimmedQuery);
 
       if (controller) {
         controller.abort();
@@ -89,8 +85,8 @@ export const useSearch = (term: string) => {
           { signal: controller.signal }
         );
         setMatchedResults(data);
-        searchCache.set(trimmedQuery, data);
-        await saveToDB(query, data);
+        searchCache.set(normalizedQuery, data);
+        if (data.length) await saveToDB(query, data);
       } catch (err: any) {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
@@ -113,7 +109,6 @@ export const useSearch = (term: string) => {
     return debounced;
   }, []);
 
-  // Initialize IndexedDB with persistent storage
   useEffect(() => {
     const init = async () => {
       try {
@@ -188,8 +183,9 @@ export const useSearch = (term: string) => {
 
     setIsTyping(true);
     const trimmedTerm = term.trim();
-    if (searchCache.has(trimmedTerm)) {
-      setMatchedResults(searchCache.get(trimmedTerm)!);
+    const normalizedTerm = normalizeQuery(trimmedTerm);
+    if (searchCache.has(normalizedTerm)) {
+      setMatchedResults(searchCache.get(normalizedTerm)!);
       setIsTyping(false);
       return;
     }

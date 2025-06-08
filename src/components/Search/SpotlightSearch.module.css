@@ -3,10 +3,7 @@
     var(--mantine-color-gray-0),
     var(--mantine-color-dark-7)
   );
-  color: light-dark(
-    var(--mantine-color-gray-7),
-    var(--mantine-color-dark-0)
-  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
   border-color: light-dark(
     var(--mantine-color-gray-2),
     var(--mantine-color-dark-7)
@@ -14,8 +11,17 @@
 }
 
 .icon {
- color: light-dark(
-    var(--mantine-color-gray-7),
-    var(--mantine-color-dark-0)
-  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
+}
+
+.clearAll {
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 15px;
+  z-index: 1;
+}
+
+.clearAll button {
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
 }

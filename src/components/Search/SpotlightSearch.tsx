@@ -25,7 +25,7 @@ import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { BaseItems, MeiliSearchResponse, TypedItems } from "../../types";
+import { MeiliSearchResponse, TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
 
 interface DataItem {
@@ -340,7 +340,7 @@ const SpotlightSearch = ({
   );
 
   const recentItems = useMemo(() => {
-    const itemsMap = new Map<string, BaseItems>();
+    const itemsMap = new Map<string, TypedItems>();
 
     recentSearchOrder.forEach((key) => {
       const [type, id] = key.split(":");
@@ -357,7 +357,7 @@ const SpotlightSearch = ({
       }
 
       if (item) {
-        itemsMap.set(`${type}:${id}`, { ...item, type });
+        itemsMap.set(`${type}:${id}`, { ...item, type } as TypedItems);
       }
     });
 
@@ -509,19 +509,10 @@ const SpotlightSearch = ({
             })}
           >
             {showClearAll && (
-              <Box
-                style={{
-                  position: "absolute",
-                  top: 0,
-                  right: 0,
-                  padding: 15,
-                  zIndex: 1,
-                }}
-              >
+              <Box className={classes.clearAll}>
                 <Button
                   size="xs"
                   variant="light"
-                  color="gray"
                   radius="xl"
                   onClick={clearRecentItems}
                   leftSection={<IconClearAll size={16} />}
