@@ -310,7 +310,7 @@ const SpotlightSearch = ({
     searchCache,
   } = useSearch(query);
 
-  const { addRecentItems, recentSearchOrder } = useRecentItems();
+  const { recentSearchOrder, addRecentItems } = useRecentItems();
   const currentProjectId = router.query.projectId as string | undefined;
 
   const snippets = Object.values(
@@ -508,15 +508,13 @@ const SpotlightSearch = ({
             </Text>
           )}
 
-          {query.length > 0 && allItems.length === 0 && !isSearchLoading && (
+          {allItems.length === 0 && !isSearchLoading && (
             <Spotlight.Empty>
-              {isTyping ? "Searching..." : "Nothing found..."}
-            </Spotlight.Empty>
-          )}
-
-          {query.length === 0 && allItems.length === 0 && (
-            <Spotlight.Empty>
-              Search for any Projects, Snippets or Tasks!
+              {query.length === 0
+                ? "Search for any Projects, Snippets or Tasks!"
+                : isTyping
+                ? "Searching..."
+                : "Nothing found..."}
             </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>

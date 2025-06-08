@@ -1,6 +1,23 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import axios from "axios";
 import { debounce } from "lodash";
+import { IDBPDatabase } from "idb";
+import { initDB } from "../lib/indexedDB";
+
+const MAX_CACHE_SIZE = 50;
+const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+
+interface SearchResult {
+  id: string;
+  type: "snippet" | "task";
+  [key: string]: any;
+}
+
+interface CacheEntry {
+  query: string;
+  results: SearchResult[];
+  timestamp: number;
+}
 
 const searchCache = new Map<string, any[]>();
 
@@ -8,6 +25,43 @@ export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
   const [matchedResults, setMatchedResults] = useState<any[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const dbRef = useRef<IDBPDatabase | null>(null);
+
+  // Save to IndexedDB
+  const saveToDB = async (query: string, results: SearchResult[]) => {
+    if (!dbRef.current) return;
+
+    try {
+      const tx = dbRef.current.transaction("searchCache", "readwrite");
+      const store = tx.objectStore("searchCache");
+      await store.put({
+        query,
+        results,
+        timestamp: Date.now(),
+      });
+
+      // Ensure cache size limit
+      const allKeys = await store.getAllKeys();
+      if (allKeys.length > MAX_CACHE_SIZE) {
+        const allEntries: CacheEntry[] = await store.getAll();
+        const sortedEntries = allEntries.sort(
+          (a, b) => a.timestamp - b.timestamp
+        );
+        const excess = sortedEntries.slice(
+          0,
+          allEntries.length - MAX_CACHE_SIZE
+        );
+        for (const entry of excess) {
+          await store.delete(entry.query);
+          searchCache.delete(entry.query);
+        }
+      }
+
+      await tx.done;
+    } catch (error) {
+      console.error("Failed to save to IndexedDB:", error);
+    }
+  };
 
   const debouncedFetch = useMemo(() => {
     let controller: AbortController | null = null;
@@ -36,6 +90,7 @@ export const useSearch = (term: string) => {
         );
         setMatchedResults(data);
         searchCache.set(trimmedQuery, data);
+        await saveToDB(query, data);
       } catch (err: any) {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
@@ -57,6 +112,71 @@ export const useSearch = (term: string) => {
 
     return debounced;
   }, []);
+
+  // Initialize IndexedDB with persistent storage
+  useEffect(() => {
+    const init = async () => {
+      try {
+        const db = await initDB();
+        dbRef.current = db;
+
+        // Load cache from IndexedDB
+        const tx = db.transaction("searchCache", "readonly");
+        const store = tx.objectStore("searchCache");
+        const allEntries: CacheEntry[] = await store.getAll();
+        const now = Date.now();
+
+        // Filter out expired entries and populate searchCache
+        const validEntries = allEntries.filter(
+          (entry) => now - entry.timestamp < CACHE_EXPIRY_MS
+        );
+        validEntries.forEach((entry) => {
+          searchCache.set(entry.query, entry.results);
+        });
+
+        // Clean up expired entries
+        if (allEntries.length !== validEntries.length) {
+          const txClean = db.transaction("searchCache", "readwrite");
+          const storeClean = txClean.objectStore("searchCache");
+          for (const entry of allEntries) {
+            if (now - entry.timestamp >= CACHE_EXPIRY_MS) {
+              await storeClean.delete(entry.query);
+            }
+          }
+          await txClean.done;
+        }
+
+        // Trim cache if over size limit
+        if (validEntries.length > MAX_CACHE_SIZE) {
+          const sortedEntries = validEntries.sort(
+            (a, b) => a.timestamp - b.timestamp
+          );
+          const excess = sortedEntries.slice(
+            0,
+            validEntries.length - MAX_CACHE_SIZE
+          );
+          const txTrim = db.transaction("searchCache", "readwrite");
+          const storeTrim = txTrim.objectStore("searchCache");
+          for (const entry of excess) {
+            await storeTrim.delete(entry.query);
+            searchCache.delete(entry.query);
+          }
+          await txTrim.done;
+        }
+      } catch (error) {
+        console.error("Failed to initialize IndexedDB:", error);
+      }
+    };
+
+    init();
+
+    return () => {
+      if (dbRef.current) {
+        dbRef.current.close();
+        dbRef.current = null;
+      }
+    };
+  }, [searchCache]);
 
   useEffect(() => {
     if (!term) {
