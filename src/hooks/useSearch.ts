@@ -176,7 +176,7 @@ export const useSearch = (term: string) => {
         dbRef.current = null;
       }
     };
-  }, [searchCache]);
+  }, []);
 
   useEffect(() => {
     if (!term) {

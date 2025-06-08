@@ -2,7 +2,6 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { BaseItems } from "../types";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/indexedDB";
-import { useSession } from "next-auth/react";
 
 const MAX_SEARCH_ORDER = 20;
 const ORDER_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
@@ -13,11 +12,12 @@ interface RecentOrderEntry {
   timestamp: number;
 }
 
-export const useRecentItems = (maxSearchOrder: number = MAX_SEARCH_ORDER) => {
+export const useRecentItems = (
+  userId: string | undefined,
+  maxSearchOrder: number = MAX_SEARCH_ORDER
+) => {
   const [recentSearchOrder, setRecentSearchOrder] = useState<string[]>([]);
   const dbRef = useRef<IDBPDatabase | null>(null);
-  const { data: session } = useSession();
-  const userId = session?.user?.id ?? null;
 
   useEffect(() => {
     if (!userId) {
@@ -70,39 +70,44 @@ export const useRecentItems = (maxSearchOrder: number = MAX_SEARCH_ORDER) => {
     };
   }, [userId]);
 
-  const saveToDB = async (keys: string[]) => {
-    if (!dbRef.current || !userId) return;
+  const saveToDB = useCallback(
+    async (keys: string[]) => {
+      if (!dbRef.current || !userId) return;
 
-    try {
-      const tx = dbRef.current.transaction("recentOrder", "readwrite");
-      const store = tx.objectStore("recentOrder");
-      const now = Date.now();
+      try {
+        const tx = dbRef.current.transaction("recentOrder", "readwrite");
+        const store = tx.objectStore("recentOrder");
+        const now = Date.now();
 
-      for (const key of keys) {
-        await store.put({ userId, key, timestamp: now });
-      }
-
-      const allEntries: RecentOrderEntry[] = await store.getAll();
-      const userEntries = allEntries.filter((entry) => entry.userId === userId);
-
-      if (userEntries.length > maxSearchOrder) {
-        const sortedEntries = userEntries.sort(
-          (a, b) => a.timestamp - b.timestamp
-        );
-        const excess = sortedEntries.slice(
-          0,
-          allEntries.length - maxSearchOrder
-        );
-        for (const entry of excess) {
-          await store.delete([entry.userId, entry.key]);
+        for (const key of keys) {
+          await store.put({ userId, key, timestamp: now });
         }
-      }
 
-      await tx.done;
-    } catch (error) {
-      console.error("Failed to save to recentOrder:", error);
-    }
-  };
+        const allEntries: RecentOrderEntry[] = await store.getAll();
+        const userEntries = allEntries.filter(
+          (entry) => entry.userId === userId
+        );
+
+        if (userEntries.length > maxSearchOrder) {
+          const sortedEntries = userEntries.sort(
+            (a, b) => a.timestamp - b.timestamp
+          );
+          const excess = sortedEntries.slice(
+            0,
+            allEntries.length - maxSearchOrder
+          );
+          for (const entry of excess) {
+            await store.delete([entry.userId, entry.key]);
+          }
+        }
+
+        await tx.done;
+      } catch (error) {
+        console.error("Failed to save to recentOrder:", error);
+      }
+    },
+    [dbRef, userId, maxSearchOrder]
+  );
 
   const addRecentItems = useCallback(
     (items: BaseItems[], maxItems: { searchOrder?: number } = {}) => {
@@ -129,8 +134,36 @@ export const useRecentItems = (maxSearchOrder: number = MAX_SEARCH_ORDER) => {
         return orderedKeys;
       });
     },
-    [maxSearchOrder, userId] // Depend on userId!
+    [maxSearchOrder, saveToDB]
   );
 
-  return { recentSearchOrder, addRecentItems };
+  const clearRecentItems = useCallback(async () => {
+    if (!userId) return;
+
+    let db: IDBPDatabase | null = null;
+
+    try {
+      db = await initDB();
+      const tx = db.transaction("recentOrder", "readwrite");
+      const store = tx.objectStore("recentOrder");
+      const allEntries: RecentOrderEntry[] = await store.getAll();
+
+      // Delete only entries for the current user
+      for (const entry of allEntries) {
+        if (entry.userId === userId) {
+          await store.delete([entry.userId, entry.key]);
+        }
+      }
+
+      await tx.done;
+      setRecentSearchOrder([]);
+    } catch (error) {
+      console.error("Failed to clear recent searches:", error);
+    } finally {
+      if (db) {
+        db.close();
+      }
+    }
+  }, [userId]);
+  return { recentSearchOrder, addRecentItems, clearRecentItems };
 };

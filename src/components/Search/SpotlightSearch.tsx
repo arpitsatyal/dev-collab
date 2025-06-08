@@ -1,7 +1,20 @@
 import { NextRouter, useRouter } from "next/router";
 import { useState, useMemo, useCallback, JSX } from "react";
-import { IconSearch, IconFolder, IconSubtask } from "@tabler/icons-react";
-import { ActionIcon, Box, Group, Paper, Text, TextInput } from "@mantine/core";
+import {
+  IconSearch,
+  IconFolder,
+  IconSubtask,
+  IconClearAll,
+} from "@tabler/icons-react";
+import {
+  ActionIcon,
+  Box,
+  Button,
+  Group,
+  Paper,
+  Text,
+  TextInput,
+} from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../../utils/truncateByWords";
 import { useAppSelector } from "../../store/hooks";
@@ -13,6 +26,7 @@ import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
 import { BaseItems, MeiliSearchResponse, TypedItems } from "../../types";
+import { useSession } from "next-auth/react";
 
 interface DataItem {
   id: string;
@@ -310,15 +324,17 @@ const SpotlightSearch = ({
     searchCache,
   } = useSearch(query);
 
-  const { recentSearchOrder, addRecentItems } = useRecentItems();
-  const currentProjectId = router.query.projectId as string | undefined;
+  const { data: session } = useSession();
+  const userId = session?.user?.id ?? undefined;
+  const { recentSearchOrder, addRecentItems, clearRecentItems } =
+    useRecentItems(userId);
 
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
   ).flat();
 
+  const currentProjectId = router.query.projectId as string | undefined;
   const searchCacheArray = Array.from(searchCache.values()).flat();
-
   const uniqueCacheResults = Array.from(
     new Map(searchCacheArray.map((item) => [item.id, item])).values()
   );
@@ -407,6 +423,11 @@ const SpotlightSearch = ({
     return items;
   }, [query, context, dataSources]);
 
+  const showClearAll = recentItems.length > 0 && query.length === 0;
+  const showEmpty = allItems.length === 0 && !isSearchLoading;
+  const showResultCount = query.length > 0 && allItems.length > 0;
+  const loading = isProjectsLoading || isSearchLoading;
+
   return (
     <>
       <Box>
@@ -479,36 +500,69 @@ const SpotlightSearch = ({
           placeholder="Search..."
           leftSection={<IconSearch stroke={1.5} />}
         />
+
         <Spotlight.ActionsList>
-          {dataSources.map((source) => {
-            const filteredData = source.filterData(source.data, query, context);
-            const items = filteredData.map((item) =>
-              source.toDataItem(item, context)
-            );
-            return (
-              <Spotlight.ActionsGroup
-                key={source.name}
-                label={source.groupLabel}
+          <Box
+            style={(theme) => ({
+              position: "relative",
+              paddingTop: theme.spacing.lg,
+            })}
+          >
+            {showClearAll && (
+              <Box
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  right: 0,
+                  padding: 15,
+                  zIndex: 1,
+                }}
               >
-                {items.map((item) => (
-                  <ActionItem key={item.id} item={item} />
-                ))}
-              </Spotlight.ActionsGroup>
-            );
-          })}
+                <Button
+                  size="xs"
+                  variant="light"
+                  color="gray"
+                  radius="xl"
+                  onClick={clearRecentItems}
+                  leftSection={<IconClearAll size={16} />}
+                >
+                  Clear All
+                </Button>
+              </Box>
+            )}
 
-          {query.length > 0 && (isProjectsLoading || isSearchLoading) && (
-            <Loading loaderHeight="5vh" />
-          )}
+            {dataSources.map((source) => {
+              const filteredData = source.filterData(
+                source.data,
+                query,
+                context
+              );
+              const items = filteredData.map((item) =>
+                source.toDataItem(item, context)
+              );
+              return (
+                <Spotlight.ActionsGroup
+                  key={source.name}
+                  label={source.groupLabel}
+                >
+                  {items.map((item) => (
+                    <ActionItem key={item.id} item={item} />
+                  ))}
+                </Spotlight.ActionsGroup>
+              );
+            })}
+          </Box>
 
-          {query.length > 0 && allItems.length > 0 && (
+          {query.length > 0 && loading && <Loading loaderHeight="5vh" />}
+
+          {showResultCount && (
             <Text style={{ textAlign: "center", paddingTop: 1 }}>
               {allItems.length} {allItems.length === 1 ? "Result" : "Results"}{" "}
               Found
             </Text>
           )}
 
-          {allItems.length === 0 && !isSearchLoading && (
+          {showEmpty && (
             <Spotlight.Empty>
               {query.length === 0
                 ? "Search for any Projects, Snippets or Tasks!"
