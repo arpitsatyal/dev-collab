@@ -5,9 +5,11 @@ import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/indexedDB";
 import { normalizeQuery } from "../utils/normalizeQuery";
 import { MeiliSearchResponse } from "../types";
+import { levenshtein } from "../utils/levenshtein";
 
 const MAX_CACHE_SIZE = 50;
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
+const FUZZY_MATCH_THRESHOLD = 2;
 
 interface CacheEntry {
   query: string;
@@ -16,6 +18,21 @@ interface CacheEntry {
 }
 
 const searchCache = new Map<string, MeiliSearchResponse[]>();
+
+const findClosestCacheMatch = (term: string): MeiliSearchResponse[] | null => {
+  let bestMatch: string | null = null;
+  let bestDistance = Infinity;
+
+  for (const key of searchCache.keys()) {
+    const distance = levenshtein(normalizeQuery(term), key);
+    if (distance < bestDistance && distance <= FUZZY_MATCH_THRESHOLD) {
+      bestDistance = distance;
+      bestMatch = key;
+    }
+  }
+
+  return bestMatch ? searchCache.get(bestMatch) ?? null : null;
+};
 
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
@@ -190,6 +207,12 @@ export const useSearch = (term: string) => {
       return;
     }
 
+    const fuzzyResult = findClosestCacheMatch(term);
+    if (fuzzyResult) {
+      setMatchedResults(fuzzyResult);
+      setIsTyping(false);
+      return;
+    }
     debouncedFetch(trimmedTerm);
 
     return () => {

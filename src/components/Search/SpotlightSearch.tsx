@@ -480,13 +480,14 @@ const SpotlightSearch = ({
           />
         ) : (
           <ActionIcon
-            variant="subtle"
+            variant="light"
             onClick={() => spotlight.open()}
-            radius="md"
+            radius="xl"
             size="lg"
             className={classes.icon}
+            style={{ transition: "all 0.2s ease" }}
           >
-            <IconSearch size={24} />
+            <IconSearch size={20} />
           </ActionIcon>
         )}
       </Box>

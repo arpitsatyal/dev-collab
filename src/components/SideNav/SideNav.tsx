@@ -299,10 +299,16 @@ const SideNav = () => {
       <Box className={classes.bottomDiv}>
         <Group justify="space-between" gap="sm">
           <Button
-            variant="subtle"
+            variant="light"
             color="red"
             onClick={handleLogout}
             leftSection={<IconLogout size={18} />}
+            radius="md"
+            size="sm"
+            style={{
+              fontWeight: 500,
+              transition: "all 0.2s ease",
+            }}
           >
             Logout
           </Button>
