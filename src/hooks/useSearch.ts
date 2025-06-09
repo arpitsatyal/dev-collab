@@ -23,6 +23,7 @@ const findClosestCacheMatch = (term: string): MeiliSearchResponse[] | null => {
   let bestMatch: string | null = null;
   let bestDistance = Infinity;
 
+  if (term.length < 3) return null;
   for (const key of searchCache.keys()) {
     const distance = levenshtein(normalizeQuery(term), key);
     if (distance < bestDistance && distance <= FUZZY_MATCH_THRESHOLD) {
