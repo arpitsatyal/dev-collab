@@ -13,7 +13,7 @@ export default function Layout({ children }: any) {
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const router = useRouter();
 
-  const [navWidth, setNavWidth] = useState(300);
+  const [navWidth, setNavWidth] = useState(400);
   const navbarRef = useRef(null);
 
   return (

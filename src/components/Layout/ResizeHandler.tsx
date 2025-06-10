@@ -1,7 +1,7 @@
 import classes from "./Layout.module.css";
 import { useCallback, useEffect, useRef } from "react";
 
-const MIN_WIDTH = 200;
+const MIN_WIDTH = 300;
 const MAX_WIDTH = 1000;
 
 interface ResizeHandleProps {

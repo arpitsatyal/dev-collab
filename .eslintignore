@@ -1,3 +1,4 @@
 amplify/
 src/aws-exports.js
 src/lib*
+src/pages/api/seed.ts

@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
-import { debounce } from "lodash";
+import { debounce, isEqual } from "lodash";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/indexedDB";
 import { normalizeQuery } from "../utils/normalizeQuery";
-import { MeiliSearchResponse } from "../types";
+import { TypedItems } from "../types";
 import { levenshtein } from "../utils/levenshtein";
 
 const MAX_CACHE_SIZE = 50;
@@ -13,13 +13,13 @@ const FUZZY_MATCH_THRESHOLD = 2;
 
 interface CacheEntry {
   query: string;
-  results: MeiliSearchResponse[];
+  results: TypedItems[];
   timestamp: number;
 }
 
-const searchCache = new Map<string, MeiliSearchResponse[]>();
+const searchCache = new Map<string, TypedItems[]>();
 
-const findClosestCacheMatch = (term: string): MeiliSearchResponse[] | null => {
+const findClosestCacheMatch = (term: string): TypedItems[] | null => {
   let bestMatch: string | null = null;
   let bestDistance = Infinity;
 
@@ -37,14 +37,14 @@ const findClosestCacheMatch = (term: string): MeiliSearchResponse[] | null => {
 
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
-  const [matchedResults, setMatchedResults] = useState<MeiliSearchResponse[]>(
-    []
-  );
+  const [matchedResults, setMatchedResults] = useState<TypedItems[]>([]);
   const [isTyping, setIsTyping] = useState(false);
+  const [subtleLoader, setSubtleLoader] = useState(false);
+
   const dbRef = useRef<IDBPDatabase | null>(null);
 
   // Save to IndexedDB
-  const saveToDB = async (query: string, results: MeiliSearchResponse[]) => {
+  const saveToDB = async (query: string, results: TypedItems[]) => {
     if (!dbRef.current) return;
 
     try {
@@ -84,7 +84,7 @@ export const useSearch = (term: string) => {
   const debouncedFetch = useMemo(() => {
     let controller: AbortController | null = null;
 
-    const fetchData = async (query: string) => {
+    const fetchData = async (query: string, showLoading = true) => {
       const trimmedQuery = query.trim();
       const normalizedQuery = normalizeQuery(trimmedQuery);
 
@@ -95,16 +95,22 @@ export const useSearch = (term: string) => {
       controller = new AbortController();
 
       try {
-        setLoading(true);
+        showLoading ? setLoading(true) : setSubtleLoader(true);
+
         const encodedQuery = encodeURIComponent(trimmedQuery);
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/search?query=${encodedQuery}`,
           {},
           { signal: controller.signal }
         );
-        setMatchedResults(data);
-        searchCache.set(normalizedQuery, data);
-        if (data.length) await saveToDB(query, data);
+
+        const cachedData = searchCache.get(normalizedQuery);
+        if (!isEqual(data, cachedData)) {
+          setMatchedResults(data);
+
+          searchCache.set(normalizedQuery, data);
+          await saveToDB(normalizedQuery, data);
+        }
       } catch (err: any) {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
@@ -112,7 +118,7 @@ export const useSearch = (term: string) => {
           console.error("Failed to fetch snippet:", err);
         }
       } finally {
-        setLoading(false);
+        showLoading ? setLoading(false) : setSubtleLoader(false);
         setIsTyping(false);
       }
     };
@@ -205,16 +211,16 @@ export const useSearch = (term: string) => {
     if (searchCache.has(normalizedTerm)) {
       setMatchedResults(searchCache.get(normalizedTerm)!);
       setIsTyping(false);
-      return;
+      debouncedFetch(trimmedTerm, false);
+    } else {
+      debouncedFetch(trimmedTerm);
     }
 
-    const fuzzyResult = findClosestCacheMatch(term);
-    if (fuzzyResult) {
-      setMatchedResults(fuzzyResult);
-      setIsTyping(false);
-      return;
-    }
-    debouncedFetch(trimmedTerm);
+    // const fuzzyResult = findClosestCacheMatch(term);
+    // if (fuzzyResult) {
+    //   setMatchedResults(fuzzyResult);
+    //   setIsTyping(false);
+    // }
 
     return () => {
       (debouncedFetch as any).cancelController?.();
@@ -226,5 +232,6 @@ export const useSearch = (term: string) => {
     searchCache,
     loading,
     isTyping,
+    subtleLoader,
   };
 };

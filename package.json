@@ -39,13 +39,16 @@
     "react-dnd-html5-backend": "^16.0.1",
     "react-dnd-touch-backend": "^16.0.1",
     "react-dom": "19.1.0",
-    "react-redux": "^9.2.0"
+    "react-redux": "^9.2.0",
+    "react-window": "^1.8.11",
+    "winston": "^3.17.0"
   },
   "devDependencies": {
     "@types/lodash": "^4.17.16",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.1",
     "@types/react-dom": "19.1.2",
+    "@types/react-window": "^1.8.8",
     "@typescript-eslint/eslint-plugin": "^8.32.1",
     "@typescript-eslint/parser": "^8.32.1",
     "eslint": "^9.24.0",

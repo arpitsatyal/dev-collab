@@ -16,3 +16,21 @@
   border-top: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-7));
 }
+
+.reactWindowList::-webkit-scrollbar {
+  width: 4px;
+}
+
+.reactWindowList::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.reactWindowList::-webkit-scrollbar-thumb {
+  background-color: rgba(100, 100, 100, 0.5);
+  border-radius: 4px;
+}
+
+.reactWindowList {
+  scrollbar-width: thin; /* Firefox */
+  scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+}

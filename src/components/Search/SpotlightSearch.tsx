@@ -11,6 +11,7 @@ import {
   Box,
   Button,
   Group,
+  Loader,
   Paper,
   Text,
   TextInput,
@@ -25,7 +26,7 @@ import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { MeiliSearchResponse, TypedItems } from "../../types";
+import { TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
 
 interface DataItem {
@@ -54,29 +55,18 @@ const filterByQuery = <T extends { title: string }>(
 ): T[] => {
   if (!query && showAllOnEmpty) return items;
   if (!query) return [];
-  const lowerQuery = query.toLowerCase().trim();
-  return items?.filter((item) =>
-    String(item[field]).toLowerCase().includes(lowerQuery)
-  );
-};
 
-const sortByCurrentProject = <T extends { title: string; projectId?: string }>(
-  items: T[],
-  currentProjectId?: string
-): T[] => {
-  if (!currentProjectId)
-    return items.sort((a, b) => a.title.localeCompare(b.title));
-  return items.sort((a, b) => {
-    if (a.projectId === currentProjectId && b.projectId !== currentProjectId)
-      return -1;
-    if (b.projectId === currentProjectId && a.projectId !== currentProjectId)
-      return 1;
-    return a.title.localeCompare(b.title);
-  });
+  const lowerQuery = query.toLowerCase().trim();
+  // Escape special regex characters in the query
+  const escapedQuery = lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  // Create regex that matches whole words only
+  const regex = new RegExp(`\\b${escapedQuery}\\b`, "i");
+
+  return items?.filter((item) => regex.test(String(item[field])));
 };
 
 const ActionItem = ({ item }: { item: DataItem }) => (
-  <Spotlight.Action highlightQuery>
+  <Spotlight.Action className={classes.noActive}>
     <Group wrap="nowrap" w="100%">
       {item.icon}
       <Box style={{ flex: 1 }} p={3} onClick={item.onClick}>
@@ -103,7 +93,18 @@ const ActionItem = ({ item }: { item: DataItem }) => (
 const projectSource: Omit<DataSource<Project>, "data"> = {
   name: "projects",
   groupLabel: "Projects",
-  filterData: (projects, query) => filterByQuery(projects, query, false),
+  filterData: (projects, query, { matchedResults, isSearchLoading }) => {
+    const localProjects = filterByQuery(projects, query);
+    const apiProjects =
+      !isSearchLoading && matchedResults?.length > 0
+        ? matchedResults.filter(
+            (apiResult: TypedItems) =>
+              apiResult.type === "project" &&
+              !localProjects.some((local: Project) => local.id === apiResult.id)
+          )
+        : [];
+    return [...localProjects, ...apiProjects];
+  },
   toDataItem: (
     project,
     {
@@ -126,23 +127,18 @@ const projectSource: Omit<DataSource<Project>, "data"> = {
 const snippetSource: Omit<DataSource<Snippet>, "data"> = {
   name: "snippets",
   groupLabel: "Snippets",
-  filterData: (
-    snippets,
-    query,
-    { matchedResults, currentProjectId, isSearchLoading }
-  ) => {
+  filterData: (snippets, query, { matchedResults, isSearchLoading }) => {
     const localSnippets = filterByQuery(snippets, query);
     // Only include API snippets if not loading and results exist
     const apiSnippets =
       !isSearchLoading && matchedResults?.length > 0
         ? matchedResults.filter(
-            (apiResult: MeiliSearchResponse) =>
+            (apiResult: TypedItems) =>
               apiResult.type === "snippet" &&
               !localSnippets.some((local: Snippet) => local.id === apiResult.id)
           )
         : [];
-    const allSnippets = [...localSnippets, ...apiSnippets];
-    return sortByCurrentProject(allSnippets, currentProjectId);
+    return [...localSnippets, ...apiSnippets];
   },
   toDataItem: (
     snippet,
@@ -175,18 +171,14 @@ const snippetSource: Omit<DataSource<Snippet>, "data"> = {
 const taskSource: Omit<DataSource<Task>, "data"> = {
   name: "tasks",
   groupLabel: "Tasks",
-  filterData: (
-    _,
-    __,
-    { matchedResults, currentProjectId, isSearchLoading }
-  ) => {
+  filterData: (_, __, { matchedResults, isSearchLoading }) => {
     const apiTasks =
       !isSearchLoading && matchedResults?.length > 0
         ? matchedResults.filter(
-            (apiResult: MeiliSearchResponse) => apiResult.type === "task"
+            (apiResult: TypedItems) => apiResult.type === "task"
           )
         : [];
-    return sortByCurrentProject(apiTasks, currentProjectId);
+    return apiTasks;
   },
   toDataItem: (
     task,
@@ -225,11 +217,7 @@ const cacheSource: Omit<DataSource<TypedItems>, "data"> = {
     const hasOtherResults =
       filterByQuery(projects, query)?.length > 0 ||
       filterByQuery(snippets, query)?.length > 0 ||
-      (matchedResults?.length > 0 &&
-        matchedResults.some(
-          (result: MeiliSearchResponse) =>
-            result.type === "snippet" || result.type === "task"
-        ));
+      matchedResults?.length > 0;
 
     if (hasOtherResults) {
       return [];
@@ -322,6 +310,7 @@ const SpotlightSearch = ({
     loading: isSearchLoading,
     isTyping,
     searchCache,
+    subtleLoader,
   } = useSearch(query);
 
   const { data: session } = useSession();
@@ -347,7 +336,9 @@ const SpotlightSearch = ({
       let item;
 
       if (type === "project") {
-        item = loadedProjects.find((p) => p.id === id);
+        item =
+          loadedProjects.find((p) => p.id === id) ||
+          uniqueCacheResults.find((r) => r.type === "project" && r.id === id);
       } else if (type === "snippet") {
         item =
           snippets.find((s) => s.id === id) ||
@@ -520,6 +511,12 @@ const SpotlightSearch = ({
                 >
                   Clear All
                 </Button>
+              </Box>
+            )}
+
+            {subtleLoader && (
+              <Box className={classes.clearAll}>
+                <Loader size="sm" />
               </Box>
             )}
 

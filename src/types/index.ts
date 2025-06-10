@@ -9,4 +9,3 @@ type TaskWithType = WithType<Task, "task">;
 
 export type BaseItems = Project | Task | Snippet;
 export type TypedItems = ProjectWithType | TaskWithType | SnippetWithType;
-export type MeiliSearchResponse = SnippetWithType | TaskWithType;
