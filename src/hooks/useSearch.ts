@@ -95,7 +95,11 @@ export const useSearch = (term: string) => {
       controller = new AbortController();
 
       try {
-        showLoading ? setLoading(true) : setSubtleLoader(true);
+        if (showLoading) {
+          setLoading(true);
+        } else {
+          setSubtleLoader(true);
+        }
 
         const encodedQuery = encodeURIComponent(trimmedQuery);
         const { data } = await axios.post(
@@ -118,7 +122,11 @@ export const useSearch = (term: string) => {
           console.error("Failed to fetch snippet:", err);
         }
       } finally {
-        showLoading ? setLoading(false) : setSubtleLoader(false);
+        if (showLoading) {
+          setLoading(false);
+        } else {
+          setSubtleLoader(false);
+        }
         setIsTyping(false);
       }
     };

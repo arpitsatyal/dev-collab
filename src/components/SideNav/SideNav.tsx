@@ -167,7 +167,10 @@ const SideNav = () => {
   const projectNavItem = navItemsWithProjects.find(
     (item) => item.label === "Projects"
   );
-  const projectItems = projectNavItem?.children || [];
+  const projectItems = useMemo(
+    () => projectNavItem?.children || [],
+    [projectNavItem?.children]
+  );
 
   // Function to calculate item height dynamically
   const getItemSize = useCallback(
