@@ -19,7 +19,7 @@ const CollapsibleActionsGroup = ({
   };
 
   return (
-    <div>
+    <>
       <Button
         variant="subtle"
         onClick={toggleCollapse}
@@ -30,7 +30,6 @@ const CollapsibleActionsGroup = ({
             display: "flex",
             justifyContent: "flex-start",
             alignItems: "center",
-            padding: "6px 8px",
             borderRadius: theme.radius.sm,
             backgroundColor: "transparent",
           },
@@ -57,7 +56,7 @@ const CollapsibleActionsGroup = ({
           {children}
         </Spotlight.ActionsGroup>
       </Collapse>
-    </div>
+    </>
   );
 };
 

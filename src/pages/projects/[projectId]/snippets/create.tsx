@@ -10,9 +10,9 @@ import { addSnippet } from "../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { languageMapper } from "../../../../utils/languageMapper";
 import { withAuth } from "../../../../guards/withAuth";
-import axios from "axios";
 import { SnippetsCreateData } from "../../../api/snippets";
 import SnippetBox from "../../../../components/Snippets/SnippetBox";
+import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 
 const Create = () => {
   const router = useRouter();
@@ -54,33 +54,16 @@ const Create = () => {
           })
         );
       }
-      //todo: handle error
       notifications.show({
         title: "done!",
         message: "Snippet saved successfully! 🌟",
       });
 
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
-          {
-            doc: result,
-            type: "snippet",
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (syncError) {
-        console.warn("Sync service failed:", syncError);
-      }
-
       if (result?.id) {
         router.push(`/projects/${projectId}/snippets/${result.id}`);
       }
+
+      await syncMeiliSearch(result, "snippet");
     } catch (error) {
       console.error(error);
       notifications.show({

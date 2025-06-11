@@ -5,14 +5,11 @@ import {
   IconFolder,
   IconSubtask,
   IconClearAll,
-  IconChevronRight,
-  IconChevronDown,
 } from "@tabler/icons-react";
 import {
   ActionIcon,
   Box,
   Button,
-  Collapse,
   Group,
   Paper,
   Text,
@@ -424,7 +421,6 @@ const SpotlightSearch = ({
 
   const showClearAll = recentItems.length > 0 && query.length === 0;
   const showEmpty = allItems.length === 0 && !isSearchLoading;
-  const showResultCount = query.length > 0 && allItems.length > 0;
   const loading = isProjectsLoading || isSearchLoading;
 
   const strokeColor =

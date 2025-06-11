@@ -1,6 +1,6 @@
 import { Project, Snippet, Task } from "@prisma/client";
 
-type ItemType = "project" | "task" | "snippet";
+export type ItemType = "project" | "task" | "snippet";
 type WithType<T, K extends ItemType> = T & { type: K };
 
 type ProjectWithType = WithType<Project, "project">;

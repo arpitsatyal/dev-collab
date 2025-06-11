@@ -7,6 +7,7 @@ import { ProjectCreateData } from "../api/projects";
 import { createNewProject } from "../../store/thunks";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import ProjectCreate from "../../components/Projects/ProjectCreate";
+import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 
 const CreateProject = () => {
   const router = useRouter();
@@ -29,6 +30,8 @@ const CreateProject = () => {
         message: "Project created successfully! 🌟",
       });
       router.push(`/projects/${newProject.id}`);
+
+      await syncMeiliSearch(newProject, "project");
     } catch (error) {
       notifications.show({
         title: "Whooops",

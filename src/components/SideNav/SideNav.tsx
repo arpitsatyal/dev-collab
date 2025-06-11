@@ -46,75 +46,19 @@ const SideNav = () => {
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const [openItem, setOpenItem] = useState<string | null>(null);
 
+  const listRef = useRef<VariableSizeList>(null);
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
-
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const dispatch = useAppDispatch();
-
   const { loadedProjects, isLoading } = useAppSelector(
     (state: RootState) => state.project
   );
-
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
-
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
-
-  const listRef = useRef<VariableSizeList>(null);
-
-  useEffect(() => {
-    if (listRef.current) {
-      listRef.current.resetAfterIndex(0, true); // true = recompute heights
-    }
-  }, [openItem, loadedSnippets]);
-
-  const fetchSnippets = useCallback(
-    async (projectId: string) => {
-      if (!loadedSnippets[projectId]) {
-        setLoadingProjectId(projectId);
-        try {
-          const result = await triggerGetSnippets({ projectId }).unwrap();
-          dispatch(setSnippets({ projectId, snippets: result }));
-        } catch (e) {
-          console.error("Failed to load snippets", e);
-        } finally {
-          setLoadingProjectId(null);
-        }
-      }
-    },
-    [loadedSnippets, triggerGetSnippets, dispatch]
-  );
-
-  useEffect(() => {
-    const currentProjectId = router.asPath.split("/")[2];
-    if (!currentProjectId) return;
-
-    setOpenItem(currentProjectId);
-    setProjectsOpen(true);
-
-    const timeout = setTimeout(() => {
-      scrollItemIntoView(currentProjectId);
-    }, 100);
-
-    return () => clearTimeout(timeout);
-  }, [router.asPath]);
-
-  useEffect(() => {
-    if (!openItem || loadedSnippets[openItem]) return;
-    fetchSnippets(openItem);
-  }, [openItem, loadedSnippets, fetchSnippets]);
-
-  const handleLogout = useCallback(() => {
-    signOut();
-    router.push("/");
-  }, [router]);
-
-  useEffect(() => {
-    dispatch(fetchProjects());
-  }, [dispatch]);
 
   const navItems = useMemo<NavItemProps[]>(
     () => [
@@ -174,6 +118,81 @@ const SideNav = () => {
     () => projectNavItem?.children || [],
     [projectNavItem?.children]
   );
+
+  const scrollItemIntoView = useCallback(
+    (id: string) => {
+      const index = projectItems.findIndex((item) => item.id === id);
+      if (index === -1 || !listRef.current) return;
+
+      const list = listRef.current as any; // to access internals
+      const itemStyle = list._getItemStyle(index); // contains top
+      const itemOffsetTop = itemStyle.top;
+      const itemHeight = itemStyle.height;
+
+      const outerRef = list._outerRef as HTMLElement;
+      const listHeight = outerRef.clientHeight;
+
+      const itemCenter = itemOffsetTop + itemHeight / 2;
+      const scrollTarget = itemCenter - listHeight / 2;
+
+      outerRef.scrollTo({
+        top: scrollTarget,
+        behavior: "smooth",
+      });
+    },
+    [projectItems]
+  );
+
+  const fetchSnippets = useCallback(
+    async (projectId: string) => {
+      if (!loadedSnippets[projectId]) {
+        setLoadingProjectId(projectId);
+        try {
+          const result = await triggerGetSnippets({ projectId }).unwrap();
+          dispatch(setSnippets({ projectId, snippets: result }));
+        } catch (e) {
+          console.error("Failed to load snippets", e);
+        } finally {
+          setLoadingProjectId(null);
+        }
+      }
+    },
+    [loadedSnippets, triggerGetSnippets, dispatch]
+  );
+
+  useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true); // true = recompute heights
+    }
+  }, [openItem, loadedSnippets]);
+
+  useEffect(() => {
+    const currentProjectId = router.asPath.split("/")[2];
+    if (!currentProjectId || currentProjectId === "create") return;
+
+    setOpenItem(currentProjectId);
+    setProjectsOpen(true);
+
+    const timeout = setTimeout(() => {
+      scrollItemIntoView(currentProjectId);
+    }, 100);
+
+    return () => clearTimeout(timeout);
+  }, [router.asPath, scrollItemIntoView]);
+
+  useEffect(() => {
+    if (!openItem || loadedSnippets[openItem]) return;
+    fetchSnippets(openItem);
+  }, [openItem, loadedSnippets, fetchSnippets]);
+
+  const handleLogout = useCallback(() => {
+    signOut();
+    router.push("/");
+  }, [router]);
+
+  useEffect(() => {
+    dispatch(fetchProjects());
+  }, [dispatch]);
 
   // Function to calculate item height dynamically
   const getItemSize = useCallback(
@@ -250,30 +269,6 @@ const SideNav = () => {
             ))
     );
   };
-
-  const scrollItemIntoView = useCallback(
-    (id: string) => {
-      const index = projectItems.findIndex((item) => item.id === id);
-      if (index === -1 || !listRef.current) return;
-
-      const list = listRef.current as any; // to access internals
-      const itemStyle = list._getItemStyle(index); // contains top
-      const itemOffsetTop = itemStyle.top;
-      const itemHeight = itemStyle.height;
-
-      const outerRef = list._outerRef as HTMLElement;
-      const listHeight = outerRef.clientHeight;
-
-      const itemCenter = itemOffsetTop + itemHeight / 2;
-      const scrollTarget = itemCenter - listHeight / 2;
-
-      outerRef.scrollTo({
-        top: scrollTarget,
-        behavior: "smooth",
-      });
-    },
-    [projectItems]
-  );
 
   const Row = ({
     index,

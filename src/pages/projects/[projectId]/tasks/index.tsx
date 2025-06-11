@@ -16,7 +16,7 @@ import CreateTaskModal from "../../../../components/Task/CreateTaskModal";
 import TaskBoard from "../../../../components/Task/TaskBoard";
 import TaskInfo from "../../../../components/Task/TaskInfo";
 import Loading from "../../../../components/Loader/Loader";
-import axios from "axios";
+import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -54,7 +54,7 @@ const TasksPage = () => {
         status: TaskStatus.TODO,
         assignedToId: null,
         dueDate: null,
-        projectId: "",
+        projectId: projectId ?? "",
       });
 
       const data = await createTask({
@@ -68,22 +68,7 @@ const TasksPage = () => {
 
       close();
 
-      try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
-          {
-            doc: data,
-            type: "task",
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (syncError) {
-        console.warn("Sync service failed:", syncError);
-      }
+      await syncMeiliSearch(data, "task");
     } catch (error) {
       console.error(error);
       notifications.show({

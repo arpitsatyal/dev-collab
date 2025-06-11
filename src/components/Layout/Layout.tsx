@@ -5,8 +5,9 @@ import SpotlightSearch from "../Search/SpotlightSearch";
 import { useRouter } from "next/router";
 import DevCollabIcon from "../DevCollabIcon";
 import ThemeToggle from "../Theme/ThemeToggle";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
+import Loading from "../Loader/Loader";
 
 export default function Layout({ children }: any) {
   const [opened, { toggle }] = useDisclosure();
@@ -15,6 +16,25 @@ export default function Layout({ children }: any) {
 
   const [navWidth, setNavWidth] = useState(400);
   const navbarRef = useRef(null);
+
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Handle router events for loading state
+  useEffect(() => {
+    const handleRouteChangeStart = () => setIsNavigating(true);
+    const handleRouteChangeComplete = () => setIsNavigating(false);
+    const handleRouteChangeError = () => setIsNavigating(false);
+
+    router.events.on("routeChangeStart", handleRouteChangeStart);
+    router.events.on("routeChangeComplete", handleRouteChangeComplete);
+    router.events.on("routeChangeError", handleRouteChangeError);
+
+    return () => {
+      router.events.off("routeChangeStart", handleRouteChangeStart);
+      router.events.off("routeChangeComplete", handleRouteChangeComplete);
+      router.events.off("routeChangeError", handleRouteChangeError);
+    };
+  }, [router]);
 
   return (
     <AppShell
@@ -57,7 +77,7 @@ export default function Layout({ children }: any) {
         <SideNav />
         <ResizeHandle navbarRef={navbarRef} setNavWidth={setNavWidth} />
       </AppShell.Navbar>
-      <AppShell.Main>{children}</AppShell.Main>
+      <AppShell.Main>{isNavigating ? <Loading /> : children}</AppShell.Main>
     </AppShell>
   );
 }

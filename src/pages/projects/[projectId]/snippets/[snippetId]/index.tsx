@@ -25,9 +25,9 @@ import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
-import axios from "axios";
 import { SnippetsUpdateData } from "../../../../api/snippets";
 import SnippetBox from "../../../../../components/Snippets/SnippetBox";
+import { syncMeiliSearch } from "../../../../../utils/syncMeiliSearch";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
@@ -104,22 +104,7 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
         message: "Snippet updated successfully! 🌟",
       });
 
-      try {
-        await axios.post(
-          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,
-          {
-            doc: data,
-            type: "snippet",
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
-      } catch (syncError) {
-        console.warn("Sync service failed:", syncError);
-      }
+      await syncMeiliSearch(data, "snippet");
     } catch (error) {
       console.error(error);
       notifications.show({
