@@ -15,11 +15,20 @@ const myPrimaryColor = [
 
 export const theme: MantineThemeOverride = {
   colors: {
-    custom: myPrimaryColor as any, // 'custom' is the name of the color
+    custom: myPrimaryColor as any,
   },
-  primaryColor: "custom", // use the custom palette
+  primaryColor: "custom",
   primaryShade: {
     light: 5,
     dark: 8,
+  },
+  components: {
+    ActionIcon: {
+      styles: {
+        root: {
+          outline: "none",
+        },
+      },
+    },
   },
 };

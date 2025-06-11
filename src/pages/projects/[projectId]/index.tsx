@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import Layout from "../../../components/Layout/Layout";
-import Loading from "../../../components/Loader";
+import Loading from "../../../components/Loader/Loader";
 import { withAuth } from "../../../guards/withAuth";
 import { useAppSelector } from "../../../store/hooks";
 import ProjectDetail from "../../../components/Projects/ProjectDetail";

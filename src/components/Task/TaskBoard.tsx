@@ -13,7 +13,7 @@ import {
   useGetTasksForProjectQuery,
   useUpdateStatusMutation,
 } from "../../store/api/taskApi";
-import Loading from "../Loader";
+import Loading from "../Loader/Loader";
 import TaskColumn from "./TaskColumn";
 import classes from "./Task.module.css";
 

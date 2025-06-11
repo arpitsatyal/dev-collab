@@ -15,7 +15,7 @@ import { TaskCreateData } from "../../../api/tasks";
 import CreateTaskModal from "../../../../components/Task/CreateTaskModal";
 import TaskBoard from "../../../../components/Task/TaskBoard";
 import TaskInfo from "../../../../components/Task/TaskInfo";
-import Loading from "../../../../components/Loader";
+import Loading from "../../../../components/Loader/Loader";
 import axios from "axios";
 
 const TasksPage = () => {
@@ -34,6 +34,10 @@ const TasksPage = () => {
     dueDate: null,
     projectId: projectId ?? "",
   });
+
+  const projectTitle =
+    projects.find((project) => project.id === taskForm.projectId)?.title ??
+    "Select Project";
 
   const handleInputChange = <K extends keyof TaskCreateData>(
     field: K,
@@ -104,6 +108,7 @@ const TasksPage = () => {
         handleSubmit={handleSubmit}
         taskForm={taskForm}
         isLoading={isLoading}
+        projectTitle={projectTitle}
       />
 
       <TaskBoard />

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import Layout from "../../../../../components/Layout/Layout";
-import Loading from "../../../../../components/Loader";
+import Loading from "../../../../../components/Loader/Loader";
 import {
   RoomProvider,
   useMutation,

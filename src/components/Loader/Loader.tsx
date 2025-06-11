@@ -1,5 +1,5 @@
 import { Box, Loader, Text, Group } from "@mantine/core";
-import spinnerSVG from "./../../public/infinite-spinner.svg";
+import spinnerSVG from "../../../public/infinite-spinner.svg";
 import Image from "next/image";
 
 const Loading = ({

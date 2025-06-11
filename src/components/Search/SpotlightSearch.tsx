@@ -1,26 +1,30 @@
 import { NextRouter, useRouter } from "next/router";
-import { useState, useMemo, useCallback, JSX } from "react";
+import React, { useState, useMemo, useCallback, JSX } from "react";
 import {
   IconSearch,
   IconFolder,
   IconSubtask,
   IconClearAll,
+  IconChevronRight,
+  IconChevronDown,
 } from "@tabler/icons-react";
 import {
   ActionIcon,
   Box,
   Button,
+  Collapse,
   Group,
-  Loader,
   Paper,
   Text,
   TextInput,
+  useComputedColorScheme,
+  useMantineTheme,
 } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../../utils/truncateByWords";
 import { useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
-import Loading from "../Loader";
+import Loading from "../Loader/Loader";
 import FileIcon from "../FileIcon";
 import { Project, Snippet, Task } from "@prisma/client";
 import { RootState } from "../../store/store";
@@ -28,6 +32,8 @@ import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
 import { TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
+import { RingLoader } from "../Loader/RingLoader";
+import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 
 interface DataItem {
   id: string;
@@ -321,6 +327,8 @@ const SpotlightSearch = ({
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
   ).flat();
+  const computedColorScheme = useComputedColorScheme();
+  const theme = useMantineTheme();
 
   const currentProjectId = router.query.projectId as string | undefined;
   const searchCacheArray = Array.from(searchCache.values()).flat();
@@ -419,6 +427,11 @@ const SpotlightSearch = ({
   const showResultCount = query.length > 0 && allItems.length > 0;
   const loading = isProjectsLoading || isSearchLoading;
 
+  const strokeColor =
+    computedColorScheme === "dark"
+      ? theme.colors.dark[0]
+      : theme.colors.dark[3];
+
   return (
     <>
       <Box>
@@ -516,7 +529,7 @@ const SpotlightSearch = ({
 
             {subtleLoader && (
               <Box className={classes.clearAll}>
-                <Loader size="sm" />
+                <RingLoader style={{ stroke: strokeColor }} />
               </Box>
             )}
 
@@ -529,27 +542,25 @@ const SpotlightSearch = ({
               const items = filteredData.map((item) =>
                 source.toDataItem(item, context)
               );
+
+              if (!items.length) return null;
               return (
-                <Spotlight.ActionsGroup
+                <CollapsibleActionsGroup
                   key={source.name}
                   label={source.groupLabel}
+                  groupLabel={`${items.length} ${
+                    items.length === 1 ? "Result" : "Results"
+                  }`}
                 >
                   {items.map((item) => (
                     <ActionItem key={item.id} item={item} />
                   ))}
-                </Spotlight.ActionsGroup>
+                </CollapsibleActionsGroup>
               );
             })}
           </Box>
 
           {query.length > 0 && loading && <Loading loaderHeight="5vh" />}
-
-          {showResultCount && (
-            <Text style={{ textAlign: "center", paddingTop: 1 }}>
-              {allItems.length} {allItems.length === 1 ? "Result" : "Results"}{" "}
-              Found
-            </Text>
-          )}
 
           {showEmpty && (
             <Spotlight.Empty>

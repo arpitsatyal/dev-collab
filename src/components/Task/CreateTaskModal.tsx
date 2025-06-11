@@ -13,9 +13,7 @@ import { notifications } from "@mantine/notifications";
 import { TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { TaskCreateData } from "../../pages/api/tasks";
-import { useAppSelector } from "../../store/hooks";
 import { useGetUsersQuery } from "../../store/api/userApi";
-import { RootState } from "../../store/store";
 import classes from "./Task.module.css";
 
 interface CreateTaskModalProps {
@@ -28,6 +26,7 @@ interface CreateTaskModalProps {
   close: () => void;
   taskForm: TaskCreateData;
   isLoading: boolean;
+  projectTitle: string;
 }
 
 const CreateTaskModal = ({
@@ -37,10 +36,8 @@ const CreateTaskModal = ({
   close,
   taskForm,
   isLoading,
+  projectTitle,
 }: CreateTaskModalProps) => {
-  const { loadedProjects } = useAppSelector(
-    (state: RootState) => state.project
-  );
   const { data: users = [] } = useGetUsersQuery();
   const [errors, setErrors] = useState<{
     title?: string;
@@ -126,16 +123,7 @@ const CreateTaskModal = ({
       </Input.Wrapper>
       <Select
         label="Project"
-        placeholder={
-          loadedProjects.find((project) => project.id === taskForm.projectId)
-            ?.title ?? "Select Project"
-        }
-        data={
-          loadedProjects?.map((project) => ({
-            value: project.id,
-            label: project.title,
-          })) ?? []
-        }
+        placeholder={projectTitle}
         disabled
         value={taskForm.projectId}
         mb="md"

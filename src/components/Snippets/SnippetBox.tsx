@@ -15,7 +15,7 @@ import React, { useState } from "react";
 import { useRouter } from "next/router";
 import { useOthers } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
-import Loading from "../Loader";
+import Loading from "../Loader/Loader";
 import CodeEditor from "../CodeEditor/CodeEditor";
 import classes from "./Snippet.module.css";
 

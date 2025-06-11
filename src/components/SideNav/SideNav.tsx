@@ -10,8 +10,13 @@ import {
   IconGauge,
 } from "@tabler/icons-react";
 import { signOut } from "next-auth/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import Loading from "../Loader";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
 import { Project, Snippet, Task } from "@prisma/client";
@@ -23,6 +28,7 @@ import SnippetList from "../Snippets/SnippetList";
 import ThemeToggle from "../Theme/ThemeToggle";
 import classes from "./SideNav.module.css";
 import { VariableSizeList } from "react-window";
+import Loading from "../Loader/Loader";
 
 interface NavItemProps {
   id: string;
@@ -43,7 +49,6 @@ const SideNav = () => {
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
 
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
-  const viewportRef = useRef<HTMLDivElement | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
 
   const dispatch = useAppDispatch();
@@ -120,18 +125,16 @@ const SideNav = () => {
         path: "/dashboard",
       },
       {
+        id: "create-project",
+        icon: IconPencil,
+        label: "Create Project",
+        path: "/projects/create",
+      },
+      {
         id: "projects",
         icon: IconActivity,
         label: "Projects",
         path: "/projects",
-        children: [
-          {
-            id: "create-project",
-            icon: IconPencil,
-            label: "Create Project",
-            path: "/projects/create",
-          },
-        ],
       },
     ],
     []
@@ -275,13 +278,11 @@ const SideNav = () => {
   const Row = ({
     index,
     style,
-    data,
   }: {
     index: number;
-    style: any;
-    data: any;
+    style: React.CSSProperties;
   }) => {
-    const child = data?.items[index];
+    const child = projectItems?.[index];
 
     return (
       <Box style={style} key={child.id}>
@@ -311,28 +312,26 @@ const SideNav = () => {
             scrollItemIntoView(child.id);
           }}
         >
-          {child.label !== "Create Project" && (
-            <Box>
-              {loadingProjectId === child.id ? (
-                <Loading loaderHeight="5vh" />
-              ) : (
-                <>
-                  <NavLink
-                    label="Tasks"
-                    active={isActive(`/projects/${child.id}/tasks`)}
-                    leftSection={<IconSubtask size={16} />}
-                    onClick={() => router.push(`/projects/${child.id}/tasks`)}
-                  />
-                  <SnippetList
-                    snippets={loadedSnippets[child.id] ?? []}
-                    isVisible={
-                      openItem === child.id && !!loadedSnippets[child.id]
-                    }
-                  />
-                </>
-              )}
-            </Box>
-          )}
+          <Box>
+            {loadingProjectId === child.id ? (
+              <Loading loaderHeight="5vh" />
+            ) : (
+              <>
+                <NavLink
+                  label="Tasks"
+                  active={isActive(`/projects/${child.id}/tasks`)}
+                  leftSection={<IconSubtask size={16} />}
+                  onClick={() => router.push(`/projects/${child.id}/tasks`)}
+                />
+                <SnippetList
+                  snippets={loadedSnippets[child.id] ?? []}
+                  isVisible={
+                    openItem === child.id && !!loadedSnippets[child.id]
+                  }
+                />
+              </>
+            )}
+          </Box>
         </NavLink>
       </Box>
     );
@@ -360,18 +359,6 @@ const SideNav = () => {
                     width="100%"
                     itemCount={projectItems.length}
                     itemSize={getItemSize}
-                    itemData={{
-                      items: projectItems,
-                      isActive,
-                      openItem,
-                      loadedSnippets,
-                      loadingProjectId,
-                      toggleOpenItem,
-                      handleNavClick,
-                      scrollItemIntoView,
-                      itemRefs,
-                      router,
-                    }}
                     ref={listRef}
                     className={classes.reactWindowList}
                   >

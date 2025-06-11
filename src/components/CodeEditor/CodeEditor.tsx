@@ -27,7 +27,7 @@ import { useAppSelector } from "../../store/hooks";
 import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
 import { useGetUserQuery } from "../../store/api/userApi";
 import { useSyncLoading } from "../../hooks/useSyncLoading";
-import Loading from "../Loader";
+import Loading from "../Loader/Loader";
 import { useCursorStyles } from "../../utils/cursor";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
