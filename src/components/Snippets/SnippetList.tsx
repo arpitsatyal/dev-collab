@@ -63,7 +63,6 @@ const SnippetList = ({
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
-                  maxWidth: "150px",
                 }}
                 title={`${snippet.title}.${snippet.extension ?? ""}`}
               >

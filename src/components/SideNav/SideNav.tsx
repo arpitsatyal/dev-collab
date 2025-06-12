@@ -1,40 +1,33 @@
-import { AppShell, Box, Button, Group, NavLink, Text } from "@mantine/core";
+import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/router";
-
+import { VariableSizeList } from "react-window";
+import { NavLink, Text, Box, Group, Button, AppShell } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import {
-  IconActivity,
+  IconGauge,
   IconPencil,
-  IconLogout,
+  IconActivity,
   IconFolder,
   IconSubtask,
-  IconGauge,
+  IconLogout,
 } from "@tabler/icons-react";
-import { signOut } from "next-auth/react";
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import classes from "./SideNav.module.css";
+import ThemeToggle from "../Theme/ThemeToggle";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
-import { Project, Snippet, Task } from "@prisma/client";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { fetchProjects } from "../../store/thunks";
-import { RootState } from "../../store/store";
-import { useMediaQuery } from "@mantine/hooks";
-import SnippetList from "../Snippets/SnippetList";
-import ThemeToggle from "../Theme/ThemeToggle";
-import classes from "./SideNav.module.css";
-import { VariableSizeList } from "react-window";
+import { signOut } from "next-auth/react";
 import Loading from "../Loader/Loader";
+import SnippetList from "../Snippets/SnippetList";
+import { RootState } from "../../store/store";
+import { Snippet, Task } from "@prisma/client";
 
 interface NavItemProps {
   id: string;
-  icon: React.FC<any>;
   label: string;
   path?: string;
+  icon: React.ComponentType<{ size: number; stroke: number }>;
   handler?: () => void;
   children?: NavItemProps[];
   snippets?: Snippet[];
@@ -45,11 +38,11 @@ const SideNav = () => {
   const router = useRouter();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const [openItem, setOpenItem] = useState<string | null>(null);
-
   const listRef = useRef<VariableSizeList>(null);
   const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
+  const lastProjectIdRef = useRef<string | null>(null);
 
   const dispatch = useAppDispatch();
   const { loadedProjects, isLoading } = useAppSelector(
@@ -60,14 +53,15 @@ const SideNav = () => {
   );
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
+  const currentProjectId = useMemo(() => {
+    const id = router.query.projectId;
+    if (!id || typeof id !== "string" || id === "create") return null;
+    return id;
+  }, [router.query.projectId]);
+
   const navItems = useMemo<NavItemProps[]>(
     () => [
-      {
-        id: "home",
-        icon: IconGauge,
-        label: "Home",
-        path: "/dashboard",
-      },
+      { id: "home", icon: IconGauge, label: "Home", path: "/dashboard" },
       {
         id: "create-project",
         icon: IconPencil,
@@ -87,7 +81,6 @@ const SideNav = () => {
   const navItemsWithProjects = useMemo(() => {
     const items = [...navItems];
     const projectsItem = items.find((item) => item.label === "Projects");
-
     if (projectsItem) {
       const uniqueProjects = Array.from(
         new Map(
@@ -104,10 +97,8 @@ const SideNav = () => {
           ].map((item) => [item.path, item])
         ).values()
       );
-
       projectsItem.children = uniqueProjects;
     }
-
     return items;
   }, [navItems, loadedProjects, loadedSnippets]);
 
@@ -124,8 +115,8 @@ const SideNav = () => {
       const index = projectItems.findIndex((item) => item.id === id);
       if (index === -1 || !listRef.current) return;
 
-      const list = listRef.current as any; // to access internals
-      const itemStyle = list._getItemStyle(index); // contains top
+      const list = listRef.current as any;
+      const itemStyle = list._getItemStyle(index);
       const itemOffsetTop = itemStyle.top;
       const itemHeight = itemStyle.height;
 
@@ -160,6 +151,19 @@ const SideNav = () => {
     [loadedSnippets, triggerGetSnippets, dispatch]
   );
 
+  const handleScrollToItem = useCallback(
+    (id: string) => {
+      const isValidId = projectItems.some((item) => item.id === id);
+      if (!isValidId || !listRef.current) return;
+
+      setOpenItem(id);
+      setProjectsOpen(true);
+      scrollItemIntoView(id);
+    },
+    [projectItems, listRef, setOpenItem, setProjectsOpen, scrollItemIntoView]
+  );
+
+  // Reset list heights
   useEffect(() => {
     if (listRef.current) {
       listRef.current.resetAfterIndex(0, true); // true = recompute heights
@@ -167,34 +171,32 @@ const SideNav = () => {
   }, [openItem, loadedSnippets]);
 
   useEffect(() => {
-    const currentProjectId = router.asPath.split("/")[2];
-    if (!currentProjectId || currentProjectId === "create") return;
-
-    setOpenItem(currentProjectId);
-    setProjectsOpen(true);
+    if (!currentProjectId || !projectItems.length) return;
+    if (!projectItems.some((item) => item.id === currentProjectId)) return;
+    if (lastProjectIdRef.current === currentProjectId) return;
 
     const timeout = setTimeout(() => {
-      scrollItemIntoView(currentProjectId);
-    }, 100);
+      handleScrollToItem(currentProjectId);
+      lastProjectIdRef.current = currentProjectId;
+    }, 100); // gives time for layout/render/snippets to stabilize
 
     return () => clearTimeout(timeout);
-  }, [router.asPath, scrollItemIntoView]);
+  }, [currentProjectId, projectItems, handleScrollToItem, loadedSnippets]);
 
   useEffect(() => {
     if (!openItem || loadedSnippets[openItem]) return;
     fetchSnippets(openItem);
   }, [openItem, loadedSnippets, fetchSnippets]);
 
+  useEffect(() => {
+    dispatch(fetchProjects());
+  }, [dispatch]);
+
   const handleLogout = useCallback(() => {
     signOut();
     router.push("/");
   }, [router]);
 
-  useEffect(() => {
-    dispatch(fetchProjects());
-  }, [dispatch]);
-
-  // Function to calculate item height dynamically
   const getItemSize = useCallback(
     (index: number) => {
       const item = projectItems[index];
@@ -224,30 +226,22 @@ const SideNav = () => {
     [openItem, loadedSnippets, projectItems, loadingProjectId]
   );
 
-  const handleNavClick = (
-    path?: string,
-    handler?: () => void,
-    label?: string
-  ) => {
-    if (handler) return handler();
-
-    if (path) {
-      if (label === "Projects") {
-        setProjectsOpen((prev) => (prev === null ? true : !prev));
-        setOpenItem("");
+  const handleNavClick = useCallback(
+    (path?: string, handler?: () => void, label?: string) => {
+      if (handler) return handler();
+      if (path) {
+        if (label === "Projects") {
+          setProjectsOpen((prev) => (prev === null ? true : !prev));
+          setOpenItem(null);
+        }
+        router.push(path);
       }
-      router.push(path);
-    }
-  };
+    },
+    [router]
+  );
 
   const toggleOpenItem = (id: string) => {
     setOpenItem((prev) => (prev === id ? null : id));
-    if (listRef.current) {
-      const index = projectItems.findIndex((item) => item.id === id);
-      if (index !== -1) {
-        listRef.current.resetAfterIndex(index);
-      }
-    }
   };
 
   const isActive = (path?: string) => {
@@ -255,14 +249,12 @@ const SideNav = () => {
 
     return router.pathname === path || router.asPath === path;
   };
-
   const isOpen = (item: NavItemProps) => {
     return (
       item.label === "Projects" &&
       (projectsOpen !== null
         ? projectsOpen // if user manually toggled it
-        : // fallback to automatic logic
-          navItemsWithProjects
+        : navItemsWithProjects // fallback to automatic logic
             .find((i) => i.label === "Projects")
             ?.children?.some(
               (child) => openItem === child.id || isActive(child.path)
@@ -277,12 +269,11 @@ const SideNav = () => {
     index: number;
     style: React.CSSProperties;
   }) => {
-    const child = projectItems?.[index];
-
+    const child = projectItems[index];
     return (
       <Box style={style} key={child.id}>
         <NavLink
-          key={child.label}
+          key={child.id}
           active={isActive(child.path)}
           opened={openItem === child.id}
           label={
@@ -304,7 +295,6 @@ const SideNav = () => {
           onClick={() => {
             toggleOpenItem(child.id);
             handleNavClick(child.path);
-            scrollItemIntoView(child.id);
           }}
         >
           <Box>
@@ -337,7 +327,7 @@ const SideNav = () => {
       <AppShell.Section grow my="md" className={classes.section}>
         {navItemsWithProjects.map((item) => (
           <NavLink
-            key={item.label}
+            key={item.id}
             active={isActive(item.path)}
             opened={isOpen(item)}
             label={item.label}
@@ -375,14 +365,10 @@ const SideNav = () => {
             leftSection={<IconLogout size={18} />}
             radius="md"
             size="sm"
-            style={{
-              fontWeight: 500,
-              transition: "all 0.2s ease",
-            }}
+            style={{ fontWeight: 500, transition: "all 0.2s ease" }}
           >
             Logout
           </Button>
-
           {isSmallScreen && <ThemeToggle />}
         </Group>
       </Box>

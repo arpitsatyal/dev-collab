@@ -3,6 +3,7 @@ import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { TaskStatus } from "@prisma/client";
+import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 
 export interface TaskCreateData {
   title: string;
@@ -11,6 +12,20 @@ export interface TaskCreateData {
   description: string | null;
   assignedToId: string | null;
   dueDate: Date | null;
+}
+
+const sqsClient = new SQSClient({ region: "us-east-2" });
+
+async function sendToQueue(
+  assigneeEmail: string,
+  taskTitle: string,
+  newStatus: TaskStatus
+) {
+  const command = new SendMessageCommand({
+    QueueUrl: process.env.QUEUE_URL,
+    MessageBody: JSON.stringify({ assigneeEmail, taskTitle, newStatus }),
+  });
+  await sqsClient.send(command);
 }
 
 export default async function handler(
@@ -107,6 +122,24 @@ export default async function handler(
             status: req.body.newStatus as TaskStatus,
           },
         });
+
+        const assignee = await prisma.user.findUnique({
+          where: {
+            id: updatedTask.assignedToId ?? "",
+          },
+        });
+
+        try {
+          if (assignee?.email) {
+            await sendToQueue(
+              assignee?.email,
+              updatedTask.title,
+              updatedTask.status
+            );
+          }
+        } catch (queueError) {
+          console.log("Error processing queue", queueError);
+        }
 
         return res.status(200).json(updatedTask);
       } catch (error) {

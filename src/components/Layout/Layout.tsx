@@ -10,13 +10,12 @@ import ResizeHandle from "./ResizeHandler";
 import Loading from "../Loader/Loader";
 
 export default function Layout({ children }: any) {
+  const router = useRouter();
   const [opened, { toggle }] = useDisclosure();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
-  const router = useRouter();
 
-  const [navWidth, setNavWidth] = useState(400);
   const navbarRef = useRef(null);
-
+  const [navWidth, setNavWidth] = useState(400);
   const [isNavigating, setIsNavigating] = useState(false);
 
   // Handle router events for loading state

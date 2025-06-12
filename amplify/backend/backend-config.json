@@ -24,6 +24,12 @@
     }
   },
   "function": {
+    "TaskNotificationWorker": {
+      "build": true,
+      "dependsOn": [],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "devcollabsearchlayer": {
       "build": true,
       "providerPlugin": "awscloudformation",
@@ -65,6 +71,30 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_TaskNotificationWorker_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "TaskNotificationWorker"
+        }
+      ]
+    },
+    "AMPLIFY_function_TaskNotificationWorker_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "TaskNotificationWorker"
+        }
+      ]
+    },
+    "AMPLIFY_function_TaskNotificationWorker_sendgridApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "TaskNotificationWorker"
+        }
+      ]
+    },
     "AMPLIFY_function_devcollabsearchlayer_deploymentBucketName": {
       "usedBy": [
         {

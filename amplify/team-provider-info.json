@@ -34,6 +34,10 @@
         "devcollabsearchlayer": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
           "s3Key": "amplify-builds/devcollabsearchlayer-LambdaLayerVersion9d513440-build.zip"
+        },
+        "TaskNotificationWorker": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/TaskNotificationWorker-47744d634e745a337759-build.zip"
         }
       },
       "api": {
