@@ -37,7 +37,18 @@
         },
         "TaskNotificationWorker": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/TaskNotificationWorker-47744d634e745a337759-build.zip"
+          "s3Key": "amplify-builds/TaskNotificationWorker-75705970777a32756a59-build.zip",
+          "appDomain": "https://www.devcollab.store"
+        },
+        "DueDateCronJob": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/DueDateCronJob-2b616944574d2f764a67-build.zip",
+          "queueUrl": "https://sqs.us-east-2.amazonaws.com/360308275964/TaskNotificationsQueue",
+          "databaseUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+        },
+        "devcollabprismalayer": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/devcollabprismalayer-LambdaLayerVersion8a3fb013-build.zip"
         }
       },
       "api": {

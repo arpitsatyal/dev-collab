@@ -7,12 +7,23 @@ export type AmplifyDependentResourcesAttributes = {
     }
   },
   "function": {
+    "DueDateCronJob": {
+      "Arn": "string",
+      "CloudWatchEventRule": "string",
+      "LambdaExecutionRole": "string",
+      "LambdaExecutionRoleArn": "string",
+      "Name": "string",
+      "Region": "string"
+    },
     "TaskNotificationWorker": {
       "Arn": "string",
       "LambdaExecutionRole": "string",
       "LambdaExecutionRoleArn": "string",
       "Name": "string",
       "Region": "string"
+    },
+    "devcollabprismalayer": {
+      "Arn": "string"
     },
     "devcollabsearchlayer": {
       "Arn": "string"

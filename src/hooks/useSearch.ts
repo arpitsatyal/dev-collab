@@ -109,7 +109,7 @@ export const useSearch = (term: string) => {
         );
 
         const cachedData = searchCache.get(normalizedQuery);
-        if (!isEqual(data, cachedData)) {
+        if (data.length && !isEqual(data, cachedData)) {
           setMatchedResults(data);
 
           searchCache.set(normalizedQuery, data);

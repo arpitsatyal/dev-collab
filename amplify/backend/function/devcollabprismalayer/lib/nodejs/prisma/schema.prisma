@@ -1,0 +1,110 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String?   @unique
+  name               String?
+  image              String?
+  createdAt          DateTime  @default(now())
+  emailVerified      DateTime?
+  accounts           Account[]
+  projects           Project[] @relation("ProjectOwner")
+  sessions           Session[]
+  snippets           Snippet[] @relation("AuthorRelation")
+  lastEditedSnippets Snippet[] @relation("LastEditorRelation")
+  tasksAssigned      Task[]    @relation("AssignedToRelation")
+  tasksCreated       Task[]    @relation("TaskAuthorRelation")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isPublic    Boolean   @default(false)
+  ownerId     String
+  owner       User      @relation("ProjectOwner", fields: [ownerId], references: [id])
+  snippets    Snippet[]
+  tasks       Task[]
+}
+
+model Snippet {
+  id             String   @id @default(cuid())
+  title          String
+  language       String
+  content        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  projectId      String
+  authorId       String?
+  lastEditedById String?
+  extension      String?
+  author         User?    @relation("AuthorRelation", fields: [authorId], references: [id])
+  lastEditedBy   User?    @relation("LastEditorRelation", fields: [lastEditedById], references: [id])
+  project        Project  @relation(fields: [projectId], references: [id])
+}
+
+model Task {
+  id           String     @id @default(cuid())
+  title        String
+  description  String?
+  status       TaskStatus @default(TODO)
+  assignedToId String?
+  authorId     String?
+  dueDate      DateTime?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  projectId    String
+  assignedTo   User?      @relation("AssignedToRelation", fields: [assignedToId], references: [id])
+  author       User?      @relation("TaskAuthorRelation", fields: [authorId], references: [id])
+  project      Project    @relation(fields: [projectId], references: [id])
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+}

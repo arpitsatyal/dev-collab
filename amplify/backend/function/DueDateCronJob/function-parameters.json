@@ -1,0 +1,21 @@
+{
+  "lambdaLayers": [
+    {
+      "type": "ProjectLayer",
+      "resourceName": "devcollabprismalayer",
+      "env": "dev",
+      "version": "Always choose latest version",
+      "isLatestVersionSelected": true
+    }
+  ],
+  "environmentVariableList": [
+    {
+      "cloudFormationParameterName": "queueUrl",
+      "environmentVariableName": "QUEUE_URL"
+    },
+    {
+      "cloudFormationParameterName": "databaseUrl",
+      "environmentVariableName": "DATABASE_URL"
+    }
+  ]
+}

@@ -16,10 +16,14 @@
     "s3Key": {
       "Type": "String"
     },
-    "sendgridApiKey": {
+    "functiondevcollabprismalayerArn": {
+      "Type": "String",
+      "Default": "functiondevcollabprismalayerArn"
+    },
+    "queueUrl": {
       "Type": "String"
     },
-    "appDomain": {
+    "databaseUrl": {
       "Type": "String"
     }
   },
@@ -53,12 +57,12 @@
         "FunctionName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "TaskNotificationWorker",
+            "DueDateCronJob",
             {
               "Fn::Join": [
                 "",
                 [
-                  "TaskNotificationWorker",
+                  "DueDateCronJob",
                   "-",
                   {
                     "Ref": "env"
@@ -76,11 +80,11 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "SENDGRID_API_KEY": {
-              "Ref": "sendgridApiKey"
+            "QUEUE_URL": {
+              "Ref": "queueUrl"
             },
-            "APP_DOMAIN": {
-              "Ref": "appDomain"
+            "DATABASE_URL": {
+              "Ref": "databaseUrl"
             }
           }
         },
@@ -91,7 +95,11 @@
           ]
         },
         "Runtime": "nodejs22.x",
-        "Layers": [],
+        "Layers": [
+          {
+            "Ref": "functiondevcollabprismalayerArn"
+          }
+        ],
         "Timeout": 25
       }
     },
@@ -101,12 +109,12 @@
         "RoleName": {
           "Fn::If": [
             "ShouldNotCreateEnvResources",
-            "devcollabLambdaRole765532d5",
+            "devcollabLambdaRolef3b1a06c",
             {
               "Fn::Join": [
                 "",
                 [
-                  "devcollabLambdaRole765532d5",
+                  "devcollabLambdaRolef3b1a06c",
                   "-",
                   {
                     "Ref": "env"
@@ -176,6 +184,45 @@
           ]
         }
       }
+    },
+    "CloudWatchEvent": {
+      "Type": "AWS::Events::Rule",
+      "Properties": {
+        "Description": "Schedule rule for Lambda",
+        "ScheduleExpression": {
+          "Ref": "CloudWatchRule"
+        },
+        "State": "ENABLED",
+        "Targets": [
+          {
+            "Arn": {
+              "Fn::GetAtt": [
+                "LambdaFunction",
+                "Arn"
+              ]
+            },
+            "Id": {
+              "Ref": "LambdaFunction"
+            }
+          }
+        ]
+      }
+    },
+    "PermissionForEventsToInvokeLambda": {
+      "Type": "AWS::Lambda::Permission",
+      "Properties": {
+        "FunctionName": {
+          "Ref": "LambdaFunction"
+        },
+        "Action": "lambda:InvokeFunction",
+        "Principal": "events.amazonaws.com",
+        "SourceArn": {
+          "Fn::GetAtt": [
+            "CloudWatchEvent",
+            "Arn"
+          ]
+        }
+      }
     }
   },
   "Outputs": {
@@ -208,6 +255,11 @@
           "LambdaExecutionRole",
           "Arn"
         ]
+      }
+    },
+    "CloudWatchEventRule": {
+      "Value": {
+        "Ref": "CloudWatchEvent"
       }
     }
   }

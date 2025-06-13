@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { TaskStatus } from "@prisma/client";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
+import dayjs from "dayjs";
 
 export interface TaskCreateData {
   title: string;
@@ -14,21 +15,20 @@ export interface TaskCreateData {
   dueDate: Date | null;
 }
 
-const sqsClient = new SQSClient({ region: "us-east-2" });
+type emailType = "taskCreated" | "taskUpdated";
 
-async function sendToQueue(
-  assigneeEmail: string,
-  taskTitle: string,
-  newStatus: TaskStatus
-) {
-  console.log("queue url env", process.env.QUEUE_URL);
-  const command = new SendMessageCommand({
-    QueueUrl:
-      "https://sqs.us-east-2.amazonaws.com/360308275964/TaskNotificationsQueue",
-    MessageBody: JSON.stringify({ assigneeEmail, taskTitle, newStatus }),
-  });
-  await sqsClient.send(command);
+interface MessageBody {
+  assigneeEmail: string;
+  assigneeName: string;
+  emailType: emailType;
+  taskTitle: string;
+  projectId: string;
+  status?: TaskStatus;
+  taskDescription?: string | null;
+  dueDate?: string | null;
 }
+
+const sqsClient = new SQSClient({ region: "us-east-2" });
 
 export default async function handler(
   req: NextApiRequest,
@@ -98,6 +98,35 @@ export default async function handler(
           },
         });
 
+        const assignee = await prisma.user.findUnique({
+          where: {
+            id: task.assignedToId ?? "",
+          },
+        });
+
+        const messageBody: MessageBody = {
+          assigneeEmail: assignee?.email ?? "",
+          assigneeName: assignee?.name ?? "Team Member",
+          projectId: task.projectId,
+          taskTitle: task.title,
+          taskDescription: task.description,
+          dueDate: dayjs(task.dueDate).format("MMMM D, YYYY"),
+          emailType: "taskCreated",
+        };
+
+        try {
+          if (assignee?.email) {
+            await sqsClient.send(
+              new SendMessageCommand({
+                QueueUrl: process.env.QUEUE_URL,
+                MessageBody: JSON.stringify(messageBody),
+              })
+            );
+          }
+        } catch (queueError) {
+          console.log("Error processing queue", queueError);
+        }
+
         return res.status(200).json(task);
       } catch (error) {
         console.error("Error creating task:", error);
@@ -131,12 +160,22 @@ export default async function handler(
           },
         });
 
+        const messageBody: MessageBody = {
+          assigneeEmail: assignee?.email ?? "",
+          assigneeName: assignee?.name ?? "Team Member",
+          projectId: updatedTask.projectId,
+          taskTitle: updatedTask.title,
+          status: updatedTask?.status,
+          emailType: "taskUpdated",
+        };
+
         try {
           if (assignee?.email) {
-            await sendToQueue(
-              assignee?.email,
-              updatedTask.title,
-              updatedTask.status
+            await sqsClient.send(
+              new SendMessageCommand({
+                QueueUrl: process.env.QUEUE_URL,
+                MessageBody: JSON.stringify(messageBody),
+              })
             );
           }
         } catch (queueError) {

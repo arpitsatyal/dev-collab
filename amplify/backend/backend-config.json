@@ -24,11 +24,30 @@
     }
   },
   "function": {
+    "DueDateCronJob": {
+      "build": true,
+      "dependsOn": [
+        {
+          "attributes": [
+            "Arn"
+          ],
+          "category": "function",
+          "resourceName": "devcollabprismalayer"
+        }
+      ],
+      "providerPlugin": "awscloudformation",
+      "service": "Lambda"
+    },
     "TaskNotificationWorker": {
       "build": true,
       "dependsOn": [],
       "providerPlugin": "awscloudformation",
       "service": "Lambda"
+    },
+    "devcollabprismalayer": {
+      "build": true,
+      "providerPlugin": "awscloudformation",
+      "service": "LambdaLayer"
     },
     "devcollabsearchlayer": {
       "build": true,
@@ -71,6 +90,46 @@
     }
   },
   "parameters": {
+    "AMPLIFY_function_DueDateCronJob_databaseUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "DueDateCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_DueDateCronJob_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "DueDateCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_DueDateCronJob_queueUrl": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "DueDateCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_DueDateCronJob_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "DueDateCronJob"
+        }
+      ]
+    },
+    "AMPLIFY_function_TaskNotificationWorker_appDomain": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "TaskNotificationWorker"
+        }
+      ]
+    },
     "AMPLIFY_function_TaskNotificationWorker_deploymentBucketName": {
       "usedBy": [
         {
@@ -92,6 +151,22 @@
         {
           "category": "function",
           "resourceName": "TaskNotificationWorker"
+        }
+      ]
+    },
+    "AMPLIFY_function_devcollabprismalayer_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabprismalayer"
+        }
+      ]
+    },
+    "AMPLIFY_function_devcollabprismalayer_s3Key": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "devcollabprismalayer"
         }
       ]
     },
