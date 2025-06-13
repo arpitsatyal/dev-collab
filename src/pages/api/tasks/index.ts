@@ -21,8 +21,10 @@ async function sendToQueue(
   taskTitle: string,
   newStatus: TaskStatus
 ) {
+  console.log("queue url env", process.env.QUEUE_URL);
   const command = new SendMessageCommand({
-    QueueUrl: process.env.QUEUE_URL,
+    QueueUrl:
+      "https://sqs.us-east-2.amazonaws.com/360308275964/TaskNotificationsQueue",
     MessageBody: JSON.stringify({ assigneeEmail, taskTitle, newStatus }),
   });
   await sqsClient.send(command);
