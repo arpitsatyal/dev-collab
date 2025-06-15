@@ -5,12 +5,7 @@ import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
 import Layout from "../../../../../components/Layout/Layout";
 import Loading from "../../../../../components/Loader/Loader";
-import {
-  RoomProvider,
-  useMutation,
-  useRoom,
-  useStorage,
-} from "@liveblocks/react";
+import { RoomProvider, useRoom, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 import {
   useEditSnippetMutation,
@@ -28,13 +23,15 @@ import { withAuth } from "../../../../../guards/withAuth";
 import { SnippetsUpdateData } from "../../../../api/snippets";
 import SnippetBox from "../../../../../components/Snippets/SnippetBox";
 import { syncMeiliSearch } from "../../../../../utils/syncMeiliSearch";
+import { getYjsProviderForRoom } from "@liveblocks/yjs";
+import useAutoSave, {
+  SaveSnippetProps,
+} from "../../../../../hooks/useAutoSave";
 
 const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
   const [title, setTitle] = useState("");
-  const [code, setCode] = useState("");
   const session = useSession();
-  const storageCode = useStorage((root) => root.code as string);
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
@@ -44,36 +41,77 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
 
   const projectId = getSingleQueryParam(router.query.projectId);
   const snippetId = getSingleQueryParam(router.query.snippetId);
+  const provider = getYjsProviderForRoom(room);
+  const [saveStatus, setSaveStatus] = useState<
+    "idle" | "saving" | "saved" | "error"
+  >("idle");
 
   useEffect(() => {
     if (snippet) {
       setTitle(snippet.title ?? "");
-      setCode(JSON.parse(snippet.content) ?? "");
     }
   }, [snippet]);
-
-  const setLanguage = useMutation(({ storage }, val: string) => {
-    storage.set("language", val);
-  }, []);
-
-  useEffect(() => {
-    if (status === "synchronized" && snippet?.language) {
-      setLanguage(snippet.language);
-    }
-  }, [status, snippet?.language, setLanguage]);
 
   const handleTitleChange = (value: string) => {
     setTitle(value);
   };
 
+  const handleAutoSaveSnippet = async ({
+    projectId,
+    snippetId,
+    content,
+  }: SaveSnippetProps) => {
+    try {
+      if (!projectId || !snippetId)
+        throw new Error("Failed to save Snippet, metadata not provided.");
+
+      const data = await editSnippet({
+        projectId,
+        snippet: {
+          ...snippet,
+          content: JSON.stringify(content),
+          language,
+          extension:
+            languageMapper.find((lang) => lang.name === language)?.extension ??
+            "-",
+          lastEditedById: session.data?.user.id ?? "",
+        },
+        snippetId,
+      }).unwrap();
+
+      dispatch(
+        updateSnippet({
+          projectId,
+          snippetId,
+          editedSnippet: data,
+        })
+      );
+      return { success: true };
+    } catch (error) {
+      console.error("Error while saving snippet", error);
+      throw error;
+    }
+  };
+
+  const { debounceSave } = useAutoSave({
+    projectId,
+    snippetId,
+    provider,
+    setSaveStatus,
+    saveSnippet: handleAutoSaveSnippet,
+  });
+
   const handleSaveSnippet = async () => {
     try {
-      if (!projectId || !snippetId || !storageCode)
-        throw new Error("Something went wrong");
+      if (!projectId || !snippetId) throw new Error("Something went wrong");
+
+      const yDoc = provider.getYDoc();
+      const yText = yDoc.getText("monaco");
+      const codeToSave = yText.toString();
 
       const snippet: Omit<SnippetsUpdateData, "authorId"> = {
         title,
-        content: JSON.stringify(storageCode),
+        content: JSON.stringify(codeToSave),
         language,
         projectId,
         lastEditedById: session.data?.user.id ?? "",
@@ -95,10 +133,8 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
           editedSnippet: data,
         })
       );
-      setLanguage(snippet.language);
 
       window.scrollTo({ top: 0, behavior: "smooth" });
-      // todo: handle error
       notifications.show({
         title: "done!",
         message: "Snippet updated successfully! 🌟",
@@ -121,12 +157,13 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   return (
     <SnippetBox
       title={title ?? ""}
+      code={snippet.content}
       isEdit={true}
       handleSaveSnippet={handleSaveSnippet}
       handleTitleChange={handleTitleChange}
-      code={code}
-      setCode={setCode}
       loading={isLoading}
+      debounceSave={debounceSave}
+      saveStatus={saveStatus}
     />
   );
 };
@@ -187,7 +224,7 @@ const SnippetPage = () => {
   return (
     <RoomProvider
       id={`snippet_${snippetId}`}
-      initialStorage={{ code: snippet.content, language: snippet.language }}
+      initialStorage={{ language: snippet.language }}
       initialPresence={{
         cursor: null,
       }}

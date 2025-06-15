@@ -12,7 +12,7 @@ import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
-import "../index.css";
+import "../global.css";
 import { theme } from "../utils/theme";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */

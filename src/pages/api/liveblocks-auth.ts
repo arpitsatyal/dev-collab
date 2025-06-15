@@ -27,15 +27,20 @@ export default async function handler(
 
     const userInfo = {
       name: user.name || "Anonymous",
-      avatar: user.image || "",
       email: user.email || "",
+      avatar: user.image || "",
+      color: "#0074C2",
     };
 
     const session = liveblocks.prepareSession(userId, { userInfo });
-
+    const allowedPrefixes = [`snippet_`, `snippet_draft_`, `playground_`];
     const { room } = req.body;
-    if (room) {
-      //todo: add a better check
+
+    const isAllowedRoom =
+      typeof room === "string" &&
+      allowedPrefixes.some((prefix) => room.startsWith(prefix));
+
+    if (isAllowedRoom) {
       session.allow(room, session.FULL_ACCESS);
     }
 

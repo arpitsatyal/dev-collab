@@ -13,37 +13,41 @@ import {
 } from "@mantine/core";
 import React, { useState } from "react";
 import { useRouter } from "next/router";
-import { useOthers } from "@liveblocks/react";
+import { ClientSideSuspense, useOthers } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
 import Loading from "../Loader/Loader";
-import CodeEditor from "../CodeEditor/CodeEditor";
 import classes from "./Snippet.module.css";
+import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";
+import { DebouncedFunc } from "lodash";
 
-interface SnippetBoxProps {
+type CommonProps = {
   title: string;
-  handleTitleChange: (v: string) => void;
-  handleSaveSnippet: () => void;
-  isEdit: boolean;
   code: string;
-  setCode: (v: string) => void;
   loading: boolean;
-}
+  handleSaveSnippet: () => void;
+  handleTitleChange: (v: string) => void;
+};
 
-const SnippetBox = ({
-  title,
-  handleTitleChange,
-  isEdit,
-  code,
-  setCode,
-  handleSaveSnippet,
-  loading,
-}: SnippetBoxProps) => {
+type EditProps = {
+  isEdit: true;
+  saveStatus: "error" | "saving" | "saved" | "idle";
+  debounceSave: DebouncedFunc<() => Promise<void>>;
+};
+
+type CreateProps = {
+  isEdit: false;
+};
+
+type SnippetBoxProps = CommonProps & (EditProps | CreateProps);
+
+const SnippetBox = (props: SnippetBoxProps) => {
+  const { title, code, isEdit, loading, handleTitleChange, handleSaveSnippet } =
+    props;
+
   const router = useRouter();
   const others = useOthers();
   const session = useSession();
   const [nameError, setNameError] = useState("");
-  const [hasErrors, setHasErrors] = useState(false);
-  const [isButtonLoading, setIsButtonLoading] = useState(false);
 
   if (isEdit && !router.query.snippetId) {
     return <Loading isEditorLoading />;
@@ -151,13 +155,17 @@ const SnippetBox = ({
           )}
         </Paper>
       </Flex>
+
       <Box className={classes.editorBorder}>
-        <CodeEditor
-          code={code}
-          setCode={setCode}
-          setHasErrors={setHasErrors}
-          setLoading={setIsButtonLoading}
-        />
+        <ClientSideSuspense fallback={<Loading isEditorLoading />}>
+          <CollaborativeEditor
+            code={code}
+            {...(isEdit && {
+              saveStatus: props.saveStatus,
+              debounceSave: props.debounceSave,
+            })}
+          />
+        </ClientSideSuspense>
       </Box>
       <Button
         onClick={handleSaveSnippet}
@@ -166,7 +174,7 @@ const SnippetBox = ({
         size="md"
         px="xl"
         loading={loading}
-        disabled={!title || hasErrors || !!nameError || isButtonLoading}
+        disabled={!title || !!nameError}
         style={{ alignSelf: "flex-start" }}
         aria-label="Save snippet button"
       >

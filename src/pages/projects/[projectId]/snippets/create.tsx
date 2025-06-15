@@ -1,9 +1,9 @@
 import { useRouter } from "next/router";
 import { useState } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { notifications } from "@mantine/notifications";
 import Layout from "../../../../components/Layout/Layout";
-import { RoomProvider, useStorage } from "@liveblocks/react";
-import { useSession } from "next-auth/react";
+import { RoomProvider, useRoom, useStorage } from "@liveblocks/react";
 import { useCreateSnippetMutation } from "../../../../store/api/snippetApi";
 import { useAppDispatch } from "../../../../store/hooks";
 import { addSnippet } from "../../../../store/slices/snippetSlice";
@@ -13,14 +13,16 @@ import { withAuth } from "../../../../guards/withAuth";
 import { SnippetsCreateData } from "../../../api/snippets";
 import SnippetBox from "../../../../components/Snippets/SnippetBox";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
+import { getYjsProviderForRoom } from "@liveblocks/yjs";
 
 const Create = () => {
+  const room = useRoom();
   const router = useRouter();
-  const [code, setCode] = useState("");
   const [title, setTitle] = useState("");
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const projectId = getSingleQueryParam(router.query.projectId);
+  const provider = getYjsProviderForRoom(room);
 
   const [createSnippet, { isLoading }] = useCreateSnippetMutation();
   const dispatch = useAppDispatch();
@@ -31,10 +33,15 @@ const Create = () => {
 
   const handleSaveSnippet = async () => {
     try {
-      if (!code || !projectId) throw new Error("Something went wrong");
+      if (!projectId) throw new Error("Something went wrong");
+
+      const yDoc = provider.getYDoc();
+      const yText = yDoc.getText("monaco");
+      const codeToSave = yText.toString();
+
       const snippet: Omit<SnippetsCreateData, "authorId"> = {
         title,
-        content: JSON.stringify(code),
+        content: JSON.stringify(codeToSave),
         language,
         projectId,
         extension:
@@ -54,6 +61,7 @@ const Create = () => {
           })
         );
       }
+
       notifications.show({
         title: "done!",
         message: "Snippet saved successfully! 🌟",
@@ -75,10 +83,9 @@ const Create = () => {
 
   return (
     <SnippetBox
-      code={code}
+      code=""
       handleSaveSnippet={handleSaveSnippet}
       handleTitleChange={handleTitleChange}
-      setCode={setCode}
       title={title}
       isEdit={false}
       loading={isLoading}
@@ -87,12 +94,9 @@ const Create = () => {
 };
 
 const CreateSnippet = () => {
-  const session = useSession();
-  const { data } = session || {};
-
   return (
     <RoomProvider
-      id={`snippet_draft_${data?.user.id ?? "-"}`}
+      id={`snippet_draft_${uuidv4()}`}
       initialStorage={{ code: "", language: "javascript" }}
       initialPresence={{
         cursor: null,

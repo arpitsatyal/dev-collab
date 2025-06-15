@@ -10,6 +10,7 @@ import {
   IconFolder,
   IconSubtask,
   IconLogout,
+  IconPlayCard,
 } from "@tabler/icons-react";
 import classes from "./SideNav.module.css";
 import ThemeToggle from "../Theme/ThemeToggle";
@@ -62,6 +63,12 @@ const SideNav = () => {
   const navItems = useMemo<NavItemProps[]>(
     () => [
       { id: "home", icon: IconGauge, label: "Home", path: "/dashboard" },
+      {
+        id: "playground",
+        icon: IconPlayCard,
+        label: "Playground",
+        path: "/new",
+      },
       {
         id: "create-project",
         icon: IconPencil,
@@ -244,8 +251,12 @@ const SideNav = () => {
     setOpenItem((prev) => (prev === id ? null : id));
   };
 
-  const isActive = (path?: string) => {
+  const isActive = (path?: string, id?: string) => {
     if (!path) return false;
+
+    if (id === "playground") {
+      return router.asPath.startsWith("/playground");
+    }
 
     return router.pathname === path || router.asPath === path;
   };
@@ -328,7 +339,7 @@ const SideNav = () => {
         {navItemsWithProjects.map((item) => (
           <NavLink
             key={item.id}
-            active={isActive(item.path)}
+            active={isActive(item.path, item.id)}
             opened={isOpen(item)}
             label={item.label}
             leftSection={<item.icon size={16} stroke={1.5} />}
