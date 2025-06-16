@@ -12,7 +12,7 @@ import classes from "./Project.module.css";
 import { UseFormReturnType } from "@mantine/form";
 import { ProjectCreateData } from "../../pages/api/projects";
 
-interface ProjectCreateProps {
+interface CreateProjectFormProps {
   form: UseFormReturnType<
     ProjectCreateData,
     (values: ProjectCreateData) => ProjectCreateData
@@ -21,11 +21,11 @@ interface ProjectCreateProps {
   handleSubmit: () => void;
 }
 
-const ProjectCreate = ({
+const CreateProjectForm = ({
   form,
   handleSubmit,
   isLoading,
-}: ProjectCreateProps) => {
+}: CreateProjectFormProps) => {
   return (
     <Box
       maw={{ base: "100%", sm: 600, md: 800 }}
@@ -108,4 +108,4 @@ const ProjectCreate = ({
   );
 };
 
-export default ProjectCreate;
+export default CreateProjectForm;

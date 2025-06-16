@@ -6,10 +6,10 @@ import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
 import { createNewProject } from "../../store/thunks";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import ProjectCreate from "../../components/Projects/ProjectCreate";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
+import CreateProjectForm from "../../components/Projects/CreateProjectForm";
 
-const CreateProject = () => {
+const CreateProjectPage = () => {
   const router = useRouter();
   const form = useForm<ProjectCreateData>({
     initialValues: {
@@ -41,7 +41,7 @@ const CreateProject = () => {
   };
 
   return (
-    <ProjectCreate
+    <CreateProjectForm
       form={form}
       isLoading={isLoading}
       handleSubmit={handleSubmit}
@@ -49,7 +49,9 @@ const CreateProject = () => {
   );
 };
 
-CreateProject.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+CreateProjectPage.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -57,4 +59,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default CreateProject;
+export default CreateProjectPage;

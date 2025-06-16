@@ -2,7 +2,7 @@ import { Box, Text } from "@mantine/core";
 import { withAuth } from "../../guards/withAuth";
 import Layout from "../../components/Layout/Layout";
 
-const Projects = () => {
+const ProjectsIndex = () => {
   return (
     <Box
       style={{
@@ -25,6 +25,6 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-Projects.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+ProjectsIndex.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
-export default Projects;
+export default ProjectsIndex;

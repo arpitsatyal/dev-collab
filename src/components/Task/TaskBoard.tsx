@@ -1,7 +1,6 @@
 import { Center, Grid, Text } from "@mantine/core";
 import { useRouter } from "next/router";
 import React, { useEffect, useMemo, useState } from "react";
-
 import { Task, TaskStatus } from "@prisma/client";
 import { DndProvider } from "react-dnd";
 import { notifications } from "@mantine/notifications";
@@ -15,7 +14,6 @@ import {
 } from "../../store/api/taskApi";
 import Loading from "../Loader/Loader";
 import TaskColumn from "./TaskColumn";
-import classes from "./Task.module.css";
 
 const TaskBoard = () => {
   const router = useRouter();
@@ -46,7 +44,7 @@ const TaskBoard = () => {
 
   if (data?.length === 0) {
     return (
-      <Center className={classes.secondary}>
+      <Center className="secondary">
         <Text size="lg">No tasks yet, create one to get started!</Text>
       </Center>
     );

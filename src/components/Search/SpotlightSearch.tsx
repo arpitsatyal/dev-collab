@@ -313,7 +313,7 @@ const SpotlightSearch = ({
     loading: isSearchLoading,
     isTyping,
     searchCache,
-    subtleLoader,
+    ringLoader,
   } = useSearch(query);
 
   const { data: session } = useSession();
@@ -523,7 +523,7 @@ const SpotlightSearch = ({
               </Box>
             )}
 
-            {subtleLoader && (
+            {ringLoader && (
               <Box className={classes.clearAll}>
                 <RingLoader style={{ stroke: strokeColor }} />
               </Box>

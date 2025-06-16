@@ -15,10 +15,6 @@
   );
 }
 
-.title {
-  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-4));
-}
-
 .description {
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
 }

@@ -36,7 +36,7 @@ const TaskColumn = ({ title, tasks, onDropTask }: TaskColumnProps) => {
           {title}
         </Text>
         {tasks.length === 0 ? (
-          <Text size="sm" className={classes.secondary}>
+          <Text size="sm" className="secondary">
             No tasks in this column
           </Text>
         ) : (

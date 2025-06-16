@@ -1,68 +1,13 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Layout from "../components/Layout/Layout";
 import { CollaborativeEditor } from "../components/CodeEditor/CollaborativeEditor";
 import { RoomProvider } from "@liveblocks/react";
-import {
-  Box,
-  Button,
-  CopyButton,
-  Group,
-  TextInput,
-  Tooltip,
-} from "@mantine/core";
+import { Box } from "@mantine/core";
 import { useRouter } from "next/router";
-import { IconCheck, IconCopy } from "@tabler/icons-react";
-
-const ShareBar = () => {
-  const router = useRouter();
-  const { roomId } = router.query;
-  const [link, setLink] = useState("");
-
-  useEffect(() => {
-    if (typeof window !== "undefined" && typeof roomId === "string") {
-      setLink(`${window.location.origin}/playground?roomId=${roomId}`);
-    }
-  }, [roomId]);
-
-  return (
-    <Group
-      align="center"
-      px="md"
-      py="sm"
-      style={{
-        borderRadius: 12,
-      }}
-    >
-      <TextInput
-        value={link}
-        readOnly
-        radius="md"
-        style={{ flex: 1 }}
-        size="sm"
-      />
-      <CopyButton value={link} timeout={2000}>
-        {({ copied, copy }) => (
-          <Tooltip label={copied ? "Copied!" : "Copy link"} position="right">
-            <Button
-              onClick={copy}
-              leftSection={
-                copied ? <IconCheck size={16} /> : <IconCopy size={16} />
-              }
-              size="sm"
-              radius="md"
-              color={copied ? "teal" : "blue"}
-            >
-              {copied ? "Copied" : "Copy"}
-            </Button>
-          </Tooltip>
-        )}
-      </CopyButton>
-    </Group>
-  );
-};
+import ActiveCollaborators from "../components/CodeEditor/ActiveCollaborators";
 
 const Playground = () => {
-  return <CollaborativeEditor code="" />;
+  return <CollaborativeEditor code="" playgroundMode />;
 };
 
 const PlaygroundPage = () => {
@@ -80,8 +25,10 @@ const PlaygroundPage = () => {
         cursor: null,
       }}
     >
-      <Box style={{ height: "100vh" }}>
-        <ShareBar />
+      <Box style={{ display: "flex", justifyContent: "flex-end" }}>
+        <ActiveCollaborators />
+      </Box>
+      <Box style={{ height: "100%" }}>
         <Playground />
       </Box>
     </RoomProvider>

@@ -11,11 +11,11 @@ import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { languageMapper } from "../../../../utils/languageMapper";
 import { withAuth } from "../../../../guards/withAuth";
 import { SnippetsCreateData } from "../../../api/snippets";
-import SnippetBox from "../../../../components/Snippets/SnippetBox";
+import SnippetWorkplace from "../../../../components/Snippets/SnippetWorkplace";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
 
-const Create = () => {
+const CreateSnippetForm = () => {
   const room = useRoom();
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -82,7 +82,7 @@ const Create = () => {
   };
 
   return (
-    <SnippetBox
+    <SnippetWorkplace
       code=""
       handleSaveSnippet={handleSaveSnippet}
       handleTitleChange={handleTitleChange}
@@ -93,7 +93,7 @@ const Create = () => {
   );
 };
 
-const CreateSnippet = () => {
+const CreateSnippetPage = () => {
   return (
     <RoomProvider
       id={`snippet_draft_${uuidv4()}`}
@@ -102,12 +102,14 @@ const CreateSnippet = () => {
         cursor: null,
       }}
     >
-      <Create />
+      <CreateSnippetForm />
     </RoomProvider>
   );
 };
 
-CreateSnippet.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+CreateSnippetPage.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -115,4 +117,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default CreateSnippet;
+export default CreateSnippetPage;

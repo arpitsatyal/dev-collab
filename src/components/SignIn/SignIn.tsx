@@ -2,7 +2,6 @@ import { Button, Card, Container, Stack, Text, Title } from "@mantine/core";
 import React from "react";
 import DevCollabIcon from "../DevCollabIcon";
 import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
-import classes from "./SignIn.module.css";
 
 interface SignInProps {
   handleGithubSignIn: () => void;
@@ -33,7 +32,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
           <Title order={2} ta="center">
             Welcome to Dev-Collab
           </Title>
-          <Text size="md" ta="center" className={classes.secondary}>
+          <Text size="md" ta="center" className="secondary">
             Sign in to collaborate, share, and build amazing projects together.
           </Text>
           <Stack w="100%" gap="md">
@@ -58,7 +57,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
               Sign in with Google
             </Button>
           </Stack>
-          <Text size="sm" ta="center" className={classes.secondary}>
+          <Text size="sm" ta="center" className="secondary">
             Don&apos;t have an account? Sign up with one click above!
           </Text>
         </Stack>

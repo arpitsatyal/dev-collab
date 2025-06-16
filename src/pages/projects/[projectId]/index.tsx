@@ -3,9 +3,9 @@ import Layout from "../../../components/Layout/Layout";
 import Loading from "../../../components/Loader/Loader";
 import { withAuth } from "../../../guards/withAuth";
 import { useAppSelector } from "../../../store/hooks";
-import ProjectDetail from "../../../components/Projects/ProjectDetail";
+import ProjectDetail from "../../../components/Projects/ProjectDetailForm";
 
-const ProjectPage = () => {
+const ProjectDetailPage = () => {
   const router = useRouter();
   const { projectId } = router.query;
 
@@ -21,7 +21,9 @@ const ProjectPage = () => {
   return <ProjectDetail project={project} />;
 };
 
-ProjectPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+ProjectDetailPage.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -29,4 +31,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default ProjectPage;
+export default ProjectDetailPage;

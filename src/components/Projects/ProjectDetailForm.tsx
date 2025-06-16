@@ -14,7 +14,7 @@ const ProjectDetail = ({ project }: { project: Project }) => {
         className={classes.root}
       >
         <Stack gap="md">
-          <Text size="lg" fw={600} className={classes.title}>
+          <Text size="lg" fw={600} className="title">
             {project?.title}
           </Text>
           {project?.description ? (

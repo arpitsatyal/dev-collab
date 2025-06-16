@@ -2,7 +2,6 @@ import dynamic from "next/dynamic";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useRoom } from "@liveblocks/react/suspense";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
-import styles from "./CollaborativeEditor.module.css";
 import { editor } from "monaco-editor";
 import { MonacoBinding } from "y-monaco";
 import { Awareness } from "y-protocols/awareness";
@@ -11,23 +10,21 @@ import {
   Flex,
   Select,
   Stack,
-  Text,
-  Tooltip,
-  Avatar,
   useComputedColorScheme,
-  Switch,
   Box,
 } from "@mantine/core";
 import { languageOptions } from "../../utils/languageOptions";
 import { useMutation, useStorage } from "@liveblocks/react";
-import dayjs from "dayjs";
 import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../../store/hooks";
 import { useGetUserQuery } from "../../store/api/userApi";
 import Loading from "../Loader/Loader";
-import { Cursors } from "./Cursors/Cursors";
+import { Cursors } from "./Cursors";
 import { DebouncedFunc } from "lodash";
-import { IconCheck, IconX } from "@tabler/icons-react";
+import ShareButton from "./ShareButton";
+import LastSavedInfo from "./LastSavedInfo";
+import AutoSaveSwitch from "./AutoSaveSwitch";
+import { SaveStatus } from "../../types";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -35,14 +32,16 @@ const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
 
 interface CollaborativeEditorProps {
   code: string;
-  saveStatus?: "error" | "saving" | "saved" | "idle";
+  saveStatus?: SaveStatus;
   debounceSave?: DebouncedFunc<() => Promise<void>>;
+  playgroundMode?: boolean;
 }
 
 export function CollaborativeEditor({
   code,
   saveStatus,
   debounceSave,
+  playgroundMode = false,
 }: CollaborativeEditorProps) {
   const room = useRoom();
   const provider = getYjsProviderForRoom(room);
@@ -177,80 +176,23 @@ export function CollaborativeEditor({
           />
         </Box>
 
+        {playgroundMode && <ShareButton />}
+
         {debounceSave && (
-          <Box w={{ base: "100%", md: "auto" }}>
-            <Switch
-              checked={autoSaveOn}
-              onChange={(event) => setAutoSaveOn(event.currentTarget.checked)}
-              color="#0074C2"
-              size="md"
-              label="Auto Save"
-              thumbIcon={
-                autoSaveOn ? (
-                  <IconCheck
-                    size={12}
-                    color="var(--mantine-color-teal-6)"
-                    stroke={3}
-                  />
-                ) : (
-                  <IconX
-                    size={12}
-                    color="var(--mantine-color-red-6)"
-                    stroke={3}
-                  />
-                )
-              }
-            />
-            <Text
-              c={saveStatus === "saving" ? "yellow" : "green"}
-              fs="italic"
-              fz="xs"
-              mt="xs"
-              style={{
-                visibility: saveStatus ? "visible" : "hidden",
-                minHeight: 16,
-              }}
-            >
-              {saveStatus === "saving" && "Saving..."}
-              {saveStatus === "saved" && "All changes saved."}
-            </Text>
-          </Box>
+          <AutoSaveSwitch
+            autoSaveOn={autoSaveOn}
+            saveStatus={saveStatus}
+            setAutoSaveOn={setAutoSaveOn}
+          />
         )}
         {snippet && user && (
-          <Box w={{ base: "100%", md: "auto" }} maw={{ md: 200 }}>
-            <Flex
-              direction="column"
-              align={{ base: "flex-start", md: "flex-end" }}
-              gap="xs"
-            >
-              <Tooltip label={user.name ?? "Unknown User"} withinPortal>
-                <Avatar
-                  src={user.image}
-                  alt={user.name ?? "User avatar"}
-                  radius="xl"
-                />
-              </Tooltip>
-              <Text
-                fs="italic"
-                fz="xs"
-                truncate
-                style={{
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                }}
-              >
-                Last Saved:{" "}
-                {dayjs(snippet.updatedAt).format("MMM D, YYYY [at] h:mm a")}
-              </Text>
-            </Flex>
-          </Box>
+          <LastSavedInfo user={user} updatedAt={snippet.updatedAt} />
         )}
       </Flex>
 
       {provider ? <Cursors yProvider={provider} /> : null}
 
-      <div className={styles.editorContainer}>
+      <div style={{ flexGrow: 1, height: "90vh" }}>
         <MonacoEditor
           key={language}
           onMount={handleEditorMount}

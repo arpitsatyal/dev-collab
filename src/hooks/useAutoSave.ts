@@ -1,6 +1,7 @@
 import { useRef, useEffect, useCallback, useMemo } from "react";
 import debounce from "lodash/debounce";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
+import { SaveStatus } from "../types";
 
 export interface SaveSnippetProps {
   projectId: string | undefined;
@@ -12,7 +13,7 @@ interface AutoSaveProps {
   projectId: string | undefined;
   snippetId: string | undefined;
   provider: LiveblocksYjsProvider;
-  setSaveStatus: (status: "idle" | "saving" | "saved" | "error") => void;
+  setSaveStatus: (status: SaveStatus) => void;
   saveSnippet: (args: SaveSnippetProps) => Promise<{ success: boolean }>;
 }
 

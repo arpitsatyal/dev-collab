@@ -39,7 +39,7 @@ export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
   const [matchedResults, setMatchedResults] = useState<TypedItems[]>([]);
   const [isTyping, setIsTyping] = useState(false);
-  const [subtleLoader, setSubtleLoader] = useState(false);
+  const [ringLoader, setRingLoader] = useState(false);
 
   const dbRef = useRef<IDBPDatabase | null>(null);
 
@@ -98,7 +98,7 @@ export const useSearch = (term: string) => {
         if (showLoading) {
           setLoading(true);
         } else {
-          setSubtleLoader(true);
+          setRingLoader(true);
         }
 
         const encodedQuery = encodeURIComponent(trimmedQuery);
@@ -125,7 +125,7 @@ export const useSearch = (term: string) => {
         if (showLoading) {
           setLoading(false);
         } else {
-          setSubtleLoader(false);
+          setRingLoader(false);
         }
         setIsTyping(false);
       }
@@ -240,6 +240,6 @@ export const useSearch = (term: string) => {
     searchCache,
     loading,
     isTyping,
-    subtleLoader,
+    ringLoader,
   };
 };

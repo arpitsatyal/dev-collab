@@ -18,7 +18,7 @@ import TaskInfo from "../../../../components/Task/TaskInfo";
 import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 
-const TasksPage = () => {
+const ProjectTasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
   const router = useRouter();
@@ -101,7 +101,9 @@ const TasksPage = () => {
   );
 };
 
-TasksPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+ProjectTasksPage.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -109,4 +111,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default TasksPage;
+export default ProjectTasksPage;

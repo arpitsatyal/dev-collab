@@ -1,22 +1,5 @@
-.title {
-   color: light-dark(
-    var(--mantine-color-gray-7),
-    var(--mantine-color-gray-4)
-  );
-}
-
-.secondary {
-  color: light-dark(
-    var(--mantine-color-gray-6),
-    var(--mantine-color-gray-4)
-  );
-}
-
 .editorBorder {
   border: 1px solid
-    light-dark(
-      var(--mantine-color-gray-3),
-      var(--mantine-color-gray-7)
-    );
+    light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-7));
   border-radius: light-dark(4px, 2px);
 }

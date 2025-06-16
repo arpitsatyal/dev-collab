@@ -22,7 +22,7 @@ const TaskInfo = ({
           wordWrap: "break-word",
           whiteSpace: "normal",
         }}
-        className={classes.title}
+        className="title"
       >
         Project Workspace {project?.title}
       </Text>

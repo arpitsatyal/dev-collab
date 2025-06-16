@@ -21,14 +21,14 @@ import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
 import { SnippetsUpdateData } from "../../../../api/snippets";
-import SnippetBox from "../../../../../components/Snippets/SnippetBox";
+import SnippetWorkplace from "../../../../../components/Snippets/SnippetWorkplace";
 import { syncMeiliSearch } from "../../../../../utils/syncMeiliSearch";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
 import useAutoSave, {
   SaveSnippetProps,
 } from "../../../../../hooks/useAutoSave";
 
-const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
+const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const session = useSession();
@@ -155,7 +155,7 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   }
 
   return (
-    <SnippetBox
+    <SnippetWorkplace
       title={title ?? ""}
       code={snippet.content}
       isEdit={true}
@@ -168,7 +168,7 @@ const SnippetEdit = ({ snippet }: { snippet: Snippet }) => {
   );
 };
 
-const SnippetPage = () => {
+const EditSnippetPage = () => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
   const shouldFetch =
@@ -229,12 +229,14 @@ const SnippetPage = () => {
         cursor: null,
       }}
     >
-      <SnippetEdit snippet={snippet} />
+      <EditSnippetForm snippet={snippet} />
     </RoomProvider>
   );
 };
 
-SnippetPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+EditSnippetPage.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -242,4 +244,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default SnippetPage;
+export default EditSnippetPage;
