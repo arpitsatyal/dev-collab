@@ -9,7 +9,7 @@ interface LastSavedInfoProps {
 
 const LastSavedInfo = ({ user, updatedAt }: LastSavedInfoProps) => {
   return (
-    <Box w="100%" mt={{ base: "sm", md: "xs" }}>
+    <Box w="100%">
       <Text
         fz={{ base: "sm", md: "xs" }}
         fs="italic"

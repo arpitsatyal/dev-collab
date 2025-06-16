@@ -169,16 +169,24 @@ export function CollaborativeEditor({
           gap="md"
           style={{ width: "100%" }}
         >
-          <Box w={{ base: "100%", md: "auto" }}>
-            <Select
-              label="Select Language"
-              placeholder="Pick a language"
-              data={languageOptions}
-              value={language}
-              onChange={handleLanguageChange}
-              styles={{ label: { marginBottom: 12 } }}
-            />
-          </Box>
+          {playgroundMode && (
+            <Flex
+              w={{ base: "100%", md: "auto" }}
+              direction={{ base: "column", md: "row" }}
+            >
+              <Select
+                label="Select Language"
+                placeholder="Pick a language"
+                data={languageOptions}
+                value={language}
+                onChange={handleLanguageChange}
+                styles={{ label: { marginBottom: 12 } }}
+              />
+              <Box mt={{ base: 0, md: 15 }}>
+                <ShareButton />
+              </Box>
+            </Flex>
+          )}
 
           <Flex direction="column">
             {debounceSave && (
@@ -188,7 +196,6 @@ export function CollaborativeEditor({
                 setAutoSaveOn={setAutoSaveOn}
               />
             )}
-            {playgroundMode && <ShareButton />}
             {snippet && user && (
               <LastSavedInfo user={user} updatedAt={snippet.updatedAt} />
             )}
