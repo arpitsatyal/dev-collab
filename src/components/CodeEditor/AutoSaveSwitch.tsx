@@ -35,7 +35,13 @@ const AutoSaveSwitch = ({
         }
       />
       <Text
-        c={saveStatus === "saving" ? "yellow" : "green"}
+        c={
+          saveStatus === "saving"
+            ? "yellow"
+            : saveStatus === "error"
+            ? "red"
+            : "green"
+        }
         fs="italic"
         fz="xs"
         mt="xs"
@@ -46,6 +52,7 @@ const AutoSaveSwitch = ({
       >
         {saveStatus === "saving" && "Saving..."}
         {saveStatus === "saved" && "All changes saved."}
+        {saveStatus === "error" && "Failed to save changes."}
       </Text>
     </Box>
   );

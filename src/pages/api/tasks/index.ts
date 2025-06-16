@@ -110,7 +110,9 @@ export default async function handler(
           projectId: task.projectId,
           taskTitle: task.title,
           taskDescription: task.description,
-          dueDate: dayjs(task.dueDate).format("MMMM D, YYYY"),
+          dueDate: task.dueDate
+            ? dayjs(task.dueDate).format("MMMM D, YYYY")
+            : null,
           emailType: "taskCreated",
         };
 

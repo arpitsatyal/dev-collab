@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import { notifications } from "@mantine/notifications";
@@ -27,10 +25,10 @@ import { getYjsProviderForRoom } from "@liveblocks/yjs";
 import useAutoSave, {
   SaveSnippetProps,
 } from "../../../../../hooks/useAutoSave";
+import { SaveStatus } from "../../../../../types";
 
 const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
-  const [title, setTitle] = useState("");
   const session = useSession();
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
@@ -42,21 +40,9 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   const projectId = getSingleQueryParam(router.query.projectId);
   const snippetId = getSingleQueryParam(router.query.snippetId);
   const provider = getYjsProviderForRoom(room);
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
 
-  useEffect(() => {
-    if (snippet) {
-      setTitle(snippet.title ?? "");
-    }
-  }, [snippet]);
-
-  const handleTitleChange = (value: string) => {
-    setTitle(value);
-  };
-
-  const handleAutoSaveSnippet = async ({
+  const handleAutoSave = async ({
     projectId,
     snippetId,
     content,
@@ -98,10 +84,10 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
     snippetId,
     provider,
     setSaveStatus,
-    saveSnippet: handleAutoSaveSnippet,
+    saveSnippet: handleAutoSave,
   });
 
-  const handleSaveSnippet = async () => {
+  const handleManualSave = async () => {
     try {
       if (!projectId || !snippetId) throw new Error("Something went wrong");
 
@@ -109,11 +95,10 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
       const yText = yDoc.getText("monaco");
       const codeToSave = yText.toString();
 
-      const snippet: Omit<SnippetsUpdateData, "authorId"> = {
-        title,
+      const updateSnippetMetaData: Omit<SnippetsUpdateData, "authorId"> = {
+        ...snippet,
         content: JSON.stringify(codeToSave),
         language,
-        projectId,
         lastEditedById: session.data?.user.id ?? "",
         extension:
           languageMapper.find((lang) => lang.name === language)?.extension ??
@@ -122,7 +107,7 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
 
       const data = await editSnippet({
         projectId,
-        snippet,
+        snippet: updateSnippetMetaData,
         snippetId,
       }).unwrap();
 
@@ -156,11 +141,8 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
 
   return (
     <SnippetWorkplace
-      title={title ?? ""}
-      code={snippet.content}
-      isEdit={true}
-      handleSaveSnippet={handleSaveSnippet}
-      handleTitleChange={handleTitleChange}
+      snippet={snippet}
+      handleManualSave={handleManualSave}
       loading={isLoading}
       debounceSave={debounceSave}
       saveStatus={saveStatus}

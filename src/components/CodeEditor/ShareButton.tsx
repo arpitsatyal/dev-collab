@@ -34,7 +34,7 @@ const ShareButton = () => {
             }
             style={{ margin: "1rem" }}
           >
-            {copied ? "Link Copied" : "Share"}
+            {copied ? "Room Link Copied" : "Share Room"}
           </Button>
         </Tooltip>
       )}

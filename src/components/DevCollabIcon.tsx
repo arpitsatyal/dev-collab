@@ -15,7 +15,7 @@ const DevCollabIcon = () => (
       letterSpacing="1"
       cursor="pointer"
     >
-      Dev-Collab /&gt;
+      Dev-Collab
     </text>
   </svg>
 );

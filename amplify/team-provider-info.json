@@ -37,7 +37,7 @@
         },
         "TaskNotificationWorker": {
           "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
-          "s3Key": "amplify-builds/TaskNotificationWorker-75705970777a32756a59-build.zip",
+          "s3Key": "amplify-builds/TaskNotificationWorker-6844495464344c677973-build.zip",
           "appDomain": "https://www.devcollab.store"
         },
         "DueDateCronJob": {

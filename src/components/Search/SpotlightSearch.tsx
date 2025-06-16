@@ -31,6 +31,7 @@ import { TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
+import ShortcutHint from "./ShortcutHint";
 
 interface DataItem {
   id: string;
@@ -443,28 +444,7 @@ const SpotlightSearch = ({
                 onClick={() => spotlight.open()}
               />
             }
-            rightSection={
-              <Box
-                style={{
-                  paddingRight: "40px",
-                  cursor: "pointer",
-                }}
-                onClick={() => spotlight.open()}
-              >
-                <Paper
-                  shadow="xs"
-                  style={{
-                    width: "60px",
-                    padding: "5px",
-                  }}
-                  className={classes.shortcut}
-                >
-                  <Text size="xs" fw={700} lh={1}>
-                    Ctrl + K
-                  </Text>
-                </Paper>
-              </Box>
-            }
+            rightSection={<ShortcutHint />}
             radius="md"
             styles={{
               input: {

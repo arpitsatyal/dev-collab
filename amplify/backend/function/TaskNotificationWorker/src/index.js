@@ -33,11 +33,21 @@ exports.handler = async (event) => {
       const baseData = { assigneeEmail, assigneeName, taskTitle, taskLink };
       const dynamicData =
         emailType === "taskCreated"
-          ? { ...baseData, taskDescription, dueDate }
+          ? {
+              ...baseData,
+              ...(taskDescription && { taskDescription }),
+              ...(dueDate && { dueDate }),
+            }
           : emailType === "taskUpdated"
-          ? { ...baseData, status }
+          ? {
+              ...baseData,
+              ...(status && { status }),
+            }
           : emailType === "nearingDueDate"
-          ? { ...baseData, dueDate }
+          ? {
+              ...baseData,
+              ...(dueDate && { dueDate }),
+            }
           : baseData;
 
       const msg = {

@@ -2,12 +2,28 @@ import React from "react";
 import Layout from "../components/Layout/Layout";
 import { CollaborativeEditor } from "../components/CodeEditor/CollaborativeEditor";
 import { RoomProvider } from "@liveblocks/react";
-import { Box } from "@mantine/core";
+import { Box, useComputedColorScheme } from "@mantine/core";
 import { useRouter } from "next/router";
-import ActiveCollaborators from "../components/CodeEditor/ActiveCollaborators";
 
 const Playground = () => {
-  return <CollaborativeEditor code="" playgroundMode />;
+  const computedColorScheme = useComputedColorScheme("light", {
+    getInitialValueInEffect: true,
+  });
+
+  const isDark = computedColorScheme === "dark";
+
+  return (
+    <Box
+      style={{
+        border: `1px solid ${
+          isDark ? "var(--mantine-color-gray-7)" : "var(--mantine-color-gray-3)"
+        }`,
+        borderRadius: isDark ? "2px" : "4px",
+      }}
+    >
+      <CollaborativeEditor code="" playgroundMode />
+    </Box>
+  );
 };
 
 const PlaygroundPage = () => {
@@ -25,9 +41,6 @@ const PlaygroundPage = () => {
         cursor: null,
       }}
     >
-      <Box style={{ display: "flex", justifyContent: "flex-end" }}>
-        <ActiveCollaborators />
-      </Box>
       <Box style={{ height: "100%" }}>
         <Playground />
       </Box>

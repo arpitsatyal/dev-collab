@@ -20,13 +20,7 @@ const Loading = ({
     >
       {isEditorLoading ? (
         <Group>
-          <Image
-            priority
-            src={spinnerSVG}
-            alt="loading..."
-            height={36}
-            width={36}
-          />
+          <Image src={spinnerSVG} alt="loading..." height={36} width={36} />
           <Text size="20">Loading Editor...</Text>
         </Group>
       ) : (

@@ -26,7 +26,7 @@ export function Cursors({ yProvider }: Props) {
     return () => {
       yProvider.awareness.off("change", setUsers);
     };
-  }, [yProvider]);
+  }, [yProvider, userInfo]);
 
   const styleSheet = useMemo(() => {
     let cursorStyles = "";

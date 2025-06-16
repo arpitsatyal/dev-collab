@@ -12,6 +12,7 @@ import {
   Stack,
   useComputedColorScheme,
   Box,
+  Paper,
 } from "@mantine/core";
 import { languageOptions } from "../../utils/languageOptions";
 import { useMutation, useStorage } from "@liveblocks/react";
@@ -25,6 +26,7 @@ import ShareButton from "./ShareButton";
 import LastSavedInfo from "./LastSavedInfo";
 import AutoSaveSwitch from "./AutoSaveSwitch";
 import { SaveStatus } from "../../types";
+import ActiveCollaborators from "./ActiveCollaborators";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
   ssr: false,
@@ -157,55 +159,63 @@ export function CollaborativeEditor({
   }
 
   return (
-    <Stack p="md" mih="100vh" gap="sm">
-      <Flex
-        justify="space-between"
-        align={{ base: "flex-start", md: "center" }}
-        direction={{ base: "column", md: "row" }}
-        gap="md"
-        wrap="wrap"
-      >
-        <Box w={{ base: "100%", md: "auto" }}>
-          <Select
-            label="Select Language"
-            placeholder="Pick a language"
-            data={languageOptions}
-            value={language}
-            onChange={handleLanguageChange}
-            styles={{ label: { marginBottom: 12 } }}
-          />
-        </Box>
+    <Stack p="md" mih="100vh" gap="md">
+      <Paper shadow="xs" p="md" radius="md" withBorder>
+        <Flex
+          direction={{ base: "column", md: "row" }}
+          justify={{ base: "flex-start", md: "space-between" }}
+          align={{ base: "stretch", md: "center" }}
+          wrap="wrap"
+          gap="md"
+          style={{ width: "100%" }}
+        >
+          <Box w={{ base: "100%", md: "auto" }}>
+            <Select
+              label="Select Language"
+              placeholder="Pick a language"
+              data={languageOptions}
+              value={language}
+              onChange={handleLanguageChange}
+              styles={{ label: { marginBottom: 12 } }}
+            />
+          </Box>
 
-        {playgroundMode && <ShareButton />}
+          <Flex direction="column">
+            {debounceSave && (
+              <AutoSaveSwitch
+                autoSaveOn={autoSaveOn}
+                saveStatus={saveStatus}
+                setAutoSaveOn={setAutoSaveOn}
+              />
+            )}
+            {playgroundMode && <ShareButton />}
+            {snippet && user && (
+              <LastSavedInfo user={user} updatedAt={snippet.updatedAt} />
+            )}
+          </Flex>
 
-        {debounceSave && (
-          <AutoSaveSwitch
-            autoSaveOn={autoSaveOn}
-            saveStatus={saveStatus}
-            setAutoSaveOn={setAutoSaveOn}
-          />
-        )}
-        {snippet && user && (
-          <LastSavedInfo user={user} updatedAt={snippet.updatedAt} />
-        )}
-      </Flex>
+          <Box>
+            <ActiveCollaborators />
+          </Box>
+        </Flex>
+      </Paper>
 
-      {provider ? <Cursors yProvider={provider} /> : null}
+      {provider && <Cursors yProvider={provider} />}
 
-      <div style={{ flexGrow: 1, height: "90vh" }}>
+      <Box style={{ flexGrow: 1, height: "90vh" }}>
         <MonacoEditor
           key={language}
           onMount={handleEditorMount}
           height="100%"
           theme={computedColorScheme === "dark" ? "vs-dark" : "vs-light"}
           defaultLanguage={language}
-          defaultValue=""
+          defaultValue={code}
           options={{
             tabSize: 2,
             padding: { top: 20 },
           }}
         />
-      </div>
+      </Box>
     </Stack>
   );
 }

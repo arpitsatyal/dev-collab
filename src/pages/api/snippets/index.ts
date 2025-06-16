@@ -114,23 +114,22 @@ export default async function handler(
         if (content) updateData.content = content;
         if (extension) updateData.extension = extension;
 
+        if (lastEditedById) {
+          updateData.lastEditedBy = {
+            connect: { id: lastEditedById },
+          };
+        }
+
         const updatedSnippet = await prisma.snippet.update({
           where: {
             id: snippetId as string,
           },
-          data: {
-            ...updateData,
-            lastEditedBy: {
-              connect: {
-                id: lastEditedById,
-              },
-            },
-          },
+          data: updateData,
         });
 
         return res.status(200).json(updatedSnippet);
       } catch (error) {
-        console.error("Error creating snippet:", error);
+        console.error("Error updating snippet:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
 
