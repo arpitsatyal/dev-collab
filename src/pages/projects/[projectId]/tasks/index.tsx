@@ -15,14 +15,25 @@ import TaskBoard from "../../../../components/Task/TaskBoard";
 import TaskInfo from "../../../../components/Task/TaskInfo";
 import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
+import {
+  useGetProjectByIdQuery,
+  useGetProjectsQuery,
+} from "../../../../store/api/projectApi";
 
 const ProjectTasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
-  const projects = useAppSelector((state) => state.project.loadedProjects);
-  const project = projects.find((project) => project.id === projectId);
+
+  const { pageSize, skip } = useAppSelector((state) => state.project);
+  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
+    skip,
+    limit: pageSize,
+  });
+  const { data: projectData } = useGetProjectByIdQuery(projectId ?? "");
+
+  const project = data?.items.find((project) => project.id === projectId);
 
   const [taskForm, setTaskForm] = useState<TaskCreateData>({
     title: "",
@@ -34,7 +45,7 @@ const ProjectTasksPage = () => {
   });
 
   const projectTitle =
-    projects.find((project) => project.id === taskForm.projectId)?.title ??
+    data?.items.find((project) => project.id === taskForm.projectId)?.title ??
     "Select Project";
 
   const handleInputChange = <K extends keyof TaskCreateData>(
@@ -66,7 +77,7 @@ const ProjectTasksPage = () => {
 
       close();
 
-      await syncMeiliSearch(data, "task");
+      await syncMeiliSearch({ ...data, project: projectData }, "task");
     } catch (error) {
       console.error(error);
       notifications.show({
@@ -76,7 +87,7 @@ const ProjectTasksPage = () => {
     }
   };
 
-  if (!projectId || !project) {
+  if (!projectId || !project || isProjectsLoading) {
     return <Loading />;
   }
 

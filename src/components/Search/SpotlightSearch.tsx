@@ -11,7 +11,6 @@ import {
   Box,
   Button,
   Group,
-  Paper,
   Text,
   TextInput,
   useComputedColorScheme,
@@ -19,19 +18,23 @@ import {
 } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
 import { truncateByWords } from "../../utils/truncateByWords";
-import { useAppSelector } from "../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader/Loader";
 import FileIcon from "../FileIcon";
 import { Project, Snippet, Task } from "@prisma/client";
-import { RootState } from "../../store/store";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { TypedItems } from "../../types";
+import { CacheDataSource, TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 import ShortcutHint from "./ShortcutHint";
+import { projectApi, useGetProjectsQuery } from "../../store/api/projectApi";
+import {
+  setInsertingProject,
+  setProjectsOpen,
+} from "../../store/slices/projectSlice";
 
 interface DataItem {
   id: string;
@@ -94,209 +97,6 @@ const ActionItem = ({ item }: { item: DataItem }) => (
   </Spotlight.Action>
 );
 
-const projectSource: Omit<DataSource<Project>, "data"> = {
-  name: "projects",
-  groupLabel: "Projects",
-  filterData: (projects, query, { matchedResults, isSearchLoading }) => {
-    const localProjects = filterByQuery(projects, query);
-    const apiProjects =
-      !isSearchLoading && matchedResults?.length > 0
-        ? matchedResults.filter(
-            (apiResult: TypedItems) =>
-              apiResult.type === "project" &&
-              !localProjects.some((local: Project) => local.id === apiResult.id)
-          )
-        : [];
-    return [...localProjects, ...apiProjects];
-  },
-  toDataItem: (
-    project,
-    {
-      router,
-      addRecentItems,
-    }: { router: NextRouter; addRecentItems: (items: TypedItems[]) => void }
-  ) => ({
-    id: project.id,
-    title: project.title,
-    description: project.description ?? "-",
-    icon: <IconFolder size={24} stroke={1.5} />,
-    onClick: () => {
-      addRecentItems([{ ...project, type: "project" }]);
-      router.push(`/projects/${project.id}`);
-    },
-    groupLabel: "Projects",
-  }),
-};
-
-const snippetSource: Omit<DataSource<Snippet>, "data"> = {
-  name: "snippets",
-  groupLabel: "Snippets",
-  filterData: (snippets, query, { matchedResults, isSearchLoading }) => {
-    const localSnippets = filterByQuery(snippets, query);
-    // Only include API snippets if not loading and results exist
-    const apiSnippets =
-      !isSearchLoading && matchedResults?.length > 0
-        ? matchedResults.filter(
-            (apiResult: TypedItems) =>
-              apiResult.type === "snippet" &&
-              !localSnippets.some((local: Snippet) => local.id === apiResult.id)
-          )
-        : [];
-    return [...localSnippets, ...apiSnippets];
-  },
-  toDataItem: (
-    snippet,
-    {
-      router,
-      projects,
-      addRecentItems,
-    }: {
-      router: NextRouter;
-      projects: Project[];
-      addRecentItems: (items: TypedItems[]) => void;
-    }
-  ) => ({
-    id: snippet.id,
-    title: `${snippet.title}.${snippet.extension ?? ""}`,
-    icon: <FileIcon snippet={snippet} />,
-    onClick: () => {
-      addRecentItems([{ ...snippet, type: "snippet" }]);
-      router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`);
-    },
-    groupLabel: "Snippets",
-    meta: {
-      projectTitle:
-        projects.find((project) => project.id === snippet.projectId)?.title ??
-        "",
-    },
-  }),
-};
-
-const taskSource: Omit<DataSource<Task>, "data"> = {
-  name: "tasks",
-  groupLabel: "Tasks",
-  filterData: (_, __, { matchedResults, isSearchLoading }) => {
-    const apiTasks =
-      !isSearchLoading && matchedResults?.length > 0
-        ? matchedResults.filter(
-            (apiResult: TypedItems) => apiResult.type === "task"
-          )
-        : [];
-    return apiTasks;
-  },
-  toDataItem: (
-    task,
-    {
-      router,
-      projects,
-      addRecentItems,
-    }: {
-      router: NextRouter;
-      projects: Project[];
-      addRecentItems: (items: TypedItems[]) => void;
-    }
-  ) => ({
-    id: task.id,
-    title: task.title,
-    description: task.description ?? "-",
-    icon: <IconSubtask />,
-    onClick: () => {
-      addRecentItems([{ ...task, type: "task" }]);
-      router.push(`/projects/${task.projectId}/tasks`);
-    },
-    groupLabel: "tasks",
-    meta: {
-      projectTitle:
-        projects.find((project) => project.id === task.projectId)?.title ?? "",
-    },
-  }),
-};
-
-const cacheSource: Omit<DataSource<TypedItems>, "data"> = {
-  name: "cacheResults",
-  groupLabel: "Recently Searched",
-  filterData: (results, query, context) => {
-    const { matchedResults, projects, snippets, recentSearchOrder } = context;
-    // Only show cache if no results from other sources
-    const hasOtherResults =
-      filterByQuery(projects, query)?.length > 0 ||
-      filterByQuery(snippets, query)?.length > 0 ||
-      matchedResults?.length > 0;
-
-    if (hasOtherResults) {
-      return [];
-    }
-
-    // Sort by recency based on recentSearchOrder
-    results.sort((a, b) => {
-      const aKey = `${a.type}:${a.id}`;
-      const bKey = `${b.type}:${b.id}`;
-      const aIndex = recentSearchOrder?.indexOf(aKey) ?? -1;
-      const bIndex = recentSearchOrder?.indexOf(bKey) ?? -1;
-      // Items not in recentSearchOrder go to the end
-      if (aIndex === -1 && bIndex === -1) return 0;
-      if (aIndex === -1) return 1;
-      if (bIndex === -1) return -1;
-      return aIndex - bIndex; // Earlier index (more recent) comes first
-    });
-
-    return filterByQuery(results, query, true);
-  },
-  toDataItem: (
-    item,
-    { router, projects }: { router: NextRouter; projects: Project[] }
-  ) => {
-    if (item.type === "project") {
-      return {
-        id: item.id,
-        title: item.title,
-        description: item.description ?? "-",
-        icon: <IconFolder size={24} stroke={1.5} />,
-        onClick: () => router.push(`/projects/${item.id}`),
-        groupLabel: "Recently Searched",
-      };
-    } else if (item.type === "snippet") {
-      return {
-        id: item.id,
-        title: `${item.title}.${item.extension ?? ""}`,
-        icon: <FileIcon snippet={item} />,
-        onClick: () =>
-          router.push(`/projects/${item.projectId}/snippets/${item.id}`),
-        groupLabel: "Recently Searched",
-        meta: {
-          projectTitle:
-            projects.find((project) => project.id === item.projectId)?.title ??
-            "",
-        },
-      };
-    } else if (item.type === "task") {
-      return {
-        id: item.id,
-        title: item.title,
-        description: item.description ?? "-",
-        icon: <IconSubtask />,
-        onClick: () => router.push(`/projects/${item.projectId}/tasks`),
-        groupLabel: "Recently Searched",
-        meta: {
-          projectTitle:
-            projects.find((project) => project.id === item.projectId)?.title ??
-            "",
-        },
-      };
-    }
-
-    return {
-      id: "",
-      title: "",
-      description: "",
-      icon: <IconFolder />,
-      onClick: () => {},
-      groupLabel: "",
-      meta: {},
-    };
-  },
-};
-
 const SpotlightSearch = ({
   isSmallScreen = false,
 }: {
@@ -304,11 +104,13 @@ const SpotlightSearch = ({
 }) => {
   const router = useRouter();
   const [query, setQuery] = useState("");
+  const { pageSize, skip } = useAppSelector((state) => state.project);
+  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
+    skip,
+    limit: pageSize,
+  });
 
-  const { loadedProjects, isLoading: isProjectsLoading } = useAppSelector(
-    (state: RootState) => state.project
-  );
-
+  const loadedProjects = data?.items;
   const {
     matchedResults,
     loading: isSearchLoading,
@@ -325,6 +127,7 @@ const SpotlightSearch = ({
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets)
   ).flat();
+  const dispatch = useAppDispatch();
   const computedColorScheme = useComputedColorScheme();
   const theme = useMantineTheme();
 
@@ -332,6 +135,33 @@ const SpotlightSearch = ({
   const searchCacheArray = Array.from(searchCache.values()).flat();
   const uniqueCacheResults = Array.from(
     new Map(searchCacheArray.map((item) => [item.id, item])).values()
+  );
+
+  const updateQueryData = useCallback(
+    (compareId: string, project: Project) => {
+      dispatch(setInsertingProject(true));
+      dispatch(
+        projectApi.util.updateQueryData(
+          "getProjects",
+          { skip: 0, limit: pageSize },
+          (draft) => {
+            draft.items = draft.items.filter((p) => p.id !== compareId);
+            if (project) {
+              draft.items.unshift(project);
+            }
+            if (draft.items.length > pageSize) {
+              draft.items = draft.items.slice(0, pageSize);
+            }
+          }
+        )
+      );
+
+      setTimeout(() => {
+        dispatch(setInsertingProject(false));
+      });
+    },
+
+    [dispatch, pageSize]
   );
 
   const recentItems = useMemo(() => {
@@ -343,7 +173,7 @@ const SpotlightSearch = ({
 
       if (type === "project") {
         item =
-          loadedProjects.find((p) => p.id === id) ||
+          loadedProjects?.find((p) => p.id === id) ||
           uniqueCacheResults.find((r) => r.type === "project" && r.id === id);
       } else if (type === "snippet") {
         item =
@@ -362,11 +192,288 @@ const SpotlightSearch = ({
     return recentSearchOrder.map((key) => itemsMap.get(key)).filter(Boolean); // remove nulls
   }, [recentSearchOrder, loadedProjects, snippets, uniqueCacheResults]);
 
+  const projectSource = useMemo<Omit<DataSource<Project>, "data">>(
+    () => ({
+      name: "projects",
+      groupLabel: "Projects",
+      filterData: (projects, query, { matchedResults, isSearchLoading }) => {
+        const localProjects = filterByQuery(projects, query);
+        const apiProjects =
+          !isSearchLoading && matchedResults?.length > 0
+            ? matchedResults.filter(
+                (apiResult: TypedItems) =>
+                  apiResult.type === "project" &&
+                  !localProjects.some(
+                    (local: Project) => local.id === apiResult.id
+                  )
+              )
+            : [];
+        return [...localProjects, ...apiProjects];
+      },
+      toDataItem: (
+        project,
+        {
+          router,
+          addRecentItems,
+        }: { router: NextRouter; addRecentItems: (items: TypedItems[]) => void }
+      ) => ({
+        id: project.id,
+        title: project.title,
+        description: project.description ?? "-",
+        icon: <IconFolder size={24} stroke={1.5} />,
+        onClick: () => {
+          const isProjectLoaded = loadedProjects?.find(
+            (loaded) => loaded.id === project.id
+          );
+
+          if (!isProjectLoaded) {
+            updateQueryData(project.id, project);
+          }
+          dispatch(setProjectsOpen(true));
+          addRecentItems([{ ...project, type: "project" }]);
+          router.push(`/projects/${project.id}`);
+        },
+        groupLabel: "Projects",
+      }),
+    }),
+    [dispatch, loadedProjects, updateQueryData]
+  );
+
+  const snippetSource = useMemo<
+    Omit<DataSource<Snippet & { project?: Project }>, "data">
+  >(
+    () => ({
+      name: "snippets",
+      groupLabel: "Snippets",
+      filterData: (snippets, query, { matchedResults, isSearchLoading }) => {
+        const localSnippets = filterByQuery(snippets, query);
+        const apiSnippets =
+          !isSearchLoading && matchedResults?.length > 0
+            ? matchedResults.filter(
+                (apiResult: TypedItems) =>
+                  apiResult.type === "snippet" &&
+                  !localSnippets.some(
+                    (local: Snippet) => local.id === apiResult.id
+                  )
+              )
+            : [];
+        return [...localSnippets, ...apiSnippets];
+      },
+      toDataItem: (
+        snippet,
+        {
+          router,
+          projects,
+          addRecentItems,
+        }: {
+          router: NextRouter;
+          projects: Project[];
+          addRecentItems: (items: TypedItems[]) => void;
+        }
+      ) => ({
+        id: snippet.id,
+        title: `${snippet.title}.${snippet.extension ?? ""}`,
+        icon: <FileIcon snippet={snippet} />,
+        onClick: () => {
+          const isProjectLoaded = loadedProjects?.find(
+            (loaded) => loaded.id === snippet.projectId
+          );
+          const project = snippet.project;
+          if (!isProjectLoaded && project) {
+            updateQueryData(snippet.projectId, project);
+          }
+          dispatch(setProjectsOpen(true));
+          addRecentItems([{ ...snippet, type: "snippet" }]);
+          router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`);
+        },
+        groupLabel: "Snippets",
+        meta: {
+          projectTitle:
+            projects?.find((project) => project.id === snippet.projectId)
+              ?.title ?? "",
+        },
+      }),
+    }),
+    [dispatch, loadedProjects, updateQueryData]
+  );
+
+  const taskSource = useMemo<
+    Omit<DataSource<Task & { project?: Project }>, "data">
+  >(
+    () => ({
+      name: "tasks",
+      groupLabel: "Tasks",
+      filterData: (_, __, { matchedResults, isSearchLoading }) => {
+        const apiTasks =
+          !isSearchLoading && matchedResults?.length > 0
+            ? matchedResults.filter(
+                (apiResult: TypedItems) => apiResult.type === "task"
+              )
+            : [];
+        return apiTasks;
+      },
+      toDataItem: (
+        task,
+        {
+          router,
+          projects,
+          addRecentItems,
+        }: {
+          router: NextRouter;
+          projects: Project[];
+          addRecentItems: (items: TypedItems[]) => void;
+        }
+      ) => ({
+        id: task.id,
+        title: task.title,
+        description: task.description ?? "-",
+        icon: <IconSubtask />,
+        onClick: () => {
+          const isProjectLoaded = loadedProjects?.find(
+            (loaded) => loaded.id === task.projectId
+          );
+          const project = task.project;
+          if (!isProjectLoaded && project) {
+            updateQueryData(task.projectId, project);
+          }
+          dispatch(setProjectsOpen(true));
+          addRecentItems([{ ...task, type: "task" }]);
+          router.push(`/projects/${task.projectId}/tasks`);
+        },
+        groupLabel: "tasks",
+        meta: {
+          projectTitle:
+            projects?.find((project) => project.id === task.projectId)?.title ??
+            "",
+        },
+      }),
+    }),
+    [dispatch, loadedProjects, updateQueryData]
+  );
+
+  const cacheSource = useMemo<Omit<DataSource<CacheDataSource>, "data">>(
+    () => ({
+      name: "cacheResults",
+      groupLabel: "Recently Searched",
+      filterData: (results, query, context) => {
+        const { matchedResults, projects, snippets, recentSearchOrder } =
+          context;
+
+        const hasOtherResults =
+          filterByQuery(projects, query)?.length > 0 ||
+          filterByQuery(snippets, query)?.length > 0 ||
+          matchedResults?.length > 0;
+
+        if (hasOtherResults) {
+          return [];
+        }
+
+        results.sort((a, b) => {
+          const aKey = `${a.type}:${a.id}`;
+          const bKey = `${b.type}:${b.id}`;
+          const aIndex = recentSearchOrder?.indexOf(aKey) ?? -1;
+          const bIndex = recentSearchOrder?.indexOf(bKey) ?? -1;
+
+          if (aIndex === -1 && bIndex === -1) return 0;
+          if (aIndex === -1) return 1;
+          if (bIndex === -1) return -1;
+          return aIndex - bIndex;
+        });
+
+        return filterByQuery(results, query, true);
+      },
+      toDataItem: (
+        item,
+        { router, projects }: { router: NextRouter; projects: Project[] }
+      ) => {
+        if (item.type === "project") {
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description ?? "-",
+            icon: <IconFolder size={24} stroke={1.5} />,
+            onClick: () => {
+              const isProjectLoaded = loadedProjects?.find(
+                (loaded) => loaded.id === item.id
+              );
+
+              if (!isProjectLoaded) {
+                updateQueryData(item.id, item);
+              }
+
+              dispatch(setProjectsOpen(true));
+              router.push(`/projects/${item.id}`);
+            },
+            groupLabel: "Recently Searched",
+          };
+        } else if (item.type === "snippet") {
+          return {
+            id: item.id,
+            title: `${item.title}.${item.extension ?? ""}`,
+            icon: <FileIcon snippet={item} />,
+            onClick: () => {
+              const isProjectLoaded = loadedProjects?.find(
+                (loaded) => loaded.id === item.projectId
+              );
+              const project = item["project"];
+              if (!isProjectLoaded && project) {
+                updateQueryData(item.projectId, project);
+              }
+              dispatch(setProjectsOpen(true));
+              router.push(`/projects/${item.projectId}/snippets/${item.id}`);
+            },
+            groupLabel: "Recently Searched",
+            meta: {
+              projectTitle:
+                projects?.find((project) => project.id === item.projectId)
+                  ?.title ?? "",
+            },
+          };
+        } else if (item.type === "task") {
+          return {
+            id: item.id,
+            title: item.title,
+            description: item.description ?? "-",
+            icon: <IconSubtask />,
+            onClick: () => {
+              const isProjectLoaded = loadedProjects?.find(
+                (loaded) => loaded.id === item.projectId
+              );
+              const project = item["project"];
+              if (!isProjectLoaded && project) {
+                updateQueryData(item.projectId, project);
+              }
+              dispatch(setProjectsOpen(true));
+              router.push(`/projects/${item.projectId}/tasks`);
+            },
+            groupLabel: "Recently Searched",
+            meta: {
+              projectTitle:
+                projects?.find((project) => project.id === item.projectId)
+                  ?.title ?? "",
+            },
+          };
+        }
+
+        return {
+          id: "",
+          title: "",
+          description: "",
+          icon: <IconFolder />,
+          onClick: () => {},
+          groupLabel: "",
+          meta: {},
+        };
+      },
+    }),
+    [updateQueryData, dispatch, loadedProjects]
+  );
+
   const dataSources = useMemo<DataSource[]>(
     () => [
       {
         ...projectSource,
-        data: loadedProjects,
+        data: loadedProjects ?? [],
       },
       {
         ...snippetSource,
@@ -381,7 +488,15 @@ const SpotlightSearch = ({
         data: recentItems,
       },
     ],
-    [loadedProjects, snippets, recentItems]
+    [
+      loadedProjects,
+      snippets,
+      recentItems,
+      projectSource,
+      snippetSource,
+      taskSource,
+      cacheSource,
+    ]
   );
 
   const handleQueryChange = useCallback((newQuery: string) => {

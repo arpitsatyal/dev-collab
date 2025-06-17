@@ -2,19 +2,24 @@ import { useRouter } from "next/router";
 import Layout from "../../../components/Layout/Layout";
 import Loading from "../../../components/Loader/Loader";
 import { withAuth } from "../../../guards/withAuth";
-import { useAppSelector } from "../../../store/hooks";
 import ProjectDetail from "../../../components/Projects/ProjectDetailForm";
+import { useGetProjectByIdQuery } from "../../../store/api/projectApi";
+import { getSingleQueryParam } from "../../../utils/getSingleQueryParam";
 
 const ProjectDetailPage = () => {
   const router = useRouter();
-  const { projectId } = router.query;
+  const projectId = getSingleQueryParam(router.query.projectId);
 
   const shouldFetch = typeof projectId === "string" && projectId.trim() !== "";
-  const projects = useAppSelector((state) => state.project.loadedProjects);
+  const {
+    data: project,
+    isLoading,
+    isError,
+  } = useGetProjectByIdQuery(projectId ?? "", {
+    skip: !shouldFetch,
+  });
 
-  const project = projects.find((project) => project.id === projectId);
-
-  if (!shouldFetch || !project) {
+  if (!shouldFetch || !project || isLoading || isError) {
     return <Loading />;
   }
 

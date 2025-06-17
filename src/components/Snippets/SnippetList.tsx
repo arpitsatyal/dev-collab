@@ -10,7 +10,7 @@ import {
   Group,
 } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
-import { Snippet } from "@prisma/client";
+import { Project, Snippet } from "@prisma/client";
 import { useAppDispatch } from "../../store/hooks";
 import {
   useCreateSnippetMutation,
@@ -22,6 +22,7 @@ import { notifications } from "@mantine/notifications";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 import FileIcon from "../FileIcon";
+import { useGetProjectByIdQuery } from "../../store/api/projectApi";
 
 const SnippetList = ({
   snippets,
@@ -44,6 +45,9 @@ const SnippetList = ({
   const dispatch = useAppDispatch();
   const [createSnippet, { isLoading: isCreating }] = useCreateSnippetMutation();
   const [editSnippet, { isLoading: isEditing }] = useEditSnippetMutation();
+  const { data: projectData } = useGetProjectByIdQuery(
+    selectedSnippet?.projectId ?? ""
+  );
 
   useEffect(() => {
     if (pathParts[4] === "create") {
@@ -152,7 +156,7 @@ const SnippetList = ({
           message: "Snippet updated successfully! 🌟",
         });
 
-        await syncMeiliSearch(data, "snippet");
+        await syncMeiliSearch({ ...data, project: projectData }, "snippet");
       } else if (modalMode === "create") {
         const projectId = router.query.projectId as string;
 
@@ -180,7 +184,7 @@ const SnippetList = ({
           message: "Snippet created successfully! 🌟",
         });
 
-        await syncMeiliSearch(data, "snippet");
+        await syncMeiliSearch({ ...data, project: projectData }, "snippet");
         router.push(`/projects/${projectId}/snippets/${data.id}`);
       }
 

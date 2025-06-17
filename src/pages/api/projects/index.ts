@@ -33,9 +33,14 @@ export default async function handler(
   }
 
   const {
-    query: { projectId },
+    query: { projectId, limit, skip },
     method,
   } = req;
+
+  const toSkip = skip ? parseInt(Array.isArray(skip) ? skip[0] : skip) : 10;
+  const toLimit = limit
+    ? parseInt(Array.isArray(limit) ? limit[0] : limit)
+    : 10;
 
   switch (method) {
     case "GET":
@@ -54,7 +59,13 @@ export default async function handler(
           return res.status(200).json(project);
         }
 
-        const projects = await prisma.project.findMany();
+        const projects = await prisma.project.findMany({
+          skip: toSkip,
+          take: toLimit,
+          orderBy: {
+            updatedAt: "desc",
+          },
+        });
         return res.status(200).json(projects);
       } catch (error) {
         console.error("Error fetching projects:", error);

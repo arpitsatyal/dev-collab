@@ -4,10 +4,9 @@ import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
-import { createNewProject } from "../../store/thunks";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import CreateProjectForm from "../../components/Projects/CreateProjectForm";
+import { useCreateProjectMutation } from "../../store/api/projectApi";
 
 const CreateProjectPage = () => {
   const router = useRouter();
@@ -19,12 +18,11 @@ const CreateProjectPage = () => {
     },
   });
 
-  const dispatch = useAppDispatch();
-  const isLoading = useAppSelector((state) => state.project.isCreating);
+  const [createProject, { isLoading }] = useCreateProjectMutation();
 
   const handleSubmit = async () => {
     try {
-      const newProject = await dispatch(createNewProject(form.values));
+      const newProject = await createProject(form.values).unwrap();
       notifications.show({
         title: "Job done!",
         message: "Project created successfully! 🌟",

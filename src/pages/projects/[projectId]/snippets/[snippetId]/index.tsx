@@ -20,7 +20,6 @@ import { languageMapper } from "../../../../../utils/languageMapper";
 import { withAuth } from "../../../../../guards/withAuth";
 import { SnippetsUpdateData } from "../../../../api/snippets";
 import SnippetWorkplace from "../../../../../components/Snippets/SnippetWorkplace";
-import { syncMeiliSearch } from "../../../../../utils/syncMeiliSearch";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
 import useAutoSave, {
   SaveSnippetProps,
@@ -124,8 +123,6 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
         title: "done!",
         message: "Snippet updated successfully! 🌟",
       });
-
-      await syncMeiliSearch(data, "snippet");
     } catch (error) {
       console.error(error);
       notifications.show({

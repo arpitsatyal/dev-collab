@@ -1,7 +1,10 @@
 import axios from "axios";
-import { BaseItems, ItemType } from "../types";
+import { ItemType, MeiliSearchPayload } from "../types";
 
-export const syncMeiliSearch = async (doc: BaseItems, type: ItemType) => {
+export const syncMeiliSearch = async (
+  doc: MeiliSearchPayload,
+  type: ItemType
+) => {
   try {
     await axios.post(
       `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/sync`,

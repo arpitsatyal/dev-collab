@@ -1,34 +1,39 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from "react";
 import { useRouter } from "next/router";
-import { VariableSizeList } from "react-window";
-import { NavLink, Text, Box, Group, Button, AppShell } from "@mantine/core";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useMediaQuery } from "@mantine/hooks";
+import { AppShell, Box, Button, Group, NavLink, Text } from "@mantine/core";
 import {
-  IconGauge,
-  IconPencil,
   IconActivity,
   IconFolder,
-  IconSubtask,
+  IconGauge,
   IconLogout,
+  IconPencil,
   IconPlayCard,
+  IconSubtask,
 } from "@tabler/icons-react";
+import { VariableSizeList } from "react-window";
+import InfiniteLoader from "react-window-infinite-loader";
+import { signOut } from "next-auth/react";
+
 import classes from "./SideNav.module.css";
-import ThemeToggle from "../Theme/ThemeToggle";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
+import { useGetProjectsQuery } from "../../store/api/projectApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
-import { fetchProjects } from "../../store/thunks";
-import { signOut } from "next-auth/react";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
-import { RootState } from "../../store/store";
+import ThemeToggle from "../Theme/ThemeToggle";
 import { Snippet, Task } from "@prisma/client";
+import {
+  incrementPage,
+  setProjectsOpen,
+} from "../../store/slices/projectSlice";
 
 interface NavItemProps {
   id: string;
   label: string;
+  icon: React.ComponentType<any>;
   path?: string;
-  icon: React.ComponentType<{ size: number; stroke: number }>;
   handler?: () => void;
   children?: NavItemProps[];
   snippets?: Snippet[];
@@ -40,19 +45,25 @@ const SideNav = () => {
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const [openItem, setOpenItem] = useState<string | null>(null);
   const listRef = useRef<VariableSizeList>(null);
-  const [projectsOpen, setProjectsOpen] = useState<boolean | null>(null);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const lastProjectIdRef = useRef<string | null>(null);
 
   const dispatch = useAppDispatch();
-  const { loadedProjects, isLoading } = useAppSelector(
-    (state: RootState) => state.project
-  );
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
+  const { pageSize, skip, projectsOpen, isInsertingProject } = useAppSelector(
+    (state) => state.project
+  );
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
+
+  const { data, isLoading, isFetching, isError } = useGetProjectsQuery(
+    { skip, limit: pageSize },
+    { skip: !projectsOpen }
+  );
+  const loadedProjects = useMemo(() => data?.items || [], [data?.items]);
+  const hasMore = data?.hasMore || false;
 
   const currentProjectId = useMemo(() => {
     const id = router.query.projectId;
@@ -89,22 +100,15 @@ const SideNav = () => {
     const items = [...navItems];
     const projectsItem = items.find((item) => item.label === "Projects");
     if (projectsItem) {
-      const uniqueProjects = Array.from(
-        new Map(
-          [
-            ...(projectsItem.children ?? []),
-            ...loadedProjects.map((project) => ({
-              id: project.id,
-              label: project.title,
-              path: `/projects/${project.id}`,
-              icon: IconFolder,
-              snippets: loadedSnippets[project.id] ?? [],
-              tasks: [],
-            })),
-          ].map((item) => [item.path, item])
-        ).values()
-      );
-      projectsItem.children = uniqueProjects;
+      const projectChildren = loadedProjects.map((project) => ({
+        id: project.id,
+        label: project.title,
+        path: `/projects/${project.id}`,
+        icon: IconFolder,
+        snippets: loadedSnippets[project.id] ?? [],
+        tasks: [],
+      }));
+      projectsItem.children = projectChildren;
     }
     return items;
   }, [navItems, loadedProjects, loadedSnippets]);
@@ -164,16 +168,16 @@ const SideNav = () => {
       if (!isValidId || !listRef.current) return;
 
       setOpenItem(id);
-      setProjectsOpen(true);
+      dispatch(setProjectsOpen(true));
       scrollItemIntoView(id);
     },
-    [projectItems, listRef, setOpenItem, setProjectsOpen, scrollItemIntoView]
+    [projectItems, listRef, setOpenItem, scrollItemIntoView, dispatch]
   );
 
   // Reset list heights
   useEffect(() => {
     if (listRef.current) {
-      listRef.current.resetAfterIndex(0, true); // true = recompute heights
+      listRef.current.resetAfterIndex(0, true);
     }
   }, [openItem, loadedSnippets]);
 
@@ -185,7 +189,7 @@ const SideNav = () => {
     const timeout = setTimeout(() => {
       handleScrollToItem(currentProjectId);
       lastProjectIdRef.current = currentProjectId;
-    }, 100); // gives time for layout/render/snippets to stabilize
+    }, 100);
 
     return () => clearTimeout(timeout);
   }, [currentProjectId, projectItems, handleScrollToItem, loadedSnippets]);
@@ -195,9 +199,21 @@ const SideNav = () => {
     fetchSnippets(openItem);
   }, [openItem, loadedSnippets, fetchSnippets]);
 
-  useEffect(() => {
-    dispatch(fetchProjects());
-  }, [dispatch]);
+  const isItemLoaded = useCallback(
+    (index: number) => {
+      return index < projectItems.length;
+    },
+    [projectItems.length]
+  );
+
+  const loadMoreItems = useCallback(
+    (startIndex: number, stopIndex: number) => {
+      if (hasMore && !isFetching) {
+        dispatch(incrementPage());
+      }
+    },
+    [hasMore, isFetching, dispatch]
+  );
 
   const handleLogout = useCallback(() => {
     signOut();
@@ -238,13 +254,13 @@ const SideNav = () => {
       if (handler) return handler();
       if (path) {
         if (label === "Projects") {
-          setProjectsOpen((prev) => (prev === null ? true : !prev));
+          dispatch(setProjectsOpen());
           setOpenItem(null);
         }
         router.push(path);
       }
     },
-    [router]
+    [router, dispatch]
   );
 
   const toggleOpenItem = (id: string) => {
@@ -281,6 +297,8 @@ const SideNav = () => {
     style: React.CSSProperties;
   }) => {
     const child = projectItems[index];
+    if (!child) return null;
+
     return (
       <Box style={style} key={child.id}>
         <NavLink
@@ -349,17 +367,39 @@ const SideNav = () => {
               <Box pr="xs">
                 {isLoading ? (
                   <Loading />
+                ) : isInsertingProject ? (
+                  <Loading loaderHeight="20vh" />
                 ) : (
-                  <VariableSizeList
-                    height={500}
-                    width="100%"
-                    itemCount={projectItems.length}
-                    itemSize={getItemSize}
-                    ref={listRef}
-                    className={classes.reactWindowList}
+                  <InfiniteLoader
+                    isItemLoaded={isItemLoaded}
+                    itemCount={
+                      hasMore
+                        ? projectItems.length + pageSize
+                        : projectItems.length
+                    }
+                    loadMoreItems={loadMoreItems}
                   >
-                    {Row}
-                  </VariableSizeList>
+                    {({ onItemsRendered, ref }) => (
+                      <VariableSizeList
+                        height={500}
+                        width="100%"
+                        itemCount={
+                          hasMore
+                            ? projectItems.length + pageSize
+                            : projectItems.length
+                        }
+                        itemSize={getItemSize}
+                        onItemsRendered={onItemsRendered}
+                        ref={(list) => {
+                          listRef.current = list || null;
+                          ref(list);
+                        }}
+                        className={classes.reactWindowList}
+                      >
+                        {Row}
+                      </VariableSizeList>
+                    )}
+                  </InfiniteLoader>
                 )}
               </Box>
             )}

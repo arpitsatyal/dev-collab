@@ -1,7 +1,6 @@
 import { Button, Group, Text } from "@mantine/core";
 import { Project } from "@prisma/client";
 import React from "react";
-import classes from "./Task.module.css";
 
 const TaskInfo = ({
   project,
