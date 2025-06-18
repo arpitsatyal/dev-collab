@@ -1,8 +1,8 @@
 import { Project, Snippet, Task } from "@prisma/client";
 
 type WithType<T, K extends ItemType> = T & { type: K };
-type SnippetWithProject = Snippet & { project: Project | null };
-type TaskWithProject = Task & { project: Project | null };
+type SnippetWithProject = Snippet & { project?: Project };
+type TaskWithProject = Task & { project?: Project };
 
 export type SaveStatus = "saving" | "saved" | "error" | "idle" | undefined;
 export type ItemType = "project" | "task" | "snippet";
