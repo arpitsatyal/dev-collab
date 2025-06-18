@@ -10,7 +10,7 @@ applications:
             - npx prisma db pull
         build:
           commands:
-            - env | grep -E '^(NEXTAUTH_|GITHUB_|GOOGLE_|LIVEBLOCKS_|DATABASE_URL|QUEUE_URL)=' >> .env.production
+            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL -e QUEUE_URL >> .env.production
             - npm run build
             - npm prune --production
       artifacts:
