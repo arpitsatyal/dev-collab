@@ -5,13 +5,14 @@ applications:
         preBuild:
           commands:
             - nvm use 18 # Use Node.js 18.x to match Lambda runtime
-            - npm ci --legacy-peer-deps # Install dependencies from package-lock.json
-            - npx prisma generate --schema ./prisma/schema.prisma # Generate Prisma Client
+            - npm i --legacy-peer-deps --production=false
+            - npx prisma generate # Generate Prisma Client with rhel-openssl-1.0.x engine
+            - npx prisma db pull
         build:
           commands:
             - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL -e QUEUE_URL >> .env.production
-            - npm run build -- --debug # Build Next.js with debug for caching
-            - npm prune --production # Remove dev dependencies post-build
+            - npm run build # Build Next.js app
+            - npm i --legacy-peer-deps --production # Reinstall only production dependencies
       artifacts:
         baseDirectory: .next
         files:
