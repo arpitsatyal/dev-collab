@@ -5,7 +5,7 @@ applications:
         preBuild:
           commands:
             - nvm use 18
-            - npm ci --legacy-peer-deps
+            - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
             - npx prisma db pull
         build:
