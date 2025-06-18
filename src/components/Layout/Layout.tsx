@@ -5,11 +5,19 @@ import SpotlightSearch from "../Search/SpotlightSearch";
 import { useRouter } from "next/router";
 import DevCollabIcon from "../DevCollabIcon";
 import ThemeToggle from "../Theme/ThemeToggle";
-import { useEffect, useRef, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
 import Loading from "../Loader/Loader";
+import { useAppDispatch, useAppSelector } from "../../store/hooks";
+import { setProjectsOpen } from "../../store/slices/projectSlice";
+import {
+  useGetProjectByIdQuery,
+  useGetProjectsQuery,
+} from "../../store/api/projectApi";
+import { skipToken } from "@reduxjs/toolkit/query";
+import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
 
-export default function Layout({ children }: any) {
+export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [opened, { toggle }] = useDisclosure();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
@@ -17,6 +25,26 @@ export default function Layout({ children }: any) {
   const navbarRef = useRef(null);
   const [navWidth, setNavWidth] = useState(400);
   const [isNavigating, setIsNavigating] = useState(false);
+  const dispatch = useAppDispatch();
+  const { pageSize, skip } = useAppSelector((state) => state.project);
+  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
+    skip,
+    limit: pageSize,
+  });
+  const updateQueryData = useProjectCacheUpdater();
+
+  const loadedProjects = data?.items;
+  const projectId = router.query.projectId;
+  const isValidProjectId =
+    typeof projectId === "string" && projectId.trim() !== "";
+
+  const isProjectLoaded = loadedProjects?.find(
+    (loaded) => loaded.id === projectId
+  );
+
+  const { data: projectData } = useGetProjectByIdQuery(
+    isValidProjectId && !isProjectLoaded ? projectId : skipToken
+  );
 
   // Handle router events for loading state
   useEffect(() => {
@@ -34,6 +62,24 @@ export default function Layout({ children }: any) {
       router.events.off("routeChangeError", handleRouteChangeError);
     };
   }, [router]);
+
+  useEffect(() => {
+    if (isValidProjectId) {
+      dispatch(setProjectsOpen(true));
+
+      if (!isProjectLoaded && projectData) {
+        updateQueryData(projectId, projectData);
+      }
+    }
+  }, [
+    projectId,
+    isValidProjectId,
+    projectData,
+    isProjectLoaded,
+    router,
+    dispatch,
+    updateQueryData,
+  ]);
 
   return (
     <AppShell
@@ -76,7 +122,9 @@ export default function Layout({ children }: any) {
         <SideNav />
         <ResizeHandle navbarRef={navbarRef} setNavWidth={setNavWidth} />
       </AppShell.Navbar>
-      <AppShell.Main>{isNavigating ? <Loading /> : children}</AppShell.Main>
+      <AppShell.Main>
+        {isNavigating || isProjectsLoading ? <Loading /> : children}
+      </AppShell.Main>
     </AppShell>
   );
 }

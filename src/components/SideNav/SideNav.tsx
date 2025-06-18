@@ -1,19 +1,15 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useMediaQuery } from "@mantine/hooks";
-import { AppShell, Box, Button, Group, NavLink, Text } from "@mantine/core";
+import { AppShell, Box, NavLink, Text } from "@mantine/core";
 import {
   IconActivity,
-  IconFolder,
   IconGauge,
-  IconLogout,
   IconPencil,
   IconPlayCard,
   IconSubtask,
 } from "@tabler/icons-react";
 import { VariableSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
-import { signOut } from "next-auth/react";
 import classes from "./SideNav.module.css";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
@@ -21,27 +17,28 @@ import { useGetProjectsQuery } from "../../store/api/projectApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
-import ThemeToggle from "../Theme/ThemeToggle";
-import { Snippet, Task } from "@prisma/client";
+import { Project, Snippet, Task } from "@prisma/client";
 import {
   incrementPage,
   setProjectsOpen,
 } from "../../store/slices/projectSlice";
+import useProjectTransform from "../../hooks/useProjectTransform";
+import { uniqBy } from "lodash";
+import SideNavFooter from "./SideNavFooter";
 
-interface NavItemProps {
+export interface NavItemProps {
   id: string;
   label: string;
   icon: React.ComponentType<any>;
   path?: string;
   handler?: () => void;
-  children?: NavItemProps[];
+  children?: (Project | NavItemProps)[];
   snippets?: Snippet[];
   tasks?: Task[];
 }
 
 const SideNav = () => {
   const router = useRouter();
-  const isSmallScreen = useMediaQuery("(max-width: 768px)");
   const [openItem, setOpenItem] = useState<string | null>(null);
   const listRef = useRef<VariableSizeList>(null);
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
@@ -57,6 +54,7 @@ const SideNav = () => {
   );
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
+  const transformProject = useProjectTransform();
   const { data, isLoading, isFetching, isError } = useGetProjectsQuery(
     { skip, limit: pageSize },
     { skip: !projectsOpen }
@@ -99,18 +97,12 @@ const SideNav = () => {
     const items = [...navItems];
     const projectsItem = items.find((item) => item.label === "Projects");
     if (projectsItem) {
-      const projectChildren = loadedProjects.map((project) => ({
-        id: project.id,
-        label: project.title,
-        path: `/projects/${project.id}`,
-        icon: IconFolder,
-        snippets: loadedSnippets[project.id] ?? [],
-        tasks: [],
-      }));
-      projectsItem.children = projectChildren;
+      const uniqueProjects = uniqBy(loadedProjects, "id");
+      projectsItem.children = uniqueProjects;
     }
     return items;
-  }, [navItems, loadedProjects, loadedSnippets]);
+  }, [navItems, loadedProjects]);
+
   const projectNavItem = navItemsWithProjects.find(
     (item) => item.label === "Projects"
   );
@@ -213,11 +205,6 @@ const SideNav = () => {
     [hasMore, isFetching, dispatch]
   );
 
-  const handleLogout = useCallback(() => {
-    signOut();
-    router.push("/");
-  }, [router]);
-
   const getItemSize = useCallback(
     (index: number) => {
       const item = projectItems[index];
@@ -266,27 +253,49 @@ const SideNav = () => {
     setOpenItem((prev) => (prev === id ? null : id));
   };
 
-  const isActive = (path?: string, id?: string) => {
-    if (!path) return false;
+  const isActive = useCallback(
+    (path?: string, id?: string): boolean => {
+      if (!path) return false;
 
-    if (id === "playground") {
-      return router.asPath.startsWith("/playground");
-    }
+      if (id === "playground") {
+        return router.asPath.startsWith("/playground");
+      }
 
-    return router.pathname === path || router.asPath === path;
-  };
-  const isOpen = (item: NavItemProps) => {
-    return (
-      item.label === "Projects" &&
-      (projectsOpen !== null
-        ? projectsOpen // if user manually toggled it
-        : navItemsWithProjects // fallback to automatic logic
-            .find((i) => i.label === "Projects")
-            ?.children?.some(
-              (child) => openItem === child.id || isActive(child.path)
-            ))
-    );
-  };
+      return router.pathname === path || router.asPath === path;
+    },
+    [router]
+  );
+
+  const isOpen = useCallback(
+    (item: NavItemProps) => {
+      if (item.label !== "Projects") return false;
+
+      if (projectsOpen !== null) {
+        return projectsOpen;
+      }
+
+      const projectsItem = navItemsWithProjects.find(
+        (i) => i.label === "Projects"
+      );
+      if (!projectsItem?.children) return false;
+
+      return projectsItem.children.some((child) => {
+        const navItem =
+          "path" in child
+            ? child
+            : transformProject(child as Project, loadedSnippets);
+        return openItem === navItem.id || isActive(navItem.path);
+      });
+    },
+    [
+      projectsOpen,
+      navItemsWithProjects,
+      loadedSnippets,
+      openItem,
+      isActive,
+      transformProject,
+    ]
+  );
 
   const Row = ({
     index,
@@ -295,8 +304,12 @@ const SideNav = () => {
     index: number;
     style: React.CSSProperties;
   }) => {
-    const child = projectItems[index];
-    if (!child) return null;
+    const project = projectItems[
+      isInsertingProject ? index - 1 : index
+    ] as Project;
+    if (!project) return null;
+
+    const child = transformProject(project, loadedSnippets);
 
     return (
       <Box style={style} key={child.id}>
@@ -406,22 +419,7 @@ const SideNav = () => {
         ))}
       </AppShell.Section>
 
-      <Box className={classes.bottomDiv}>
-        <Group justify="space-between" gap="sm">
-          <Button
-            variant="light"
-            color="red"
-            onClick={handleLogout}
-            leftSection={<IconLogout size={18} />}
-            radius="md"
-            size="sm"
-            style={{ fontWeight: 500, transition: "all 0.2s ease" }}
-          >
-            Logout
-          </Button>
-          {isSmallScreen && <ThemeToggle />}
-        </Group>
-      </Box>
+      <SideNavFooter />
     </>
   );
 };

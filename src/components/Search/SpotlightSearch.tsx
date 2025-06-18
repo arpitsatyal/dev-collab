@@ -36,6 +36,7 @@ import {
   setProjectsOpen,
 } from "../../store/slices/projectSlice";
 import { uniqBy } from "lodash";
+import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
 
 interface DataItem {
   id: string;
@@ -132,37 +133,11 @@ const SpotlightSearch = ({
   const dispatch = useAppDispatch();
   const computedColorScheme = useComputedColorScheme();
   const theme = useMantineTheme();
+  const updateQueryData = useProjectCacheUpdater();
 
   const currentProjectId = router.query.projectId as string | undefined;
   const searchCacheArray = Array.from(searchCache.values()).flat();
   const uniqueCacheResults = uniqBy(searchCacheArray, "id");
-
-  const updateQueryData = useCallback(
-    (compareId: string, project: Project) => {
-      dispatch(setInsertingProject(true));
-      dispatch(
-        projectApi.util.updateQueryData(
-          "getProjects",
-          { skip: 0, limit: pageSize },
-          (draft) => {
-            draft.items = draft.items.filter((p) => p.id !== compareId);
-            if (project) {
-              draft.items.unshift(project);
-            }
-            if (draft.items.length > pageSize) {
-              draft.items = draft.items.slice(0, pageSize);
-            }
-          }
-        )
-      );
-
-      setTimeout(() => {
-        dispatch(setInsertingProject(false));
-      }, 100);
-    },
-
-    [dispatch, pageSize]
-  );
 
   const recentItems = useMemo(() => {
     const itemsMap = new Map<string, TypedItems>();

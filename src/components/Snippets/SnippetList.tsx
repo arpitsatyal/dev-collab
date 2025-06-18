@@ -10,7 +10,7 @@ import {
   Group,
 } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
-import { Project, Snippet } from "@prisma/client";
+import { Snippet } from "@prisma/client";
 import { useAppDispatch } from "../../store/hooks";
 import {
   useCreateSnippetMutation,
@@ -282,9 +282,14 @@ const SnippetList = ({
           placeholder="e.g., script.js or app.py"
           data-autofocus
           error={nameError}
+          styles={{
+            label: {
+              paddingBottom: 10,
+            },
+          }}
         />
         <Text fz="sm" c="dimmed" mt="xs">
-          Detected language: {detectedLanguage || "plaintext"}
+          Detected language: {detectedLanguage || ""}
         </Text>
         <Group align="right" mt="md">
           <Button variant="outline" onClick={() => setModalOpened(false)}>
