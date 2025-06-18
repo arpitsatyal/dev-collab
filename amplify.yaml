@@ -4,29 +4,30 @@ applications:
       phases:
         preBuild:
           commands:
-            - nvm use 18 # Use Node.js 18.x to match Lambda runtime
-            - npm i --legacy-peer-deps --production=false
-            - npx prisma generate # Generate Prisma Client with rhel-openssl-1.0.x engine
+            - nvm use 18
+            - npm ci --legacy-peer-deps
+            - npx prisma generate
             - npx prisma db pull
         build:
           commands:
-            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL -e QUEUE_URL >> .env.production
-            - npm run build # Build Next.js app
-            - npm i --legacy-peer-deps --production # Reinstall only production dependencies
+            - env | grep -E '^(NEXTAUTH_|GITHUB_|GOOGLE_|LIVEBLOCKS_|DATABASE_URL|QUEUE_URL)=' >> .env.production
+            - npm run build
+            - npm prune --production
       artifacts:
         baseDirectory: .next
         files:
           - "**/*"
-          - node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node # Include Query Engine
-          - node_modules/.prisma/client/schema.prisma # Include schema for Prisma
+          - node_modules/.prisma/client/libquery_engine-rhel-openssl-1.0.x.so.node
+          - node_modules/.prisma/client/schema.prisma
       cache:
         paths:
           - node_modules/**/*
       environment:
         PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
+
 backend:
   phases:
     preBuild:
       commands:
-        - amplifyPush # Provision backend resources (if using Amplify backend)
+        - amplifyPush
   appRoot: .
