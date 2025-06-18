@@ -6,7 +6,6 @@ import Layout from "../../../../components/Layout/Layout";
 import { TaskStatus } from "@prisma/client";
 import { useCreateTaskMutation } from "../../../../store/api/taskApi";
 import { notifications } from "@mantine/notifications";
-import { useAppSelector } from "../../../../store/hooks";
 import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
 import { useRouter } from "next/router";
 import { TaskCreateData } from "../../../api/tasks";
@@ -15,25 +14,21 @@ import TaskBoard from "../../../../components/Task/TaskBoard";
 import TaskInfo from "../../../../components/Task/TaskInfo";
 import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
-import {
-  useGetProjectByIdQuery,
-  useGetProjectsQuery,
-} from "../../../../store/api/projectApi";
+import { useGetProjectByIdQuery } from "../../../../store/api/projectApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
-const ProjectTasksPage = () => {
+const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
 
-  const { pageSize, skip } = useAppSelector((state) => state.project);
-  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
-    skip,
-    limit: pageSize,
-  });
-  const { data: projectData } = useGetProjectByIdQuery(projectId ?? "");
+  const isValidProjectId =
+    typeof projectId === "string" && projectId.trim() !== "";
 
-  const project = data?.items.find((project) => project.id === projectId);
+  const { data: projectData } = useGetProjectByIdQuery(
+    isValidProjectId ? projectId : skipToken
+  );
 
   const [taskForm, setTaskForm] = useState<TaskCreateData>({
     title: "",
@@ -44,9 +39,7 @@ const ProjectTasksPage = () => {
     projectId: projectId ?? "",
   });
 
-  const projectTitle =
-    data?.items.find((project) => project.id === taskForm.projectId)?.title ??
-    "Select Project";
+  const projectTitle = projectData?.title ?? "Select Project";
 
   const handleInputChange = <K extends keyof TaskCreateData>(
     field: K,
@@ -87,13 +80,13 @@ const ProjectTasksPage = () => {
     }
   };
 
-  if (!projectId || !project || isProjectsLoading) {
+  if (!projectId || !projectData) {
     return <Loading />;
   }
 
   return (
     <Container size="xl" py="md">
-      <TaskInfo project={project} open={open} />
+      <TaskInfo project={projectData} open={open} />
 
       <CreateTaskModal
         opened={opened}
@@ -110,9 +103,7 @@ const ProjectTasksPage = () => {
   );
 };
 
-ProjectTasksPage.getLayout = (page: React.ReactElement) => (
-  <Layout>{page}</Layout>
-);
+TasksPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
 export const getServerSideProps = withAuth(async () => {
   return {
@@ -120,4 +111,4 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-export default ProjectTasksPage;
+export default TasksPage;

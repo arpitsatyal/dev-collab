@@ -14,7 +14,6 @@ import {
 import { VariableSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import { signOut } from "next-auth/react";
-
 import classes from "./SideNav.module.css";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
@@ -112,7 +111,6 @@ const SideNav = () => {
     }
     return items;
   }, [navItems, loadedProjects, loadedSnippets]);
-
   const projectNavItem = navItemsWithProjects.find(
     (item) => item.label === "Projects"
   );
@@ -252,6 +250,7 @@ const SideNav = () => {
   const handleNavClick = useCallback(
     (path?: string, handler?: () => void, label?: string) => {
       if (handler) return handler();
+
       if (path) {
         if (label === "Projects") {
           dispatch(setProjectsOpen());

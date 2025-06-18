@@ -1,5 +1,6 @@
 import { Project } from "@prisma/client";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { uniqBy } from "lodash";
 
 export const projectApi = createApi({
   reducerPath: "projectApi",
@@ -17,7 +18,10 @@ export const projectApi = createApi({
       }),
       serializeQueryArgs: ({ endpointName }) => endpointName,
       merge: (currentCache, newData) => {
-        currentCache.items = [...(currentCache.items || []), ...newData.items];
+        currentCache.items = uniqBy(
+          [...(currentCache.items || []), ...newData.items],
+          "id"
+        );
         currentCache.hasMore = newData.hasMore;
       },
       forceRefetch: ({ currentArg, previousArg }) =>

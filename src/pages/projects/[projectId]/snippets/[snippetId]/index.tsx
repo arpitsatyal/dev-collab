@@ -5,15 +5,9 @@ import Layout from "../../../../../components/Layout/Layout";
 import Loading from "../../../../../components/Loader/Loader";
 import { RoomProvider, useRoom, useStorage } from "@liveblocks/react";
 import { useSession } from "next-auth/react";
-import {
-  useEditSnippetMutation,
-  useLazyGetSnippetsQuery,
-} from "../../../../../store/api/snippetApi";
+import { useEditSnippetMutation } from "../../../../../store/api/snippetApi";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
-import {
-  setSnippets,
-  updateSnippet,
-} from "../../../../../store/slices/snippetSlice";
+import { updateSnippet } from "../../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
@@ -150,7 +144,7 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
 const EditSnippetPage = () => {
   const router = useRouter();
   const { projectId, snippetId } = router.query;
-  const shouldFetch =
+  const isValidId =
     typeof projectId === "string" &&
     projectId.trim() !== "" &&
     typeof snippetId === "string" &&
@@ -160,43 +154,17 @@ const EditSnippetPage = () => {
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
-  const dispatch = useAppDispatch();
-  const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
   useEffect(() => {
-    const fetchSnippets = async () => {
-      if (projectId && shouldFetch) {
-        if (loadedSnippets[projectId]) {
-          const foundSnippet = loadedSnippets[projectId].find(
-            (s) => s.id === snippetId
-          );
-          setSnippet(foundSnippet || null);
-        } else {
-          try {
-            const result = await triggerGetSnippets({
-              projectId,
-            }).unwrap();
-            dispatch(setSnippets({ projectId, snippets: result }));
-            const foundSnippet = result.find((s) => s.id === snippetId);
-            setSnippet(foundSnippet || null);
-          } catch (e) {
-            console.error("Failed to load snippets", e);
-          }
-        }
-      }
-    };
+    if (isValidId) {
+      const foundSnippet = loadedSnippets[projectId]?.find(
+        (s) => s.id === snippetId
+      );
+      setSnippet(foundSnippet || null);
+    }
+  }, [projectId, snippetId, loadedSnippets, isValidId]);
 
-    fetchSnippets();
-  }, [
-    projectId,
-    snippetId,
-    loadedSnippets,
-    triggerGetSnippets,
-    dispatch,
-    shouldFetch,
-  ]);
-
-  if (!shouldFetch || !snippetId || !snippet) {
+  if (!isValidId || !snippet) {
     return <Loading isEditorLoading />;
   }
 

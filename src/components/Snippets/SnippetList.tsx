@@ -23,6 +23,7 @@ import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 import FileIcon from "../FileIcon";
 import { useGetProjectByIdQuery } from "../../store/api/projectApi";
+import { skipToken } from "@reduxjs/toolkit/query";
 
 const SnippetList = ({
   snippets,
@@ -45,8 +46,13 @@ const SnippetList = ({
   const dispatch = useAppDispatch();
   const [createSnippet, { isLoading: isCreating }] = useCreateSnippetMutation();
   const [editSnippet, { isLoading: isEditing }] = useEditSnippetMutation();
+
+  const isValidProjectId =
+    typeof selectedSnippet?.projectId === "string" &&
+    selectedSnippet?.projectId.trim() !== "";
+
   const { data: projectData } = useGetProjectByIdQuery(
-    selectedSnippet?.projectId ?? ""
+    isValidProjectId ? selectedSnippet?.projectId : skipToken
   );
 
   useEffect(() => {

@@ -2,6 +2,7 @@ import { useState, useCallback, useRef, useEffect } from "react";
 import { BaseItems } from "../types";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/indexedDB";
+import { uniq } from "lodash";
 
 const MAX_SEARCH_ORDER = 20;
 const ORDER_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
@@ -114,21 +115,15 @@ export const useRecentItems = (
       const effectiveMaxSearchOrder = maxItems.searchOrder ?? maxSearchOrder;
 
       setRecentSearchOrder((prevOrder) => {
-        const newKeys = Array.from(
-          new Set(
-            items.map((item) => {
-              const type = "type" in item ? item.type : "project";
-              return `${type}:${item.id}`;
-            })
-          )
-        );
+        const newKeys = items.map((item) => {
+          const type = "type" in item ? item.type : "project";
+          return `${type}:${item.id}`;
+        });
 
         const allKeys = [...newKeys, ...prevOrder];
-        const uniqueKeys = Array.from(new Set(allKeys));
-        const orderedKeys = [
-          ...newKeys,
-          ...uniqueKeys.filter((key) => !newKeys.includes(key)),
-        ].slice(0, effectiveMaxSearchOrder);
+        const uniqueKeys = uniq(allKeys);
+
+        const orderedKeys = uniqueKeys.slice(0, effectiveMaxSearchOrder);
 
         saveToDB(orderedKeys);
         return orderedKeys;

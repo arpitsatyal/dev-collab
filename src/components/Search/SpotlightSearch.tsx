@@ -35,6 +35,7 @@ import {
   setInsertingProject,
   setProjectsOpen,
 } from "../../store/slices/projectSlice";
+import { uniqBy } from "lodash";
 
 interface DataItem {
   id: string;
@@ -111,6 +112,7 @@ const SpotlightSearch = ({
   });
 
   const loadedProjects = data?.items;
+
   const {
     matchedResults,
     loading: isSearchLoading,
@@ -133,9 +135,7 @@ const SpotlightSearch = ({
 
   const currentProjectId = router.query.projectId as string | undefined;
   const searchCacheArray = Array.from(searchCache.values()).flat();
-  const uniqueCacheResults = Array.from(
-    new Map(searchCacheArray.map((item) => [item.id, item])).values()
-  );
+  const uniqueCacheResults = uniqBy(searchCacheArray, "id");
 
   const updateQueryData = useCallback(
     (compareId: string, project: Project) => {
@@ -158,7 +158,7 @@ const SpotlightSearch = ({
 
       setTimeout(() => {
         dispatch(setInsertingProject(false));
-      });
+      }, 100);
     },
 
     [dispatch, pageSize]
