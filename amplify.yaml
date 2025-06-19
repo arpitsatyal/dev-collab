@@ -5,12 +5,14 @@ applications:
         preBuild:
           commands:
             - nvm use 18
+            - echo "Extracting DATABASE_URL from secrets..."
+            - export DATABASE_URL=$(node -e "console.log(JSON.parse(process.env.secrets).DATABASE_URL)")
+            - echo "DATABASE_URL is: $DATABASE_URL"
             - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
             - npx prisma db pull
         build:
           commands:
-            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e DATABASE_URL -e QUEUE_URL >> .env.production
             - npm run build
             - npm prune --omit=dev
       artifacts:

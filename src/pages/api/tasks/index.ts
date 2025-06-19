@@ -5,6 +5,7 @@ import { authOptions } from "../auth/[...nextauth]";
 import { TaskStatus } from "@prisma/client";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import dayjs from "dayjs";
+import { getSecret } from "../../../utils/secrets";
 
 export interface TaskCreateData {
   title: string;
@@ -120,7 +121,7 @@ export default async function handler(
           if (assignee?.email) {
             await sqsClient.send(
               new SendMessageCommand({
-                QueueUrl: process.env.QUEUE_URL,
+                QueueUrl: getSecret("QUEUE_URL"),
                 MessageBody: JSON.stringify(messageBody),
               })
             );
@@ -175,7 +176,7 @@ export default async function handler(
           if (assignee?.email) {
             await sqsClient.send(
               new SendMessageCommand({
-                QueueUrl: process.env.QUEUE_URL,
+                QueueUrl: getSecret("QUEUE_URL"),
                 MessageBody: JSON.stringify(messageBody),
               })
             );
