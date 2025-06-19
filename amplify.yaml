@@ -6,8 +6,9 @@ applications:
           commands:
             - nvm use 18
             - echo "Extracting DATABASE_URL from secrets..."
-            - export DATABASE_URL=$(node -e "console.log(JSON.parse(process.env.secrets).DATABASE_URL)")
-            - echo "DATABASE_URL is: $DATABASE_URL"
+            - |
+              export DATABASE_URL=$(node -e "console.log(JSON.parse(process.env.secrets).DATABASE_URL)")
+              echo "DATABASE_URL is: $DATABASE_URL"
             - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
             - npx prisma db pull
