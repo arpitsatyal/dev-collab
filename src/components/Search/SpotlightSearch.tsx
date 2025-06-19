@@ -30,11 +30,8 @@ import { useSession } from "next-auth/react";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 import ShortcutHint from "./ShortcutHint";
-import { projectApi, useGetProjectsQuery } from "../../store/api/projectApi";
-import {
-  setInsertingProject,
-  setProjectsOpen,
-} from "../../store/slices/projectSlice";
+import { useGetProjectsQuery } from "../../store/api/projectApi";
+import { setProjectsOpen } from "../../store/slices/projectSlice";
 import { uniqBy } from "lodash";
 import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
 

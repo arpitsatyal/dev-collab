@@ -304,6 +304,16 @@ const SideNav = () => {
     index: number;
     style: React.CSSProperties;
   }) => {
+    // Show loading indicator row if index === projectItems.length (last row)
+    const isLoadingRow = hasMore && index === projectItems.length;
+    if (isLoadingRow) {
+      return (
+        <Box style={style} key={`loading-${index}`} ta="center" py="md">
+          <Loading loaderHeight="5vh" />
+        </Box>
+      );
+    }
+
     const project = projectItems[
       isInsertingProject ? index - 1 : index
     ] as Project;
@@ -385,9 +395,7 @@ const SideNav = () => {
                   <InfiniteLoader
                     isItemLoaded={isItemLoaded}
                     itemCount={
-                      hasMore
-                        ? projectItems.length + pageSize
-                        : projectItems.length
+                      hasMore ? projectItems.length + 1 : projectItems.length
                     }
                     loadMoreItems={loadMoreItems}
                   >
@@ -397,7 +405,7 @@ const SideNav = () => {
                         width="100%"
                         itemCount={
                           hasMore
-                            ? projectItems.length + pageSize
+                            ? projectItems.length + 1
                             : projectItems.length
                         }
                         itemSize={getItemSize}

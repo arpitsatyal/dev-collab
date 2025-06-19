@@ -10,9 +10,9 @@ applications:
             - npx prisma db pull
         build:
           commands:
-            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e LIVEBLOCKS_ -e DATABASE_URL -e QUEUE_URL >> .env.production
+            - env | grep -e NEXTAUTH_ -e GITHUB_ -e GOOGLE_ -e DATABASE_URL -e QUEUE_URL >> .env.production
             - npm run build
-            - npm prune --production
+            - npm prune --omit=dev
       artifacts:
         baseDirectory: .next
         files:
