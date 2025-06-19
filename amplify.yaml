@@ -7,8 +7,8 @@ applications:
             - nvm use 18
             - echo "Writing DATABASE_URL from secrets to .env..."
             - |
-              echo "DATABASE_URL=$(node -e 'console.log(JSON.parse(process.env.secrets).DATABASE_URL)')" > .env.production
-              cat .env.production
+              echo "DATABASE_URL=$(node -e 'console.log(JSON.parse(process.env.secrets).DATABASE_URL)')" > .env
+              cat .env
             - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
             - npx prisma db pull
