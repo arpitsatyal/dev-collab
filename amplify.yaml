@@ -5,10 +5,10 @@ applications:
         preBuild:
           commands:
             - nvm use 18
-            - echo "Extracting DATABASE_URL from secrets..."
+            - echo "Writing DATABASE_URL from secrets to .env..."
             - |
-              export DATABASE_URL=$(node -e "console.log(JSON.parse(process.env.secrets).DATABASE_URL)")
-              echo "DATABASE_URL is: $DATABASE_URL"
+              echo "DATABASE_URL=$(node -e 'console.log(JSON.parse(process.env.secrets).DATABASE_URL)')" > .env.production
+              cat .env.production
             - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
             - npx prisma db pull
