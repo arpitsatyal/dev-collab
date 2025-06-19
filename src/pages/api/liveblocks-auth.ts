@@ -2,9 +2,10 @@ import { Liveblocks } from "@liveblocks/node";
 import { getServerSession } from "next-auth/next";
 import type { NextApiRequest, NextApiResponse } from "next";
 import { authOptions } from "./auth/[...nextauth]";
+import { getSecret } from "../../utils/secrets";
 
 const liveblocks = new Liveblocks({
-  secret: process.env.LIVEBLOCKS_SECRET_KEY!,
+  secret: getSecret("LIVEBLOCKS_SECRET_KEY"),
 });
 
 export default async function handler(
