@@ -127,7 +127,7 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   };
 
   if (status === "loading") {
-    return <Loading isEditorLoading />;
+    return <Loading />;
   }
 
   return (
@@ -165,7 +165,7 @@ const EditSnippetPage = () => {
   }, [projectId, snippetId, loadedSnippets, isValidId]);
 
   if (!isValidId || !snippet) {
-    return <Loading isEditorLoading />;
+    return <Loading />;
   }
 
   return (

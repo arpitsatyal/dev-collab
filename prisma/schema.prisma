@@ -69,6 +69,7 @@ model Project {
   owner       User      @relation("ProjectOwner", fields: [ownerId], references: [id])
   snippets    Snippet[]
   tasks       Task[]
+  isPinned Boolean @default(false)
 }
 
 model Snippet {

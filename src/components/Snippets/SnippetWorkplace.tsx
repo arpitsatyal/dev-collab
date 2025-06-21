@@ -34,7 +34,7 @@ const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
   }, [snippet.language, updateLanguage]);
 
   if (!router.query.snippetId || !session.data?.user.id) {
-    return <Loading isEditorLoading />;
+    return <Loading />;
   }
 
   return (

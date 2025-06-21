@@ -3,3 +3,16 @@
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-7));
   border-radius: light-dark(4px, 2px);
 }
+
+.menuIcon {
+  display: flex;
+  align-items: center;
+}
+
+.menuWrapper {
+  visibility: hidden;
+}
+
+.navlink:hover .menuWrapper {
+  visibility: visible;
+}

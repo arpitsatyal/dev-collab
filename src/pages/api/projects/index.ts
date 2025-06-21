@@ -62,9 +62,7 @@ export default async function handler(
         const projects = await prisma.project.findMany({
           skip: toSkip,
           take: toLimit,
-          orderBy: {
-            updatedAt: "desc",
-          },
+          orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
         });
         return res.status(200).json(projects);
       } catch (error) {
@@ -87,6 +85,23 @@ export default async function handler(
         return res.status(200).json(project);
       } catch (error) {
         console.error("Error creating project:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
+
+    case "PATCH":
+      try {
+        const updatedProject = await prisma.project.update({
+          where: {
+            id: projectId as string,
+          },
+          data: {
+            isPinned: req.body.isPinned ?? false,
+          },
+        });
+
+        return res.status(200).json(updatedProject);
+      } catch (error) {
+        console.error("Error updating project:", error);
         return res.status(500).json({ error: "Internal Server Error" });
       }
 

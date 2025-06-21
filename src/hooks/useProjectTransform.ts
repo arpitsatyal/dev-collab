@@ -1,7 +1,7 @@
 import { useCallback, useRef } from "react";
 import { NavItemProps } from "../components/SideNav/SideNav";
 import { Project } from "@prisma/client";
-import { IconFolder } from "@tabler/icons-react";
+import { IconFolder, IconPin } from "@tabler/icons-react";
 
 // Utility to memoize project transformation
 const useProjectTransform = () => {

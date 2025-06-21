@@ -1,10 +1,20 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { AppShell, Box, NavLink, Text } from "@mantine/core";
+import {
+  ActionIcon,
+  AppShell,
+  Box,
+  Flex,
+  Group,
+  NavLink,
+  Text,
+  useMantineTheme,
+} from "@mantine/core";
 import {
   IconActivity,
   IconGauge,
   IconPencil,
+  IconPin,
   IconPlayCard,
   IconSubtask,
 } from "@tabler/icons-react";
@@ -13,7 +23,10 @@ import InfiniteLoader from "react-window-infinite-loader";
 import classes from "./SideNav.module.css";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
-import { useGetProjectsQuery } from "../../store/api/projectApi";
+import {
+  useGetProjectsQuery,
+  useUpdatePinnedStatusMutation,
+} from "../../store/api/projectApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
@@ -25,6 +38,7 @@ import {
 import useProjectTransform from "../../hooks/useProjectTransform";
 import { uniqBy } from "lodash";
 import SideNavFooter from "./SideNavFooter";
+import { notifications } from "@mantine/notifications";
 
 export interface NavItemProps {
   id: string;
@@ -44,7 +58,9 @@ const SideNav = () => {
   const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const lastProjectIdRef = useRef<string | null>(null);
+  const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
 
+  const theme = useMantineTheme();
   const dispatch = useAppDispatch();
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
@@ -53,6 +69,7 @@ const SideNav = () => {
     (state) => state.project
   );
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
+  const [updatePinnedStatus] = useUpdatePinnedStatusMutation();
 
   const transformProject = useProjectTransform();
   const { data, isLoading, isFetching, isError } = useGetProjectsQuery(
@@ -196,6 +213,14 @@ const SideNav = () => {
     [projectItems.length]
   );
 
+  useEffect(() => {
+    if (!pendingScrollId) return;
+
+    toggleOpenItem(pendingScrollId);
+    scrollItemIntoView(pendingScrollId);
+    setPendingScrollId(null);
+  }, [pendingScrollId, projectItems]);
+
   const loadMoreItems = useCallback(
     (startIndex: number, stopIndex: number) => {
       if (hasMore && !isFetching) {
@@ -215,6 +240,7 @@ const SideNav = () => {
 
       const isExpanded = openItem === item.id && loadedSnippets[item.id];
       if (isExpanded) {
+        const pinIcon = 30;
         const snippetCount = loadedSnippets[item.id]?.length || 0;
         const baseHeight = 40;
         const taskHeight = 40;
@@ -222,6 +248,7 @@ const SideNav = () => {
         const snippetHeight = 40;
 
         return (
+          pinIcon +
           baseHeight +
           taskHeight +
           createSnippetHeight +
@@ -297,6 +324,32 @@ const SideNav = () => {
     ]
   );
 
+  const handleUpdatePinnedStatus = async (project: Project) => {
+    try {
+      toggleOpenItem(project.id);
+
+      await updatePinnedStatus({
+        projectId: project.id,
+        isPinned: !project.isPinned,
+      }).unwrap();
+
+      setPendingScrollId(project.id);
+
+      notifications.show({
+        title: "Job done!",
+        message: `Project ${
+          !project.isPinned ? "Pinned" : "Unpinned"
+        } Successfully! 🌟`,
+      });
+    } catch (error) {
+      notifications.show({
+        title: "Error",
+        message: "Failed to update pinned status. Please try again.",
+        color: "red",
+      });
+    }
+  };
+
   const Row = ({
     index,
     style,
@@ -308,7 +361,7 @@ const SideNav = () => {
     const isLoadingRow = hasMore && index === projectItems.length;
     if (isLoadingRow) {
       return (
-        <Box style={style} key={`loading-${index}`} ta="center" py="md">
+        <Box style={style} key={`loading-${index}`} ta="center">
           <Loading loaderHeight="5vh" />
         </Box>
       );
@@ -353,6 +406,24 @@ const SideNav = () => {
               <Loading loaderHeight="5vh" />
             ) : (
               <>
+                <ActionIcon
+                  variant="subtle"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleUpdatePinnedStatus(project);
+                  }}
+                  style={(theme) => ({
+                    color: project.isPinned
+                      ? theme.colors.yellow[5]
+                      : theme.colors.gray[5],
+                    "&:hover": {
+                      color: theme.colors.yellow[7],
+                    },
+                  })}
+                >
+                  <IconPin size={16} />
+                </ActionIcon>
+
                 <NavLink
                   label="Tasks"
                   active={isActive(`/projects/${child.id}/tasks`)}

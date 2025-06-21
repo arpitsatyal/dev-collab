@@ -8,6 +8,7 @@ import {
   TextInput,
   Button,
   Group,
+  Box,
 } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
 import { Snippet } from "@prisma/client";
@@ -24,6 +25,8 @@ import { SnippetsCreateData } from "../../pages/api/snippets";
 import FileIcon from "../FileIcon";
 import { useGetProjectByIdQuery } from "../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import classes from "./Snippet.module.css";
+import { useMediaQuery } from "@mantine/hooks";
 
 const SnippetList = ({
   snippets,
@@ -46,6 +49,7 @@ const SnippetList = ({
   const dispatch = useAppDispatch();
   const [createSnippet, { isLoading: isCreating }] = useCreateSnippetMutation();
   const [editSnippet, { isLoading: isEditing }] = useEditSnippetMutation();
+  const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   const isValidProjectId =
     typeof selectedSnippet?.projectId === "string" &&
@@ -225,45 +229,61 @@ const SnippetList = ({
 
       {snippets.length ? (
         snippets.map((snippet) => (
-          <NavLink
+          <Box
             key={snippet.id}
-            label={
-              <Text
-                fz="sm"
-                style={{
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  whiteSpace: "nowrap",
-                }}
-                title={`${snippet.title}.${snippet.extension ?? ""}`}
-              >
-                {`${snippet.title}.${snippet.extension ?? ""}`}
-              </Text>
-            }
-            leftSection={<FileIcon snippet={snippet} />}
-            rightSection={
-              <Menu withinPortal position="right-start" shadow="md">
-                <Menu.Target>
-                  <div onClick={(e) => e.stopPropagation()}>
-                    <IconDotsVertical size={16} style={{ cursor: "pointer" }} />
-                  </div>
-                </Menu.Target>
-                <Menu.Dropdown>
-                  <Menu.Item onClick={(e) => openModal("rename", snippet, e)}>
-                    Rename
-                  </Menu.Item>
-                </Menu.Dropdown>
-              </Menu>
-            }
-            active={activeItem === snippet.id}
-            opened={activeItem === snippet.id}
-            onClick={() =>
-              handleSnippetClick(
-                snippet.id,
-                `/projects/${snippet.projectId}/snippets/${snippet.id}`
-              )
-            }
-          />
+            className={isSmallScreen ? undefined : classes.navlink}
+          >
+            <NavLink
+              label={
+                <Text
+                  fz="sm"
+                  style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                  title={`${snippet.title}.${snippet.extension ?? ""}`}
+                >
+                  {`${snippet.title}.${snippet.extension ?? ""}`}
+                </Text>
+              }
+              leftSection={<FileIcon snippet={snippet} />}
+              rightSection={
+                <div
+                  className={isSmallScreen ? undefined : classes.menuWrapper}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Menu withinPortal position="right-start" shadow="md">
+                    <Menu.Target>
+                      <div
+                        className={isSmallScreen ? undefined : classes.menuIcon}
+                      >
+                        <IconDotsVertical
+                          size={16}
+                          style={{ cursor: "pointer" }}
+                        />
+                      </div>
+                    </Menu.Target>
+                    <Menu.Dropdown>
+                      <Menu.Item
+                        onClick={(e) => openModal("rename", snippet, e)}
+                      >
+                        Rename
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </div>
+              }
+              active={activeItem === snippet.id}
+              opened={activeItem === snippet.id}
+              onClick={() =>
+                handleSnippetClick(
+                  snippet.id,
+                  `/projects/${snippet.projectId}/snippets/${snippet.id}`
+                )
+              }
+            />
+          </Box>
         ))
       ) : (
         <></>
