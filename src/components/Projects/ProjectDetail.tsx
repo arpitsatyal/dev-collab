@@ -1,9 +1,9 @@
 import { Container, Paper, Stack, Text } from "@mantine/core";
-import { Project } from "@prisma/client";
 import React from "react";
 import classes from "./Project.module.css";
+import { ProjectWithPin } from "../../types";
 
-const ProjectDetail = ({ project }: { project: Project }) => {
+const ProjectDetail = ({ project }: { project: ProjectWithPin }) => {
   return (
     <Container size="md" p={{ base: "sm", sm: "md" }}>
       <Paper

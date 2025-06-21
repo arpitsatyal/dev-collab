@@ -1,12 +1,12 @@
 import { Button, Group, Text } from "@mantine/core";
-import { Project } from "@prisma/client";
 import React from "react";
+import { ProjectWithPin } from "../../types";
 
 const TaskInfo = ({
   project,
   open,
 }: {
-  project: Project;
+  project: ProjectWithPin;
   open: () => void;
 }) => {
   return (

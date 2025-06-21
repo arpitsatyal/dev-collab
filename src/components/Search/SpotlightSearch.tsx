@@ -22,10 +22,10 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader/Loader";
 import FileIcon from "../FileIcon";
-import { Project, Snippet, Task } from "@prisma/client";
+import { Snippet, Task } from "@prisma/client";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { CacheDataSource, TypedItems } from "../../types";
+import { CacheDataSource, ProjectWithPin, TypedItems } from "../../types";
 import { useSession } from "next-auth/react";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
@@ -164,7 +164,7 @@ const SpotlightSearch = ({
     return recentSearchOrder.map((key) => itemsMap.get(key)).filter(Boolean); // remove nulls
   }, [recentSearchOrder, loadedProjects, snippets, uniqueCacheResults]);
 
-  const projectSource = useMemo<Omit<DataSource<Project>, "data">>(
+  const projectSource = useMemo<Omit<DataSource<ProjectWithPin>, "data">>(
     () => ({
       name: "projects",
       groupLabel: "Projects",
@@ -176,7 +176,7 @@ const SpotlightSearch = ({
                 (apiResult: TypedItems) =>
                   apiResult.type === "project" &&
                   !localProjects.some(
-                    (local: Project) => local.id === apiResult.id
+                    (local: ProjectWithPin) => local.id === apiResult.id
                   )
               )
             : [];
@@ -212,7 +212,7 @@ const SpotlightSearch = ({
   );
 
   const snippetSource = useMemo<
-    Omit<DataSource<Snippet & { project?: Project }>, "data">
+    Omit<DataSource<Snippet & { project?: ProjectWithPin }>, "data">
   >(
     () => ({
       name: "snippets",
@@ -239,7 +239,7 @@ const SpotlightSearch = ({
           addRecentItems,
         }: {
           router: NextRouter;
-          projects: Project[];
+          projects: ProjectWithPin[];
           addRecentItems: (items: TypedItems[]) => void;
         }
       ) => ({
@@ -270,7 +270,7 @@ const SpotlightSearch = ({
   );
 
   const taskSource = useMemo<
-    Omit<DataSource<Task & { project?: Project }>, "data">
+    Omit<DataSource<Task & { project?: ProjectWithPin }>, "data">
   >(
     () => ({
       name: "tasks",
@@ -292,7 +292,7 @@ const SpotlightSearch = ({
           addRecentItems,
         }: {
           router: NextRouter;
-          projects: Project[];
+          projects: ProjectWithPin[];
           addRecentItems: (items: TypedItems[]) => void;
         }
       ) => ({
@@ -356,7 +356,7 @@ const SpotlightSearch = ({
       },
       toDataItem: (
         item,
-        { router, projects }: { router: NextRouter; projects: Project[] }
+        { router, projects }: { router: NextRouter; projects: ProjectWithPin[] }
       ) => {
         if (item.type === "project") {
           return {
