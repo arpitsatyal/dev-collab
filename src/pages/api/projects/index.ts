@@ -74,7 +74,7 @@ export default async function handler(
         LIMIT ${toLimit};
         `;
 
-        res.status(200).json(projects);
+        return res.status(200).json(projects);
       } catch (error) {
         console.error("Error fetching projects:", error);
         return res.status(500).json({ error: "Internal Server Error" });
