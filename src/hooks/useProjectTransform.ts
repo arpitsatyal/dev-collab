@@ -1,14 +1,14 @@
 import { useCallback, useRef } from "react";
 import { NavItemProps } from "../components/SideNav/SideNav";
-import { Project } from "@prisma/client";
-import { IconFolder, IconPin } from "@tabler/icons-react";
+import { IconFolder } from "@tabler/icons-react";
+import { ProjectWithPin } from "../types";
 
 // Utility to memoize project transformation
 const useProjectTransform = () => {
   const cache = useRef(new Map<string, NavItemProps>());
 
   return useCallback(
-    (project: Project, loadedSnippets: Record<string, any>) => {
+    (project: ProjectWithPin, loadedSnippets: Record<string, any>) => {
       const cacheKey = `${project.id}-${JSON.stringify(
         loadedSnippets[project.id] ?? []
       )}`;

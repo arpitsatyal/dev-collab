@@ -1,15 +1,6 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-  ActionIcon,
-  AppShell,
-  Box,
-  Flex,
-  Group,
-  NavLink,
-  Text,
-  useMantineTheme,
-} from "@mantine/core";
+import { ActionIcon, AppShell, Box, NavLink, Text } from "@mantine/core";
 import {
   IconActivity,
   IconGauge,
@@ -30,7 +21,7 @@ import {
 import { setSnippets } from "../../store/slices/snippetSlice";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
-import { Project, Snippet, Task } from "@prisma/client";
+import { Snippet, Task } from "@prisma/client";
 import {
   incrementPage,
   setProjectsOpen,
@@ -39,6 +30,7 @@ import useProjectTransform from "../../hooks/useProjectTransform";
 import { uniqBy } from "lodash";
 import SideNavFooter from "./SideNavFooter";
 import { notifications } from "@mantine/notifications";
+import { ProjectWithPin } from "../../types";
 
 export interface NavItemProps {
   id: string;
@@ -46,7 +38,7 @@ export interface NavItemProps {
   icon: React.ComponentType<any>;
   path?: string;
   handler?: () => void;
-  children?: (Project | NavItemProps)[];
+  children?: (ProjectWithPin | NavItemProps)[];
   snippets?: Snippet[];
   tasks?: Task[];
 }
@@ -60,7 +52,6 @@ const SideNav = () => {
   const lastProjectIdRef = useRef<string | null>(null);
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
 
-  const theme = useMantineTheme();
   const dispatch = useAppDispatch();
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
@@ -219,7 +210,7 @@ const SideNav = () => {
     toggleOpenItem(pendingScrollId);
     scrollItemIntoView(pendingScrollId);
     setPendingScrollId(null);
-  }, [pendingScrollId, projectItems]);
+  }, [pendingScrollId, projectItems, scrollItemIntoView]);
 
   const loadMoreItems = useCallback(
     (startIndex: number, stopIndex: number) => {
@@ -310,7 +301,7 @@ const SideNav = () => {
         const navItem =
           "path" in child
             ? child
-            : transformProject(child as Project, loadedSnippets);
+            : transformProject(child as ProjectWithPin, loadedSnippets);
         return openItem === navItem.id || isActive(navItem.path);
       });
     },
@@ -324,7 +315,7 @@ const SideNav = () => {
     ]
   );
 
-  const handleUpdatePinnedStatus = async (project: Project) => {
+  const handleUpdatePinnedStatus = async (project: ProjectWithPin) => {
     try {
       toggleOpenItem(project.id);
 
@@ -369,7 +360,7 @@ const SideNav = () => {
 
     const project = projectItems[
       isInsertingProject ? index - 1 : index
-    ] as Project;
+    ] as ProjectWithPin;
     if (!project) return null;
 
     const child = transformProject(project, loadedSnippets);

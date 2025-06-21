@@ -9,19 +9,20 @@ datasource db {
 }
 
 model User {
-  id                 String    @id @default(cuid())
-  email              String?   @unique
+  id                 String              @id @default(cuid())
+  email              String?             @unique
   name               String?
   image              String?
-  createdAt          DateTime  @default(now())
+  createdAt          DateTime            @default(now())
   emailVerified      DateTime?
   accounts           Account[]
-  projects           Project[] @relation("ProjectOwner")
+  projects           Project[]           @relation("ProjectOwner")
   sessions           Session[]
-  snippets           Snippet[] @relation("AuthorRelation")
-  lastEditedSnippets Snippet[] @relation("LastEditorRelation")
-  tasksAssigned      Task[]    @relation("AssignedToRelation")
-  tasksCreated       Task[]    @relation("TaskAuthorRelation")
+  snippets           Snippet[]           @relation("AuthorRelation")
+  lastEditedSnippets Snippet[]           @relation("LastEditorRelation")
+  tasksAssigned      Task[]              @relation("AssignedToRelation")
+  tasksCreated       Task[]              @relation("TaskAuthorRelation")
+  UserPinnedProject  UserPinnedProject[]
 }
 
 model Account {
@@ -59,17 +60,27 @@ model VerificationToken {
 }
 
 model Project {
-  id          String    @id @default(cuid())
+  id          String              @id @default(cuid())
   title       String
   description String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  isPublic    Boolean   @default(false)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  isPublic    Boolean             @default(false)
   ownerId     String
-  owner       User      @relation("ProjectOwner", fields: [ownerId], references: [id])
+  owner       User                @relation("ProjectOwner", fields: [ownerId], references: [id])
   snippets    Snippet[]
   tasks       Task[]
-  isPinned Boolean @default(false)
+  pinnedBy    UserPinnedProject[]
+}
+
+model UserPinnedProject {
+  id        String  @id @default(cuid())
+  userId    String
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+  user      User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, projectId])
 }
 
 model Snippet {

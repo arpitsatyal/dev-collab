@@ -1,7 +1,7 @@
-import { Project } from "@prisma/client";
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { RootState } from "../store";
 import { uniqBy } from "lodash";
+import { ProjectWithPin } from "../../types";
+import { RootState } from "../store";
 
 export const projectApi = createApi({
   reducerPath: "projectApi",
@@ -9,11 +9,11 @@ export const projectApi = createApi({
   tagTypes: ["Projects", "Project"],
   endpoints: (builder) => ({
     getProjects: builder.query<
-      { items: Project[]; hasMore: boolean },
+      { items: ProjectWithPin[]; hasMore: boolean },
       { skip: number; limit: number }
     >({
       query: ({ skip, limit }) => `projects?skip=${skip}&limit=${limit}`,
-      transformResponse: (response: Project[], meta, arg) => ({
+      transformResponse: (response: ProjectWithPin[], meta, arg) => ({
         items: response,
         hasMore: response.length === arg.limit,
       }),
@@ -38,11 +38,11 @@ export const projectApi = createApi({
           : [{ type: "Projects", id: "LIST" }],
       keepUnusedDataFor: 300, // 5 minutes
     }),
-    getProjectById: builder.query<Project, string>({
+    getProjectById: builder.query<ProjectWithPin, string>({
       query: (id) => `projects?projectId=${id}`,
       providesTags: (result, error, id) => [{ type: "Project", id }],
     }),
-    createProject: builder.mutation<Project, Partial<Project>>({
+    createProject: builder.mutation<ProjectWithPin, Partial<ProjectWithPin>>({
       query: (project) => ({
         url: "projects",
         method: "POST",
@@ -51,7 +51,7 @@ export const projectApi = createApi({
       invalidatesTags: [{ type: "Projects", id: "LIST" }],
     }),
     updatePinnedStatus: builder.mutation<
-      Project,
+      ProjectWithPin,
       { projectId: string; isPinned: boolean }
     >({
       query: ({ projectId, isPinned }) => ({

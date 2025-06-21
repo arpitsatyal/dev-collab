@@ -19,3 +19,5 @@ export type CacheDataSource =
   | WithType<Project, "project">
   | WithType<SnippetWithProject, "snippet">
   | WithType<TaskWithProject, "task">;
+
+export type ProjectWithPin = Project & { isPinned: boolean };

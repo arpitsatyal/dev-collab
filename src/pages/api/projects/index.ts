@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
+import { ProjectWithPin } from "../../../types";
 
 export interface ProjectCreateData {
   title: string;
@@ -59,12 +60,21 @@ export default async function handler(
           return res.status(200).json(project);
         }
 
-        const projects = await prisma.project.findMany({
-          skip: toSkip,
-          take: toLimit,
-          orderBy: [{ isPinned: "desc" }, { createdAt: "desc" }],
-        });
-        return res.status(200).json(projects);
+        const userId = user.id as string;
+
+        const projects = await prisma.$queryRaw<ProjectWithPin[]>`
+        SELECT p.*,
+              (upp."userId" IS NOT NULL) AS "isPinned"
+        FROM "Project" p
+        LEFT JOIN "UserPinnedProject" upp
+          ON upp."userId" = ${userId}
+          AND upp."projectId" = p."id"
+        ORDER BY "isPinned" DESC, p."createdAt" DESC
+        OFFSET ${toSkip}
+        LIMIT ${toLimit};
+        `;
+
+        res.status(200).json(projects);
       } catch (error) {
         console.error("Error fetching projects:", error);
         return res.status(500).json({ error: "Internal Server Error" });
@@ -74,6 +84,7 @@ export default async function handler(
       try {
         const { title, description } = req.body as ProjectCreateData;
 
+        if (!title) return res.status(400).json({ msg: "title is required" });
         const project = await prisma.project.create({
           data: {
             title,
@@ -90,16 +101,39 @@ export default async function handler(
 
     case "PATCH":
       try {
-        const updatedProject = await prisma.project.update({
-          where: {
-            id: projectId as string,
-          },
-          data: {
-            isPinned: req.body.isPinned ?? false,
-          },
-        });
+        if (typeof user.id !== "string") {
+          return res.status(400).json({ error: "Invalid user id" });
+        }
+        if (typeof projectId !== "string") {
+          return res.status(400).json({ error: "Invalid project id" });
+        }
 
-        return res.status(200).json(updatedProject);
+        const userId = user.id;
+
+        if (req.body.isPinned) {
+          await prisma.userPinnedProject.upsert({
+            where: {
+              userId_projectId: {
+                userId,
+                projectId,
+              },
+            },
+            update: {},
+            create: {
+              userId,
+              projectId,
+            },
+          });
+        } else {
+          await prisma.userPinnedProject.deleteMany({
+            where: {
+              userId,
+              projectId,
+            },
+          });
+        }
+
+        return res.status(200).json({ success: true });
       } catch (error) {
         console.error("Error updating project:", error);
         return res.status(500).json({ error: "Internal Server Error" });
