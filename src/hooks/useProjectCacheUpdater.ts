@@ -1,13 +1,13 @@
-import type { Project } from "@prisma/client";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { setInsertingProject } from "../store/slices/projectSlice";
 import { projectApi } from "../store/api/projectApi";
+import { ProjectWithPin } from "../types";
 
 export const useProjectCacheUpdater = () => {
   const dispatch = useAppDispatch();
   const { pageSize } = useAppSelector((state) => state.project);
 
-  const updateProjectInCache = (compareId: string, project: Project) => {
+  const updateProjectInCache = (compareId: string, project: ProjectWithPin) => {
     dispatch(setInsertingProject(true));
     dispatch(
       projectApi.util.updateQueryData(
