@@ -14,7 +14,6 @@ import { TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { TaskCreateData } from "../../pages/api/tasks";
 import { useGetUsersQuery } from "../../store/api/userApi";
-import classes from "./Task.module.css";
 
 interface CreateTaskModalProps {
   handleInputChange: <K extends keyof TaskCreateData>(
@@ -131,11 +130,7 @@ const CreateTaskModal = ({
         error={errors.projectId}
       />
       <Group justify="right">
-        <Button
-          variant="outline"
-          onClick={close}
-          className={classes.cancelButton}
-        >
+        <Button variant="outline" onClick={close} className="cancelButton">
           Cancel
         </Button>
         <Button onClick={onSubmit} loading={isLoading}>

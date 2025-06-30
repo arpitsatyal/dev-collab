@@ -34,7 +34,7 @@ export default async function handler(
     };
 
     const session = liveblocks.prepareSession(userId, { userInfo });
-    const allowedPrefixes = [`snippet_`, `snippet_draft_`, `playground_`];
+    const allowedPrefixes = [`snippet_`, `snippet_draft_`, `playground_`, `docs_`];
     const { room } = req.body;
 
     const isAllowedRoom =

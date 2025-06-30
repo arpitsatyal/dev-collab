@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionIcon, AppShell, Box, NavLink, Text } from "@mantine/core";
 import {
   IconActivity,
+  IconBrandPagekit,
   IconGauge,
   IconPencil,
   IconPin,
@@ -237,12 +238,14 @@ const SideNav = () => {
         const taskHeight = 40;
         const createSnippetHeight = 40;
         const snippetHeight = 40;
+        const docsHeight = 40;
 
         return (
           pinIcon +
           baseHeight +
           taskHeight +
           createSnippetHeight +
+          docsHeight +
           snippetCount * snippetHeight
         );
       }
@@ -410,6 +413,7 @@ const SideNav = () => {
                     "&:hover": {
                       color: theme.colors.yellow[7],
                     },
+                    padding: 5,
                   })}
                 >
                   <IconPin size={16} />
@@ -420,6 +424,12 @@ const SideNav = () => {
                   active={isActive(`/projects/${child.id}/tasks`)}
                   leftSection={<IconSubtask size={16} />}
                   onClick={() => router.push(`/projects/${child.id}/tasks`)}
+                />
+                <NavLink
+                  label="Docs"
+                  active={router.pathname.includes("docs")}
+                  leftSection={<IconBrandPagekit size={16} />}
+                  onClick={() => router.push(`/projects/${child.id}/docs`)}
                 />
                 <SnippetList
                   snippets={loadedSnippets[child.id] ?? []}

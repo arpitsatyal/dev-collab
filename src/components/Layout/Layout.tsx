@@ -1,4 +1,4 @@
-import { AppShell, Box, Burger, Flex } from "@mantine/core";
+import { AppShell, Box, Burger, Button, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "../SideNav/SideNav";
 import SpotlightSearch from "../Search/SpotlightSearch";
@@ -16,6 +16,7 @@ import {
 } from "../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
+import { IconMenu2 } from "@tabler/icons-react";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -45,6 +46,14 @@ export default function Layout({ children }: { children: ReactNode }) {
   const { data: projectData } = useGetProjectByIdQuery(
     isValidProjectId && !isProjectLoaded ? projectId : skipToken
   );
+
+  const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false); // New state for desktop collapse
+
+  const isDocsRoute = router.pathname.startsWith("/projects/[projectId]/docs");
+
+  const handleToggleSideNav = () => {
+    setIsSideNavCollapsed(!isSideNavCollapsed);
+  };
 
   // Handle router events for loading state
   useEffect(() => {
@@ -85,7 +94,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <AppShell
       header={{ height: 80 }}
       navbar={{
-        width: navWidth,
+        width: isSideNavCollapsed ? 0 : navWidth, 
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}
@@ -96,16 +105,12 @@ export default function Layout({ children }: { children: ReactNode }) {
           align="center"
           justify="space-between"
           p={15}
-          style={{
-            width: "100%",
-          }}
+          style={{ width: "100%" }}
         >
           <Burger opened={opened} onClick={toggle} size="sm" hiddenFrom="sm" />
-
           <Box onClick={() => router.push("/")}>
             <DevCollabIcon />
           </Box>
-
           <Box
             style={{
               width: isSmallScreen ? "auto" : "50%",
@@ -114,13 +119,24 @@ export default function Layout({ children }: { children: ReactNode }) {
           >
             <SpotlightSearch isSmallScreen={isSmallScreen ?? false} />
           </Box>
-
-          {!isSmallScreen ? <ThemeToggle /> : <></>}
+          {!isSmallScreen && isDocsRoute && (
+            <Button
+              variant="outline"
+              size="xs"
+              leftSection={<IconMenu2 size={16} />}
+              onClick={handleToggleSideNav}
+            >
+              {isSideNavCollapsed ? "Show Main Menu" : "Hide Main Menu"}
+            </Button>
+          )}
+          {!isSmallScreen && !isDocsRoute && <ThemeToggle />}
         </Flex>
       </AppShell.Header>
       <AppShell.Navbar p="md" ref={navbarRef}>
         <SideNav />
-        <ResizeHandle navbarRef={navbarRef} setNavWidth={setNavWidth} />
+        {!isSideNavCollapsed && (
+          <ResizeHandle navbarRef={navbarRef} setNavWidth={setNavWidth} />
+        )}
       </AppShell.Navbar>
       <AppShell.Main>
         {isNavigating || isProjectsLoading ? <Loading /> : children}

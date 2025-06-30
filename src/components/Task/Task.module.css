@@ -15,11 +15,3 @@
 
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-3));
 }
-
-.cancelButton {
-  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
-  border-color: light-dark(
-    var(--mantine-color-gray-6),
-    var(--mantine-color-gray-5)
-  );
-}

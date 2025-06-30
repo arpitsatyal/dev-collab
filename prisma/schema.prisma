@@ -71,6 +71,7 @@ model Project {
   snippets    Snippet[]
   tasks       Task[]
   pinnedBy    UserPinnedProject[]
+  docs        Doc[]
 }
 
 model UserPinnedProject {
@@ -119,4 +120,14 @@ enum TaskStatus {
   TODO
   IN_PROGRESS
   DONE
+}
+
+model Doc {
+  id        String   @id @default(uuid())
+  label     String
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  content   Json?    @default("{}") // Store Tiptap/Liveblocks content
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }

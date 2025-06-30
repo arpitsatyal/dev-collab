@@ -44,3 +44,11 @@
   user-select: none;
   z-index: 1000;
 }
+
+.cancelButton {
+  color: light-dark(var(--mantine-color-gray-6), var(--mantine-color-gray-5));
+  border-color: light-dark(
+    var(--mantine-color-gray-6),
+    var(--mantine-color-gray-5)
+  );
+}

@@ -1,0 +1,62 @@
+.root {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.header {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+}
+
+.toolbarWrapper {
+  border-bottom: 1px solid var(--border);
+  background-color: var(--background);
+}
+
+.toolbar {
+  width: 100%;
+}
+
+.main {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  width: 100%;
+  padding-top: 4rem;
+  padding-bottom: 4rem;
+}
+
+@media (min-width: 1280px) {
+  .main {
+    padding-left: 50px;
+  }
+}
+
+.editorSection {
+  position: relative;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.floatingComposer {
+  width: 350px;
+}
+
+.editorContent {
+  outline: none;
+  flex: 1;
+  padding: 1rem;
+  transition: all 0.2s ease;
+  cursor: text;
+}

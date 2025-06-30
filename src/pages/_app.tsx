@@ -1,8 +1,12 @@
-import type { AppProps } from "next/app";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/spotlight/styles.css";
 import "@mantine/dates/styles.css";
+import "@liveblocks/react-ui/styles.css";
+import "@liveblocks/react-tiptap/styles.css";
+import "@liveblocks/react-ui/styles/dark/media-query.css";
+
+import type { AppProps } from "next/app";
 import { MantineProvider } from "@mantine/core";
 import { SessionProvider } from "next-auth/react";
 import { ReactElement, ReactNode } from "react";
@@ -32,7 +36,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
       <Provider store={store}>
         <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
           <SessionProvider session={pageProps.session}>
-            <MantineProvider theme={theme} withGlobalClasses>
+            <MantineProvider theme={theme} withGlobalClasses defaultColorScheme="dark">
               <MantineEmotionProvider>
                 <Notifications position="top-right" />
                 {getLayout(<Component {...pageProps} />)}

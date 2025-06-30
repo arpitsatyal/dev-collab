@@ -5,6 +5,7 @@ import projectReducer from "./slices/projectSlice";
 import { snippetApi } from "./api/snippetApi";
 import { userApi } from "./api/userApi";
 import { taskApi } from "./api/taskApi";
+import { docsApi } from "./api/docsApi";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     [projectApi.reducerPath]: projectApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
     [taskApi.reducerPath]: taskApi.reducer,
+    [docsApi.reducerPath]: docsApi.reducer,
     snippet: snippetReducer,
     [snippetApi.reducerPath]: snippetApi.reducer,
   },
@@ -20,7 +22,8 @@ export const store = configureStore({
       projectApi.middleware,
       snippetApi.middleware,
       userApi.middleware,
-      taskApi.middleware
+      taskApi.middleware,
+      docsApi.middleware
     ),
 });
 
