@@ -60,3 +60,21 @@
   transition: all 0.2s ease;
   cursor: text;
 }
+
+.composer {
+  width: 350px;
+}
+
+.threadsWrapper {
+  padding-right: 50px;
+}
+
+.threadsWrapper:not(:has(.lb-tiptap-anchored-threads)) {
+  padding-right: 50px;
+}
+
+@media (min-width: 1280px) {
+  .threadsWrapper:not(:has(.lb-tiptap-anchored-threads)) {
+    padding-right: 200px;
+  }
+}

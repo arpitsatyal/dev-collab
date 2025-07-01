@@ -5,10 +5,13 @@
 
 .sidebar {
   width: 200px;
-  flex-shrink: 0;
   border-right: 1px solid
     light-dark(var(--mantine-color-gray-3), var(--mantine-color-gray-7));
   border-radius: light-dark(4px, 2px);
+}
+
+.sidebar.open {
+  display: block;
 }
 
 .main {
@@ -30,4 +33,18 @@
 .noDocs {
   padding: 1rem;
   color: #666;
+}
+
+.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar {
+    display: none;
+    width: 100%;
+  }
+  .sidebar.open {
+    display: block;
+  }
 }

@@ -47,8 +47,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     isValidProjectId && !isProjectLoaded ? projectId : skipToken
   );
 
-  const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false); // New state for desktop collapse
-
+  const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false);
   const isDocsRoute = router.pathname.startsWith("/projects/[projectId]/docs");
 
   const handleToggleSideNav = () => {
@@ -94,7 +93,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     <AppShell
       header={{ height: 80 }}
       navbar={{
-        width: isSideNavCollapsed ? 0 : navWidth, 
+        width: isSideNavCollapsed ? 0 : navWidth,
         breakpoint: "sm",
         collapsed: { mobile: !opened },
       }}

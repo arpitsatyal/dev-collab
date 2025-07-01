@@ -1,0 +1,10 @@
+.anchoredThreads {
+  width: 350px;
+  margin-right: 50px;
+}
+
+@media (min-width: 1280px) {
+  .anchoredThreads {
+    margin-right: 100px;
+  }
+}
