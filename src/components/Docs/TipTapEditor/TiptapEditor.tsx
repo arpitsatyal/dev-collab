@@ -8,8 +8,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import styles from "./TipTapEditor.module.css";
 import { useEffect } from "react";
-import NotificationsPopover from "../NotificationsPopover/NotificationsPopover";
 import Threads from "../Threads/Threads";
+import NotificationsPopover from "../NotificationsPopover/NotificationsPopover";
 
 export default function TiptapEditor() {
   const liveblocks = useLiveblocksExtension();
@@ -26,6 +26,7 @@ export default function TiptapEditor() {
       }),
       liveblocks,
     ],
+    immediatelyRender: false,
   });
 
   useEffect(() => {
@@ -36,15 +37,15 @@ export default function TiptapEditor() {
 
   return (
     <div className={styles.root}>
-      {/* <div className={styles.header}>
+      <div className={styles.header}>
         <NotificationsPopover />
-      </div> */}
+      </div>
 
       <div className={styles.toolbarWrapper}>
         <Toolbar editor={editor} className={styles.toolbar} />
       </div>
 
-      {/* <div className={styles.main}>
+      <div className={styles.main}>
         <div className={styles.editorSection}>
           <EditorContent editor={editor} />
           <FloatingComposer editor={editor} className={styles.composer} />
@@ -53,7 +54,7 @@ export default function TiptapEditor() {
         <div className={styles.threadsWrapper}>
           <Threads editor={editor} />
         </div>
-      </div> */}
+      </div>
     </div>
   );
 }

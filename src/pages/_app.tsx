@@ -1,3 +1,4 @@
+import "../global.css";
 import "@mantine/core/styles.css";
 import "@mantine/notifications/styles.css";
 import "@mantine/spotlight/styles.css";
@@ -16,8 +17,12 @@ import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
-import "../global.css";
 import { theme } from "../utils/theme";
+import {
+  fetchMentionSuggestions,
+  resolveUsers,
+} from "../utils/liveblocksHelpers";
+import { debounce } from "lodash";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -31,21 +36,34 @@ type AppPropsWithLayout = AppProps & {
 function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   const getLayout = Component.getLayout ?? ((page) => page);
 
+  const debouncedFetchMentionSuggestions = debounce(
+    fetchMentionSuggestions,
+    300
+  );
+
   return (
-    <>
-      <Provider store={store}>
-        <LiveblocksProvider authEndpoint="/api/liveblocks-auth">
-          <SessionProvider session={pageProps.session}>
-            <MantineProvider theme={theme} withGlobalClasses defaultColorScheme="dark">
-              <MantineEmotionProvider>
-                <Notifications position="top-right" />
-                {getLayout(<Component {...pageProps} />)}
-              </MantineEmotionProvider>
-            </MantineProvider>
-          </SessionProvider>
-        </LiveblocksProvider>
-      </Provider>
-    </>
+    <Provider store={store}>
+      <LiveblocksProvider
+        authEndpoint="/api/liveblocks-auth"
+        resolveUsers={resolveUsers}
+        resolveMentionSuggestions={({ text }) =>
+          debouncedFetchMentionSuggestions(text) ?? []
+        }
+      >
+        <SessionProvider session={pageProps.session}>
+          <MantineProvider
+            theme={theme}
+            withGlobalClasses
+            defaultColorScheme="dark"
+          >
+            <MantineEmotionProvider>
+              <Notifications position="top-right" />
+              {getLayout(<Component {...pageProps} />)}
+            </MantineEmotionProvider>
+          </MantineProvider>
+        </SessionProvider>
+      </LiveblocksProvider>
+    </Provider>
   );
 }
 

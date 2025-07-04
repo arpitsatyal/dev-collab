@@ -10,6 +10,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-end;
+  gap: 1rem;
   padding-left: 1rem;
   padding-right: 1rem;
   border-bottom: 1px solid var(--border);
@@ -27,9 +28,6 @@
 
 .main {
   position: relative;
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
   width: 100%;
   padding-top: 4rem;
   padding-bottom: 4rem;
@@ -64,9 +62,11 @@
 .composer {
   width: 350px;
 }
-
 .threadsWrapper {
   padding-right: 50px;
+  position: absolute;
+  top: 0;
+  left: 100px;
 }
 
 .threadsWrapper:not(:has(.lb-tiptap-anchored-threads)) {

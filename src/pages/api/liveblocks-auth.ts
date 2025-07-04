@@ -27,14 +27,19 @@ export default async function handler(
     const userId = user.id || user.email;
 
     const userInfo = {
-      name: user.name || "Anonymous",
+      name: user.name || "",
       email: user.email || "",
       avatar: user.image || "",
       color: "#0074C2",
     };
 
     const session = liveblocks.prepareSession(userId, { userInfo });
-    const allowedPrefixes = [`snippet_`, `snippet_draft_`, `playground_`, `docs_`];
+    const allowedPrefixes = [
+      `snippet_`,
+      `snippet_draft_`,
+      `playground_`,
+      `docs_`,
+    ];
     const { room } = req.body;
 
     const isAllowedRoom =
