@@ -40,6 +40,7 @@ export const useSearch = (term: string) => {
   const [matchedResults, setMatchedResults] = useState<TypedItems[]>([]);
   const [isTyping, setIsTyping] = useState(false);
   const [ringLoader, setRingLoader] = useState(false);
+  const [resultsKey, setResultsKey] = useState(0);
 
   const dbRef = useRef<IDBPDatabase | null>(null);
 
@@ -111,6 +112,7 @@ export const useSearch = (term: string) => {
         const cachedData = searchCache.get(normalizedQuery);
         if (data.length && !isEqual(data, cachedData)) {
           setMatchedResults(data);
+          setResultsKey((prev) => prev + 1);
 
           searchCache.set(normalizedQuery, data);
           await saveToDB(normalizedQuery, data);
@@ -218,6 +220,8 @@ export const useSearch = (term: string) => {
     const normalizedTerm = normalizeQuery(trimmedTerm);
     if (searchCache.has(normalizedTerm)) {
       setMatchedResults(searchCache.get(normalizedTerm)!);
+      setResultsKey((prev) => prev + 1);
+
       setIsTyping(false);
       debouncedFetch(trimmedTerm, false);
     } else {
@@ -241,5 +245,6 @@ export const useSearch = (term: string) => {
     loading,
     isTyping,
     ringLoader,
+    resultsKey,
   };
 };

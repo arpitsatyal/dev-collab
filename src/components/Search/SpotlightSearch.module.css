@@ -25,10 +25,3 @@
 .clearAll button {
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-dark-0));
 }
-
-.noActive[data-selected="true"] {
-  background-color: transparent !important;
-  color: inherit !important;
-  font-weight: inherit !important;
-  opacity: inherit !important;
-}

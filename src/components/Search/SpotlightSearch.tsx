@@ -63,9 +63,7 @@ const filterByQuery = <T extends { title: string }>(
   if (!query) return [];
 
   const lowerQuery = query.toLowerCase().trim();
-  // Escape special regex characters in the query
   const escapedQuery = lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-  // Create regex that matches whole words only
   const regex = new RegExp(`\\b${escapedQuery}\\b`, "i");
 
   return items?.filter((item) => regex.test(String(item[field])));
@@ -117,6 +115,7 @@ const SpotlightSearch = ({
     isTyping,
     searchCache,
     ringLoader,
+    resultsKey,
   } = useSearch(query);
 
   const { data: session } = useSession();
@@ -616,7 +615,7 @@ const SpotlightSearch = ({
                   }`}
                 >
                   {items.map((item) => (
-                    <ActionItem key={item.id} item={item} />
+                    <ActionItem key={`${resultsKey}-${item.id}`} item={item} />
                   ))}
                 </CollapsibleActionsGroup>
               );

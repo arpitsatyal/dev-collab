@@ -29,11 +29,18 @@ export default async function handler(
       return res.status(200).json(users);
     }
 
-    const ids = Array.isArray(userIds) ? userIds : userIds ? [userIds] : [];
+    if (!Array.isArray(userIds)) {
+      const user = await prisma.user.findFirst({
+        where: {
+          id: userIds,
+        },
+      });
+      return res.status(200).json(user);
+    }
 
     const users = await prisma.user.findMany({
       where: {
-        OR: [{ id: { in: ids } }, { email: { in: ids } }],
+        OR: [{ id: { in: userIds } }, { email: { in: userIds } }],
       },
       select: {
         id: true,
