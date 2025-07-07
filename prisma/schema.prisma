@@ -127,7 +127,8 @@ model Doc {
   label     String
   projectId String
   project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  content   Json?    @default("{}") // Store Tiptap/Liveblocks content
+  roomId  String   @unique
+  content   Json?    @default("{}") 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

@@ -12,9 +12,8 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { Box, Button, Flex, Text } from "@mantine/core";
 import CreateDocModal from "../../../../components/Docs/CreateDocModal";
 import { useDisclosure } from "@mantine/hooks";
-import { useGetProjectByIdQuery } from "../../../../store/api/projectApi";
 import { DocCreateData } from "../../../api/docs";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 
 const DocsIndex = () => {
@@ -27,21 +26,18 @@ const DocsIndex = () => {
   const { data: docs } = useGetDocsQuery(projectId ? { projectId } : skipToken);
   const selectedDoc = docId ? docs?.find((doc) => doc.id === docId) : null;
 
-  const isValidProjectId =
-    typeof projectId === "string" && projectId.trim() !== "";
-
-  const { data: projectData } = useGetProjectByIdQuery(
-    isValidProjectId ? projectId : skipToken
-  );
-
   const [docForm, setDocForm] = useState<DocCreateData>({
     label: "",
-    projectId: projectId ?? "",
+    projectId: "",
+    roomId: "",
   });
 
-  if (!isValidProjectId || !projectData) {
-    return <Loading />;
-  }
+  useEffect(() => {
+    const projectId = getSingleQueryParam(router.query.projectId);
+    if (projectId) {
+      setDocForm((prev) => ({ ...prev, projectId }));
+    }
+  }, [router.query.projectId]);
 
   const handleInputChange = <K extends keyof DocCreateData>(
     field: K,
@@ -52,10 +48,14 @@ const DocsIndex = () => {
 
   const handleSubmit = async () => {
     try {
-      setDocForm({
-        label: "",
-        projectId: projectId ?? "",
-      });
+      if (!docForm.projectId || docForm.projectId.trim() === "") {
+        notifications.show({
+          title: "Error",
+          message: "Project ID is missing. Cannot create doc.",
+          color: "red",
+        });
+        return;
+      }
 
       await createDoc({
         doc: docForm,
@@ -64,6 +64,12 @@ const DocsIndex = () => {
       notifications.show({
         title: "Job done!",
         message: "Doc created successfully! 🌟",
+      });
+
+      setDocForm({
+        label: "",
+        projectId: "",
+        roomId: "",
       });
 
       close();
@@ -80,7 +86,7 @@ const DocsIndex = () => {
     <DocsLayout>
       {selectedDoc ? (
         <RoomProvider
-          id={`docs_${selectedDoc.id}`}
+          id={selectedDoc.roomId}
           initialPresence={{
             cursor: null,
           }}

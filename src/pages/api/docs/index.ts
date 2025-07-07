@@ -3,10 +3,12 @@ import prisma from "../../../lib/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { Prisma } from "@prisma/client";
+import { v4 as uuidv4 } from "uuid";
 
 export interface DocCreateData {
   label: string;
   projectId: string;
+  roomId: string;
 }
 
 export interface DocUpdateData {
@@ -72,8 +74,10 @@ export default async function handler(
           data: {
             label,
             projectId: projectId as string,
+            roomId: `docs_${uuidv4()}`,
           },
         });
+
         return res.status(201).json(doc);
       } catch (error) {
         console.error("Error creating doc:", error);
