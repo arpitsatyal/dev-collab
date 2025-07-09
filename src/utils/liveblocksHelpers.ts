@@ -5,7 +5,9 @@ const resolveUsers = async ({ userIds }: { userIds: string[] }) => {
     const searchParams = new URLSearchParams(
       userIds.map((userId) => ["userIds", userId])
     );
-    const { data: users } = await axios.get(`/api/users?${searchParams}`);
+    const { data: users } = await axios.get(
+      `/api/users/liveblocks?${searchParams}`
+    );
     return users ?? [];
   } catch (error) {
     console.error("Error resolving users:", error);

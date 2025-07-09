@@ -11,7 +11,7 @@ export const userApi = createApi({
       providesTags: (result) => (result ? [{ type: "Users", id: "LIST" }] : []),
     }),
     getUser: builder.query<User, string>({
-      query: (id) => `users?userIds=${id}`,
+      query: (id) => `users?userId=${id}`,
     }),
   }),
 });

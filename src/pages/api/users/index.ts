@@ -14,59 +14,36 @@ export default async function handler(
   }
 
   const {
-    query: { userIds },
+    query: { userId },
     method,
   } = req;
+  switch (method) {
+    case "GET":
+      try {
+        if (userId) {
+          const user = await prisma.user.findUnique({
+            where: {
+              id: userId as string,
+            },
+          });
 
-  if (method !== "GET") {
-    res.setHeader("Allow", ["GET"]);
-    return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
-  }
+          if (!user) {
+            return res.status(404).json({ error: "user not found" });
+          }
 
-  try {
-    if (!userIds) {
-      const users = await prisma.user.findMany();
-      return res.status(200).json(users);
-    }
+          return res.status(200).json(user);
+        }
+        const users = await prisma.user.findMany();
+        return res.status(200).json(users);
+      } catch (error) {
+        console.error("Error fetching users:", error);
+        return res.status(500).json({ error: "Internal Server Error" });
+      }
 
-    if (!Array.isArray(userIds)) {
-      const user = await prisma.user.findFirst({
-        where: {
-          id: userIds,
-        },
-      });
-      return res.status(200).json(user);
-    }
-
-    const users = await prisma.user.findMany({
-      where: {
-        OR: [{ id: { in: userIds } }, { email: { in: userIds } }],
-      },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        image: true,
-      },
-    });
-
-    if (users.length === 0) {
+    default:
+      res.setHeader("Allow", ["GET"]);
       return res
-        .status(404)
-        .json({ error: "No users found for provided userIds" });
-    }
-
-    const formattedUsers = users.map((user) => ({
-      id: user.id || user.email,
-      name: user.name || user.email?.split("@")[0] || "Unknown",
-      email: user.email || "",
-      avatar: user.image || "",
-      color: "#0074C2",
-    }));
-
-    return res.status(200).json(formattedUsers);
-  } catch (error) {
-    console.error("Error fetching users:", error);
-    return res.status(500).json({ error: "Internal Server Error" });
+        .status(405)
+        .json({ error: `Method ${req.method} Not Allowed` });
   }
 }
