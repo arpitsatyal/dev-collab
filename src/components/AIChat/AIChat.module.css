@@ -1,0 +1,246 @@
+.aiWidgetContainer {
+  position: fixed;
+  bottom: var(--mantine-spacing-lg);
+  right: var(--mantine-spacing-lg);
+  z-index: 50;
+}
+
+.triggerButton {
+  background-color: light-dark(
+    var(--mantine-color-blue-5),
+    var(--mantine-color-blue-8)
+  );
+  box-shadow: var(--mantine-shadow-md);
+  transition: all 200ms ease;
+}
+
+.triggerButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-blue-4),
+    var(--mantine-color-blue-7)
+  );
+}
+
+.popoverContent {
+  height: 700px;
+  max-height: 75vh;
+  width: 420px;
+  max-width: 90vw;
+  border-radius: var(--mantine-radius-lg);
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  box-shadow: var(--mantine-shadow-md);
+  overflow-y: scroll;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
+}
+
+.contentWrapper {
+  height: 100%;
+  width: 100%;
+}
+
+.chatArea {
+  flex-grow: 1;
+  position: relative;
+}
+
+.chatContainer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--mantine-spacing-md);
+}
+
+.aiChat {
+  flex-grow: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.messageList {
+  flex-grow: 1;
+  padding: var(--mantine-spacing-md);
+}
+
+.userMessage,
+.botMessage {
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+  margin-bottom: var(--mantine-spacing-sm);
+  border-radius: var(--mantine-radius-md);
+}
+
+.userMessage {
+  background-color: light-dark(
+    var(--mantine-color-blue-1),
+    var(--mantine-color-blue-9)
+  );
+  margin-left: 20%;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+}
+
+.botMessage {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+  margin-right: 20%;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+}
+
+.inputForm {
+  display: flex;
+  gap: var(--mantine-spacing-sm);
+  padding: var(--mantine-spacing-md);
+  border-top: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+}
+
+.input {
+  flex-grow: 1;
+}
+
+.emptyChat {
+  height: 100%;
+}
+
+.suggestionButton {
+  background-color: light-dark(
+    var(--mantine-color-gray-1),
+    var(--mantine-color-dark-5)
+  );
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+  transition: background-color 200ms ease;
+}
+
+.suggestionButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-4)
+  );
+}
+
+.link {
+  color: light-dark(var(--mantine-color-blue-6), var(--mantine-color-blue-4));
+  text-decoration: none;
+}
+
+.link:hover {
+  text-decoration: underline;
+}
+
+.chatListing {
+  position: absolute;
+  inset: 0;
+}
+
+.chatItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  border-radius: var(--mantine-radius-md);
+  padding: var(--mantine-spacing-md);
+  transition: background-color 200ms ease;
+}
+
+.chatItem:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}
+
+.chatItemButton {
+  padding: 0;
+  text-align: left;
+  height: 100%;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+}
+
+.chatItemButton:hover {
+  background-color: transparent;
+}
+
+.deleteButton {
+  visibility: hidden;
+  color: var(--mantine-color-red-6);
+}
+
+.chatItem:hover .deleteButton {
+  visibility: visible;
+}
+
+.loadMoreButton {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+  border: 1px solid
+    light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4));
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+  transition: background-color 200ms ease;
+}
+
+.loadMoreButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}
+
+.loadingContainer,
+.errorContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+}
+
+.chatButton {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+  transition: background-color 200ms ease;
+}
+
+.chatButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}
+
+.closeButton {
+  background-color: light-dark(
+    var(--mantine-color-white),
+    var(--mantine-color-dark-6)
+  );
+  color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
+  transition: background-color 200ms ease;
+}
+
+.closeButton:hover {
+  background-color: light-dark(
+    var(--mantine-color-gray-0),
+    var(--mantine-color-dark-5)
+  );
+}

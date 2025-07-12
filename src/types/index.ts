@@ -1,4 +1,4 @@
-import { Project, Snippet, Task } from "@prisma/client";
+import { Chat, Message, Project, Snippet, Task } from "@prisma/client";
 
 export type ProjectWithPin = Project & { isPinned: boolean };
 
@@ -24,3 +24,5 @@ export type CacheDataSource =
   | WithType<ProjectWithPin, "project">
   | WithType<SnippetWithProject, "snippet">
   | WithType<TaskWithProject, "task">;
+
+export type ChatWithMessages = Chat & { messages?: Message[] };
