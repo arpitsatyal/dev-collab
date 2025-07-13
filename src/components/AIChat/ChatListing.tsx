@@ -56,7 +56,12 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
     <ScrollArea className={styles.chatListing}>
       <Stack gap="sm" p="md">
         {chats.map((chat) => {
-          const userMessage = chat.messages?.find((msg) => msg.isUser === true);
+          const userMessage = chat.messages
+            ?.sort(
+              (a, b) =>
+                dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf()
+            )
+            .find((msg) => msg.isUser === true);
 
           return (
             <Box key={chat.id} className={styles.chatItem}>

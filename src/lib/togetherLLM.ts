@@ -31,7 +31,6 @@ export class TogetherLLM extends SimpleChatModel {
         )
         .join("\n");
 
-      console.log("api key", getSecret("TOGETHER_API_KEY"));
       const response = await axios.post<TogetherAIResponse>(
         "https://api.together.xyz/inference",
         {

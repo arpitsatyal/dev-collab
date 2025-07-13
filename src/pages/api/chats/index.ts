@@ -25,7 +25,13 @@ export default async function handler(
             where: {
               id: req.query.chatId as string,
             },
-            include: { messages: true },
+            include: {
+              messages: {
+                orderBy: {
+                  createdAt: "asc",
+                },
+              },
+            },
           });
           return res.status(200).json(chat);
         }
