@@ -6,6 +6,7 @@ import {
   Stack,
   Text,
   Textarea,
+  Skeleton
 } from "@mantine/core";
 import axios from "axios";
 import {
@@ -17,6 +18,7 @@ import {
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
+import { useSession } from "next-auth/react";
 
 interface MessageProps {
   chatId: string;
@@ -32,10 +34,13 @@ interface Message {
 }
 
 const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
+  const {data: session, status} = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-
+  
+  const image = session?.user?.image || '/user.png';
+  
   useEffect(() => {
     const fetchMessages = async () => {
       if (!chatId) return;
@@ -137,15 +142,43 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
         )}
         <ScrollArea className={styles.messageList}>
           {messages.map((message) => (
-            <div
-              key={message.id}
-              className={
-                message.isUser ? styles.userMessage : styles.botMessage
-              }
-            >
+
+        <div
+            key={message.id}
+            className={`${styles.messageContainer} ${
+            message.isUser ? styles.userMessageContainer : styles.botMessageContainer}`}>
+       
+       
+              <img 
+                 src={message.isUser ? image : '/probot.png'} 
+                 className={styles.avatarImage}/>
+
+              <div className={`${styles.messageContent} ${
+                 message.isUser ? styles.userMessage : styles.botMessage}`}>
+    
               <Text>{message.content}</Text>
+            
             </div>
+        </div>
           ))}
+         
+
+          {isLoading && (
+            <Group gap="xs">
+              <Text size="sm" c="dimmed">AI is ruminating...</Text>
+              
+              <Group gap={4}>
+                      <Skeleton height={8} width={8} radius="xl" />
+                      <Skeleton height={8} width={8} radius="xl" />
+                      <Skeleton height={8} width={8} radius="xl" />
+              </Group>
+
+            </Group>
+            )}
+
+
+        {/*Chage made on 7/13/2025 by AIA*/}
+
         </ScrollArea>
       </Box>
       <form onSubmit={handleSubmit} className={styles.inputForm}>
