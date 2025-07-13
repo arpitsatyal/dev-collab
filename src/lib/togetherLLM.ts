@@ -1,6 +1,7 @@
 import axios from "axios";
 import { SimpleChatModel } from "@langchain/core/language_models/chat_models";
 import { BaseMessage } from "@langchain/core/messages";
+import { getSecret } from "../utils/secrets";
 
 interface TogetherAIResponse {
   output?: {
@@ -33,14 +34,14 @@ export class TogetherLLM extends SimpleChatModel {
       const response = await axios.post<TogetherAIResponse>(
         "https://api.together.xyz/inference",
         {
-          model: process.env.TOGETHER_MODEL,
+          model: "mistralai/Mistral-7B-Instruct-v0.2",
           prompt,
           max_tokens: 512,
           temperature: 0.7,
         },
         {
           headers: {
-            Authorization: `Bearer ${process.env.TOGETHER_API_KEY}`,
+            Authorization: `Bearer ${getSecret("TOGETHER_API_KEY")}`,
             "Content-Type": "application/json",
           },
         }
@@ -65,6 +66,6 @@ export class TogetherLLM extends SimpleChatModel {
   }
 
   _identifyingParams(): Record<string, unknown> {
-    return { model: process.env.TOGETHER_MODEL };
+    return { model: "mistralai/Mistral-7B-Instruct-v0.2" };
   }
 }

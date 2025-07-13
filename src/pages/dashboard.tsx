@@ -1,4 +1,3 @@
-import { AiChat } from "@liveblocks/react-ui";
 import Layout from "../components/Layout/Layout";
 import { withAuth } from "../guards/withAuth";
 import { Session } from "next-auth";
