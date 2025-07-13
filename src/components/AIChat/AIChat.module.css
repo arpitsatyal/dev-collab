@@ -74,7 +74,7 @@
   display: flex;
   margin-bottom: var(--mantine-spacing-sm);
   align-items: flex-start;
-  gap:4px;
+  gap:5px;
 }
 
 .userMessageContainer {
@@ -259,12 +259,14 @@
   );
 }
 
-.avatarImage{
+.avatarImage {
   width: 40px;
-  border: 2px solid gray;
-  padding: 5px;
-  margin-top: 5px;
+  padding: calc(var(--mantine-spacing-xs) / 2);
+  margin-top: var(--mantine-spacing-sm);
   border-radius: 50%;
-  box-shadow:  0 2px 8px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 2px solid light-dark(
+    var(--mantine-color-gray-3),
+    var(--mantine-color-dark-4)
+  );
+  box-shadow: var(--mantine-shadow-sm);
 }
