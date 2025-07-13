@@ -70,11 +70,27 @@
   padding: var(--mantine-spacing-md);
 }
 
-.userMessage,
-.botMessage {
-  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
+.messageContainer {
+  display: flex;
   margin-bottom: var(--mantine-spacing-sm);
+  align-items: flex-start;
+  gap:4px;
+}
+
+.userMessageContainer {
+  flex-direction: row-reverse;
+  margin-left: 20%;
+}
+
+.botMessageContainer {
+  flex-direction: row;
+  margin-right: 20%;
+}
+
+.messageContent {
+  padding: var(--mantine-spacing-sm) var(--mantine-spacing-md);
   border-radius: var(--mantine-radius-md);
+  flex: 1;
 }
 
 .userMessage {
@@ -82,7 +98,6 @@
     var(--mantine-color-blue-1),
     var(--mantine-color-blue-9)
   );
-  margin-left: 20%;
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
 }
 
@@ -91,7 +106,6 @@
     var(--mantine-color-gray-0),
     var(--mantine-color-dark-5)
   );
-  margin-right: 20%;
   color: light-dark(var(--mantine-color-gray-7), var(--mantine-color-gray-0));
 }
 
@@ -243,4 +257,14 @@
     var(--mantine-color-gray-0),
     var(--mantine-color-dark-5)
   );
+}
+
+.avatarImage{
+  width: 40px;
+  border: 2px solid gray;
+  padding: 5px;
+  margin-top: 5px;
+  border-radius: 50%;
+  box-shadow:  0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
