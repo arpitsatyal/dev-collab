@@ -18,7 +18,7 @@ const AIChat = () => {
   const [opened, setOpened] = useState(false);
   const [isCreatingChat, setIsCreatingChat] = useState(false);
 
-  const addNewChat = async () => {
+  const addNewChat = useCallback(async () => {
     if (isCreatingChat) return;
     setIsCreatingChat(true);
     try {
@@ -31,7 +31,7 @@ const AIChat = () => {
     } finally {
       setIsCreatingChat(false);
     }
-  };
+  }, [isCreatingChat, setChatId, setShowListing, setInput, setIsCreatingChat]);
 
   useEffect(() => {
     if (opened && !chatId && !isCreatingChat) {

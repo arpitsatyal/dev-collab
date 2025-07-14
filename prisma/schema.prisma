@@ -147,7 +147,7 @@ model Chat {
 model Message {
   id        String   @id @default(uuid())
   chatId    String
-  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id])
+  chat      Chat     @relation("ChatMessages", fields: [chatId], references: [id], onDelete: Cascade)
   content   String
   isUser    Boolean 
   createdAt DateTime @default(now())

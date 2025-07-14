@@ -2,7 +2,8 @@ import fs from "fs";
 import path from "path";
 import { MemoryVectorStore } from "langchain/vectorstores/memory";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
-import { HuggingFaceTransformersEmbeddings } from "@langchain/community/embeddings/huggingface_transformers";
+import { HuggingFaceInferenceEmbeddings } from "@langchain/community/embeddings/hf";
+import { getSecret } from "../utils/secrets";
 
 export async function createVectorStore() {
   const filePath: string = path.resolve(process.cwd(), "ai", "features.md");
@@ -14,8 +15,10 @@ export async function createVectorStore() {
   });
   const docs = await splitter.createDocuments([rawText]);
 
-  const embeddings = new HuggingFaceTransformersEmbeddings({
+  const embeddings = new HuggingFaceInferenceEmbeddings({
     model: "sentence-transformers/all-MiniLM-L6-v2",
+    apiKey: getSecret("HUGGINGFACE_API_KEY"),
+    provider: "hf-inference",
   });
 
   const vectorStore = await MemoryVectorStore.fromDocuments(docs, embeddings);
