@@ -17,6 +17,7 @@ import {
 import { skipToken } from "@reduxjs/toolkit/query";
 import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
 import { IconMenu2 } from "@tabler/icons-react";
+import AIChat from "../AIChat/AIChat";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -140,6 +141,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <AppShell.Main>
         {isNavigating || isProjectsLoading ? <Loading /> : children}
       </AppShell.Main>
+      <AIChat/>
     </AppShell>
   );
 }
