@@ -16,11 +16,13 @@ import {
   SetStateAction,
   useEffect,
   useState,
+  useRef
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
 import { useSession } from "next-auth/react";
-import { useRef } from "react";
+import { extractDate, extractTime } from "../../utils/dateUtils";
+
 
 interface MessageProps {
   chatId: string;
@@ -111,19 +113,6 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
       handleSubmit(e);
     }
   };
-
-  function extractTime(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-  });
-  }
-  function extractDate(isoString: string): string {
-  const date = new Date(isoString);
-  return date.toLocaleDateString(); 
- }
 
  useEffect(() => {
   if (lastMessageRef.current) {

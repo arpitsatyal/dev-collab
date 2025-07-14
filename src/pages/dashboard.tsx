@@ -4,10 +4,7 @@ import { Session } from "next-auth";
 
 const Dashboard = ({ user }: { user: Session["user"] }) => {
   return (
-    <>
       <p>Welcome, {user.name ?? ""}</p>
-      
-    </>
   );
 };
 
