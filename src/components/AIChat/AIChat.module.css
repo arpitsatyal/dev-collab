@@ -73,7 +73,7 @@
 .messageContainer {
   display: flex;
   margin-bottom: var(--mantine-spacing-sm);
-  align-items: flex-start;
+  align-items: center;
   gap:5px;
 }
 

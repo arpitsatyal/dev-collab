@@ -6,7 +6,8 @@ import {
   Stack,
   Text,
   Textarea,
-  Skeleton
+  Skeleton,
+  Tooltip
 } from "@mantine/core";
 import axios from "axios";
 import {
@@ -15,10 +16,13 @@ import {
   SetStateAction,
   useEffect,
   useState,
+  useRef
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
 import { useSession } from "next-auth/react";
+import { extractDate, extractTime } from "../../utils/dateUtils";
+
 
 interface MessageProps {
   chatId: string;
@@ -38,7 +42,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
-  
+  const lastMessageRef = useRef<HTMLDivElement | null>(null);  
   const image = session?.user?.image || '/user.png';
   
   useEffect(() => {
@@ -110,6 +114,13 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     }
   };
 
+ useEffect(() => {
+  if (lastMessageRef.current) {
+    lastMessageRef.current.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  }, [messages]);
+
+
   return (
     <Box className={styles.chatContainer}>
       <Box style={{ flexGrow: 1 }}>
@@ -141,9 +152,10 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
           </Stack>
         )}
         <ScrollArea className={styles.messageList}>
-          {messages.map((message) => (
+          {messages.map((message, index) => (
 
         <div
+            ref={index === messages.length - 1 ? lastMessageRef : null}
             key={message.id}
             className={`${styles.messageContainer} ${
             message.isUser ? styles.userMessageContainer : styles.botMessageContainer}`}>
@@ -155,10 +167,15 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
 
               <div className={`${styles.messageContent} ${
                  message.isUser ? styles.userMessage : styles.botMessage}`}>
-    
-              <Text>{message.content}</Text>
+                        
+              <Text size="sm">{message.content}</Text>
             
-            </div>
+              </div>
+
+              <Tooltip label={extractDate(message.createdAt)} withArrow>
+                  <Text size="xs" c="dimmed">{extractTime(message.createdAt)}</Text>
+              </Tooltip>
+
         </div>
           ))}
          
@@ -175,9 +192,6 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
 
             </Group>
             )}
-
-
-        {/*Chage made on 7/13/2025 by AIA*/}
 
         </ScrollArea>
       </Box>
