@@ -37,6 +37,7 @@ export default async function handler(
         }
 
         const chats = await prisma.chat.findMany({
+          where: { senderId: session.user.id },
           orderBy: { updatedAt: "desc" },
           include: { messages: true },
         });
