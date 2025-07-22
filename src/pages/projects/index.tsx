@@ -1,6 +1,6 @@
 import { Box, Text } from "@mantine/core";
-import { withAuth } from "../../guards/withAuth";
 import Layout from "../../components/Layout/Layout";
+import { withAuth } from "../../guards/withAuth";
 
 const ProjectsIndex = () => {
   return (
@@ -18,13 +18,7 @@ const ProjectsIndex = () => {
     </Box>
   );
 };
-
-export const getServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
-
+export const getServerSideProps = withAuth();
 ProjectsIndex.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
 export default ProjectsIndex;

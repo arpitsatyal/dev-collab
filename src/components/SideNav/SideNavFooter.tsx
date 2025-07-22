@@ -3,17 +3,12 @@ import { IconLogout } from "@tabler/icons-react";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { useMediaQuery } from "@mantine/hooks";
 import classes from "./SideNav.module.css";
-import { signOut } from "next-auth/react";
-import { useRouter } from "next/router";
+import { useLogout } from "../../hooks/useLogout";
 
 const SideNavFooter = () => {
-  const router = useRouter();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
-  const handleLogout = () => {
-    signOut();
-    router.push("/");
-  };
+  const { handleLogout, isLoggingOut } = useLogout();
 
   return (
     <Box className={classes.bottomDiv}>
@@ -27,7 +22,7 @@ const SideNavFooter = () => {
           size="sm"
           style={{ fontWeight: 500, transition: "all 0.2s ease" }}
         >
-          Logout
+          {isLoggingOut ? "Logging out..." : "Logout"}
         </Button>
         {isSmallScreen && <ThemeToggle />}
       </Group>

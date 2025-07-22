@@ -4,14 +4,12 @@ import { notifications } from "@mantine/notifications";
 import Layout from "../../../../../components/Layout/Layout";
 import Loading from "../../../../../components/Loader/Loader";
 import { RoomProvider, useRoom, useStorage } from "@liveblocks/react";
-import { useSession } from "next-auth/react";
 import { useEditSnippetMutation } from "../../../../../store/api/snippetApi";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import { updateSnippet } from "../../../../../store/slices/snippetSlice";
 import { getSingleQueryParam } from "../../../../../utils/getSingleQueryParam";
 import { Snippet } from "@prisma/client";
 import { languageMapper } from "../../../../../utils/languageMapper";
-import { withAuth } from "../../../../../guards/withAuth";
 import { SnippetsUpdateData } from "../../../../api/snippets";
 import SnippetWorkplace from "../../../../../components/Snippets/SnippetWorkplace";
 import { getYjsProviderForRoom } from "@liveblocks/yjs";
@@ -19,10 +17,12 @@ import useAutoSave, {
   SaveSnippetProps,
 } from "../../../../../hooks/useAutoSave";
 import { SaveStatus } from "../../../../../types";
+import { useSession } from "../../../../../context/SessionProvider";
+import { withAuth } from "../../../../../guards/withAuth";
 
 const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();
-  const session = useSession();
+  const { session: user } = useSession();
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : "javascript";
   const room = useRoom();
@@ -53,7 +53,7 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
           extension:
             languageMapper.find((lang) => lang.name === language)?.extension ??
             "-",
-          lastEditedById: session.data?.user.id ?? "",
+          lastEditedById: user?.id ?? "",
         },
         snippetId,
       }).unwrap();
@@ -92,7 +92,7 @@ const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
         ...snippet,
         content: JSON.stringify(codeToSave),
         language,
-        lastEditedById: session.data?.user.id ?? "",
+        lastEditedById: user?.id ?? "",
         extension:
           languageMapper.find((lang) => lang.name === language)?.extension ??
           "-",
@@ -185,10 +185,5 @@ EditSnippetPage.getLayout = (page: React.ReactElement) => (
   <Layout>{page}</Layout>
 );
 
-export const getServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
-
+export const getServerSideProps = withAuth();
 export default EditSnippetPage;

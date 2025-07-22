@@ -4,6 +4,7 @@ import { CollaborativeEditor } from "../components/CodeEditor/CollaborativeEdito
 import { RoomProvider } from "@liveblocks/react";
 import { Box, useComputedColorScheme } from "@mantine/core";
 import { useRouter } from "next/router";
+import { withAuth } from "../guards/withAuth";
 
 const Playground = () => {
   const computedColorScheme = useComputedColorScheme("light", {
@@ -52,4 +53,5 @@ PlaygroundPage.getLayout = (page: React.ReactElement) => (
   <Layout>{page}</Layout>
 );
 
+export const getServerSideProps = withAuth();
 export default PlaygroundPage;

@@ -26,7 +26,6 @@ import { Snippet, Task } from "@prisma/client";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
 import { CacheDataSource, ProjectWithPin, TypedItems } from "../../types";
-import { useSession } from "next-auth/react";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 import ShortcutHint from "./ShortcutHint";
@@ -34,6 +33,7 @@ import { useGetProjectsQuery } from "../../store/api/projectApi";
 import { setProjectsOpen } from "../../store/slices/projectSlice";
 import { uniqBy } from "lodash";
 import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
+import { useSession } from "../../context/SessionProvider";
 
 interface DataItem {
   id: string;
@@ -118,8 +118,8 @@ const SpotlightSearch = ({
     resultsKey,
   } = useSearch(query);
 
-  const { data: session } = useSession();
-  const userId = session?.user?.id ?? undefined;
+  const { session: user } = useSession();
+  const userId = user?.id ?? undefined;
   const { recentSearchOrder, addRecentItems, clearRecentItems } =
     useRecentItems(userId);
 
@@ -629,8 +629,8 @@ const SpotlightSearch = ({
               {query.length === 0
                 ? "Search for any Projects, Snippets or Tasks!"
                 : isTyping
-                ? "Searching..."
-                : "Nothing found..."}
+                  ? "Searching..."
+                  : "Nothing found..."}
             </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>

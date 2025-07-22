@@ -2,11 +2,11 @@ import Layout from "../../components/Layout/Layout";
 import { useForm } from "@mantine/form";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
-import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import CreateProjectForm from "../../components/Projects/CreateProjectForm";
 import { useCreateProjectMutation } from "../../store/api/projectApi";
+import { withAuth } from "../../guards/withAuth";
 
 const CreateProjectPage = () => {
   const router = useRouter();
@@ -50,11 +50,6 @@ const CreateProjectPage = () => {
 CreateProjectPage.getLayout = (page: React.ReactElement) => (
   <Layout>{page}</Layout>
 );
-
-export const getServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
+export const getServerSideProps = withAuth();
 
 export default CreateProjectPage;
