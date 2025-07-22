@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
-import { withAuth } from "../../../../guards/withAuth";
 import Layout from "../../../../components/Layout/Layout";
 import { TaskStatus } from "@prisma/client";
 import { useCreateTaskMutation } from "../../../../store/api/taskApi";
@@ -16,6 +15,7 @@ import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 import { useGetProjectByIdQuery } from "../../../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { withAuth } from "../../../../guards/withAuth";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
@@ -105,10 +105,5 @@ const TasksPage = () => {
 
 TasksPage.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
 
-export const getServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
-
+export const getServerSideProps = withAuth();
 export default TasksPage;

@@ -15,7 +15,7 @@ const Loading = ({
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: loaderHeight ?? "80vh",
+        height: loaderHeight ?? "100vh",
       }}
     >
       {isEditorLoading ? (

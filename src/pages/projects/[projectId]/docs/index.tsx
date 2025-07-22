@@ -15,6 +15,7 @@ import { useDisclosure } from "@mantine/hooks";
 import { DocCreateData } from "../../../api/docs";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
+import { withAuth } from "../../../../guards/withAuth";
 
 const DocsIndex = () => {
   const router = useRouter();
@@ -119,4 +120,5 @@ const DocsIndex = () => {
   );
 };
 
+export const getServerSideProps = withAuth();
 export default DocsIndex;

@@ -2,13 +2,13 @@ import { Box, Button, Stack } from "@mantine/core";
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useMutation } from "@liveblocks/react";
-import { useSession } from "next-auth/react";
 import Loading from "../Loader/Loader";
 import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";
 import { DebouncedFunc } from "lodash";
 import { SaveStatus } from "../../types";
 import { Snippet } from "@prisma/client";
+import { useSession } from "../../context/SessionProvider";
 
 type SnippetWorkplaceProps = {
   snippet: Snippet;
@@ -23,7 +23,7 @@ const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
     props;
 
   const router = useRouter();
-  const session = useSession();
+  const { session: user } = useSession();
 
   const updateLanguage = useMutation(({ storage }, val: string) => {
     storage.set("language", val);
@@ -33,7 +33,7 @@ const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
     updateLanguage(snippet.language);
   }, [snippet.language, updateLanguage]);
 
-  if (!router.query.snippetId || !session.data?.user.id) {
+  if (!router.query.snippetId || !user?.id) {
     return <Loading />;
   }
 

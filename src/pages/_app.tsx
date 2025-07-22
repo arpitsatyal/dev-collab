@@ -9,7 +9,6 @@ import "@liveblocks/react-ui/styles/dark/media-query.css";
 
 import type { AppProps } from "next/app";
 import { MantineProvider } from "@mantine/core";
-import { SessionProvider } from "next-auth/react";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 import { Notifications } from "@mantine/notifications";
@@ -23,6 +22,7 @@ import {
   resolveUsers,
 } from "../utils/liveblocksHelpers";
 import { debounce } from "lodash";
+import { SessionProvider } from "../context/SessionProvider";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -50,7 +50,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           debouncedFetchMentionSuggestions(text) ?? []
         }
       >
-        <SessionProvider session={pageProps.session}>
+        <SessionProvider initialSession={pageProps.user ?? null}>
           <MantineProvider
             theme={theme}
             withGlobalClasses
