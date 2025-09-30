@@ -20,8 +20,9 @@ import {
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
-import { useSession } from "next-auth/react";
 import { extractDate, extractTime } from "../../utils/dateUtils";
+import Image from "next/image";
+import { useSession } from "../../context/SessionProvider";
 
 interface MessageProps {
   chatId: string;
@@ -37,12 +38,12 @@ interface Message {
 }
 
 const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
-  const { data: session } = useSession();
+  const { session: user } = useSession();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
-  const image = session?.user?.image || "/user.png";
+  const image = user?.image || "/user.png";
 
   useEffect(() => {
     const fetchMessages = async () => {
@@ -154,7 +155,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
         )}
         <ScrollArea className={styles.messageList}>
           {messages.map((message, index) => (
-            <div
+            <Box
               ref={index === messages.length - 1 ? lastMessageRef : null}
               key={message.id}
               className={`${styles.messageContainer} ${
@@ -163,25 +164,26 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
                   : styles.botMessageContainer
               }`}
             >
-              <img
+              <Image
                 src={message.isUser ? image : "/probot.png"}
                 className={styles.avatarImage}
+                alt="Image"
               />
 
-              <div
+              <Box
                 className={`${styles.messageContent} ${
                   message.isUser ? styles.userMessage : styles.botMessage
                 }`}
               >
                 <Text size="sm">{message.content}</Text>
-              </div>
+              </Box>
 
               <Tooltip label={extractDate(message.createdAt)} withArrow>
                 <Text size="xs" c="dimmed">
                   {extractTime(message.createdAt)}
                 </Text>
               </Tooltip>
-            </div>
+            </Box>
           ))}
 
           {isLoading && (

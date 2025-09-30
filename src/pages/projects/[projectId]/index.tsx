@@ -1,11 +1,11 @@
 import { useRouter } from "next/router";
 import Layout from "../../../components/Layout/Layout";
 import Loading from "../../../components/Loader/Loader";
-import { withAuth } from "../../../guards/withAuth";
 import ProjectDetail from "../../../components/Projects/ProjectDetail";
 import { useGetProjectByIdQuery } from "../../../store/api/projectApi";
 import { getSingleQueryParam } from "../../../utils/getSingleQueryParam";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { withAuth } from "../../../guards/withAuth";
 
 const ProjectDetailPage = () => {
   const router = useRouter();
@@ -29,10 +29,5 @@ ProjectDetailPage.getLayout = (page: React.ReactElement) => (
   <Layout>{page}</Layout>
 );
 
-export const getServerSideProps = withAuth(async () => {
-  return {
-    props: {},
-  };
-});
-
+export const getServerSideProps = withAuth();
 export default ProjectDetailPage;
