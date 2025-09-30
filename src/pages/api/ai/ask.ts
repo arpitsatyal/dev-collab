@@ -43,14 +43,32 @@ export default async function handler(
 
     const llm = new TogetherLLM({});
 
+    const pastMessages = await prisma.message.findMany({
+      where: { chatId: req.query.chatId as string },
+      orderBy: { createdAt: "asc" },
+      take: 10,
+    });
+
+    const history = pastMessages
+      .map((m) => (m.isUser ? `User: ${m.content}` : `AI: ${m.content}`))
+      .join("\n");
+
     const fullPrompt = `
-    You are a helpful and concise assistant for a web app called Dev-Collab.
-    Use the context below to answer the user's question directly and naturally.
-    Do not say "based on the context" or "in the given context".
-    Just give a clear, helpful answer.
-    Context: ${context}
-    Question: ${question}
-    Answer:`.trim();
+You are a helpful and concise assistant for a web app called Dev-Collab.
+Use the context below and the conversation history to answer naturally.
+Do not say "based on the context" or "in the given context".
+Just give a clear, helpful answer.
+
+Conversation so far:
+${history}
+
+Context:
+${context}
+
+User's Question:
+${question}
+
+Answer:`.trim();
 
     const aiResponse = await llm.invoke(fullPrompt);
     const answer = aiResponse["lc_kwargs"].content;
