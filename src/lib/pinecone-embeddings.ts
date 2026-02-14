@@ -31,7 +31,7 @@ export class PineconeInferenceEmbeddings extends Embeddings {
     }
 
     async embedQuery(document: string): Promise<number[]> {
-        const inference = this.client.inference as any;
+        const inference = this.client.inference;
         const response = await inference.embed({
             model: this.model,
             inputs: [document],
