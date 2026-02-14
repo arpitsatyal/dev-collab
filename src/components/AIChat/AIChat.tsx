@@ -71,7 +71,7 @@ const AIChat = () => {
         withArrow
         shadow="md"
         radius="lg"
-        width={420}
+        width="50%"
         middlewares={{ flip: true, shift: true }}
         opened={opened}
         onChange={setOpened}

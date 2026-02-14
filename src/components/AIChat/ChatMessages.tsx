@@ -170,7 +170,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
               />
 
               <div
-                className={`${message.isUser ? styles.userMessageContent : styles.messageContent} ${message.isUser ? styles.userMessage : styles.botMessage
+                className={`${styles.messageContent} ${message.isUser ? styles.userMessage : styles.botMessage
                   }`}
               >
                 {/* Use ReactMarkdown for rendering content with formatting */}
