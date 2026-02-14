@@ -1,9 +1,12 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { TogetherLLM } from "../../../lib/togetherLLM";
-import { createVectorStore } from "../../../lib/embedFeatures";
+import { getVectorStore } from "../../../lib/vectorStore";
 import prisma from "../../../lib/prisma";
 
-let vectorStorePromise: ReturnType<typeof createVectorStore> | null = null;
+// Cache the vector store promise to avoid recreating it on every request if possible
+// However, getVectorStore creates new Pinecone client each time which might be fine for serverless
+// but let's cache the promise if we want. 
+// For now, let's just call it directly to avoid stale client issues.
 
 export interface CreateMessageData {
   content: string;
@@ -33,11 +36,7 @@ export default async function handler(
   });
 
   try {
-    if (!vectorStorePromise) {
-      vectorStorePromise = createVectorStore();
-    }
-
-    const vectorStore = await vectorStorePromise;
+    const vectorStore = await getVectorStore();
     const results = await vectorStore.similaritySearch(question, 3);
     const context = results.map((r) => r.pageContent).join("\n");
 
