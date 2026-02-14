@@ -65,16 +65,30 @@ async function ingestData() {
 
     // Step 2: Fetch Data (Tasks, Snippets, Docs)
     console.log("Fetching data from database...");
-    const [tasks, snippets, docs] = await Promise.all([
+    const [projects, tasks, snippets, docs] = await Promise.all([
+        prisma.project.findMany({ include: { tasks: true, snippets: true, docs: true } }),
         prisma.task.findMany({ include: { project: true } }),
         prisma.snippet.findMany({ include: { project: true } }),
         prisma.doc.findMany({ include: { project: true } })
     ]);
 
-    console.log(`Found: ${tasks.length} Tasks, ${snippets.length} Snippets, ${docs.length} Docs.`);
+    console.log(`Found: ${projects.length} Projects, ${tasks.length} Tasks, ${snippets.length} Snippets, ${docs.length} Docs.`);
 
     // Step 3: Prepare Records
     const records: { id: string; text: string; metadata: any }[] = [];
+
+    projects.forEach(project => {
+        records.push({
+            id: project.id,
+            text: `Project Title: ${project.title}\nDescription: ${project.description || "No description"}`,
+            metadata: {
+                type: "project",
+                projectId: project.id,
+                projectTitle: project.title,
+                original_text: `Project: ${project.title} - ${project.description?.substring(0, 100)}`
+            }
+        });
+    });
 
     // Map Tasks
     tasks.forEach(task => {

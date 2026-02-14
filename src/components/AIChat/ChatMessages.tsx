@@ -22,6 +22,8 @@ import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
 import { useSession } from "next-auth/react";
 import { extractDate, extractTime } from "../../utils/dateUtils";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 interface MessageProps {
   chatId: string;
@@ -157,11 +159,10 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
             <div
               ref={index === messages.length - 1 ? lastMessageRef : null}
               key={message.id}
-              className={`${styles.messageContainer} ${
-                message.isUser
-                  ? styles.userMessageContainer
-                  : styles.botMessageContainer
-              }`}
+              className={`${styles.messageContainer} ${message.isUser
+                ? styles.userMessageContainer
+                : styles.botMessageContainer
+                }`}
             >
               <img
                 src={message.isUser ? image : "/probot.png"}
@@ -169,11 +170,15 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
               />
 
               <div
-                className={`${styles.messageContent} ${
-                  message.isUser ? styles.userMessage : styles.botMessage
-                }`}
+                className={`${message.isUser ? styles.userMessageContent : styles.messageContent} ${message.isUser ? styles.userMessage : styles.botMessage
+                  }`}
               >
-                <Text size="sm">{message.content}</Text>
+                {/* Use ReactMarkdown for rendering content with formatting */}
+                <div className={styles.markdownContent}>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    {message.content}
+                  </ReactMarkdown>
+                </div>
               </div>
 
               <Tooltip label={extractDate(message.createdAt)} withArrow>

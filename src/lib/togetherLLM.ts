@@ -21,35 +21,28 @@ export class TogetherLLM extends SimpleChatModel {
 
   async _call(messages: BaseMessage[]): Promise<string> {
     try {
-      const prompt = messages
-        .map((msg) =>
-          msg.getType() === "human"
-            ? `User: ${msg.text}`
-            : msg.getType() === "ai"
-              ? `Assistant: ${msg.text}`
-              : msg.text
-        )
-        .join("\n");
+      const messagesPayload = messages.map((msg) => {
+        const role = msg.getType() === "human" ? "user" : (msg.getType() === "ai" ? "assistant" : "system");
+        return { role, content: msg.content as string };
+      });
 
-      const response = await axios.post<TogetherAIResponse>(
-        "https://api.together.xyz/inference",
+      const response = await axios.post(
+        "https://api.together.xyz/v1/chat/completions",
         {
           model: "mistralai/Mistral-7B-Instruct-v0.2",
-          prompt,
+          messages: messagesPayload,
           max_tokens: 512,
           temperature: 0.7,
         },
         {
           headers: {
-            Authorization: `Bearer ${getSecret("TOGETHER_API_KEY")}`,
+            Authorization: `Bearer ${getSecret("TOGETHER_API_KEY") || process.env.TOGETHER_API_KEY}`,
             "Content-Type": "application/json",
           },
         }
       );
 
-      const output =
-        response.data.output?.choices?.[0]?.text?.trim() ||
-        response.data.choices?.[0]?.text?.trim();
+      const output = response.data.choices?.[0]?.message?.content?.trim();
 
       if (!output) {
         throw new Error("No valid response text received from Together API.");
@@ -61,7 +54,7 @@ export class TogetherLLM extends SimpleChatModel {
         "TogetherLLM error:",
         error?.response?.data || error?.message || error
       );
-      throw new Error("Failed to generate a response from TogetherLLM.");
+      throw error;
     }
   }
 
