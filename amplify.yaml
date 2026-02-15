@@ -9,7 +9,7 @@ applications:
             - npx prisma generate
         build:
           commands:
-            - env | grep -e DATABASE_URL -e NEXTAUTH_URL >> .env.production
+            - env | grep -e DATABASE_URL -e NEXTAUTH_URL -e PINECONE_API_KEY -e PINECONE_INDEX >> .env.production
             - npm run build
             - npm prune --omit=dev
       artifacts:
