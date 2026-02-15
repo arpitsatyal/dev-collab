@@ -3,43 +3,19 @@ import { getVectorStore } from "./vectorStore";
 import prisma from "../db/prisma";
 import { validateResponse } from "../../pages/api/utils/validateLLMResponse";
 
-// Helper to improve response with citations and quality checks
+// Helper to provide source citations for factual answers
 function improveResponseWithCitations(answer: string, filteredResults: any[]): string {
-    // Check if LLM said "I don't have information"
-    const noInfoPhrases = [
-        "i don't have specific information",
-        "i don't have information",
-        "no information found",
-        "i cannot find",
-        "not available in my knowledge base"
-    ];
-
-    const saidNoInfo = noInfoPhrases.some(phrase =>
-        answer.toLowerCase().includes(phrase)
-    );
-
-    // If LLM said no info BUT we actually have good context, something's wrong
-    if (saidNoInfo && filteredResults.length > 0) {
-        const topResult = filteredResults[0];
-        const score = topResult[1];
-
-        if (score > 0.7) {
-            console.log("⚠️  LLM refused to answer despite good context (score: " + score.toFixed(3) + ")");
-        }
-    }
-
-    // Check if answer is too short (might be lazy)
-    if (answer.length < 50 && filteredResults.length > 0) {
-        console.log("⚠️  Very short answer despite having context");
-    }
-
-    // Add source citations at the end if not already present
+    // Add source citations at the end ONLY if we used context
     if (filteredResults.length > 0 && !answer.includes("Source:")) {
         const sources = [...new Set(
             filteredResults.map(([doc]) => doc.metadata?.type || 'Documentation')
         )];
 
-        answer += `\n\n_Sources: ${sources.join(", ")}_`;
+        // We only append sources if the LLM didn't give a "no info" response
+        const containsInfo = !answer.toLowerCase().includes("i don't have information");
+        if (containsInfo) {
+            answer += `\n\n_Sources: ${sources.join(", ")}_`;
+        }
     }
 
     return answer;
@@ -48,7 +24,7 @@ function improveResponseWithCitations(answer: string, filteredResults: any[]): s
 export async function getAIResponse(chatId: string, question: string) {
     const vectorStore = await getVectorStore();
     const scoreThreshold = 0.5;
-    const resultsWithScores = await vectorStore.similaritySearchWithScore(question, 5);
+    const resultsWithScores = await vectorStore.similaritySearchWithScore(question, 7);
 
     // Filter and format context
     const filteredResults = resultsWithScores.filter(([doc, score]) => score >= scoreThreshold);
@@ -60,11 +36,11 @@ export async function getAIResponse(chatId: string, question: string) {
 
     const context = filteredResults.length > 0
         ? filteredResults.map(([doc, score]) => {
-            const type = doc.metadata?.type || 'General';
-            const title = doc.metadata?.projectTitle || 'N/A';
-            return `[Source: ${type} in Project: ${title}] (Relevance: ${score.toFixed(2)})\n${doc.pageContent}`;
-        }).join("\n---\n")
-        : "No direct information found in documentation for this specific query.";
+            const type = doc.metadata?.type || 'General Info';
+            const title = doc.metadata?.projectTitle || 'Unknown Project';
+            return `--- Source: Information from ${type} within project "${title}" ---\n${doc.pageContent}`;
+        }).join("\n\n")
+        : "I don't have enough specific information in my records to answer this fully.";
 
     const llm = new TogetherLLM({});
 
@@ -78,17 +54,21 @@ export async function getAIResponse(chatId: string, question: string) {
         .map((m) => (m.isUser ? `User: ${m.content}` : `AI: ${m.content}`))
         .join("\n");
 
-    const fullPrompt = `You are the Dev-Collab AI Assistant. Your role is to help users understand and use the Dev-Collab platform effectively.
+    const fullPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
 
-CRITICAL RULES:
-1. Answer ONLY using information from the Context below
-2. If the Context doesn't contain the answer, say: "I don't have specific information about that in my knowledge base. Let me suggest: [relevant alternative or point them to support]"
-3. Be specific - reference exact UI locations, button names, and steps
-4. If the Context is partially relevant, use what you can and acknowledge what's missing
-5. Never make up features, prices, or capabilities not in the Context
-6. Keep answers focused and actionable
+Your goal is to assist users with their questions about projects, documentation, and tasks while maintaining a warm, professional persona.
 
-CONTEXT FROM DOCUMENTATION:
+GROUNDING GUIDELINES:
+1. INFORMATIONAL QUESTIONS: If the user is asking about specific project data, features, or documentation, use the "DATA CONTENT" below as your primary source.
+2. NO DATA FOUND: If the "DATA CONTENT" doesn't contain the specific answer for a factual question, politely state that it's not in your current records and offer general helpful advice.
+3. CONVERSATIONAL INTERACTION: If the user provides feedback, greetings, or short acknowledgments (e.g., "Hi", "Thanks", "Cooool"), respond naturally as a friendly assistant. You do NOT need to reference the "DATA CONTEXT" for these interactions.
+
+TONE & STYLE:
+- Speak naturally. Never use technical terms like "relevance", "data context", "provided records", or "context score" in your response to the user.
+- Instead of saying "based on the context provided", just state the information directly (e.g., "There are currently three projects...").
+- Keep your answers clean, focused, and free of meta-talk about how you found the information.
+
+DATA CONTENT:
 ${context}
 
 CONVERSATION HISTORY:
@@ -97,7 +77,7 @@ ${history}
 USER QUESTION:
 ${question}
 
-YOUR RESPONSE (remember: only use information from Context above):`;
+YOUR RESPONSE:`;
 
     const aiResponse = await llm.invoke(fullPrompt);
 

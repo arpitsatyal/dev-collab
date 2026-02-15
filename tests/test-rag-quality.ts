@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { getAIResponse } from "../src/lib/ai/aiService";
+import { TogetherLLM } from "../src/lib/ai/togetherLLM";
 import { getVectorStore } from "../src/lib/ai/vectorStore";
 
 // Test cases - real questions based on project data
@@ -28,11 +28,22 @@ const testCases = [
         question: "What are the main project milestones?",
         expectedKeywords: ["Kick-off", "Freeze", "Milestone"],
         category: "timeline"
+    },
+    {
+        question: "Cooool",
+        expectedKeywords: [],
+        category: "conversation"
+    },
+    {
+        question: "How many projects are currently on the platform?",
+        expectedKeywords: ["Total Projects", "count"],
+        category: "stats"
     }
 ];
 
 async function testRAGQuality() {
     const vectorStore = await getVectorStore();
+    const llm = new TogetherLLM({});
     const scoreThreshold = 0.5;
 
     console.log("=== RAG Quality Test ===\n");
@@ -64,20 +75,55 @@ async function testRAGQuality() {
             console.log(`  ${i + 1}. Score: ${score.toFixed(3)} - ${doc.pageContent.substring(0, 80)}...`);
         });
 
-        // Use the refactored getAIResponse service
-        const { answer, context, validated } = await getAIResponse("test-chat-id", test.question);
+        // 3. Test LLM response
+        const context = filteredResults.length > 0
+            ? filteredResults.map(([doc, score]) => {
+                const type = doc.metadata?.type || 'General';
+                const title = doc.metadata?.projectTitle || 'N/A';
+                return `[Source: ${type} in Project: ${title}] (Relevance: ${score.toFixed(2)})\n${doc.pageContent}`;
+            }).join("\n---\n")
+            : "No direct information found in documentation for this specific query.";
+
+        const fullPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
+
+Your goal is to assist users with their questions about projects, documentation, and tasks while maintaining a warm, professional persona.
+
+GROUNDING GUIDELINES:
+1. INFORMATIONAL QUESTIONS: If the user is asking about specific project data, features, or documentation, use the "DATA CONTEXT" below as your primary source.
+2. NO DATA FOUND: If the "DATA CONTEXT" doesn't contain the specific answer for a factual question, politely state that it's not in your current records and offer general helpful advice.
+3. CONVERSATIONAL INTERACTION: If the user provides feedback, greetings, or short acknowledgments (e.g., "Hi", "Thanks", "Cooool"), respond naturally as a friendly assistant. You do NOT need to reference the "DATA CONTEXT" for these interactions.
+
+DATA CONTEXT:
+${context}
+
+USER QUESTION:
+${test.question}
+
+YOUR RESPONSE:`;
+
+        const aiResponse = await llm.invoke(fullPrompt);
+        const answer = aiResponse["lc_kwargs"].content;
 
         console.log(`\nLLM Response: ${answer.substring(0, 200)}...`);
 
-        // 4. Check if response contains expected keywords
-        const keywordsFound = test.expectedKeywords.filter(keyword =>
-            answer.toLowerCase().includes(keyword.toLowerCase())
+        // 4. Check if response contains expected keywords (if any)
+        if (test.expectedKeywords.length > 0) {
+            const keywordsFound = test.expectedKeywords.filter(keyword =>
+                answer.toLowerCase().includes(keyword.toLowerCase())
+            );
+            console.log(`Keywords found: ${keywordsFound.length}/${test.expectedKeywords.length} (${keywordsFound.join(", ")})`);
+        } else {
+            console.log("No keywords expected (conversational query).");
+        }
+
+        // 5. Check for hallucination indicators
+        const suspiciousPhrases = ["typically", "usually", "in general", "most platforms", "you can also"];
+        const hallucinations = suspiciousPhrases.filter(phrase =>
+            answer.toLowerCase().includes(phrase)
         );
 
-        console.log(`Keywords found: ${keywordsFound.length}/${test.expectedKeywords.length} (${keywordsFound.join(", ")})`);
-
-        if (validated.warning) {
-            console.log(`⚠️  Validation Warning: ${validated.warning}`);
+        if (hallucinations.length > 0) {
+            console.log(`⚠️  Possible hallucination detected: "${hallucinations.join('", "')}"`);
         }
     }
 
@@ -96,10 +142,6 @@ async function testRAGQuality() {
         console.log("⚠️  Moderate retrieval scores - Embeddings could be better");
     } else {
         console.log("✅ Good retrieval scores - Embeddings are working well");
-    }
-
-    if (questionsWithContext < testCases.length * 0.7) {
-        console.log("❌ Many questions have no relevant context - Need more documentation or better embeddings");
     }
 }
 

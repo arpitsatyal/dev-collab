@@ -77,6 +77,30 @@ async function ingestData() {
     // Step 3: Prepare Records
     const records: { id: string; text: string; metadata: any }[] = [];
 
+    // --- GLOBAL SUMMARY RECORD ---
+    const todoTasks = tasks.filter(t => t.status === 'TODO').length;
+    const inProgressTasks = tasks.filter(t => t.status === 'IN_PROGRESS').length;
+    const doneTasks = tasks.filter(t => t.status === 'DONE').length;
+
+    const globalSummary = `Global Platform Overview & Statistics:
+- Total Projects: ${projects.length}
+- Total Tasks: ${tasks.length} (TODO: ${todoTasks}, In Progress: ${inProgressTasks}, Done: ${doneTasks})
+- Total Documentation Files: ${docs.length}
+- Total Code Snippets: ${snippets.length}
+
+Use this information when asked about "how many", "total count", "platform summary", or "general stats" regarding the Dev-Collab app.`;
+
+    records.push({
+        id: "global-platform-summary",
+        text: globalSummary,
+        metadata: {
+            type: "summary",
+            projectId: "global",
+            projectTitle: "Dev-Collab Platform",
+            original_text: "Global Platform Statistics and Overview"
+        }
+    });
+
     projects.forEach(project => {
         records.push({
             id: project.id,
