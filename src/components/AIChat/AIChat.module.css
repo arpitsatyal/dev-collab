@@ -33,6 +33,23 @@
   scrollbar-color: rgba(100, 100, 100, 0.5) transparent;
 }
 
+@media (max-width: 768px) {
+  .popoverContent {
+    width: calc(100vw - 32px) !important;
+    height: min(700px, 80vh) !important;
+    max-height: calc(100vh - 120px) !important;
+    right: 16px !important;
+    bottom: 80px !important;
+    border-radius: var(--mantine-radius-lg) !important;
+    border: 1px solid light-dark(var(--mantine-color-gray-2), var(--mantine-color-dark-4)) !important;
+  }
+
+  .aiWidgetContainer {
+    bottom: var(--mantine-spacing-md);
+    right: var(--mantine-spacing-md);
+  }
+}
+
 .contentWrapper {
   height: 100%;
   width: 100%;
@@ -63,6 +80,12 @@
   padding: var(--mantine-spacing-md);
 }
 
+@media (max-width: 768px) {
+  .messageList {
+    padding: var(--mantine-spacing-xs);
+  }
+}
+
 .messageContainer {
   display: flex;
   margin-bottom: var(--mantine-spacing-sm);
@@ -83,6 +106,10 @@
   border-radius: var(--mantine-radius-md);
   width: fit-content;
   max-width: 80%;
+}
+
+.timeText {
+  align-self: flex-end;
 }
 
 .userMessage {
@@ -231,6 +258,12 @@
   border: 2px solid light-dark(var(--mantine-color-gray-3),
       var(--mantine-color-dark-4));
   box-shadow: var(--mantine-shadow-sm);
+}
+
+@media (max-width: 768px) {
+  .avatarImage {
+    width: 32px;
+  }
 }
 
 .markdownContent {

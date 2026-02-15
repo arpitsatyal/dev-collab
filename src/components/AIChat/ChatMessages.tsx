@@ -182,7 +182,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
               </div>
 
               <Tooltip label={extractDate(message.createdAt)} withArrow>
-                <Text size="xs" c="dimmed">
+                <Text size="xs" c="dimmed" className={styles.timeText}>
                   {extractTime(message.createdAt)}
                 </Text>
               </Tooltip>
