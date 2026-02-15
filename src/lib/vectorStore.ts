@@ -4,12 +4,18 @@ import { PineconeInferenceEmbeddings } from "./pinecone-embeddings";
 import { getSecret } from "../utils/secrets";
 
 export async function getVectorStore() {
+    const pineconeApiKey = getSecret("PINECONE_API_KEY") || process.env.PINECONE_API_KEY!;
+    const pineconeIndex = getSecret("PINECONE_INDEX") || process.env.PINECONE_INDEX!
+
+    console.log('pineconeApiKey', pineconeApiKey)
+    console.log('pineconeIndex', pineconeIndex)
+
     const pinecone = new Pinecone({
-        apiKey: getSecret("PINECONE_API_KEY") || process.env.PINECONE_API_KEY!,
+        apiKey: pineconeApiKey,
     });
 
     const pineconeIndex = pinecone.index(
-        getSecret("PINECONE_INDEX") || process.env.PINECONE_INDEX!
+        pineconeIndex
     );
 
     // Use Pinecone Inference API for embeddings compatibility
