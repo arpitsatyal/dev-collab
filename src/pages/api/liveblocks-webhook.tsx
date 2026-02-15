@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import { buffer } from "micro";
-import prisma from "../../lib/prisma";
+import prisma from "../../lib/db/prisma";
 import axios from "axios";
 import { getSecret } from "../../utils/secrets";
 import { prepareTextMentionNotificationEmailAsReact } from "@liveblocks/emails";

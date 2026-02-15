@@ -1,6 +1,6 @@
-import { TogetherLLM } from "../togetherLLM";
-import { getVectorStore } from "../vectorStore";
-import prisma from "../prisma";
+import { TogetherLLM } from "./togetherLLM";
+import { getVectorStore } from "./vectorStore";
+import prisma from "../db/prisma";
 import { validateResponse } from "../../pages/api/utils/validateLLMResponse";
 
 // Helper to improve response with citations and quality checks

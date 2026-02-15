@@ -1,7 +1,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { BaseItems } from "../types";
 import { IDBPDatabase } from "idb";
-import { initDB } from "../lib/indexedDB";
+import { initDB } from "../lib/browser/indexedDB";
 import { uniq } from "lodash";
 
 const MAX_SEARCH_ORDER = 20;

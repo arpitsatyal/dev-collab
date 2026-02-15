@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { getAIResponse } from "../src/lib/ai/aiService";
-import { getVectorStore } from "../src/lib/vectorStore";
+import { getVectorStore } from "../src/lib/ai/vectorStore";
 
 // Test cases - real questions based on project data
 const testCases = [

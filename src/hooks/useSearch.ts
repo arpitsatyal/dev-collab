@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
 import { debounce, isEqual } from "lodash";
 import { IDBPDatabase } from "idb";
-import { initDB } from "../lib/indexedDB";
+import { initDB } from "../lib/browser/indexedDB";
 import { normalizeQuery } from "../utils/normalizeQuery";
 import { TypedItems } from "../types";
 import { levenshtein } from "../utils/levenshtein";

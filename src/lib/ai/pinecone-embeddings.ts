@@ -1,6 +1,6 @@
 import { Embeddings, EmbeddingsParams } from "@langchain/core/embeddings";
 import { Pinecone } from "@pinecone-database/pinecone";
-import { getSecret } from "../utils/secrets";
+import { getSecret } from "../../utils/secrets";
 
 export interface PineconeInferenceEmbeddingsParams extends EmbeddingsParams {
     apiKey?: string;

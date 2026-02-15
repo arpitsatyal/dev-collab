@@ -1,5 +1,5 @@
 import { Pinecone } from "@pinecone-database/pinecone";
-import { getSecret } from "../utils/secrets";
+import { getSecret } from "../../utils/secrets";
 
 let pineconeClient: Pinecone | null = null;
 

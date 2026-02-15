@@ -1,7 +1,7 @@
 import axios from "axios";
 import { SimpleChatModel } from "@langchain/core/language_models/chat_models";
 import { BaseMessage } from "@langchain/core/messages";
-import { getSecret } from "../utils/secrets";
+import { getSecret } from "../../utils/secrets";
 
 interface TogetherAIResponse {
   output?: {
