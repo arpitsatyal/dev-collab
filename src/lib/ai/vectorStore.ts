@@ -4,8 +4,8 @@ import { PineconeInferenceEmbeddings } from "./pinecone-embeddings";
 import { getSecret } from "../../utils/secrets";
 
 export async function getVectorStore() {
-    const pineconeApiKey = getSecret("PINECONE_API_KEY") || process.env.PINECONE_API_KEY!;
-    const index = getSecret("PINECONE_INDEX") || process.env.PINECONE_INDEX!
+    const pineconeApiKey = getSecret("PINECONE_API_KEY");
+    const index = getSecret("PINECONE_INDEX");
 
     const pinecone = new Pinecone({
         apiKey: pineconeApiKey,
