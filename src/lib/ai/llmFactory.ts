@@ -59,7 +59,6 @@ class FallbackLLM extends SimpleChatModel {
 
     async _call(messages: BaseMessage[]): Promise<string> {
         try {
-            console.log(`[LLM] Attempting ${this.primaryName}...`);
             const response = await this.primaryLLM.invoke(messages);
             return response.content as string;
         } catch (error: any) {
