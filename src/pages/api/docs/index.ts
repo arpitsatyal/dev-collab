@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { Prisma } from "@prisma/client";
 import { v4 as uuidv4 } from "uuid";
+import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface DocCreateData {
   label: string;
@@ -78,6 +79,8 @@ export default async function handler(
           },
         });
 
+        await publishSyncEvent('doc', doc);
+
         return res.status(201).json(doc);
       } catch (error) {
         console.error("Error creating doc:", error);
@@ -103,6 +106,9 @@ export default async function handler(
           where: { id: docId as string },
           data: updateData,
         });
+
+        await publishSyncEvent('doc', updatedDoc);
+
         return res.status(200).json(updatedDoc);
       } catch (error: any) {
         console.error("Error updating doc:", error);

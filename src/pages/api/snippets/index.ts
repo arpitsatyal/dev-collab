@@ -3,6 +3,7 @@ import prisma from "../../../lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { Prisma } from "@prisma/client";
+import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface SnippetsCreateData {
   title: string;
@@ -97,6 +98,8 @@ export default async function handler(
           },
         });
 
+        await publishSyncEvent('snippet', snippet);
+
         return res.status(200).json(snippet);
       } catch (error) {
         console.error("Error creating snippet:", error);
@@ -126,6 +129,8 @@ export default async function handler(
           },
           data: updateData,
         });
+
+        await publishSyncEvent('snippet', updatedSnippet);
 
         return res.status(200).json(updatedSnippet);
       } catch (error) {

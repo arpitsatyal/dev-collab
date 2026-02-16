@@ -6,6 +6,7 @@ import { TaskStatus } from "@prisma/client";
 import { SendMessageCommand, SQSClient } from "@aws-sdk/client-sqs";
 import dayjs from "dayjs";
 import { getSecret } from "../../../utils/secrets";
+import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface TaskCreateData {
   title: string;
@@ -130,6 +131,8 @@ export default async function handler(
           console.log("Error processing queue", queueError);
         }
 
+        await publishSyncEvent('task', task);
+
         return res.status(200).json(task);
       } catch (error) {
         console.error("Error creating task:", error);
@@ -184,6 +187,8 @@ export default async function handler(
         } catch (queueError) {
           console.log("Error processing queue", queueError);
         }
+
+        await publishSyncEvent('task', updatedTask);
 
         return res.status(200).json(updatedTask);
       } catch (error) {

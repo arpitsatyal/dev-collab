@@ -3,6 +3,7 @@ import prisma from "../../../lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { ProjectWithPin } from "../../../types";
+import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface ProjectCreateData {
   title: string;
@@ -92,6 +93,8 @@ export default async function handler(
             ownerId: user.id,
           },
         });
+
+        await publishSyncEvent('project', project);
 
         return res.status(200).json(project);
       } catch (error) {
