@@ -4,8 +4,8 @@ import { syncToVectorStore, SyncType } from "../../../lib/ai/vectorStoreSync";
 import { getSecret } from "../../../utils/secrets";
 
 const receiver = new Receiver({
-    currentSigningKey: getSecret("QSTASH_CURRENT_SIGNING_KEY") || "",
-    nextSigningKey: getSecret("QSTASH_NEXT_SIGNING_KEY") || "",
+    currentSigningKey: getSecret("QSTASH_CURRENT_SIGNING_KEY"),
+    nextSigningKey: getSecret("QSTASH_NEXT_SIGNING_KEY")
 });
 
 export const config = {

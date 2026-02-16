@@ -1,6 +1,6 @@
 import type { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/db/prisma";
-import { getAIResponse } from "../../../lib/ai/aiService";
+import { getAIResponse } from "../../../lib/ai/services/aiService";
 
 export default async function handler(
   req: NextApiRequest,
@@ -28,7 +28,12 @@ export default async function handler(
     });
 
     // Get AI response from service
-    const { answer } = await getAIResponse(chatId, question);
+    const filters: any = {};
+    if (req.body.projectId) {
+      filters.projectId = req.body.projectId;
+    }
+
+    const { answer } = await getAIResponse(chatId, question, filters);
 
     // Save AI message
     await prisma.message.create({

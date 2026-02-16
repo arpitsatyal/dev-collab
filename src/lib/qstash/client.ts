@@ -9,5 +9,5 @@ if (!qstashToken) {
 }
 
 export const qstash = new Client({
-    token: qstashToken || "",
+    token: qstashToken,
 });

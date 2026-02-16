@@ -24,6 +24,7 @@ import { useSession } from "next-auth/react";
 import { extractDate, extractTime } from "../../utils/dateUtils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useRouter } from "next/router";
 
 interface MessageProps {
   chatId: string;
@@ -40,6 +41,7 @@ interface Message {
 
 const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   const { data: session } = useSession();
+  const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(false);
@@ -75,11 +77,14 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     setInput("");
     setIsLoading(true);
 
+    const projectId = router.query.projectId as string;
+
     try {
       const response = await axios.post(
         `/api/ai/ask?chatId=${chatId}`,
         {
           question: content,
+          projectId, // Pass projectId for context-aware filtering
         },
         {
           headers: {
