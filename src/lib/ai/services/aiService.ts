@@ -1,5 +1,5 @@
 
-import { TogetherLLM } from "../togetherLLM";
+import { getLLM } from "../llmFactory";
 import { getVectorStore } from "../vectorStore";
 import prisma from "../../db/prisma";
 // Import new services
@@ -13,8 +13,7 @@ import { generateAnswer } from "./generationService";
 
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
     const vectorStore = await getVectorStore();
-    const llm = new TogetherLLM({});
-    const scoreThreshold = 0.5;
+    const llm = getLLM();
 
     // 0. Query Expansion
     const queries = await generateQueryVariations(question, llm);
@@ -22,7 +21,6 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     // 1 & 2. Retrieval (Hybrid Vector + Keyword)
     const filteredResults = await performHybridSearch(queries, question, filters);
 
-    console.log(`Search results: ${filteredResults.length}`);
     filteredResults.forEach(([doc, score]: any, i) => {
         console.log(`Result ${i + 1}: Score: ${score.toFixed(4)}, Type: ${doc.metadata?.type}, Title: ${doc.metadata?.projectTitle}`);
     });

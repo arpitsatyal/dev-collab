@@ -1,8 +1,8 @@
 
-import { TogetherLLM } from "../togetherLLM";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 
 // Helper for Query Expansion
-export async function generateQueryVariations(query: string, llm: TogetherLLM): Promise<string[]> {
+export async function generateQueryVariations(query: string, llm: BaseChatModel): Promise<string[]> {
     const prompt = `You are an AI assistant helping to expand a user's search query.
     Generate 3 alternative versions of the following query to improve search retrieval. 
     Focus on synonyms, related concepts, and technical terms relevant to software development.
@@ -14,7 +14,6 @@ export async function generateQueryVariations(query: string, llm: TogetherLLM): 
         const response = await llm.invoke(prompt);
         const content = response["lc_kwargs"].content as string;
         const variations = content.split('\n').filter(q => q.trim().length > 0).slice(0, 3);
-        console.log(`[Query Expansion] Original: "${query}" -> Variations:`, variations);
         return [query, ...variations];
     } catch (e) {
         console.warn("[Query Expansion] Failed:", e);

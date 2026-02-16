@@ -1,5 +1,5 @@
 
-import { TogetherLLM } from "../togetherLLM";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { validateResponse } from "../../../pages/api/utils/validateLLMResponse";
 
 // Helper to provide source citations for factual answers
@@ -20,7 +20,7 @@ function improveResponseWithCitations(answer: string, filteredResults: any[]) {
     return answer;
 }
 
-export async function generateAnswer(llm: TogetherLLM, prompt: string, context: string, filteredResults: any[]) {
+export async function generateAnswer(llm: BaseChatModel, prompt: string, context: string, filteredResults: any[]) {
     const aiResponse = await llm.invoke(prompt);
     let answer = aiResponse["lc_kwargs"].content;
 

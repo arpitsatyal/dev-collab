@@ -93,7 +93,7 @@ export async function syncToVectorStore(
     try {
         const values = await embeddings.embedDocuments([text]);
 
-        await (index as any).upsert({
+        await index.upsert({
             records: [{
                 id: data.id,
                 values: values[0],

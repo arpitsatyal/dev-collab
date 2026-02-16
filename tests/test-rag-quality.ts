@@ -1,5 +1,5 @@
 import "dotenv/config";
-import { TogetherLLM } from "../src/lib/ai/togetherLLM";
+import { getLLM } from "../src/lib/ai/llmFactory";
 import { getVectorStore } from "../src/lib/ai/vectorStore";
 
 // Test cases - real questions based on project data
@@ -48,7 +48,7 @@ const testCases = [
 
 async function testRAGQuality() {
     const vectorStore = await getVectorStore();
-    const llm = new TogetherLLM({});
+    const llm = getLLM();
     const scoreThreshold = 0.5;
 
     console.log("=== RAG Quality Test ===\n");

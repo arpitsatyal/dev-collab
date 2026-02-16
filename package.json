@@ -14,9 +14,6 @@
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.828.0",
     "@emotion/react": "^11.14.0",
-    "@faker-js/faker": "^9.8.0",
-    "@huggingface/inference": "^4.5.1",
-    "@langchain/community": "^1.1.15",
     "@langchain/core": "^1.1.24",
     "@langchain/pinecone": "^1.0.1",
     "@liveblocks/client": "^3.0.0",
@@ -49,7 +46,6 @@
     "clsx": "^2.1.1",
     "dayjs": "^1.11.13",
     "idb": "^8.0.3",
-    "langchain": "^1.2.24",
     "lodash": "^4.17.21",
     "micro": "^10.0.1",
     "monaco-editor": "^0.52.2",
@@ -69,7 +65,6 @@
     "remark-gfm": "^4.0.1",
     "resend": "^4.6.0",
     "uuid": "^11.1.0",
-    "winston": "^3.17.0",
     "y-monaco": "^0.1.6",
     "y-protocols": "^1.0.6",
     "yjs": "^13.6.27"
