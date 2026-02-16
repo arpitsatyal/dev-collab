@@ -1,6 +1,5 @@
 
 import { getLLM } from "../llmFactory";
-import { getVectorStore } from "../vectorStore";
 import prisma from "../../db/prisma";
 // Import new services
 import { performHybridSearch } from "./retrievalService";
@@ -12,7 +11,6 @@ import { generateAnswer } from "./generationService";
 // Helper for Query Expansion (REMOVED - moved to promptService)
 
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
-    const vectorStore = await getVectorStore();
     const llm = getLLM();
 
     // 0. Query Expansion

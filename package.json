@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint . --ignore-path .eslintignore",
     "ingest": "npx tsx src/scripts/ingest-data.ts",
-    "test:rag": "npx tsx tests/test-rag-quality.ts",
-    "test:ai": "npx tsx tests/test-ai-features.ts"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.828.0",
@@ -89,7 +89,8 @@
     "prisma": "^6.6.0",
     "ts-node": "^10.9.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^4.0.18"
   },
   "overrides": {
     "@langchain/pinecone": {
