@@ -38,6 +38,11 @@ const testCases = [
         question: "How many projects are currently on the platform?",
         expectedKeywords: ["Total Projects", "count"],
         category: "stats"
+    },
+    {
+        question: "What is the Collaborative Playground and what can I do there?",
+        expectedKeywords: ["collaborative", "code editor", "sharing", "real-time"],
+        category: "features"
     }
 ];
 

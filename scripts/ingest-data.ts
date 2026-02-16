@@ -101,6 +101,53 @@ Use this information when asked about "how many", "total count", "platform summa
         }
     });
 
+    // --- APP FEATURE RECORDS ---
+    const appFeatures = [
+        {
+            id: "feature-dashboard",
+            title: "Dashboard",
+            description: "The main landing page after login. It provides a grid overview of all your projects, including their titles, descriptions, and quick access to tasks, snippets, and documentation."
+        },
+        {
+            id: "feature-playground",
+            title: "Collaborative Playground",
+            description: "A collaborative code editor where users can write code in real-time. It's accessible via the /playground route. Users can share the specific room link (e.g., /playground?roomId=xyz) with others to code together live."
+        },
+        {
+            id: "feature-search",
+            title: "Global Search",
+            description: "A comprehensive search interface that allows users to find projects, tasks, snippets, and documents across the entire platform. Uses semantic search to find relevant results based on meaning, not just keywords."
+        },
+        {
+            id: "feature-ai-chat",
+            title: "AI Chat Assistant",
+            description: "A persistent sidebar assistant available throughout the app (except in specific full-screen views). It uses RAG (Retrieval-Augmented Generation) to answer questions about your projects and platform features."
+        },
+        {
+            id: "feature-code-editor",
+            title: "Collaborative Code Editor",
+            description: "A real-time, multi-user code editor powered by Monaco and Liveblocks. Supports syntax highlighting for multiple languages and allows team members to code together as if they were on the same machine."
+        },
+        {
+            id: "feature-project-management",
+            title: "Project Management",
+            description: "The core functionality for organizing work. Each project can contain its own set of tasks, code snippets, and structured documentation."
+        }
+    ];
+
+    appFeatures.forEach(feature => {
+        records.push({
+            id: feature.id,
+            text: `App Feature: ${feature.title}\nDescription: ${feature.description}`,
+            metadata: {
+                type: "app_feature",
+                projectId: "platform",
+                projectTitle: "Dev-Collab Features",
+                original_text: `UI Feature: ${feature.title}`
+            }
+        });
+    });
+
     projects.forEach(project => {
         records.push({
             id: project.id,
