@@ -80,6 +80,9 @@ export const taskApi = createApi({
       }),
       invalidatesTags: [{ type: "Tasks", id: "LIST" }],
     }),
+    suggestWorkItems: builder.query<{ suggestions: any[] }, string>({
+      query: (projectId) => `ai/suggest-work-items?projectId=${projectId}`,
+    }),
   }),
 });
 
@@ -87,4 +90,5 @@ export const {
   useGetTasksForProjectQuery,
   useCreateTaskMutation,
   useUpdateStatusMutation,
+  useSuggestWorkItemsQuery,
 } = taskApi;

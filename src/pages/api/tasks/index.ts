@@ -15,6 +15,7 @@ export interface TaskCreateData {
   description: string | null;
   assignedToId: string | null;
   dueDate: Date | null;
+  snippetIds?: string[];
 }
 
 type emailType = "taskCreated" | "taskUpdated";
@@ -85,7 +86,7 @@ export default async function handler(
 
     case "POST":
       try {
-        const { title, description, assignedToId, dueDate, status } =
+        const { title, description, assignedToId, dueDate, status, snippetIds } =
           (req.body as TaskCreateData) ?? {};
 
         const task = await prisma.task.create({
@@ -97,6 +98,9 @@ export default async function handler(
             projectId: projectId as string,
             assignedToId,
             authorId: user.id,
+            snippets: snippetIds ? {
+              connect: snippetIds.map(id => ({ id }))
+            } : undefined
           },
         });
 

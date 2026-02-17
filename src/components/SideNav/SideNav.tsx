@@ -469,6 +469,10 @@ const SideNav = () => {
                   <Loading />
                 ) : isInsertingProject ? (
                   <Loading loaderHeight="20vh" />
+                ) : projectItems.length === 0 ? (
+                  <Text size="xs" c="dimmed" ta="center" py="sm" fs="italic">
+                    No workspaces added yet
+                  </Text>
                 ) : (
                   <InfiniteLoader
                     isItemLoaded={isItemLoaded}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { withAuth } from "../../../../guards/withAuth";
@@ -16,10 +16,13 @@ import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 import { useGetProjectByIdQuery } from "../../../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import AISuggestions, { AISuggestionsHandle } from "../../../../components/Task/AISuggestions";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
+  const suggestionsRef = useRef<AISuggestionsHandle>(null);
+  const [adoptingIndex, setAdoptingIndex] = useState<number | null>(null);
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
 
@@ -63,6 +66,12 @@ const TasksPage = () => {
         task: taskForm,
         projectId: taskForm.projectId,
       }).unwrap();
+
+      if (adoptingIndex !== null) {
+        suggestionsRef.current?.dismiss(adoptingIndex);
+        setAdoptingIndex(null);
+      }
+
       notifications.show({
         title: "Job done!",
         message: "Work Item created successfully! 🌟",
@@ -80,12 +89,32 @@ const TasksPage = () => {
     }
   };
 
+  const handleAdoptSuggestion = (suggestion: any, index: number) => {
+    setTaskForm({
+      title: suggestion.title,
+      description: suggestion.description,
+      status: TaskStatus.TODO,
+      assignedToId: null,
+      dueDate: null,
+      projectId: projectId ?? "",
+      snippetIds: [],
+    });
+    setAdoptingIndex(index);
+    open();
+  };
+
   if (!projectId || !projectData) {
     return <Loading />;
   }
 
   return (
     <Container size="xl" py="md">
+      <AISuggestions
+        ref={suggestionsRef}
+        projectId={projectId}
+        onAdopt={handleAdoptSuggestion}
+      />
+
       <TaskInfo project={projectData} open={open} />
 
       <CreateTaskModal

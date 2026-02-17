@@ -99,6 +99,7 @@ model Snippet {
   author         User?    @relation("AuthorRelation", fields: [authorId], references: [id])
   lastEditedBy   User?    @relation("LastEditorRelation", fields: [lastEditedById], references: [id])
   project        Project  @relation(fields: [projectId], references: [id])
+  tasks          Task[]
 }
 
 model Task {
@@ -115,6 +116,7 @@ model Task {
   assignedTo   User?      @relation("AssignedToRelation", fields: [assignedToId], references: [id])
   author       User?      @relation("TaskAuthorRelation", fields: [authorId], references: [id])
   project      Project    @relation(fields: [projectId], references: [id])
+  snippets     Snippet[]
 }
 
 enum TaskStatus {

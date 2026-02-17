@@ -6,14 +6,17 @@ import {
   Select,
   Textarea,
   TextInput,
+  MultiSelect,
 } from "@mantine/core";
 import { DatePicker } from "@mantine/dates";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
 import { TaskStatus } from "@prisma/client";
 import dayjs from "dayjs";
 import { TaskCreateData } from "../../pages/api/tasks";
 import { useGetUsersQuery } from "../../store/api/userApi";
+import { snippetApi } from "../../store/api/snippetApi";
+import { IconCode } from "@tabler/icons-react";
 
 interface CreateTaskModalProps {
   handleInputChange: <K extends keyof TaskCreateData>(
@@ -43,6 +46,18 @@ const CreateTaskModal = ({
     projectId?: string;
     status?: string;
   }>({});
+
+  const { data: projectSnippets = [] } = snippetApi.useGetSnippetsQuery(
+    { projectId: taskForm.projectId },
+    { skip: !taskForm.projectId }
+  );
+
+  const snippetData = useMemo(() => {
+    return projectSnippets.map((s) => ({
+      value: s.id,
+      label: s.title,
+    }));
+  }, [projectSnippets]);
 
   const validateForm = () => {
     const newErrors: { title?: string; projectId?: string; status?: string } =
@@ -110,6 +125,17 @@ const CreateTaskModal = ({
         value={taskForm.assignedToId}
         onChange={(value) => handleInputChange("assignedToId", value ?? "")}
         mb="md"
+        clearable
+      />
+      <MultiSelect
+        label="Attach Context (Snippets)"
+        placeholder="Select relevant code snippets"
+        data={snippetData}
+        value={taskForm.snippetIds || []}
+        onChange={(values) => handleInputChange("snippetIds", values)}
+        leftSection={<IconCode size={16} />}
+        mb="md"
+        searchable
         clearable
       />
       <Input.Wrapper label="Due Date" mb="md">
