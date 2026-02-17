@@ -21,8 +21,8 @@ const LastSavedInfo = ({ user, updatedAt }: LastSavedInfoProps) => {
           textOverflow: "ellipsis",
         }}
       >
-        Last saved: {dayjs(updatedAt).format("MMM D, YYYY [at] h:mm a")} by{" "}
-        {user.name}
+        Last saved: {dayjs(updatedAt).format("MMM D, YYYY [at] h:mm a")}
+        {user.name ? ` by ${user.name}` : ""}
       </Text>
     </Box>
   );

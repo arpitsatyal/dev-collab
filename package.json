@@ -7,9 +7,11 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint . --ignore-path .eslintignore",
-    "ingest": "npx tsx src/scripts/ingest-data.ts",
+    "ingest": "npx tsx scripts/ingest-data.ts",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "seed": "tsx src/scripts/seed.ts",
+    "clean": "tsx src/scripts/clean.ts"
   },
   "dependencies": {
     "@aws-sdk/client-sqs": "^3.828.0",
