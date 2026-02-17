@@ -6,10 +6,14 @@ import { withAuth } from "../../guards/withAuth";
 import { ProjectCreateData } from "../api/projects";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import CreateProjectForm from "../../components/Projects/CreateProjectForm";
+import ImportProjectForm from "../../components/Projects/ImportProjectForm";
 import { useCreateProjectMutation } from "../../store/api/projectApi";
+import { useState } from "react";
+import { SegmentedControl, Center, Box, Title } from "@mantine/core";
 
 const CreateProjectPage = () => {
   const router = useRouter();
+  const [mode, setMode] = useState<string>("manual");
   const form = useForm<ProjectCreateData>({
     initialValues: {
       title: "",
@@ -39,11 +43,30 @@ const CreateProjectPage = () => {
   };
 
   return (
-    <CreateProjectForm
-      form={form}
-      isLoading={isLoading}
-      handleSubmit={handleSubmit}
-    />
+    <Box py="xl">
+      <Center mb="xl">
+        <SegmentedControl
+          value={mode}
+          onChange={setMode}
+          data={[
+            { label: "Create Manually", value: "manual" },
+            { label: "Import from GitHub", value: "import" },
+          ]}
+          size="md"
+          radius="md"
+        />
+      </Center>
+
+      {mode === "manual" ? (
+        <CreateProjectForm
+          form={form}
+          isLoading={isLoading}
+          handleSubmit={handleSubmit}
+        />
+      ) : (
+        <ImportProjectForm />
+      )}
+    </Box>
   );
 };
 
