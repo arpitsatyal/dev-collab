@@ -20,7 +20,7 @@ export class GroqLLM extends SimpleChatModel {
                 {
                     model: "llama-3.1-8b-instant",
                     messages: messagesPayload,
-                    max_tokens: 512,
+                    max_tokens: 4096,
                     temperature: 0.7,
                 },
                 {

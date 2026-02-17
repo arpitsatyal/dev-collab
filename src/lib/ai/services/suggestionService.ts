@@ -53,15 +53,15 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
         : "";
 
     const snippetsDocsContext = [
-        ...snippets.map(s => {
+        ...snippets.map((s: any) => {
             const contentString = safeParseContent(s.content);
             return `Snippet: ${s.title} (${s.language})\nContent: ${contentString.slice(0, 400)}...`;
         }),
-        ...docs.map(d => `Document: ${d.label}\nSummary: ${JSON.stringify(d.content).slice(0, 400)}...`)
+        ...docs.map((d: any) => `Document: ${d.label}\nSummary: ${JSON.stringify(d.content).slice(0, 400)}...`)
     ].join("\n\n");
 
     const contextStr = [projectContext, snippetsDocsContext].filter(Boolean).join("\n\n");
-    const existingTasksStr = existingTasks.map(t => `- ${t.title}`).join("\n");
+    const existingTasksStr = existingTasks.map((t: any) => `- ${t.title}`).join("\n");
 
     // 2. Construct Suggestion Prompt
     const prompt = `You are a Senior Project Manager and Technical Architect.
@@ -153,6 +153,8 @@ INSTRUCTIONS:
    - High-level approach.
    - Step-by-step code changes (use diff-style or clear snippets).
    - Potential edge cases or risks.
+4. COMPLETENESS: Ensure all code blocks are complete and NOT truncated. Provide the full logic for all suggested changes.
+5. EXCLUSION: Do NOT include "Next Steps", "Future Enhancements", or any interactive to-do lists as we do not have UI to support them.
 
 Tone: Professional, concise, and helpful.`;
 
@@ -207,6 +209,7 @@ INSTRUCTIONS:
 4. If no snippets are provided, draft the new component or utility logic from scratch.
 5. Use standard modern coding patterns (e.g., Hooks for React, Prisma for DB, etc.).
 6. Focus on the core logic and critical parts of the implementation.
+7. COMPLETENESS: Do NOT truncate code blocks. Ensure the output is a complete, valid implementation.
 
 RESPONSE FORMAT:
 Provide your response in clear Markdown. 

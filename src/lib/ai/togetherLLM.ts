@@ -31,7 +31,7 @@ export class TogetherLLM extends SimpleChatModel {
         {
           model: "mistralai/Mistral-7B-Instruct-v0.2",
           messages: messagesPayload,
-          max_tokens: 512,
+          max_tokens: 3072,
           temperature: 0.7,
         },
         {
