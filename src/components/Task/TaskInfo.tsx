@@ -25,7 +25,7 @@ const TaskInfo = ({
       >
         Project Workspace {project?.title}
       </Text>
-      <Button onClick={open}>Create Task</Button>
+      <Button onClick={open}>Create Work Item</Button>
     </Group>
   );
 };

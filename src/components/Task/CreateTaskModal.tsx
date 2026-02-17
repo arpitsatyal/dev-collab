@@ -67,10 +67,10 @@ const CreateTaskModal = ({
   };
 
   return (
-    <Modal opened={opened} onClose={close} title="Create New Task" size="lg">
+    <Modal opened={opened} onClose={close} title="Create New Work Item" size="lg">
       <TextInput
-        label="Task Title"
-        placeholder="Enter task title"
+        label="Work Item Title"
+        placeholder="Enter work item title"
         value={taskForm.title ?? ""}
         onChange={(e) => handleInputChange("title", e.currentTarget.value)}
         mb="md"
@@ -79,7 +79,7 @@ const CreateTaskModal = ({
       />
       <Textarea
         label="Description"
-        placeholder="Enter task description"
+        placeholder="Enter work item description"
         value={taskForm.description ?? ""}
         onChange={(e) =>
           handleInputChange("description", e.currentTarget.value)
@@ -121,7 +121,7 @@ const CreateTaskModal = ({
         />
       </Input.Wrapper>
       <Select
-        label="Project"
+        label="Workspace"
         placeholder={projectTitle}
         disabled
         value={taskForm.projectId}
@@ -134,7 +134,7 @@ const CreateTaskModal = ({
           Cancel
         </Button>
         <Button onClick={onSubmit} loading={isLoading}>
-          Create Task
+          Create Work Item
         </Button>
       </Group>
     </Modal>

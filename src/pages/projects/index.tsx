@@ -13,7 +13,7 @@ const ProjectsIndex = () => {
       }}
     >
       <Text>
-        Please select a project from the sidebar or use the search to find one.
+        Please select a workspace from the sidebar or use the search to find one.
       </Text>
     </Box>
   );

@@ -39,7 +39,7 @@ const TasksPage = () => {
     projectId: projectId ?? "",
   });
 
-  const projectTitle = projectData?.title ?? "Select Project";
+  const projectTitle = projectData?.title ?? "Select Workspace";
 
   const handleInputChange = <K extends keyof TaskCreateData>(
     field: K,
@@ -65,7 +65,7 @@ const TasksPage = () => {
       }).unwrap();
       notifications.show({
         title: "Job done!",
-        message: "Task created successfully! 🌟",
+        message: "Work Item created successfully! 🌟",
       });
 
       close();
@@ -75,7 +75,7 @@ const TasksPage = () => {
       console.error(error);
       notifications.show({
         title: "Whooops",
-        message: "Task could be created.",
+        message: "Work Item could not be created.",
       });
     }
   };

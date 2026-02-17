@@ -40,7 +40,7 @@ const CreateProjectForm = ({
         className={classes.root}
       >
         <Stack gap="md">
-          <Title order={4}>Create New Project</Title>
+          <Title order={4}>Create New Workspace</Title>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="sm">
               <TextInput
@@ -55,12 +55,12 @@ const CreateProjectForm = ({
                     borderRadius: "8px",
                   },
                 }}
-                aria-label="Project title input"
+                aria-label="Workspace title input"
               />
 
               <Textarea
                 label="Description"
-                placeholder="Write something about the project"
+                placeholder="Write something about the workspace"
                 {...form.getInputProps("description")}
                 size="md"
                 variant="filled"
@@ -71,7 +71,7 @@ const CreateProjectForm = ({
                     borderRadius: "8px",
                   },
                 }}
-                aria-label="Project description input"
+                aria-label="Workspace description input"
               />
 
               <Group justify="center" mt="md" gap="lg">

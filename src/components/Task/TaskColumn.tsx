@@ -14,8 +14,8 @@ const TaskColumn = ({ title, tasks, onDropTask }: TaskColumnProps) => {
     title === "To Do"
       ? TaskStatus.TODO
       : title === "In Progress"
-      ? TaskStatus.IN_PROGRESS
-      : TaskStatus.DONE;
+        ? TaskStatus.IN_PROGRESS
+        : TaskStatus.DONE;
 
   const [_, dropRef] = useDrop({
     accept: "TASK",
@@ -37,7 +37,7 @@ const TaskColumn = ({ title, tasks, onDropTask }: TaskColumnProps) => {
         </Text>
         {tasks.length === 0 ? (
           <Text size="sm" className="secondary">
-            No tasks in this column
+            No work items in this column
           </Text>
         ) : (
           tasks.map((task) => <TaskItem task={task} key={task.id} />)

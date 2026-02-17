@@ -2,13 +2,14 @@ import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ActionIcon, AppShell, Box, NavLink, Text } from "@mantine/core";
 import {
-  IconActivity,
-  IconBrandPagekit,
-  IconGauge,
-  IconPencil,
   IconPin,
   IconPlayCard,
   IconSubtask,
+  IconCloudDownload,
+  IconGauge,
+  IconPencil,
+  IconActivity,
+  IconBrandPagekit,
 } from "@tabler/icons-react";
 import { VariableSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
@@ -87,15 +88,21 @@ const SideNav = () => {
         path: "/new",
       },
       {
-        id: "create-project",
+        id: "create-workspace",
         icon: IconPencil,
-        label: "Create Project",
+        label: "Create Workspace",
         path: "/projects/create",
       },
       {
-        id: "projects",
+        id: "import-workspace",
+        icon: IconCloudDownload,
+        label: "Import from GitHub",
+        path: "/projects/import",
+      },
+      {
+        id: "workspaces",
         icon: IconActivity,
-        label: "Projects",
+        label: "Workspaces",
         path: "/projects",
       },
     ],
@@ -104,7 +111,7 @@ const SideNav = () => {
 
   const navItemsWithProjects = useMemo(() => {
     const items = [...navItems];
-    const projectsItem = items.find((item) => item.label === "Projects");
+    const projectsItem = items.find((item) => item.label === "Workspaces");
     if (projectsItem) {
       const uniqueProjects = uniqBy(loadedProjects, "id");
       projectsItem.children = uniqueProjects;
@@ -113,7 +120,7 @@ const SideNav = () => {
   }, [navItems, loadedProjects]);
 
   const projectNavItem = navItemsWithProjects.find(
-    (item) => item.label === "Projects"
+    (item) => item.label === "Workspaces"
   );
   const projectItems = useMemo(
     () => projectNavItem?.children || [],
@@ -260,7 +267,7 @@ const SideNav = () => {
       if (handler) return handler();
 
       if (path) {
-        if (label === "Projects") {
+        if (label === "Workspaces") {
           dispatch(setProjectsOpen());
           setOpenItem(null);
         }
@@ -289,14 +296,14 @@ const SideNav = () => {
 
   const isOpen = useCallback(
     (item: NavItemProps) => {
-      if (item.label !== "Projects") return false;
+      if (item.label !== "Workspaces") return false;
 
       if (projectsOpen !== null) {
         return projectsOpen;
       }
 
       const projectsItem = navItemsWithProjects.find(
-        (i) => i.label === "Projects"
+        (i) => i.label === "Workspaces"
       );
       if (!projectsItem?.children) return false;
 
@@ -331,9 +338,8 @@ const SideNav = () => {
 
       notifications.show({
         title: "Job done!",
-        message: `Project ${
-          !project.isPinned ? "Pinned" : "Unpinned"
-        } Successfully! 🌟`,
+        message: `Workspace ${!project.isPinned ? "Pinned" : "Unpinned"
+          } Successfully! 🌟`,
       });
     } catch (error) {
       notifications.show({
@@ -420,7 +426,7 @@ const SideNav = () => {
                 </ActionIcon>
 
                 <NavLink
-                  label="Tasks"
+                  label="Work Items"
                   active={isActive(`/projects/${child.id}/tasks`)}
                   leftSection={<IconSubtask size={16} />}
                   onClick={() => router.push(`/projects/${child.id}/tasks`)}
@@ -457,7 +463,7 @@ const SideNav = () => {
             leftSection={<item.icon size={16} stroke={1.5} />}
             onClick={() => handleNavClick(item.path, item.handler, item.label)}
           >
-            {item.label === "Projects" && (
+            {item.label === "Workspaces" && (
               <Box pr="xs">
                 {isLoading ? (
                   <Loading />

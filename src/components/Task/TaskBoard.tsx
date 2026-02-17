@@ -45,7 +45,7 @@ const TaskBoard = () => {
   if (data?.length === 0) {
     return (
       <Center className="secondary">
-        <Text size="lg">No tasks yet, create one to get started!</Text>
+        <Text size="lg">No work items yet, create one to get started!</Text>
       </Center>
     );
   }
@@ -67,14 +67,14 @@ const TaskBoard = () => {
       }).unwrap();
       notifications.show({
         title: "Job done!",
-        message: "Task updated successfully! 🌟",
+        message: "Work Item updated successfully! 🌟",
       });
     } catch (error) {
       // Revert on failure
       setLocalTasks(previousTasks);
       notifications.show({
         title: "Error",
-        message: "Failed to update task status. Please try again.",
+        message: "Failed to update work item status. Please try again.",
         color: "red",
       });
     }
