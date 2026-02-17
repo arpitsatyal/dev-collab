@@ -163,4 +163,6 @@ const AISuggestions = forwardRef<AISuggestionsHandle, AISuggestionsProps>(
     }
 );
 
+AISuggestions.displayName = "AISuggestions";
+
 export default AISuggestions;

@@ -25,6 +25,7 @@ import { extractDate, extractTime } from "../../utils/dateUtils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { useRouter } from "next/router";
+import Image from "next/image";
 
 interface MessageProps {
   chatId: string;
@@ -169,9 +170,12 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
                 : styles.botMessageContainer
                 }`}
             >
-              <img
+              <Image
                 src={message.isUser ? image : "/probot.png"}
                 className={styles.avatarImage}
+                alt={message.isUser ? "User Avatar" : "AI Avatar"}
+                width={40}
+                height={40}
               />
 
               <div

@@ -13,7 +13,7 @@ const Dashboard = ({ user }: { user: Session["user"] }) => {
           Welcome back, {user.name?.split(" ")[0] ?? "Dev"}! 👋
         </Title>
         <Text c="dimmed" size="lg" mt="sm">
-          Here's a quick overview of your workspace activities and content.
+          Here&apos;s a quick overview of your workspace activities and content.
         </Text>
       </Box>
 
