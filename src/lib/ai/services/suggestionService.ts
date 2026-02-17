@@ -12,17 +12,17 @@ export interface WorkItemSuggestion {
 export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
     const llm = await getLLMWithFallback();
 
-    // 1. Fetch context (Snippets, Docs, and Existing Tasks)
-    const [snippets, docs, existingTasks] = await Promise.all([
+    // 1. Fetch context (Snippets, Docs, Existing Tasks, and Project Details)
+    const [snippets, docs, existingTasks, project] = await Promise.all([
         prisma.snippet.findMany({
             where: { projectId },
-            take: 5, // Reduced from 10 to avoid context bloat/truncation
+            take: 5,
             orderBy: { updatedAt: "desc" },
             select: { title: true, content: true, language: true }
         }),
         prisma.doc.findMany({
             where: { projectId },
-            take: 3, // Reduced from 5
+            take: 3,
             orderBy: { updatedAt: "desc" },
             select: { label: true, content: true }
         }),
@@ -31,12 +31,12 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
             take: 10,
             orderBy: { createdAt: "desc" },
             select: { title: true }
+        }),
+        prisma.project.findUnique({
+            where: { id: projectId },
+            select: { title: true, description: true }
         })
     ]);
-
-    if (snippets.length === 0 && docs.length === 0) {
-        return [];
-    }
 
     const safeParseContent = (content: any): string => {
         if (typeof content !== 'string') return JSON.stringify(content);
@@ -48,7 +48,11 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
         }
     };
 
-    const contextStr = [
+    const projectContext = project
+        ? `PROJECT: ${project.title}\nDESCRIPTION: ${project.description || "No description provided."}`
+        : "";
+
+    const snippetsDocsContext = [
         ...snippets.map(s => {
             const contentString = safeParseContent(s.content);
             return `Snippet: ${s.title} (${s.language})\nContent: ${contentString.slice(0, 400)}...`;
@@ -56,22 +60,24 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
         ...docs.map(d => `Document: ${d.label}\nSummary: ${JSON.stringify(d.content).slice(0, 400)}...`)
     ].join("\n\n");
 
+    const contextStr = [projectContext, snippetsDocsContext].filter(Boolean).join("\n\n");
     const existingTasksStr = existingTasks.map(t => `- ${t.title}`).join("\n");
 
     // 2. Construct Suggestion Prompt
     const prompt = `You are a Senior Project Manager and Technical Architect.
-Based on the following code context and documentation from a workspace, suggest 3 high-value "Work Items" (tasks) that should be tackled next.
+Based on the following workspace context (Project description, code snippets, and documentation), suggest 3 high-value "Work Items" (tasks) that should be tackled next.
 
 EXISTING WORK ITEMS (DO NOT SUGGEST THESE OR SIMILAR TASKS):
 ${existingTasksStr || "No work items created yet."}
 
 Focus on:
-1. Technical Debt or Refactoring.
-2. Feature Gaps or missing edge cases.
-3. Documentation or Security.
+1. Foundational setup or missing core features (especially if the project is new and has little code/docs).
+2. Technical Debt or Refactoring.
+3. Feature Gaps or missing edge cases.
+4. Documentation or Security.
 
 CONTEXT:
-${contextStr}
+${contextStr || "Minimal context available. Please suggest general foundational tasks based on the project goal if provided."}
 
 RESPONSE FORMAT:
 Return ONLY a JSON array of 3 objects. Each object MUST have:
@@ -156,6 +162,63 @@ Tone: Professional, concise, and helpful.`;
     } catch (error) {
         console.error("[Analysis Engine] Error generating plan:", error);
         return "Failed to generate implementation plan. Please try again.";
+    }
+}
+
+export async function generateDraftChanges(taskId: string): Promise<string> {
+    const llm = await getLLMWithFallback();
+
+    // 1. Fetch Task, linked snippets, and project context
+    const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: {
+            snippets: true,
+            project: true
+        }
+    });
+
+    if (!task) throw new Error("Work Item not found");
+
+    const contextStr = task.snippets.map(s =>
+        `--- Snippet: ${s.title} (${s.language}) ---\n${s.content}`
+    ).join("\n\n");
+
+    const projectContext = task.project
+        ? `Project: ${task.project.title}\nDescription: ${task.project.description || "No description"}`
+        : "";
+
+    // 2. Construct Drafting Prompt
+    const prompt = `You are an Expert Software Implementation Engineer.
+Goal: Draft the specific code changes required to implement the following Work Item.
+
+Work Item: "${task.title}"
+Description: ${task.description || "No description provided."}
+
+PROJECT CONTEXT:
+${projectContext}
+
+CURRENT CODE SNIPPETS (CONTEXT):
+${contextStr || "No specific code context attached. Draft based on general best practices for this type of task."}
+
+INSTRUCTIONS:
+1. Analyze the work item and the provided code context.
+2. Generate a clean, production-ready "Draft Diff" or specific code blocks.
+3. If specific snippets are provided, show how they would be modified.
+4. If no snippets are provided, draft the new component or utility logic from scratch.
+5. Use standard modern coding patterns (e.g., Hooks for React, Prisma for DB, etc.).
+6. Focus on the core logic and critical parts of the implementation.
+
+RESPONSE FORMAT:
+Provide your response in clear Markdown. 
+Start with a brief summary of the changes, then provide the code blocks with clear file names if applicable.
+`;
+
+    try {
+        const response = await llm.invoke(prompt);
+        return response["lc_kwargs"].content as string;
+    } catch (error) {
+        console.error("[Drafting Engine] Error generating draft:", error);
+        return "Failed to generate draft changes. Please try again.";
     }
 }
 

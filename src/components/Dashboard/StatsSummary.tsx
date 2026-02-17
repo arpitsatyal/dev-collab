@@ -7,7 +7,6 @@ import {
     ThemeIcon,
     rem,
     Stack,
-    Loader,
     Center,
 } from "@mantine/core";
 import {
@@ -18,6 +17,7 @@ import {
 } from "@tabler/icons-react";
 import { useEffect, useState } from "react";
 import classes from "./StatsSummary.module.css";
+import Loading from "../Loader/Loader";
 
 interface Stats {
     workspaces: number;
@@ -46,7 +46,7 @@ const StatsSummary = () => {
     if (loading) {
         return (
             <Center py="xl">
-                <Loader />
+                <Loading />
             </Center>
         );
     }

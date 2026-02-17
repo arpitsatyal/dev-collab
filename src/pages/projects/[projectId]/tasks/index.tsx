@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Container } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import { withAuth } from "../../../../guards/withAuth";
@@ -16,13 +16,13 @@ import Loading from "../../../../components/Loader/Loader";
 import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 import { useGetProjectByIdQuery } from "../../../../store/api/projectApi";
 import { skipToken } from "@reduxjs/toolkit/query";
-import AISuggestions, { AISuggestionsHandle } from "../../../../components/Task/AISuggestions";
+import AISuggestions from "../../../../components/Task/AISuggestions";
 
 const TasksPage = () => {
   const [opened, { open, close }] = useDisclosure(false);
   const [createTask, { isLoading }] = useCreateTaskMutation();
-  const suggestionsRef = useRef<AISuggestionsHandle>(null);
   const [adoptingIndex, setAdoptingIndex] = useState<number | null>(null);
+  const [dismissedIndices, setDismissedIndices] = useState<number[]>([]);
   const router = useRouter();
   const projectId = getSingleQueryParam(router.query.projectId);
 
@@ -68,7 +68,7 @@ const TasksPage = () => {
       }).unwrap();
 
       if (adoptingIndex !== null) {
-        suggestionsRef.current?.dismiss(adoptingIndex);
+        setDismissedIndices((prev) => [...prev, adoptingIndex]);
         setAdoptingIndex(null);
       }
 
@@ -110,9 +110,11 @@ const TasksPage = () => {
   return (
     <Container size="xl" py="md">
       <AISuggestions
-        ref={suggestionsRef}
         projectId={projectId}
         onAdopt={handleAdoptSuggestion}
+        dismissedIndices={dismissedIndices}
+        onDismiss={(index) => setDismissedIndices((prev) => [...prev, index])}
+        onClearDismissed={() => setDismissedIndices([])}
       />
 
       <TaskInfo project={projectData} open={open} />
