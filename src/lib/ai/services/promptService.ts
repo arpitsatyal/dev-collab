@@ -1,5 +1,6 @@
 
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 
 // Helper for Query Expansion
 export async function generateQueryVariations(query: string, llm: BaseChatModel): Promise<string[]> {
@@ -62,4 +63,101 @@ USER QUESTION:
 ${question}
 
 YOUR RESPONSE:`;
+}
+
+// ─── Suggestion Engine Prompts ─────────────────────────────────────────────
+
+export function buildSuggestWorkItemsMessages(contextStr: string, existingTasksStr: string) {
+    const systemPrompt = `You are a Senior Project Manager and Technical Architect.
+You suggest high-value work items based on project context.
+
+RULES:
+- Always respond with ONLY a valid JSON array. No markdown. No explanation.
+- Each object must have: title, description, priority (LOW/MEDIUM/HIGH), category.
+- Never suggest tasks that already exist in the project or are very similar to them.
+- Suggest exactly 3 items.
+- DO NOT USE NEWLINES INSIDE THE JSON DESCRIPTION STRING.
+
+Example output:
+[
+  {
+    "title": "Add input validation to auth endpoints",
+    "description": "Currently POST /login has no schema validation...",
+    "priority": "HIGH",
+    "category": "Security"
+  }
+]`;
+
+    const userPrompt = `Here is the project context:
+
+${contextStr || "Minimal context available. Please suggest general foundational tasks based on the project goal if provided."}
+
+Existing tasks (do not repeat):
+${existingTasksStr || "No work items created yet."}
+
+Suggest 3 work items.`;
+
+    return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
+}
+
+export function buildImplementationPlanMessages(title: string, description: string, contextStr: string) {
+    const systemPrompt = "You are a Senior Software Engineer and Mentor. You provide deep technical analysis and structured implementation plans.";
+
+    const userPrompt = `Goal: Generate a technical implementation plan for the following Work Item.
+
+Work Item: "${title}"
+Description: ${description || "No description provided."}
+
+The user has attached the following code context:
+${contextStr || "No code context attached."}
+
+INSTRUCTIONS:
+1. RESTRICTION: Use ONLY the provided code context. Do not invent external libraries unless they are obvious standards.
+2. FORMAT: Provide a structured Markdown plan.
+3. INCLUDE:
+   - High-level approach.
+   - Step-by-step code changes (use diff-style or clear snippets).
+   - Potential edge cases or risks.
+4. COMPLETENESS: Ensure all code blocks are complete and NOT truncated. Provide the full logic for all suggested changes.
+5. EXCLUSION: Do NOT include "Next Steps", "Future Enhancements", "Further Reading", or any interactive to-do lists.
+
+Tone: Professional, concise, and helpful.`;
+
+    return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
+}
+
+export function buildDraftChangesMessages(title: string, description: string, projectContext: string, contextStr: string) {
+    const systemPrompt = "You are an Expert Software Implementation Engineer. You generate production-grade code changes based on work items and project context.";
+
+    const userPrompt = `Goal: Draft the specific code changes required to implement the following Work Item.
+
+Work Item: "${title}"
+Description: ${description || "No description provided."}
+
+PROJECT CONTEXT:
+${projectContext}
+
+CURRENT CODE SNIPPETS (CONTEXT):
+${contextStr || "No specific code context attached. Draft based on general best practices for this type of task."}
+
+INSTRUCTIONS:
+Before writing any code, follow these reasoning steps:
+1. Briefly explain what the work item requires based on the context.
+2. Identify which files or functions need to change and why.
+3. Consider potential side effects or dependencies.
+
+Then, provide the implementation:
+1. Generate a clean, production-ready "Draft Diff" or specific code blocks.
+2. If specific snippets are provided, show how they would be modified.
+3. If no snippets are provided, draft the new component or utility logic from scratch.
+4. Use standard modern coding patterns (Hooks for React, Prisma for DB, etc.).
+5. Focus on the core logic and critical parts of the implementation.
+6. COMPLETENESS: Do NOT truncate code blocks. Ensure the output is a complete, valid implementation.
+7. NEGATIVE CONSTRAINT: Do NOT include any conversation, "Next steps", or placeholder comments.
+
+RESPONSE FORMAT:
+Provide your response in clear Markdown.
+Start with your reasoning section (points 1-3 above), then provide the code blocks with clear file names.`;
+
+    return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }

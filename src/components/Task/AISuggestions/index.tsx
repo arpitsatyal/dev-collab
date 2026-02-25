@@ -43,12 +43,10 @@ const AISuggestions = ({
     if (isLoading) {
         return (
             <Paper withBorder p="md" radius="md" mb="xl">
-                <Center py="xl">
-                    <Stack align="center" gap="sm">
-                        <Loading />
-                        <Text size="sm" c="dimmed">AI is analyzing your workspace context...</Text>
-                    </Stack>
-                </Center>
+                <Stack align="center" gap="sm" py="xl">
+                    <Loading loaderHeight="20vh" />
+                    <Text size="sm" c="dimmed">AI is analyzing your workspace context...</Text>
+                </Stack>
             </Paper>
         );
     }

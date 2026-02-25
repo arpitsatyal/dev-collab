@@ -14,6 +14,14 @@ const nextConfig = {
     NEXT_PUBLIC_API_GATEWAY_URL: process.env.NEXT_PUBLIC_API_GATEWAY_URL,
     secrets: process.env.SECRETS,
   },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+    ],
+  },
   webpack: (config, { isServer }) => {
     // Allow monaco-editor CSS imports
     const cssRule = config.module.rules.find((rule) =>

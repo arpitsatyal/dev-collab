@@ -23,7 +23,7 @@ const TaskInfo = ({
         }}
         className="title"
       >
-        Project Workspace {project?.title}
+        Project Workspace [{project?.title}]
       </Text>
       <Button onClick={open}>Create Work Item</Button>
     </Group>
