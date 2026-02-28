@@ -1,5 +1,6 @@
 
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 
 // Helper for Query Expansion
@@ -12,8 +13,7 @@ export async function generateQueryVariations(query: string, llm: BaseChatModel)
     Query: "${query}"`;
 
     try {
-        const response = await llm.invoke(prompt);
-        const content = response["lc_kwargs"].content as string;
+        const content = await llm.pipe(new StringOutputParser()).invoke(prompt);
         const variations = content.split('\n').filter(q => q.trim().length > 0).slice(0, 3);
         return [query, ...variations];
     } catch (e) {
@@ -67,16 +67,18 @@ YOUR RESPONSE:`;
 
 // ─── Suggestion Engine Prompts ─────────────────────────────────────────────
 
-export function buildSuggestWorkItemsMessages(contextStr: string, existingTasksStr: string) {
+export function buildSuggestWorkItemsMessages(projectContext: string) {
     const systemPrompt = `You are a Senior Project Manager and Technical Architect.
 You suggest high-value work items based on project context.
 
 RULES:
 - Always respond with ONLY a valid JSON array. No markdown. No explanation.
 - Each object must have: title, description, priority (LOW/MEDIUM/HIGH), category.
-- Never suggest tasks that already exist in the project or are very similar to them.
+- Never suggest tasks that already exist in the project or are very similar to them. Use tools to check existing tasks.
+- If the project has NO snippets, docs, or tasks, suggest 3 highly foundational boilerplate setup items based purely on the PROJECT TITLE and DESCRIPTION.
 - Suggest exactly 3 items.
 - DO NOT USE NEWLINES INSIDE THE JSON DESCRIPTION STRING.
+- You have access to tools to fetch project snippets, documents, and existing tasks. Use them if you need more context before suggesting work items.
 
 Example output:
 [
@@ -90,12 +92,9 @@ Example output:
 
     const userPrompt = `Here is the project context:
 
-${contextStr || "Minimal context available. Please suggest general foundational tasks based on the project goal if provided."}
+${projectContext || "Minimal context available. Please suggest general foundational tasks based on the project goal if provided."}
 
-Existing tasks (do not repeat):
-${existingTasksStr || "No work items created yet."}
-
-Suggest 3 work items.`;
+Please analyze the project using your tools and suggest 3 high-value work items.`;
 
     return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }

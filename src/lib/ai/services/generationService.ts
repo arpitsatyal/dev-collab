@@ -1,5 +1,6 @@
 
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import { validateResponse } from "../../../pages/api/utils/validateLLMResponse";
 
 // Helper to provide source citations for factual answers
@@ -21,8 +22,7 @@ function improveResponseWithCitations(answer: string, filteredResults: any[]) {
 }
 
 export async function generateAnswer(llm: BaseChatModel, prompt: string, context: string, filteredResults: any[]) {
-    const aiResponse = await llm.invoke(prompt);
-    let answer = aiResponse["lc_kwargs"].content;
+    let answer = await llm.pipe(new StringOutputParser()).invoke(prompt);
 
     answer = improveResponseWithCitations(answer, filteredResults);
 

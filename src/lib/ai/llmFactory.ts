@@ -65,3 +65,27 @@ export async function getStructuredLLMWithFallback(schema: any, name: string) {
         fallbacks: [structuredFallback],
     });
 }
+
+/**
+ * Specifically for Tool Calling.
+ * LangChain's .withFallbacks() returns a Runnable, which strips the .bindTools method.
+ * Instead, we must apply .bindTools() to EACH model FIRST, and then combine them with fallbacks.
+ */
+export async function getToolBoundLLMWithFallback(tools: any[]) {
+    const primary = (process.env.LLM_PROVIDER as LLMProvider) || "TOGETHER";
+    const fallback = (process.env.LLM_FALLBACK_PROVIDER as LLMProvider) || "GROQ";
+
+    const primaryLLM = getLLM(primary);
+    const fallbackLLM = getLLM(fallback);
+
+    if (typeof primaryLLM.bindTools !== 'function' || typeof fallbackLLM.bindTools !== 'function') {
+        throw new Error("One or more configured LLMs do not support bindTools.");
+    }
+
+    const boundPrimary = primaryLLM.bindTools(tools);
+    const boundFallback = fallbackLLM.bindTools(tools);
+
+    return boundPrimary.withFallbacks({
+        fallbacks: [boundFallback],
+    });
+}
