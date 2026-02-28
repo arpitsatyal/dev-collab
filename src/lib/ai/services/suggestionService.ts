@@ -23,7 +23,6 @@ export type WorkItemSuggestion = z.infer<typeof WorkItemSuggestionSchema>;
 export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
     const structuredLlm = await getStructuredLLMWithFallback(WorkItemSuggestionsSchema, "suggest_work_items");
 
-    //TODO: use from vector db.
     // 1. Fetch context (Snippets, Docs, Existing Tasks, and Project Details)
     const [snippets, docs, existingTasks, project] = await Promise.all([
         prisma.snippet.findMany({
@@ -64,15 +63,26 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
         ? `PROJECT: ${project.title}\nDESCRIPTION: ${project.description || "No description provided."}`
         : "";
 
-    const snippetsDocsContext = [
-        ...snippets.map((s: any) => {
-            const contentString = safeParseContent(s.content);
-            return `Snippet: ${s.title} (${s.language})\nContent: ${contentString.slice(0, 400)}...`;
-        }),
-        ...docs.map((d: any) => `Document: ${d.label}\nSummary: ${JSON.stringify(d.content).slice(0, 400)}...`)
-    ].join("\n\n");
+    const snippetsContext = snippets.map((s: any) => {
+        const content = safeParseContent(s.content);
+        return [
+            `### Snippet: ${s.title}`,
+            `Language: ${s.language}`,
+            `\`\`\`${s.language}`,
+            content.slice(0, 600),
+            `\`\`\``
+        ].join("\n");
+    }).join("\n\n");
 
-    const contextStr = [projectContext, snippetsDocsContext].filter(Boolean).join("\n\n");
+    const docsContext = docs.map((d: any) => {
+        const content = safeParseContent(d.content);
+        return [
+            `### Document: ${d.label}`,
+            content.slice(0, 600)
+        ].join("\n");
+    }).join("\n\n");
+
+    const contextStr = [projectContext, snippetsContext, docsContext].filter(Boolean).join("\n\n");
     const existingTasksStr = existingTasks.map((t: any) => `- ${t.title}`).join("\n");
 
     // 2. Build messages via promptService and invoke LLM
@@ -102,9 +112,13 @@ export async function generateImplementationPlan(taskId: string): Promise<string
 
     if (!task) throw new Error("Work Item not found");
 
-    const contextStr = task.snippets.map(s =>
-        `--- Snippet: ${s.title} (${s.language}) ---\n${s.content}`
-    ).join("\n\n");
+    const contextStr = task.snippets.map(s => [
+        `### Snippet: ${s.title}`,
+        `Language: ${s.language}`,
+        `\`\`\`${s.language}`,
+        s.content,
+        `\`\`\``
+    ].join("\n")).join("\n\n");
 
     // 2. Build messages via promptService and invoke LLM
     try {
@@ -132,9 +146,13 @@ export async function generateDraftChanges(taskId: string): Promise<string> {
 
     if (!task) throw new Error("Work Item not found");
 
-    const contextStr = task.snippets.map(s =>
-        `--- Snippet: ${s.title} (${s.language}) ---\n${s.content}`
-    ).join("\n\n");
+    const contextStr = task.snippets.map(s => [
+        `### Snippet: ${s.title}`,
+        `Language: ${s.language}`,
+        `\`\`\`${s.language}`,
+        s.content,
+        `\`\`\``
+    ].join("\n")).join("\n\n");
 
     const projectContext = task.project
         ? `Project: ${task.project.title}\nDescription: ${task.project.description || "No description"}`
