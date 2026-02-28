@@ -67,23 +67,25 @@ YOUR RESPONSE:`;
 
 // ─── Suggestion Engine Prompts ─────────────────────────────────────────────
 
-export function buildSuggestWorkItemsMessages(projectContext: string) {
-    const systemPrompt = `You are a Senior Project Manager and Technical Architect.
-You suggest high-value work items based on project context.
+type SuggestionContext = {
+    project: { title: string; description: string | null } | null;
+    projectId: string;
+    tasks: { title: string; description: string | null; status: string }[];
+    snippets: { title: string; language: string; content: string }[];
+    docs: { label: string; content: unknown }[];
+};
 
-RECOMMENDED WORKFLOW — gather context before suggesting:
-1. Call getExistingTasks to see current tasks and their status.
-2. Call getSnippets to check if code has already been implemented (it will tell you if nothing exists).
-3. Call getDocs to check if any documentation or requirements exist (it will tell you if nothing exists).
-Use whatever context you find to make informed, non-duplicate suggestions.
+export function buildSuggestWorkItemsMessages({ project, projectId, tasks, snippets, docs }: SuggestionContext) {
+    const systemPrompt = `You are a Senior Project Manager and Technical Architect.
+Your job is to suggest 3 high-value, non-duplicate work items for a software project.
 
 RULES:
-- Always respond with ONLY a valid JSON array. No markdown. No explanation.
+- Respond with ONLY a valid JSON array. No markdown, no explanation.
 - Each object must have: title, description, priority (LOW/MEDIUM/HIGH), category.
-- Tasks with status DONE or IN_PROGRESS are ALREADY IMPLEMENTED. Never suggest them or anything closely related.
-- Tasks with status TODO are planned — avoid duplicating those too.
-- If snippets show a feature is already coded, do not suggest building it again.
-- Suggest exactly 3 NEW items that do not overlap with anything already implemented or in progress.
+- Tasks with status DONE or IN_PROGRESS are ALREADY IMPLEMENTED — never suggest them or close variants.
+- Tasks with status TODO are already planned — do not duplicate them.
+- If snippets show a feature is coded, do not suggest building it again.
+- Suggest exactly 3 NEW items that do not overlap with anything in the context below.
 - DO NOT USE NEWLINES INSIDE THE JSON DESCRIPTION STRING.
 
 Example output:
@@ -96,14 +98,39 @@ Example output:
   }
 ]`;
 
-    const userPrompt = `Here is the project context:
+    const projectSection = project
+        ? `Project: ${project.title}\nDescription: ${project.description || "No description provided."}`
+        : `Project ID: ${projectId}`;
 
-${projectContext || "Minimal context available. Please suggest general foundational tasks based on the project goal if provided."}
+    const tasksSection = tasks.length > 0
+        ? tasks.map(t => `- [${t.status}] ${t.title}${t.description ? `: ${t.description}` : ""}`).join("\n")
+        : "No existing tasks.";
 
-Please analyze the project using your tools and suggest 3 high-value work items.`;
+    const snippetsSection = snippets.length > 0
+        ? snippets.map(s => `### ${s.title} (${s.language})\n\`\`\`${s.language}\n${s.content.slice(0, 500)}\n\`\`\``).join("\n\n")
+        : "No code snippets.";
+
+    const docsSection = docs.length > 0
+        ? docs.map(d => `### ${d.label}`).join("\n")
+        : "No documentation.";
+
+    const userPrompt = `## PROJECT
+${projectSection}
+
+## EXISTING TASKS (avoid duplicating these)
+${tasksSection}
+
+## CODE SNIPPETS (already implemented — do not re-suggest)
+${snippetsSection}
+
+## DOCUMENTATION
+${docsSection}
+
+Suggest exactly 3 new high-value work items based on the above context.`;
 
     return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }
+
 
 export function buildImplementationPlanMessages(title: string, description: string, contextStr: string) {
     const systemPrompt = "You are a Senior Software Engineer and Mentor. You provide deep technical analysis and structured implementation plans.";

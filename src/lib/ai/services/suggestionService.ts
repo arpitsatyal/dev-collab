@@ -1,9 +1,7 @@
-import { getToolBoundLLMWithFallback, getStructuredLLMWithFallback, getLLMWithFallback } from "../llmFactory";
+import { getStructuredLLMWithFallback, getLLMWithFallback } from "../llmFactory";
 import prisma from "../../db/prisma";
 import z from "zod";
-import { ToolMessage, AIMessage, BaseMessage } from "@langchain/core/messages";
-import { JsonOutputParser, StringOutputParser } from "@langchain/core/output_parsers";
-import { getSnippetsTool, getDocsTool, getExistingTasksTool } from "./toolService";
+import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
     buildSuggestWorkItemsMessages,
     buildImplementationPlanMessages,
@@ -24,97 +22,45 @@ export const WorkItemSuggestionsSchema = z.object({
 export type WorkItemSuggestion = z.infer<typeof WorkItemSuggestionSchema>;
 
 export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
-    const tools = [getSnippetsTool, getDocsTool, getExistingTasksTool];
-    const toolsByName = Object.fromEntries(tools.map(t => [t.name, t]));
+    // Fetch all context in parallel — deterministic, no LLM discretion
+    const [project, tasks, snippets, docs] = await Promise.all([
+        prisma.project.findUnique({
+            where: { id: projectId },
+            select: { title: true, description: true }
+        }),
+        prisma.task.findMany({
+            where: { projectId },
+            take: 20,
+            orderBy: { createdAt: "desc" },
+            select: { title: true, description: true, status: true }
+        }),
+        prisma.snippet.findMany({
+            where: { projectId },
+            take: 5,
+            orderBy: { updatedAt: "desc" },
+            select: { title: true, language: true, content: true }
+        }),
+        prisma.doc.findMany({
+            where: { projectId },
+            take: 3,
+            orderBy: { updatedAt: "desc" },
+            select: { label: true, content: true }
+        }),
+    ]);
 
-    // Bind tools to the LLMs safely using factory before fallback wrapping
-    const llmWithTools = await getToolBoundLLMWithFallback(tools);
-
-    // 2. Fetch Base Project Info & Create Initial Messages
-    const project = await prisma.project.findUnique({
-        where: { id: projectId },
-        select: { title: true, description: true }
-    });
-
-    const projectContext = project
-        ? `PROJECT: ${project.title}\nDESCRIPTION: ${project.description || "No description provided."}\nPROJECT_ID: ${projectId}`
-        : `PROJECT_ID: ${projectId}`;
-
-    let messages: BaseMessage[] = buildSuggestWorkItemsMessages(projectContext);
-
-    const calledTools: string[] = [];
+    console.log(`[Suggestion Engine] Fetched context — tasks: ${tasks.length}, snippets: ${snippets.length}, docs: ${docs.length}`);
 
     try {
-        // 3. The Tool-Calling Loop
-        while (true) {
-            // Wait for the LLM to either call a tool or finish
-            const response = await llmWithTools.invoke(messages) as AIMessage;
-            messages.push(response);
-
-            // If no tool calls, it's done gathering information
-            if (!response.tool_calls || response.tool_calls.length === 0) {
-                break;
-            }
-
-            // Execute the requested tools
-            for (const toolCall of response.tool_calls) {
-                calledTools.push(toolCall.name);
-                const tool = toolsByName[toolCall.name];
-                if (!tool) {
-                    messages.push(new ToolMessage({
-                        content: `Error: Tool ${toolCall.name} not found.`,
-                        tool_call_id: toolCall.id!
-                    }));
-                    continue;
-                }
-
-                // Inject the projectId forcefully just to be safe if the LLM hallucinated it
-                const args = { ...toolCall.args, projectId };
-                const result = await tool.invoke(args);
-
-                messages.push(new ToolMessage({
-                    content: result,
-                    tool_call_id: toolCall.id!
-                }));
-            }
-        }
-
-        if (calledTools.length === 0) {
-            console.log("[Suggestion Engine] LLM skipped all tools and responded directly.");
-        } else {
-            console.log(`[Suggestion Engine] Tools called (${calledTools.length}): ${calledTools.join(" → ")}`);
-        }
-
-        // 4. Try to parse the final AIMessage content directly via LangChain's JsonOutputParser
-        console.log("[Suggestion Engine] Finished tool calling. Extracting final content...");
-        const lastMessage = messages[messages.length - 1];
-        if (lastMessage instanceof AIMessage && typeof lastMessage.content === "string" && lastMessage.content.trim()) {
-            try {
-                const jsonParser = new JsonOutputParser();
-                const parsed = await jsonParser.invoke(lastMessage);
-                const candidates = Array.isArray(parsed) ? parsed : parsed?.suggestions;
-                if (Array.isArray(candidates) && candidates.length > 0) {
-                    const validated = WorkItemSuggestionsSchema.safeParse({ suggestions: candidates });
-                    if (validated.success) {
-                        return validated.data.suggestions;
-                    }
-                }
-            } catch {
-                // Not directly parseable — fall through to structured LLM
-            }
-        }
-
-        // 5. Fall back: Force Structured Output for the final formatting
-        console.log("[Suggestion Engine] Direct parse failed. Invoking structured LLM...");
+        const messages = buildSuggestWorkItemsMessages({ project, projectId, tasks, snippets, docs });
         const structuredLlm = await getStructuredLLMWithFallback(WorkItemSuggestionsSchema, "suggest_work_items");
-        const finalResult = await structuredLlm.invoke(messages);
-        return finalResult?.suggestions || [];
-
+        const result = await structuredLlm.invoke(messages);
+        return result?.suggestions || [];
     } catch (error) {
-        console.error("[Suggestion Engine] Error during tool calling:", error);
+        console.error("[Suggestion Engine] Error generating suggestions:", error);
         return [];
     }
 }
+
 
 export async function generateImplementationPlan(taskId: string): Promise<string> {
     const llm = await getLLMWithFallback();
