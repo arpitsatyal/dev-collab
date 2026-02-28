@@ -14,7 +14,7 @@ const safeParseContent = (content: any): string => {
 
 export const getSnippetsTool = new DynamicStructuredTool({
     name: "getSnippets",
-    description: "Fetch recent code snippets from the project to understand the technical context.",
+    description: "Fetch code snippets already implemented in this project. Call this to check what code already exists before making suggestions.",
     schema: z.object({ projectId: z.string() }),
     func: async ({ projectId }) => {
         const snippets = await prisma.snippet.findMany({
@@ -38,7 +38,7 @@ export const getSnippetsTool = new DynamicStructuredTool({
 
 export const getDocsTool = new DynamicStructuredTool({
     name: "getDocs",
-    description: "Fetch project documentation and requirements.",
+    description: "Fetch project documentation and requirements. Call this to check what has already been designed or documented for this project.",
     schema: z.object({ projectId: z.string() }),
     func: async ({ projectId }) => {
         const docs = await prisma.doc.findMany({
@@ -61,20 +61,24 @@ export const getDocsTool = new DynamicStructuredTool({
 
 export const getExistingTasksTool = new DynamicStructuredTool({
     name: "getExistingTasks",
-    description: "Check existing tasks to avoid suggesting duplicates.",
+    description: "Fetch existing tasks and their implementation status (TODO/IN_PROGRESS/DONE). Call this to avoid suggesting already planned or completed work.",
     schema: z.object({ projectId: z.string() }),
     func: async ({ projectId }) => {
         const tasks = await prisma.task.findMany({
             where: { projectId },
             take: 15,
             orderBy: { createdAt: "desc" },
-            select: { title: true }
+            select: { title: true, description: true, status: true }
         });
 
         if (tasks.length === 0) {
             return "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
         }
 
-        return JSON.stringify(tasks);
+        return JSON.stringify(tasks.map(t => ({
+            title: t.title,
+            description: t.description || "",
+            status: t.status
+        })));
     }
 });

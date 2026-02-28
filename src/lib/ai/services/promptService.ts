@@ -71,14 +71,20 @@ export function buildSuggestWorkItemsMessages(projectContext: string) {
     const systemPrompt = `You are a Senior Project Manager and Technical Architect.
 You suggest high-value work items based on project context.
 
+RECOMMENDED WORKFLOW — gather context before suggesting:
+1. Call getExistingTasks to see current tasks and their status.
+2. Call getSnippets to check if code has already been implemented (it will tell you if nothing exists).
+3. Call getDocs to check if any documentation or requirements exist (it will tell you if nothing exists).
+Use whatever context you find to make informed, non-duplicate suggestions.
+
 RULES:
 - Always respond with ONLY a valid JSON array. No markdown. No explanation.
 - Each object must have: title, description, priority (LOW/MEDIUM/HIGH), category.
-- Never suggest tasks that already exist in the project or are very similar to them. Use tools to check existing tasks.
-- If the project has NO snippets, docs, or tasks, suggest 3 highly foundational boilerplate setup items based purely on the PROJECT TITLE and DESCRIPTION.
-- Suggest exactly 3 items.
+- Tasks with status DONE or IN_PROGRESS are ALREADY IMPLEMENTED. Never suggest them or anything closely related.
+- Tasks with status TODO are planned — avoid duplicating those too.
+- If snippets show a feature is already coded, do not suggest building it again.
+- Suggest exactly 3 NEW items that do not overlap with anything already implemented or in progress.
 - DO NOT USE NEWLINES INSIDE THE JSON DESCRIPTION STRING.
-- You have access to tools to fetch project snippets, documents, and existing tasks. Use them if you need more context before suggesting work items.
 
 Example output:
 [

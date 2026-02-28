@@ -42,6 +42,8 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 
     let messages: BaseMessage[] = buildSuggestWorkItemsMessages(projectContext);
 
+    const calledTools: string[] = [];
+
     try {
         // 3. The Tool-Calling Loop
         while (true) {
@@ -56,7 +58,7 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 
             // Execute the requested tools
             for (const toolCall of response.tool_calls) {
-                console.log(`[Suggestion Engine] LLM called tool: ${toolCall.name}`);
+                calledTools.push(toolCall.name);
                 const tool = toolsByName[toolCall.name];
                 if (!tool) {
                     messages.push(new ToolMessage({
@@ -77,6 +79,12 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
             }
         }
 
+        if (calledTools.length === 0) {
+            console.log("[Suggestion Engine] LLM skipped all tools and responded directly.");
+        } else {
+            console.log(`[Suggestion Engine] Tools called (${calledTools.length}): ${calledTools.join(" → ")}`);
+        }
+
         // 4. Try to parse the final AIMessage content directly via LangChain's JsonOutputParser
         console.log("[Suggestion Engine] Finished tool calling. Extracting final content...");
         const lastMessage = messages[messages.length - 1];
@@ -88,7 +96,6 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
                 if (Array.isArray(candidates) && candidates.length > 0) {
                     const validated = WorkItemSuggestionsSchema.safeParse({ suggestions: candidates });
                     if (validated.success) {
-                        console.log("finalResult", validated.data);
                         return validated.data.suggestions;
                     }
                 }
