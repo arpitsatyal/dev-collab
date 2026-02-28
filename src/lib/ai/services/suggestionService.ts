@@ -1,21 +1,29 @@
-import { getLLMWithFallback } from "../llmFactory";
+import { getLLMWithFallback, getStructuredLLMWithFallback } from "../llmFactory";
 import prisma from "../../db/prisma";
+import z from "zod";
 import {
     buildSuggestWorkItemsMessages,
     buildImplementationPlanMessages,
     buildDraftChangesMessages
 } from "./promptService";
 
-export interface WorkItemSuggestion {
-    title: string;
-    description: string;
-    priority: "LOW" | "MEDIUM" | "HIGH";
-    category: string;
-}
+export const WorkItemSuggestionSchema = z.object({
+    title: z.string().describe("Concise title of the task"),
+    description: z.string().describe("Clear explanation of what needs to be done"),
+    priority: z.enum(["LOW", "MEDIUM", "HIGH"]).describe("Priority level"),
+    category: z.string().describe("Short category (e.g., 'Refactor', 'Feature')"),
+});
+
+export const WorkItemSuggestionsSchema = z.object({
+    suggestions: z.array(WorkItemSuggestionSchema),
+});
+
+export type WorkItemSuggestion = z.infer<typeof WorkItemSuggestionSchema>;
 
 export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
-    const llm = await getLLMWithFallback();
+    const structuredLlm = await getStructuredLLMWithFallback(WorkItemSuggestionsSchema, "suggest_work_items");
 
+    //TODO: use from vector db.
     // 1. Fetch context (Snippets, Docs, Existing Tasks, and Project Details)
     const [snippets, docs, existingTasks, project] = await Promise.all([
         prisma.snippet.findMany({
@@ -69,28 +77,11 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 
     // 2. Build messages via promptService and invoke LLM
     try {
-        const response = await llm.invoke(buildSuggestWorkItemsMessages(contextStr, existingTasksStr));
-        let content = response["lc_kwargs"].content as string;
+        const messages = buildSuggestWorkItemsMessages(contextStr, existingTasksStr);
 
-        // More robust JSON extraction and cleaning
-        // 1. Remove markdown backticks
-        content = content.replace(/```json|```/g, "").trim();
+        const result = await structuredLlm.invoke(messages);
+        return result.suggestions;
 
-        // 2. Locate the JSON array
-        const jsonMatch = content.match(/\[[\s\S]*\]/);
-        let jsonStr = jsonMatch ? jsonMatch[0] : content;
-
-        // 3. CRITICAL: Handle unescaped newlines in JSON strings which LLMs often generate
-        jsonStr = jsonStr.replace(/"([^"]*)"/g, (match, p1) => {
-            return '"' + p1.replace(/\n/g, "\\n") + '"';
-        });
-
-        try {
-            return JSON.parse(jsonStr);
-        } catch (parseError) {
-            console.error("[Suggestion Engine] JSON Parse Error. Cleaned Content was:", jsonStr);
-            return [];
-        }
     } catch (error) {
         console.error("[Suggestion Engine] Error generating suggestions:", error);
         return [];

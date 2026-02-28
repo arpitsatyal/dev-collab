@@ -17,6 +17,7 @@
     "@aws-sdk/client-sqs": "^3.828.0",
     "@emotion/react": "^11.14.0",
     "@langchain/core": "^1.1.24",
+    "@langchain/openai": "^1.2.11",
     "@langchain/pinecone": "^1.0.1",
     "@liveblocks/client": "^3.0.0",
     "@liveblocks/emails": "^3.0.0",
