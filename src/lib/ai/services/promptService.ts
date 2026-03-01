@@ -1,30 +1,27 @@
 
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
-import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 
+// ─── Shared Base Constants ──────────────────────────────────────────────────
+const BASE_PERSONA = "You are a helpful and friendly AI Assistant for the Dev-Collab platform.";
+const BASE_FORMATTING = "Format your response using Markdown: use **bold** for key terms, *italics* for emphasis, `code` for identifiers/snippets, and bullet lists for multiple items.";
+
+const PLAN_RESTRICTIONS = `
+INSTRUCTIONS:
+1. RESTRICTION: Use ONLY the provided code context. Do not invent external libraries unless they are obvious standards.
+2. COMPLETENESS: Ensure all code blocks are complete and NOT truncated. Provide the full logic for all suggested changes.
+3. EXCLUSION: Do NOT include "Next Steps", "Future Enhancements", "Further Reading", or any interactive to-do lists.`;
+
 export function buildChatMessages(history: string, question: string) {
-    const systemPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
+    const systemPrompt = `${BASE_PERSONA}
 Your goal is to assist users with their questions about projects, tasks, code snippets, and documentation.
-
-You have access to tools that can fetch live project data:
-- getSnippets: fetch code snippets — use when the user asks about a specific snippet or file by name
-- getDocs: fetch documentation — use when the user asks about a specific doc, requirement, or spec by name
-- getExistingTasks: fetch tasks — use when the user asks about tasks, progress, or status
-- semanticSearch: search all project content by meaning — use for open-ended questions like "how does X work?" or "explain the auth flow" where you need to find relevant content across snippets, docs, and tasks
-
-WHEN NOT TO USE TOOLS (CRITICAL):
-- Do NOT use tools for greetings (e.g., "Hi", "Hello", "How are you?").
-- Do NOT use tools for conversational acknowledgments (e.g., "Thanks", "Okay", "Got it").
-- Do NOT use tools for general coding questions unrelated to the project (e.g., "What is a React hook?").
-- If the user asks a conversational question, answer directly. If you use a tool for a greeting, you will fail.
 
 GUIDELINES:
 - For factual questions about project data, call the relevant tool first, then answer using what you find.
 - Never mention tool names or internal mechanics in your response to the user.
 - Speak naturally. State information directly without meta-talk like "based on the context provided".
-- Format your response using Markdown: use **bold** for key terms, *italics* for emphasis, \`code\` for identifiers/snippets, and bullet lists for multiple items.
+- ${BASE_FORMATTING}
 
 CONVERSATION HISTORY:
 ${history || "No previous messages."}`;
@@ -35,27 +32,10 @@ ${history || "No previous messages."}`;
     ];
 }
 
-// Helper for Query Expansion
-export async function generateQueryVariations(query: string, llm: BaseChatModel): Promise<string[]> {
-    const prompt = `You are an AI assistant helping to expand a user's search query.
-    Generate 3 alternative versions of the following query to improve search retrieval. 
-    Focus on synonyms, related concepts, and technical terms relevant to software development.
-    Return ONLY the 3 queries, one per line, without any numbering or extra text.
-    
-    Query: "${query}"`;
 
-    try {
-        const content = await llm.pipe(new StringOutputParser()).invoke(prompt);
-        const variations = content.split('\n').filter(q => q.trim().length > 0).slice(0, 3);
-        return [query, ...variations];
-    } catch (e) {
-        console.warn("[Query Expansion] Failed:", e);
-        return [query];
-    }
-}
 
 export function constructPrompt(context: string, history: string, question: string) {
-    return `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
+    return `${BASE_PERSONA}
     
 Your goal is to assist users with their questions about projects, documentation, and tasks while maintaining a warm, professional persona.
 
@@ -174,16 +154,12 @@ Description: ${description || "No description provided."}
 
 The user has attached the following code context:
 ${contextStr || "No code context attached."}
-
-INSTRUCTIONS:
-1. RESTRICTION: Use ONLY the provided code context. Do not invent external libraries unless they are obvious standards.
-2. FORMAT: Provide a structured Markdown plan.
-3. INCLUDE:
+${PLAN_RESTRICTIONS}
+4. FORMAT: Provide a structured Markdown plan.
+5. INCLUDE:
    - High-level approach.
    - Step-by-step code changes (use diff-style or clear snippets).
    - Potential edge cases or risks.
-4. COMPLETENESS: Ensure all code blocks are complete and NOT truncated. Provide the full logic for all suggested changes.
-5. EXCLUSION: Do NOT include "Next Steps", "Future Enhancements", "Further Reading", or any interactive to-do lists.
 
 Tone: Professional, concise, and helpful.`;
 
@@ -204,11 +180,11 @@ ${projectContext}
 CURRENT CODE SNIPPETS (CONTEXT):
 ${contextStr || "No specific code context attached. Draft based on general best practices for this type of task."}
 
-INSTRUCTIONS:
 Before writing any code, follow these reasoning steps:
 1. Briefly explain what the work item requires based on the context.
 2. Identify which files or functions need to change and why.
 3. Consider potential side effects or dependencies.
+${PLAN_RESTRICTIONS}
 
 Then, provide the implementation:
 1. Generate a clean, production-ready "Draft Diff" or specific code blocks.
@@ -216,8 +192,6 @@ Then, provide the implementation:
 3. If no snippets are provided, draft the new component or utility logic from scratch.
 4. Use standard modern coding patterns (Hooks for React, Prisma for DB, etc.).
 5. Focus on the core logic and critical parts of the implementation.
-6. COMPLETENESS: Do NOT truncate code blocks. Ensure the output is a complete, valid implementation.
-7. NEGATIVE CONSTRAINT: Do NOT include any conversation, "Next steps", or placeholder comments.
 
 RESPONSE FORMAT:
 Provide your response in clear Markdown.
@@ -248,7 +222,7 @@ Always populate your reasoning before your final decision so you can think step-
 }
 
 export function buildConversationalMessages(history: string, question: string) {
-    const systemPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
+    const systemPrompt = `${BASE_PERSONA}
     
 Respond to the user's conversational input naturally and politely.
 Do not invent project details. Keep your response concise, warm, and professional.

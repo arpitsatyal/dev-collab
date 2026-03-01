@@ -15,18 +15,29 @@ const safeParseContent = (content: any): string => {
 
 export const getSnippetsTool = new DynamicStructuredTool({
     name: "getSnippets",
-    description: "Fetch code snippets already implemented in this project. Call this to check what code already exists before making suggestions.",
-    schema: z.object({ projectId: z.string() }),
-    func: async ({ projectId }) => {
+    description: "Fetch code snippets by their human-readable Title/Name (e.g. 'Auth Hook' or 'User Model'). DO NOT use this tool to search for raw code strings, implementation details, or if you don't know the exact file name — use semanticSearch for that instead. If you are trying to understand what code already exists in the project generally, omit 'title'.",
+    schema: z.object({
+        projectId: z.string(),
+        title: z.string().optional().describe("Specific human-readable name of the snippet to search for. DO NOT place code strings here.")
+    }),
+    func: async ({ projectId, title }) => {
+        const whereClause: any = { projectId };
+
+        if (title) {
+            whereClause.title = { contains: title, mode: 'insensitive' };
+        }
+
         const snippets = await prisma.snippet.findMany({
-            where: { projectId },
+            where: whereClause,
             take: 5,
             orderBy: { updatedAt: "desc" },
             select: { title: true, content: true, language: true }
         });
 
         if (snippets.length === 0) {
-            return "No code snippets have been created for this project yet.";
+            return title
+                ? `No code snippets found matching the title or keywords: '${title}'.`
+                : "No code snippets have been created for this project yet.";
         }
 
         return JSON.stringify(snippets.map(s => ({
@@ -39,18 +50,29 @@ export const getSnippetsTool = new DynamicStructuredTool({
 
 export const getDocsTool = new DynamicStructuredTool({
     name: "getDocs",
-    description: "Fetch project documentation and requirements. Call this to check what has already been designed or documented for this project.",
-    schema: z.object({ projectId: z.string() }),
-    func: async ({ projectId }) => {
+    description: "Fetch project documentation by its human-readable Label (e.g. 'Database Schema'). DO NOT use this tool for conceptual keyword searches — use semanticSearch for that. If you just want general project documentation context, omit 'label'.",
+    schema: z.object({
+        projectId: z.string(),
+        label: z.string().optional().describe("Specific human-readable name of the document to search for. DO NOT place code or conceptual strings here.")
+    }),
+    func: async ({ projectId, label }) => {
+        const whereClause: any = { projectId };
+
+        if (label) {
+            whereClause.label = { contains: label, mode: 'insensitive' };
+        }
+
         const docs = await prisma.doc.findMany({
-            where: { projectId },
+            where: whereClause,
             take: 3,
             orderBy: { updatedAt: "desc" },
             select: { label: true, content: true }
         });
 
         if (docs.length === 0) {
-            return "No project documentation documents have been found for this project.";
+            return label
+                ? `No documentation found matching the label: '${label}'.`
+                : "No project documentation documents have been found for this project.";
         }
 
         return JSON.stringify(docs.map(d => ({
@@ -62,18 +84,29 @@ export const getDocsTool = new DynamicStructuredTool({
 
 export const getExistingTasksTool = new DynamicStructuredTool({
     name: "getExistingTasks",
-    description: "Fetch existing tasks and their implementation status (TODO/IN_PROGRESS/DONE). Call this to avoid suggesting already planned or completed work.",
-    schema: z.object({ projectId: z.string() }),
-    func: async ({ projectId }) => {
+    description: "Fetch existing tasks and their implementation status (TODO/IN_PROGRESS/DONE). If you are looking for a specific task by name, provide the 'title'. If you are looking for general project progress, omit 'title'.",
+    schema: z.object({
+        projectId: z.string(),
+        title: z.string().optional().describe("Optional keywords or specific name of the task to search for.")
+    }),
+    func: async ({ projectId, title }) => {
+        const whereClause: any = { projectId };
+
+        if (title) {
+            whereClause.title = { contains: title, mode: 'insensitive' };
+        }
+
         const tasks = await prisma.task.findMany({
-            where: { projectId },
+            where: whereClause,
             take: 15,
             orderBy: { createdAt: "desc" },
             select: { title: true, description: true, status: true }
         });
 
         if (tasks.length === 0) {
-            return "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
+            return title
+                ? `No tasks found matching the title: '${title}'.`
+                : "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
         }
 
         return JSON.stringify(tasks.map(t => ({

@@ -1,6 +1,27 @@
 
 import { getVectorStore } from "../vectorStore";
 import prisma from "../../db/prisma";
+import { BaseChatModel } from "@langchain/core/language_models/chat_models";
+import { StringOutputParser } from "@langchain/core/output_parsers";
+
+// Helper for Query Expansion
+export async function generateQueryVariations(query: string, llm: BaseChatModel): Promise<string[]> {
+    const prompt = `You are an AI assistant helping to expand a user's search query.
+    Generate 3 alternative versions of the following query to improve search retrieval. 
+    Focus on synonyms, related concepts, and technical terms relevant to software development.
+    Return ONLY the 3 queries, one per line, without any numbering or extra text.
+    
+    Query: "${query}"`;
+
+    try {
+        const content = await llm.pipe(new StringOutputParser()).invoke(prompt);
+        const variations = content.split('\n').filter(q => q.trim().length > 0).slice(0, 3);
+        return [query, ...variations];
+    } catch (e) {
+        console.warn("[Query Expansion] Failed:", e);
+        return [query];
+    }
+}
 
 // Helper for database keyword search (Hybrid Search)
 async function keywordSearch(query: string, filters?: Record<string, any>) {

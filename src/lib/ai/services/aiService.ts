@@ -4,8 +4,8 @@ import prisma from "../../db/prisma";
 import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "./toolService";
-import { performHybridSearch } from "./retrievalService";
-import { generateQueryVariations, constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "./promptService";
+import { performHybridSearch, generateQueryVariations } from "./retrievalService";
+import { constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "./promptService";
 import { generateAnswer } from "./generationService";
 
 const MAX_CHAT_ITERATIONS = 5;
