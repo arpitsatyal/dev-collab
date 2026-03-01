@@ -1,8 +1,8 @@
-
 import { NextApiRequest, NextApiResponse } from "next";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
 import { generateImplementationPlan } from "../../../lib/ai/services/suggestionService";
+import prisma from "../../../lib/db/prisma";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     const session = await getServerSession(req, res, authOptions);
@@ -16,6 +16,13 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         const plan = await generateImplementationPlan(taskId);
+
+        // Cache the Plan within the task
+        await prisma.task.update({
+            where: { id: taskId },
+            data: { aiPlan: plan }
+        });
+
         return res.status(200).json({ plan });
     } catch (error: any) {
         console.error("Error in analyze-work-item API:", error);

@@ -9,7 +9,10 @@ import {
   Skeleton,
   Tooltip,
 } from "@mantine/core";
-import axios from "axios";
+import {
+  useGetChatQuery,
+  useAskAIMutation,
+} from "../../store/api/chatApi";
 import {
   Dispatch,
   FormEvent,
@@ -22,8 +25,7 @@ import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
 import { useSession } from "next-auth/react";
 import { extractDate, extractTime } from "../../utils/dateUtils";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import MarkdownContent from "../shared/MarkdownContent";
 import { useRouter } from "next/router";
 import Image from "next/image";
 
@@ -44,26 +46,19 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   const { data: session } = useSession();
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isFetching, setIsFetching] = useState(false);
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const image = session?.user?.image || "/user.png";
 
+  const { data: chatData, isFetching } = useGetChatQuery(chatId, {
+    skip: !chatId,
+  });
+  const [askAI, { isLoading }] = useAskAIMutation();
+
   useEffect(() => {
-    const fetchMessages = async () => {
-      if (!chatId) return;
-      setIsFetching(true);
-      try {
-        const response = await axios.get(`/api/chats?chatId=${chatId}`);
-        setMessages(response.data.messages || []);
-      } catch (error) {
-        console.error("Failed to fetch messages:", error);
-      } finally {
-        setIsFetching(false);
-      }
-    };
-    fetchMessages();
-  }, [chatId]);
+    if (chatData?.messages) {
+      setMessages(chatData.messages);
+    }
+  }, [chatData]);
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -76,36 +71,27 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     };
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
-    setIsLoading(true);
 
     const projectId = router.query.projectId as string;
 
     try {
-      const response = await axios.post(
-        `/api/ai/ask?chatId=${chatId}`,
-        {
-          question: content,
-          projectId, // Pass projectId for context-aware filtering
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const response = await askAI({
+        chatId,
+        question: content,
+        projectId,
+      }).unwrap();
+
       setMessages((prev) => [
         ...prev,
         {
           id: uuidv4(),
-          content: response.data.answer,
+          content: response.answer,
           isUser: false,
           createdAt: new Date().toISOString(),
         },
       ]);
     } catch (error) {
       console.error("Failed to send message:", error);
-    } finally {
-      setIsLoading(false);
     }
   };
 
@@ -182,11 +168,9 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
                 className={`${styles.messageContent} ${message.isUser ? styles.userMessage : styles.botMessage
                   }`}
               >
-                {/* Use ReactMarkdown for rendering content with formatting */}
+                {/* Use MarkdownContent for rendering content with syntax highlighting */}
                 <div className={styles.markdownContent}>
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
+                  <MarkdownContent content={message.content} />
                 </div>
               </div>
 

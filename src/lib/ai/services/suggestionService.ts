@@ -1,12 +1,11 @@
-import { getReasoningStructuredLLM, getReasoningLLM } from "../llmFactory";
 import prisma from "../../db/prisma";
 import z from "zod";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import {
     buildSuggestWorkItemsMessages,
-    buildImplementationPlanMessages,
-    buildDraftChangesMessages
+    buildImplementationPlanMessages
 } from "./promptService";
+import { getReasoningLLM, getReasoningStructuredLLM } from "../llmFactory";
 
 export const WorkItemSuggestionSchema = z.object({
     title: z.string().describe("Concise title of the task"),
@@ -62,72 +61,62 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 }
 
 
-export async function generateImplementationPlan(taskId: string): Promise<string> {
-    const llm = await getReasoningLLM();
-
-    // 1. Fetch Task and linked context
-    const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-            snippets: true,
-            project: true
-        }
-    });
-
-    if (!task) throw new Error("Work Item not found");
-
-    const contextStr = task.snippets.map(s => [
+// Helper to format snippets for prompt context
+function formatContextSnippets(snippets: any[]): string {
+    return snippets.map((s: any) => [
         `### Snippet: ${s.title}`,
         `Language: ${s.language}`,
         `\`\`\`${s.language}`,
         s.content,
         `\`\`\``
     ].join("\n")).join("\n\n");
+}
 
-    // 2. Build messages via promptService and invoke LLM
+/**
+ * Fetches the task, its linked snippets, and relevant project-wide context.
+ * Merges snippets uniquely by title.
+ */
+async function getRichTaskContext(taskId: string) {
+    const task = await prisma.task.findUnique({
+        where: { id: taskId },
+        include: {
+            snippets: true,
+            project: {
+                include: {
+                    snippets: {
+                        take: 5,
+                        orderBy: { updatedAt: "desc" },
+                        select: { title: true, language: true, content: true }
+                    }
+                }
+            }
+        }
+    });
+
+    if (!task) throw new Error("Work Item not found");
+
+    const allSnippets = [...task.snippets, ...(task.project?.snippets || [])];
+    const uniqueSnippetsMap = new Map();
+    allSnippets.forEach(s => uniqueSnippetsMap.set(s.title, s));
+    const mergedSnippets = Array.from(uniqueSnippetsMap.values());
+
+    return {
+        task,
+        contextStr: formatContextSnippets(mergedSnippets),
+        projectContext: task.project
+            ? `Project: ${task.project.title}\nDescription: ${task.project.description || "No description"}`
+            : ""
+    };
+}
+
+export async function generateImplementationPlan(taskId: string): Promise<string> {
     try {
-        return await llm.pipe(new StringOutputParser()).invoke(
-            buildImplementationPlanMessages(task.title, task.description ?? "", contextStr)
-        );
+        const { task, contextStr } = await getRichTaskContext(taskId);
+        const messages = buildImplementationPlanMessages(task.title, task.description ?? "", contextStr);
+        const llm = await getReasoningLLM();
+        return await llm.pipe(new StringOutputParser()).invoke(messages);
     } catch (error) {
         console.error("[Analysis Engine] Error generating plan:", error);
         return "Failed to generate implementation plan. Please try again.";
-    }
-}
-
-export async function generateDraftChanges(taskId: string): Promise<string> {
-    const llm = await getReasoningLLM();
-
-    // 1. Fetch Task, linked snippets, and project context
-    const task = await prisma.task.findUnique({
-        where: { id: taskId },
-        include: {
-            snippets: true,
-            project: true
-        }
-    });
-
-    if (!task) throw new Error("Work Item not found");
-
-    const contextStr = task.snippets.map(s => [
-        `### Snippet: ${s.title}`,
-        `Language: ${s.language}`,
-        `\`\`\`${s.language}`,
-        s.content,
-        `\`\`\``
-    ].join("\n")).join("\n\n");
-
-    const projectContext = task.project
-        ? `Project: ${task.project.title}\nDescription: ${task.project.description || "No description"}`
-        : "";
-
-    // 2. Build messages via promptService and invoke LLM
-    try {
-        return await llm.pipe(new StringOutputParser()).invoke(
-            buildDraftChangesMessages(task.title, task.description ?? "", projectContext, contextStr)
-        );
-    } catch (error) {
-        console.error("[Drafting Engine] Error generating draft:", error);
-        return "Failed to generate draft changes. Please try again.";
     }
 }

@@ -13,6 +13,7 @@ import styles from "./AIChat.module.css";
 import axios from "axios";
 import Loading from "../Loader/Loader";
 import dayjs from "dayjs";
+import { useGetChatsQuery } from "../../store/api/chatApi";
 import { ChatWithMessages } from "../../types";
 
 interface ChatListingProps {
@@ -21,24 +22,7 @@ interface ChatListingProps {
 }
 
 const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
-  const [chats, setChats] = useState<ChatWithMessages[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const fetchChats = async () => {
-      setIsLoading(true);
-      try {
-        const response = await axios.get("/api/chats");
-        setChats(response.data || []);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to fetch chats");
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchChats();
-  }, []);
+  const { data: chats = [], isLoading, error } = useGetChatsQuery();
 
   if (isLoading) {
     return <Loading />;
@@ -47,7 +31,7 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
   if (error) {
     return (
       <div className={styles.errorContainer}>
-        <Text c="red">Error: {error}</Text>
+        <Text c="red">Error: {error.toString()}</Text>
       </div>
     );
   }
@@ -88,7 +72,6 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
                   size="sm"
                   onClick={() => {
                     onDeleteChat(chat.id);
-                    setChats(chats.filter((c) => chat.id != c.id));
                   }}
                   className={styles.deleteButton}
                 >

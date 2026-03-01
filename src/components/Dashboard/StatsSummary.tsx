@@ -15,35 +15,14 @@ import {
     IconBrandPagekit,
     IconSubtask,
 } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
+import { useGetUserStatsQuery } from "../../store/api/userApi";
 import classes from "./StatsSummary.module.css";
 import Loading from "../Loader/Loader";
 
-interface Stats {
-    workspaces: number;
-    snippets: number;
-    docs: number;
-    workItems: number;
-}
-
 const StatsSummary = () => {
-    const [stats, setStats] = useState<Stats | null>(null);
-    const [loading, setLoading] = useState(true);
+    const { data: stats, isLoading } = useGetUserStatsQuery();
 
-    useEffect(() => {
-        fetch("/api/users/stats")
-            .then((res) => res.json())
-            .then((data) => {
-                setStats(data);
-                setLoading(false);
-            })
-            .catch((err) => {
-                console.error("Failed to fetch stats", err);
-                setLoading(false);
-            });
-    }, []);
-
-    if (loading) {
+    if (isLoading) {
         return (
             <Center py="xl">
                 <Loading />

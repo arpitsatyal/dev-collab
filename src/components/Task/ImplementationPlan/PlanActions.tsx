@@ -1,46 +1,69 @@
 
 import React from 'react';
-import { Group, Button, Divider } from '@mantine/core';
-import { IconSparkles } from '@tabler/icons-react';
+import { Group, Button, Divider, TextInput } from '@mantine/core';
+import { IconSparkles, IconDeviceFloppy } from '@tabler/icons-react';
 
 interface PlanActionsProps {
-    showDraftButton: boolean;
-    loadingDraft: boolean;
-    onGenerateDraft: () => void;
+    loadingPlan?: boolean;
     onRegeneratePlan: () => void;
+    suggestedFileName?: string;
+    setSuggestedFileName?: (name: string) => void;
+    isSaving?: boolean;
+    onSaveDocument?: () => void;
+    saveSuccess?: boolean;
 }
 
 const PlanActions = ({
-    showDraftButton,
-    loadingDraft,
-    onGenerateDraft,
-    onRegeneratePlan
+    loadingPlan,
+    onRegeneratePlan,
+    suggestedFileName,
+    setSuggestedFileName,
+    isSaving,
+    onSaveDocument,
+    saveSuccess
 }: PlanActionsProps) => {
     return (
         <>
             <Divider mt="xl" mb="md" />
-            <Group justify="right" wrap="wrap">
-                {showDraftButton && (
+            <Group justify="space-between" align="center" wrap="wrap">
+                <Group>
+                    {setSuggestedFileName && onSaveDocument && (
+                        <>
+                            <TextInput
+                                size="sm"
+                                placeholder="Filename (e.g., Plan.md)"
+                                value={suggestedFileName}
+                                onChange={(e) => setSuggestedFileName(e.currentTarget.value)}
+                                w={300}
+                                disabled={isSaving || saveSuccess}
+                            />
+                            <Button
+                                variant="filled"
+                                color="teal"
+                                leftSection={<IconDeviceFloppy size={16} />}
+                                onClick={onSaveDocument}
+                                loading={isSaving}
+                                disabled={saveSuccess || !suggestedFileName}
+                            >
+                                {saveSuccess ? "Saved to Docs" : "Save as Document"}
+                            </Button>
+                        </>
+                    )}
+                </Group>
+
+                <Group justify="right">
                     <Button
-                        variant="gradient"
-                        gradient={{ from: 'blue', to: 'cyan' }}
-                        leftSection={<IconSparkles size={16} />}
-                        onClick={onGenerateDraft}
-                        loading={loadingDraft}
+                        variant="light"
+                        onClick={onRegeneratePlan}
+                        disabled={isSaving || loadingPlan}
                     >
-                        Draft Suggested Changes
+                        Regenerate Plan
                     </Button>
-                )}
-                <Button
-                    variant="light"
-                    onClick={onRegeneratePlan}
-                    disabled={loadingDraft}
-                >
-                    Regenerate Plan
-                </Button>
+                </Group>
             </Group>
         </>
     );
 };
+
 
 export default PlanActions;

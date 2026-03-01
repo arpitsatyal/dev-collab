@@ -15,7 +15,7 @@ const safeParseContent = (content: any): string => {
 
 export const getSnippetsTool = new DynamicStructuredTool({
     name: "getSnippets",
-    description: "Fetch code snippets by their human-readable Title/Name (e.g. 'Auth Hook' or 'User Model'). DO NOT use this tool to search for raw code strings, implementation details, or if you don't know the exact file name — use semanticSearch for that instead. If you are trying to understand what code already exists in the project generally, omit 'title'.",
+    description: "Fetch code snippets by their title or keywords (e.g. 'Auth Hook'). Use this tool when you need to see existing implementation patterns or match the project's coding style. If you don't know the title at all, you can omit it to see general project snippets, or use semanticSearch for conceptual queries.",
     schema: z.object({
         projectId: z.string(),
         title: z.string().optional().describe("Specific human-readable name of the snippet to search for. DO NOT place code strings here.")
@@ -29,7 +29,7 @@ export const getSnippetsTool = new DynamicStructuredTool({
 
         const snippets = await prisma.snippet.findMany({
             where: whereClause,
-            take: 5,
+            take: 10,
             orderBy: { updatedAt: "desc" },
             select: { title: true, content: true, language: true }
         });
@@ -40,7 +40,7 @@ export const getSnippetsTool = new DynamicStructuredTool({
                 : "No code snippets have been created for this project yet.";
         }
 
-        return JSON.stringify(snippets.map(s => ({
+        return JSON.stringify(snippets.map((s: any) => ({
             title: s.title,
             language: s.language,
             content: safeParseContent(s.content).slice(0, 600) + "..."
@@ -50,7 +50,7 @@ export const getSnippetsTool = new DynamicStructuredTool({
 
 export const getDocsTool = new DynamicStructuredTool({
     name: "getDocs",
-    description: "Fetch project documentation by its human-readable Label (e.g. 'Database Schema'). DO NOT use this tool for conceptual keyword searches — use semanticSearch for that. If you just want general project documentation context, omit 'label'.",
+    description: "Fetch project documentation items by their human-readable Label (e.g. 'Database Schema'). Use this tool when you want to list or catalog available documentation. If you want to list ALL docs in the project, omit 'label'. DO NOT use this tool for conceptual keyword searches — use semanticSearch for that.",
     schema: z.object({
         projectId: z.string(),
         label: z.string().optional().describe("Specific human-readable name of the document to search for. DO NOT place code or conceptual strings here.")
@@ -64,7 +64,7 @@ export const getDocsTool = new DynamicStructuredTool({
 
         const docs = await prisma.doc.findMany({
             where: whereClause,
-            take: 3,
+            take: 10,
             orderBy: { updatedAt: "desc" },
             select: { label: true, content: true }
         });
@@ -75,7 +75,7 @@ export const getDocsTool = new DynamicStructuredTool({
                 : "No project documentation documents have been found for this project.";
         }
 
-        return JSON.stringify(docs.map(d => ({
+        return JSON.stringify(docs.map((d: any) => ({
             label: d.label,
             content: safeParseContent(d.content).slice(0, 600) + "..."
         })));
@@ -109,7 +109,7 @@ export const getExistingTasksTool = new DynamicStructuredTool({
                 : "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
         }
 
-        return JSON.stringify(tasks.map(t => ({
+        return JSON.stringify(tasks.map((t: any) => ({
             title: t.title,
             description: t.description || "",
             status: t.status

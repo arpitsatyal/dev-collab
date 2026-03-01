@@ -1,11 +1,11 @@
-import { useRouter } from "next/router";
-import { NavLink } from "@mantine/core";
+import { NavLink, Tooltip } from "@mantine/core";
 import styles from "./Docs.module.css";
 import { getSingleQueryParam } from "../../utils/getSingleQueryParam";
 import { IconBrandPagekit } from "@tabler/icons-react";
 import Loading from "../Loader/Loader";
 import { useGetDocsQuery } from "../../store/api/docsApi";
 import { skipToken } from "@reduxjs/toolkit/query";
+import { useRouter } from "next/router";
 
 const DocsSideNav = () => {
   const router = useRouter();
@@ -24,23 +24,30 @@ const DocsSideNav = () => {
     <nav className={styles.sidenav}>
       {docs && docs.length > 0 ? (
         docs.map((item) => (
-          <NavLink
-            key={item.id}
+          <Tooltip
             label={item.label}
-            leftSection={<IconBrandPagekit size={16} />}
-            active={currentDocId === item.id}
-            onClick={() =>
-              router.push(
-                {
-                  pathname: `/projects/${projectId}/docs`,
-                  query: { docId: item.id },
-                },
-                undefined,
-                { shallow: true }
-              )
-            }
-            className={styles.navLink}
-          />
+            key={item.id}
+            position="right"
+            withArrow
+            openDelay={500}
+          >
+            <NavLink
+              label={item.label}
+              leftSection={<IconBrandPagekit size={16} />}
+              active={currentDocId === item.id}
+              onClick={() =>
+                router.push(
+                  {
+                    pathname: `/projects/${projectId}/docs`,
+                    query: { docId: item.id },
+                  },
+                  undefined,
+                  { shallow: true }
+                )
+              }
+              className={styles.navLink}
+            />
+          </Tooltip>
         ))
       ) : (
         <div className={styles.noDocs}>No docs available</div>

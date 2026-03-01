@@ -30,11 +30,11 @@ export const projectApi = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.items.map(
-                ({ id }) => ({ type: "Project", id } as const)
-              ),
-              { type: "Projects", id: "LIST" },
-            ]
+            ...result.items.map(
+              ({ id }) => ({ type: "Project", id } as const)
+            ),
+            { type: "Projects", id: "LIST" },
+          ]
           : [{ type: "Projects", id: "LIST" }],
       keepUnusedDataFor: 300, // 5 minutes
     }),
@@ -71,11 +71,11 @@ export const projectApi = createApi({
             "getProjects",
             { skip, limit: pageSize },
             (draft) => {
-              const item = draft.items.find((p) => p.id === projectId);
+              const item = draft.items.find((p: ProjectWithPin) => p.id === projectId);
               if (item) {
                 item.isPinned = isPinned;
 
-                draft.items.sort((a, b) => {
+                draft.items.sort((a: ProjectWithPin, b: ProjectWithPin) => {
                   if (a.isPinned !== b.isPinned) {
                     return a.isPinned ? -1 : 1;
                   }
@@ -103,6 +103,17 @@ export const projectApi = createApi({
         }
       },
     }),
+    getRepoTree: builder.query<{ files: { path: string, size: number }[] }, string>({
+      query: (url) => `projects/import/tree?url=${encodeURIComponent(url)}`,
+    }),
+    importProject: builder.mutation<{ project: any, stats: { snippets: number, docs: number } }, { url: string, selectedFiles: string[] }>({
+      query: (body) => ({
+        url: "projects/import",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Projects", id: "LIST" }],
+    }),
   }),
 });
 
@@ -111,4 +122,6 @@ export const {
   useGetProjectByIdQuery,
   useCreateProjectMutation,
   useUpdatePinnedStatusMutation,
+  useGetRepoTreeQuery,
+  useImportProjectMutation,
 } = projectApi;

@@ -15,10 +15,11 @@ import {
     ActionIcon,
 } from "@mantine/core";
 import { useForm } from "@mantine/form";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { IconSearch, IconX } from "@tabler/icons-react";
+import { useImportProjectMutation, useGetRepoTreeQuery } from "../../store/api/projectApi";
 import classes from "./Project.module.css";
 
 interface RepoFile {
@@ -30,11 +31,17 @@ const MAX_FILES = 20;
 
 const ImportProjectForm = () => {
     const router = useRouter();
-    const [isLoading, setIsLoading] = useState(false);
     const [step, setStep] = useState<1 | 2>(1);
-    const [repoFiles, setRepoFiles] = useState<RepoFile[]>([]);
     const [search, setSearch] = useState("");
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+
+    const [importProject, { isLoading: isImporting }] = useImportProjectMutation();
+
+    // We only fetch tree when the URL is submitted in step 1
+    const [repoUrl, setRepoUrl] = useState<string | null>(null);
+    const { data: treeData, isFetching: isFetchingTree, error: treeError } = useGetRepoTreeQuery(repoUrl!, {
+        skip: !repoUrl,
+    });
 
     const form = useForm({
         initialValues: {
@@ -47,42 +54,36 @@ const ImportProjectForm = () => {
     });
 
     const handleFetchTree = async (values: typeof form.values) => {
-        setIsLoading(true);
-        try {
-            const response = await fetch(`/api/projects/import/tree?url=${encodeURIComponent(values.url)}`);
-            const data = await response.json();
+        setRepoUrl(values.url);
+    };
 
-            if (!response.ok) throw new Error(data.error || "Failed to fetch repo structure");
-
-            setRepoFiles(data.files || []);
+    useEffect(() => {
+        if (treeData?.files) {
             setStep(2);
-        } catch (error: any) {
+        }
+    }, [treeData]);
+
+    useEffect(() => {
+        if (treeError) {
             notifications.show({
                 title: "Fetch Failed",
-                message: error.message,
+                message: (treeError as any).data?.error || "Failed to fetch repo structure",
                 color: "red",
             });
-        } finally {
-            setIsLoading(false);
+            setRepoUrl(null);
         }
-    };
+    }, [treeError]);
+
+    const repoFiles = treeData?.files || [];
+    const isLoading = isFetchingTree || isImporting;
 
     const handleImport = async () => {
         if (selectedFiles.length === 0) return;
-        setIsLoading(true);
         try {
-            const response = await fetch("/api/projects/import", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    url: form.values.url,
-                    selectedFiles: selectedFiles,
-                }),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) throw new Error(data.error || "Failed to import");
+            const data = await importProject({
+                url: form.values.url,
+                selectedFiles: selectedFiles,
+            }).unwrap();
 
             notifications.show({
                 title: "Success! 🚀",
@@ -94,11 +95,9 @@ const ImportProjectForm = () => {
         } catch (error: any) {
             notifications.show({
                 title: "Import Failed",
-                message: error.message,
+                message: error.data?.error || error.message || "Failed to import",
                 color: "red",
             });
-        } finally {
-            setIsLoading(false);
         }
     };
 

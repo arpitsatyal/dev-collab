@@ -92,7 +92,7 @@ const DocsIndex = () => {
           }}
         >
           <ClientSideSuspense fallback={<Loading isEditorLoading />}>
-            <TiptapEditor />
+            <TiptapEditor initialContent={typeof selectedDoc?.content === 'string' ? selectedDoc.content : null} />
           </ClientSideSuspense>
         </RoomProvider>
       ) : (

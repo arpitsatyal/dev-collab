@@ -6,6 +6,8 @@ import { snippetApi } from "./api/snippetApi";
 import { userApi } from "./api/userApi";
 import { taskApi } from "./api/taskApi";
 import { docsApi } from "./api/docsApi";
+import { aiApi } from "./api/aiApi";
+import { chatApi } from "./api/chatApi";
 
 export const store = configureStore({
   reducer: {
@@ -14,6 +16,8 @@ export const store = configureStore({
     [userApi.reducerPath]: userApi.reducer,
     [taskApi.reducerPath]: taskApi.reducer,
     [docsApi.reducerPath]: docsApi.reducer,
+    [aiApi.reducerPath]: aiApi.reducer,
+    [chatApi.reducerPath]: chatApi.reducer,
     snippet: snippetReducer,
     [snippetApi.reducerPath]: snippetApi.reducer,
   },
@@ -23,7 +27,9 @@ export const store = configureStore({
       snippetApi.middleware,
       userApi.middleware,
       taskApi.middleware,
-      docsApi.middleware
+      docsApi.middleware,
+      aiApi.middleware,
+      chatApi.middleware
     ),
 });
 

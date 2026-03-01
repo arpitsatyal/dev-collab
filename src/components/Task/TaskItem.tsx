@@ -66,6 +66,8 @@ const TaskItem = ({ task }: { task: Task }) => {
         onClose={close}
         taskId={task.id}
         taskTitle={task.title}
+        projectId={task.projectId}
+        initialPlan={task.aiPlan}
       />
     </>
   );

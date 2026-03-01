@@ -10,6 +10,7 @@ export interface DocCreateData {
   label: string;
   projectId: string;
   roomId: string;
+  content?: string;
 }
 
 export interface DocUpdateData {
@@ -65,7 +66,7 @@ export default async function handler(
 
     case "POST":
       try {
-        const { label } = req.body as DocCreateData;
+        const { label, content } = req.body as DocCreateData;
 
         if (!label) {
           return res.status(400).json({ error: "Label is required" });
@@ -76,6 +77,7 @@ export default async function handler(
             label,
             projectId: projectId as string,
             roomId: `docs_${uuidv4()}`,
+            content: content || "",
           },
         });
 

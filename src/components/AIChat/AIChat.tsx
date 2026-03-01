@@ -7,7 +7,10 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import styles from "./AIChat.module.css";
-import axios from "axios";
+import {
+  useCreateChatMutation,
+  useDeleteChatMutation,
+} from "../../store/api/chatApi";
 import ChatListing from "./ChatListing";
 import ChatMessages from "./ChatMessages";
 
@@ -16,22 +19,21 @@ const AIChat = () => {
   const [showListing, setShowListing] = useState(false);
   const [input, setInput] = useState("");
   const [opened, setOpened] = useState(false);
-  const [isCreatingChat, setIsCreatingChat] = useState(false);
+
+  const [createChat, { isLoading: isCreatingChat }] = useCreateChatMutation();
+  const [deleteChatMutation] = useDeleteChatMutation();
 
   const addNewChat = useCallback(async () => {
     if (isCreatingChat) return;
-    setIsCreatingChat(true);
     try {
-      const response = await axios.post(`/api/chats`);
-      setChatId(response.data.id);
+      const response = await createChat().unwrap();
+      setChatId(response.id);
       setShowListing(false);
       setInput("");
     } catch (error) {
       console.error("Failed to create chat:", error);
-    } finally {
-      setIsCreatingChat(false);
     }
-  }, [isCreatingChat, setChatId, setShowListing, setInput, setIsCreatingChat]);
+  }, [isCreatingChat, createChat, setChatId, setShowListing, setInput]);
 
   useEffect(() => {
     if (opened && !chatId && !isCreatingChat) {
@@ -57,7 +59,7 @@ const AIChat = () => {
 
   const deleteChat = async (id: string) => {
     try {
-      await axios.delete(`/api/chats?id=${id}`);
+      await deleteChatMutation(id).unwrap();
     } catch (error) {
       console.error("Failed to delete chat:", error);
     }

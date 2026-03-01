@@ -5,9 +5,44 @@ import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
 
-interface MarkdownContentProps {
-    content: string;
-}
+/**
+ * Shared code block styling constants used across the app.
+ * Exported so TipTap's CodeBlockComponent can reuse the same look.
+ */
+export const codeBlockCustomStyle: React.CSSProperties = {
+    margin: 0,
+    borderRadius: '8px',
+    fontSize: '0.9rem',
+    padding: '1rem',
+    background: '#1e1e1e',
+    width: 'fit-content',
+    maxWidth: '100%',
+};
+
+export const codeTagStyle: React.CSSProperties = {
+    fontFamily: 'Consolas, Monaco, "Courier New", monospace',
+    fontSize: '0.9rem',
+};
+
+/** Standalone syntax‑highlighted code block (no markdown). */
+export const HighlightedCode = ({
+    code,
+    language = 'text',
+}: {
+    code: string;
+    language?: string;
+}) => (
+    <SyntaxHighlighter
+        style={vscDarkPlus}
+        language={language}
+        PreTag="div"
+        showLineNumbers={false}
+        customStyle={codeBlockCustomStyle}
+        codeTagProps={{ style: codeTagStyle }}
+    >
+        {code}
+    </SyntaxHighlighter>
+);
 
 const MarkdownComponents: any = {
     code({ node, inline, className, children, ...props }: any) {
@@ -22,21 +57,8 @@ const MarkdownComponents: any = {
                     language={language || 'text'}
                     PreTag="div"
                     showLineNumbers={false}
-                    customStyle={{
-                        margin: 0,
-                        borderRadius: '8px',
-                        fontSize: '0.9rem',
-                        padding: '1rem',
-                        background: '#1e1e1e',
-                        width: 'fit-content',
-                        maxWidth: '100%'
-                    }}
-                    codeTagProps={{
-                        style: {
-                            fontFamily: 'Consolas, Monaco, "Courier New", monospace',
-                            fontSize: '0.9rem',
-                        }
-                    }}
+                    customStyle={codeBlockCustomStyle}
+                    codeTagProps={{ style: codeTagStyle }}
                     {...props}
                 >
                     {String(children).replace(/\n$/, '')}
@@ -245,6 +267,10 @@ const MarkdownComponents: any = {
         </em>
     )
 };
+
+interface MarkdownContentProps {
+    content: string;
+}
 
 const MarkdownContent = ({ content }: MarkdownContentProps) => {
     return (

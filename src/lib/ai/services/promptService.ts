@@ -12,6 +12,22 @@ INSTRUCTIONS:
 2. COMPLETENESS: Ensure all code blocks are complete and NOT truncated. Provide the full logic for all suggested changes.
 3. EXCLUSION: Do NOT include "Next Steps", "Future Enhancements", "Further Reading", or any interactive to-do lists.`;
 
+const CODE_BLOCK_RULES = `
+CODE BLOCK RULES:
+- Every code block MUST use fenced triple-backtick syntax with a language identifier on the opening line (e.g., \`\`\`typescript).
+- Always specify the exact language (typescript, javascript, python, json, bash, css, html, sql, prisma, diff).
+- For shell commands use \`\`\`bash. For diffs use \`\`\`diff.
+- NEVER use indented code blocks without fences.`;
+
+const LANGUAGE_MATCHING_RULE = "Use the provided code snippets in the context below to identify the project's coding style and language. Write all new code in the SAME language(s). Do not switch to a different language unless explicitly required.";
+
+const SHARED_TONE = "Tone: Professional, concise, and helpful.";
+
+function formatWorkItem(title: string, description: string) {
+    return `Work Item: "${title}"\nDescription: ${description || "No description provided."}`;
+}
+
+
 export function buildChatMessages(history: string, question: string) {
     const systemPrompt = `${BASE_PERSONA}
 Your goal is to assist users with their questions about projects, tasks, code snippets, and documentation.
@@ -148,11 +164,11 @@ export function buildImplementationPlanMessages(title: string, description: stri
 
     const userPrompt = `Goal: Generate a technical implementation plan for the following Work Item.
 
-Work Item: "${title}"
-Description: ${description || "No description provided."}
+${formatWorkItem(title, description)}
 
 The user has attached the following code context:
 ${contextStr || "No code context attached."}
+
 ${PLAN_RESTRICTIONS}
 4. FORMAT: Provide a structured Markdown plan.
 5. INCLUDE:
@@ -160,44 +176,16 @@ ${PLAN_RESTRICTIONS}
    - Step-by-step code changes (use diff-style or clear snippets).
    - Potential edge cases or risks.
 
-Tone: Professional, concise, and helpful.`;
+${CODE_BLOCK_RULES}
+
+7. LANGUAGE MATCHING: ${LANGUAGE_MATCHING_RULE}
+
+${SHARED_TONE}`;
 
     return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }
 
-export function buildDraftChangesMessages(title: string, description: string, projectContext: string, contextStr: string) {
-    const systemPrompt = "You are an Expert Software Implementation Engineer. You generate production-grade code changes based on work items and project context.";
 
-    const userPrompt = `Goal: Draft the specific code changes required to implement the following Work Item.
-
-Work Item: "${title}"
-Description: ${description || "No description provided."}
-
-PROJECT CONTEXT:
-${projectContext}
-
-CURRENT CODE SNIPPETS (CONTEXT):
-${contextStr || "No specific code context attached. Draft based on general best practices for this type of task."}
-
-Before writing any code, follow these reasoning steps:
-1. Briefly explain what the work item requires based on the context.
-2. Identify which files or functions need to change and why.
-3. Consider potential side effects or dependencies.
-${PLAN_RESTRICTIONS}
-
-Then, provide the implementation:
-1. Generate a clean, production-ready "Draft Diff" or specific code blocks.
-2. If specific snippets are provided, show how they would be modified.
-3. If no snippets are provided, draft the new component or utility logic from scratch.
-4. Use standard modern coding patterns (Hooks for React, Prisma for DB, etc.).
-5. Focus on the core logic and critical parts of the implementation.
-
-RESPONSE FORMAT:
-Provide your response in clear Markdown.
-Start with your reasoning section (points 1-3 above), then provide the code blocks with clear file names.`;
-
-    return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
-}
 
 export const IntentSchema = z.object({
     intent: z.enum(["CONVERSATIONAL", "PROJECT_QUERY", "GLOBAL_SEARCH"]),
