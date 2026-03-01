@@ -1,10 +1,10 @@
 import { Box, Text } from "@mantine/core";
-import { User } from "@prisma/client";
+import { User } from "../../store/api/userApi";
 import dayjs from "dayjs";
 
 interface LastSavedInfoProps {
   user: User;
-  updatedAt: Date;
+  updatedAt: Date | string;
 }
 
 const LastSavedInfo = ({ user, updatedAt }: LastSavedInfoProps) => {

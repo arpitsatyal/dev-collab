@@ -25,6 +25,8 @@ export const taskApi = createApi({
         const tempId = Math.random().toString(36).substring(2, 15);
         const now = dayjs().toDate();
 
+        const { snippetIds, ...taskFields } = task;
+
         // Optimistically update the task list cache
         const patchResult = dispatch(
           taskApi.util.updateQueryData(
@@ -32,11 +34,12 @@ export const taskApi = createApi({
             projectId,
             (draft) => {
               draft.push({
-                ...task,
+                ...taskFields,
                 id: tempId,
                 createdAt: now,
                 updatedAt: now,
                 authorId: "",
+                aiPlan: null,
               });
             }
           )

@@ -39,7 +39,7 @@ interface Message {
   id: string;
   content: string;
   isUser: boolean;
-  createdAt: string;
+  createdAt: string | Date;
 }
 
 const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
@@ -49,7 +49,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const image = session?.user?.image || "/user.png";
 
-  const { data: chatData, isFetching } = useGetChatQuery(chatId, {
+  const { data: chatData } = useGetChatQuery(chatId, {
     skip: !chatId,
   });
   const [askAI, { isLoading }] = useAskAIMutation();
