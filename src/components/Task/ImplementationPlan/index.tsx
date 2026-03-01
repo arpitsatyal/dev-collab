@@ -106,7 +106,7 @@ const ImplementationPlanModal = ({
                     <Stack gap="md">
                         {saveSuccess && (
                             <Notification icon={<IconCheck size={18} />} color="teal" title="Document Saved" onClose={() => setSaveSuccess(false)}>
-                                Successfully saved "{suggestedFileName}" to project documents.
+                                Successfully saved &quot;{suggestedFileName}&quot; to project documents.
                             </Notification>
                         )}
                         <Paper
