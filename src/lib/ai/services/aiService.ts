@@ -5,7 +5,7 @@ import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/co
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "./toolService";
 import { performHybridSearch } from "./retrievalService";
-import { generateQueryVariations, constructPrompt, buildChatMessages } from "./promptService";
+import { generateQueryVariations, constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages } from "./promptService";
 import { generateAnswer } from "./generationService";
 
 const MAX_CHAT_ITERATIONS = 5;
@@ -98,6 +98,30 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
 
 // ── Public entrypoint ─────────────────────────────────────────────────────────
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
+    // 1. Intent Classification
+    const llm = await getLLMWithFallback();
+    const intentMessages = buildIntentClassificationPrompt(question);
+    let intent = "PROJECT_QUERY";
+
+    try {
+        const intentResponse = await llm.pipe(new StringOutputParser()).invoke(intentMessages);
+        if (intentResponse.trim().toUpperCase().includes("CONVERSATIONAL")) {
+            intent = "CONVERSATIONAL";
+        }
+    } catch (e) {
+        console.warn("[Intent Classification] Failed, defaulting to project query:", e);
+    }
+
+    // 2. Direct Conversational Response
+    if (intent === "CONVERSATIONAL") {
+        console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
+        const history = await getChatHistory(chatId);
+        const conversationalMessages = buildConversationalMessages(history, question);
+        const answer = await llm.pipe(new StringOutputParser()).invoke(conversationalMessages);
+        return { answer, context: "", validated: { isValid: true, warning: null } };
+    }
+
+    // 3. Project Query Routing
     if (filters?.projectId) {
         return getAIResponseWithTools(chatId, question, filters.projectId);
     }

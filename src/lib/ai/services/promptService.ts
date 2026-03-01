@@ -224,3 +224,32 @@ Start with your reasoning section (points 1-3 above), then provide the code bloc
 
     return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }
+
+export function buildIntentClassificationPrompt(question: string) {
+    const systemPrompt = `You are an intent classification engine.
+Your goal is to categorize the user's input into one of two categories:
+1. CONVERSATIONAL: Greetings, pleasantries, general chat, or simple acknowledgments (e.g., "Hi", "Hello", "Thanks", "How are you?").
+2. PROJECT_QUERY: Questions about the project, code, tasks, documentation, or requests for help with software development.
+
+Respond with ONLY the category name: CONVERSATIONAL or PROJECT_QUERY. Do not include any other text.`;
+
+    return [
+        new SystemMessage(systemPrompt),
+        new HumanMessage(`User Input: "${question}"\n\nCategory:`),
+    ];
+}
+
+export function buildConversationalMessages(history: string, question: string) {
+    const systemPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
+    
+Respond to the user's conversational input naturally and politely.
+Do not invent project details. Keep your response concise, warm, and professional.
+
+CONVERSATION HISTORY:
+${history || "No previous messages."}`;
+
+    return [
+        new SystemMessage(systemPrompt),
+        new HumanMessage(question)
+    ];
+}
