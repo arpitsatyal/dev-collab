@@ -4,7 +4,7 @@ import { StringOutputParser } from "@langchain/core/output_parsers";
 import { validateResponse } from "../../../pages/api/utils/validateLLMResponse";
 
 // Helper to provide source citations for factual answers
-function improveResponseWithCitations(answer: string, filteredResults: any[]) {
+export function improveResponseWithCitations(answer: string, filteredResults: any[]) {
     // Add source citations at the end ONLY if we used context
     if (filteredResults.length > 0 && !answer.includes("Source:")) {
         const sources = [...new Set(

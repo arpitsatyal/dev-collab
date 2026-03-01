@@ -1,6 +1,7 @@
 import z from "zod";
 import { DynamicStructuredTool } from "@langchain/core/tools";
 import prisma from "../../db/prisma";
+import { performHybridSearch } from "./retrievalService";
 
 const safeParseContent = (content: any): string => {
     if (typeof content !== 'string') return JSON.stringify(content);
@@ -80,5 +81,24 @@ export const getExistingTasksTool = new DynamicStructuredTool({
             description: t.description || "",
             status: t.status
         })));
+    }
+});
+
+export const semanticSearchTool = new DynamicStructuredTool({
+    name: "semanticSearch",
+    description: "Search across all project content (snippets, docs, tasks) using semantic similarity. Use this for open-ended or conceptual questions like 'how does X work?' or 'explain the auth flow' — when you need to find relevant information without knowing exactly where it lives.",
+    schema: z.object({
+        projectId: z.string(),
+        query: z.string().describe("The search query to find relevant content"),
+    }),
+    func: async ({ projectId, query }) => {
+        const results = await performHybridSearch([query], query, { projectId });
+        if (results.length === 0) {
+            return "No relevant content found for that query.";
+        }
+        return results.map(([doc, score]: any) => {
+            const type = doc.metadata?.type || "content";
+            return `[${type}] (relevance: ${score.toFixed(2)})\n${doc.pageContent}`;
+        }).join("\n\n---\n\n");
     }
 });
