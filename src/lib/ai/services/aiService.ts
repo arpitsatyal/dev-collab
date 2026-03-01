@@ -1,11 +1,11 @@
 
-import { getLLMWithFallback, getToolBoundLLMWithFallback } from "../llmFactory";
+import { getLLMWithFallback, getToolBoundLLMWithFallback, getStructuredLLMWithFallback } from "../llmFactory";
 import prisma from "../../db/prisma";
 import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "./toolService";
 import { performHybridSearch } from "./retrievalService";
-import { generateQueryVariations, constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages } from "./promptService";
+import { generateQueryVariations, constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "./promptService";
 import { generateAnswer } from "./generationService";
 
 const MAX_CHAT_ITERATIONS = 5;
@@ -99,17 +99,20 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
 // ── Public entrypoint ─────────────────────────────────────────────────────────
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
     // 1. Intent Classification
-    const llm = await getLLMWithFallback();
+    const classifierLlm = await getStructuredLLMWithFallback(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
+
     let intent = "PROJECT_QUERY";
 
     try {
-        const intentResponse = await llm.pipe(new StringOutputParser()).invoke(intentMessages);
-        if (intentResponse.trim().toUpperCase().includes("CONVERSATIONAL")) {
-            intent = "CONVERSATIONAL";
+        const result = await classifierLlm.invoke(intentMessages);
+        if (result.confidence > 0.4) {
+            intent = result.intent;
+        } else {
+            console.warn("[Intent Classification] Low confidence, defaulting to PROJECT_QUERY");
         }
     } catch (e) {
-        console.warn("[Intent Classification] Failed, defaulting to project query:", e);
+        console.warn("[Intent Classification] Failed, defaulting to PROJECT_QUERY:", e);
     }
 
     // 2. Direct Conversational Response
@@ -117,7 +120,8 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
         const history = await getChatHistory(chatId);
         const conversationalMessages = buildConversationalMessages(history, question);
-        const answer = await llm.pipe(new StringOutputParser()).invoke(conversationalMessages);
+        const conversationalLlm = await getLLMWithFallback();
+        const answer = await conversationalLlm.pipe(new StringOutputParser()).invoke(conversationalMessages);
         return { answer, context: "", validated: { isValid: true, warning: null } };
     }
 

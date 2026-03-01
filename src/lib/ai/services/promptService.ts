@@ -2,6 +2,7 @@
 import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
+import { z } from "zod";
 
 export function buildChatMessages(history: string, question: string) {
     const systemPrompt = `You are a helpful and friendly AI Assistant for the Dev-Collab platform.
@@ -225,17 +226,24 @@ Start with your reasoning section (points 1-3 above), then provide the code bloc
     return [new SystemMessage(systemPrompt), new HumanMessage(userPrompt)];
 }
 
+export const IntentSchema = z.object({
+    intent: z.enum(["CONVERSATIONAL", "PROJECT_QUERY", "GLOBAL_SEARCH"]),
+    confidence: z.number().min(0).max(1),
+    reasoning: z.string()
+});
+
 export function buildIntentClassificationPrompt(question: string) {
-    const systemPrompt = `You are an intent classification engine.
-Your goal is to categorize the user's input into one of two categories:
+    const systemPrompt = `You are a strict JSON intent classification engine.
+Your goal is to categorize the user's input based on:
 1. CONVERSATIONAL: Greetings, pleasantries, general chat, or simple acknowledgments (e.g., "Hi", "Hello", "Thanks", "How are you?").
 2. PROJECT_QUERY: Questions about the project, code, tasks, documentation, or requests for help with software development.
+3. GLOBAL_SEARCH: The user wants to generally search the whole application (if there is no specific project context implied).
 
-Respond with ONLY the category name: CONVERSATIONAL or PROJECT_QUERY. Do not include any other text.`;
+Always populate your reasoning before your final decision so you can think step-by-step. Let your reasoning dictate your final intent categorization.`;
 
     return [
         new SystemMessage(systemPrompt),
-        new HumanMessage(`User Input: "${question}"\n\nCategory:`),
+        new HumanMessage(`User Input: "${question}"`),
     ];
 }
 
