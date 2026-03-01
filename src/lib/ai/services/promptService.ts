@@ -1,5 +1,4 @@
 
-import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { SystemMessage, HumanMessage } from "@langchain/core/messages";
 import { z } from "zod";
 

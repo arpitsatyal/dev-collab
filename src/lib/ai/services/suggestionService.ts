@@ -1,4 +1,4 @@
-import { getStructuredLLMWithFallback, getLLMWithFallback } from "../llmFactory";
+import { getReasoningStructuredLLM, getReasoningLLM } from "../llmFactory";
 import prisma from "../../db/prisma";
 import z from "zod";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -52,7 +52,7 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 
     try {
         const messages = buildSuggestWorkItemsMessages({ project, projectId, tasks, snippets, docs });
-        const structuredLlm = await getStructuredLLMWithFallback(WorkItemSuggestionsSchema, "suggest_work_items");
+        const structuredLlm = await getReasoningStructuredLLM(WorkItemSuggestionsSchema, "suggest_work_items");
         const result = await structuredLlm.invoke(messages);
         return result?.suggestions || [];
     } catch (error) {
@@ -63,7 +63,7 @@ export async function suggestWorkItems(projectId: string): Promise<WorkItemSugge
 
 
 export async function generateImplementationPlan(taskId: string): Promise<string> {
-    const llm = await getLLMWithFallback();
+    const llm = await getReasoningLLM();
 
     // 1. Fetch Task and linked context
     const task = await prisma.task.findUnique({
@@ -96,7 +96,7 @@ export async function generateImplementationPlan(taskId: string): Promise<string
 }
 
 export async function generateDraftChanges(taskId: string): Promise<string> {
-    const llm = await getLLMWithFallback();
+    const llm = await getReasoningLLM();
 
     // 1. Fetch Task, linked snippets, and project context
     const task = await prisma.task.findUnique({

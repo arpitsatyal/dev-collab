@@ -1,5 +1,5 @@
 
-import { getLLMWithFallback, getToolBoundLLMWithFallback, getStructuredLLMWithFallback } from "../llmFactory";
+import { getReasoningLLM, getSpeedyLLM, getReasoningToolBoundLLM, getReasoningStructuredLLM } from "../llmFactory";
 import prisma from "../../db/prisma";
 import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -26,7 +26,7 @@ async function getAIResponseWithTools(chatId: string, question: string, projectI
     const tools = [getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool];
     const toolsByName: Record<string, { invoke: (args: any) => Promise<any> }> = Object.fromEntries(tools.map(t => [t.name, t]));
 
-    const llmWithTools = await getToolBoundLLMWithFallback(tools);
+    const llmWithTools = await getReasoningToolBoundLLM(tools);
     const history = await getChatHistory(chatId);
     const calledTools: string[] = [];
 
@@ -66,17 +66,18 @@ async function getAIResponseWithTools(chatId: string, question: string, projectI
 
     // Append a final instruction so the LLM always has an open question to answer
     messages = [...messages, new HumanMessage("Please provide your final answer to the user's question based on the information gathered.")];
-
-    const llm = await getLLMWithFallback();
+    // Final answer generation should be fast
+    const llm = await getSpeedyLLM();
     const answer = await llm.pipe(new StringOutputParser()).invoke(messages);
     return { answer, context: "", validated: { isValid: true, warning: null } };
 }
 
 // ── Path B: Hybrid vector search fallback (global / no project) ───────────────
 async function getAIResponseWithSearch(chatId: string, question: string, filters?: Record<string, any>) {
-    const llm = await getLLMWithFallback();
+    // Query generation for search needs to be accurate: use REASONING
+    const queryGenLlm = await getReasoningLLM();
 
-    const queries = await generateQueryVariations(question, llm);
+    const queries = await generateQueryVariations(question, queryGenLlm);
     const filteredResults = await performHybridSearch(queries, question, filters);
 
     filteredResults.forEach(([doc, score]: any, i: number) => {
@@ -93,13 +94,16 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
 
     const history = await getChatHistory(chatId);
     const fullPrompt = constructPrompt(context, history, question);
-    return await generateAnswer(llm, fullPrompt, context, filteredResults);
+    // Generate final answer using SPEED model (generateAnswer is just summarizing)
+    const answerLlm = await getSpeedyLLM();
+    return await generateAnswer(answerLlm, fullPrompt, context, filteredResults);
 }
 
 // ── Public entrypoint ─────────────────────────────────────────────────────────
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
     // 1. Intent Classification
-    const classifierLlm = await getStructuredLLMWithFallback(IntentSchema, "classify_intent");
+    // Intent Classification needs reliable JSON: use REASONING
+    const classifierLlm = await getReasoningStructuredLLM(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
 
     let intent = "PROJECT_QUERY";
@@ -120,7 +124,8 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
         const history = await getChatHistory(chatId);
         const conversationalMessages = buildConversationalMessages(history, question);
-        const conversationalLlm = await getLLMWithFallback();
+        // Conversational responses should be fast: use SPEEDY
+        const conversationalLlm = await getSpeedyLLM();
         const answer = await conversationalLlm.pipe(new StringOutputParser()).invoke(conversationalMessages);
         return { answer, context: "", validated: { isValid: true, warning: null } };
     }

@@ -2,90 +2,47 @@ import { BaseChatModel } from "@langchain/core/language_models/chat_models";
 import { getTogetherLLM } from "./togetherLLM";
 import { getGroqLLM } from "./groqLLM";
 
-export type LLMProvider = "TOGETHER" | "GROQ" | "OPENAI" | "ANTHROPIC";
+// ─── Direct Model Access ────────────────────────────────────────────────────
+// Reasoning = Together AI (70B)
+// Speed = Groq (17B)
 
-export function getLLM(provider?: LLMProvider) {
-    const selectedProvider = provider || (process.env.LLM_PROVIDER as LLMProvider) || "TOGETHER";
-
-    switch (selectedProvider) {
-        case "TOGETHER":
-            return getTogetherLLM();
-        case "GROQ":
-            return getGroqLLM();
-        default:
-            console.warn(`Unknown LLM provider: ${selectedProvider}. Defaulting to TOGETHER.`);
-            return getTogetherLLM();
-    }
-}
-
-/**
- * Get LLM with automatic fallback using LangChain's native withFallbacks
- * 
- * Primary provider: LLM_PROVIDER env (default: TOGETHER)
- * Fallback provider: LLM_FALLBACK_PROVIDER env (default: GROQ)
- * 
- * Example .env:
- * LLM_PROVIDER=TOGETHER
- * LLM_FALLBACK_PROVIDER=GROQ
- */
-export async function getLLMWithFallback(): Promise<BaseChatModel> {
-    const primary = (process.env.LLM_PROVIDER as LLMProvider) || "TOGETHER";
-    const fallback = (process.env.LLM_FALLBACK_PROVIDER as LLMProvider) || "GROQ";
-
-    const primaryLLM = getLLM(primary);
-    const fallbackLLM = getLLM(fallback);
-
-    return primaryLLM.withFallbacks({
-        fallbacks: [fallbackLLM],
+export async function getReasoningLLM(): Promise<BaseChatModel> {
+    return getTogetherLLM().withFallbacks({
+        fallbacks: [getGroqLLM()],
     }) as unknown as BaseChatModel;
 }
 
-/**
- * Specifically for Structured Output. 
- * LangChain's .withFallbacks() returns a Runnable, which strips the .withStructuredOutput method.
- * Instead, we must apply .withStructuredOutput() to EACH model FIRST, and then combine them with fallbacks.
- */
-export async function getStructuredLLMWithFallback(schema: any, name: string) {
-    const primary = (process.env.LLM_PROVIDER as LLMProvider) || "TOGETHER";
-    const fallback = (process.env.LLM_FALLBACK_PROVIDER as LLMProvider) || "GROQ";
+export async function getSpeedyLLM(): Promise<BaseChatModel> {
+    return getGroqLLM().withFallbacks({
+        fallbacks: [getTogetherLLM()],
+    }) as unknown as BaseChatModel;
+}
 
-    const primaryLLM = getLLM(primary);
-    const fallbackLLM = getLLM(fallback);
+// ─── Structured Output Wrappers ─────────────────────────────────────────────
 
-    // Check if the underlying models actually support structured output (ChatOpenAI does)
-    if (typeof primaryLLM.withStructuredOutput !== 'function' || typeof fallbackLLM.withStructuredOutput !== 'function') {
-        throw new Error("One or more configured LLMs do not support withStructuredOutput.");
-    }
+export async function getReasoningStructuredLLM(schema: any, name: string) {
+    const primary = getTogetherLLM();
+    const fallback = getGroqLLM();
 
-    // Apply structured output constraint BEFORE wrapping in fallback
-    const structuredPrimary = primaryLLM.withStructuredOutput(schema, { name });
-    const structuredFallback = fallbackLLM.withStructuredOutput(schema, { name });
+    const structuredPrimary = primary.withStructuredOutput(schema, { name });
+    const structuredFallback = fallback.withStructuredOutput(schema, { name });
 
     return structuredPrimary.withFallbacks({
         fallbacks: [structuredFallback],
     });
 }
 
-/**
- * Specifically for Tool Calling.
- * LangChain's .withFallbacks() returns a Runnable, which strips the .bindTools method.
- * Instead, we must apply .bindTools() to EACH model FIRST, and then combine them with fallbacks.
- */
-export async function getToolBoundLLMWithFallback(tools: any[]) {
-    const primary = (process.env.LLM_PROVIDER as LLMProvider) || "TOGETHER";
-    const fallback = (process.env.LLM_FALLBACK_PROVIDER as LLMProvider) || "GROQ";
+// ─── Tool-Bound Wrappers ───────────────────────────────────────────────────
 
-    const primaryLLM = getLLM(primary);
-    const fallbackLLM = getLLM(fallback);
+export async function getReasoningToolBoundLLM(tools: any[]) {
+    const primary = getTogetherLLM();
+    const fallback = getGroqLLM();
 
-    if (typeof primaryLLM.bindTools !== 'function' || typeof fallbackLLM.bindTools !== 'function') {
-        throw new Error("One or more configured LLMs do not support bindTools.");
-    }
-
-    const boundPrimary = primaryLLM.bindTools(tools);
-    const boundFallback = fallbackLLM.bindTools(tools);
+    const boundPrimary = primary.bindTools(tools);
+    const boundFallback = fallback.bindTools(tools);
 
     return boundPrimary.withFallbacks({
         fallbacks: [boundFallback],
     });
 }
+
