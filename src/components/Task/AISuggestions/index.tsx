@@ -5,7 +5,6 @@ import {
     Stack,
     ActionIcon,
     Collapse,
-    Center,
     Tooltip,
 } from "@mantine/core";
 import {
@@ -59,7 +58,7 @@ const AISuggestions = ({
                 <Group gap="sm">
                     <IconSparkles size={20} color="var(--mantine-color-blue-filled)" />
                     <Text fw={700} size="sm">AI Agent Suggestions</Text>
-                    {isFetching && <Loading />}
+                    {isFetching && <Loading loaderHeight="auto" />}
                 </Group>
                 <Group gap="xs">
                     <ActionIcon variant="subtle" onClick={() => { onClearDismissed(); refetch(); }}>

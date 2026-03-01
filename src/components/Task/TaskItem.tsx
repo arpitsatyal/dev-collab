@@ -4,7 +4,7 @@ import { useDrag } from "react-dnd";
 import dayjs from "dayjs";
 import classes from "./Task.module.css";
 import { useDisclosure } from "@mantine/hooks";
-import ImplementationPlanModal from "./ImplementationPlanModal";
+import ImplementationPlanModal from "./ImplementationPlan";
 
 const TaskItem = ({ task }: { task: Task }) => {
   const [opened, { open, close }] = useDisclosure(false);
