@@ -9,20 +9,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
+      
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-
+      
       - name: Install dependencies
         run: npm ci
-
+      
       - name: Run tests
         run: npm run test
         env:
@@ -35,132 +35,72 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
   deploy:
-    needs: test
+    needs: test  # Only runs if tests pass
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'  # Only deploy on push to main
+    
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}
-
+          aws-region: ${{ secrets.AWS_REGION }}  # e.g., us-east-1
+      
       - name: Trigger Amplify Build
         id: start_amplify
         run: |
           set -euo pipefail
-          JOB_JSON=$(aws amplify start-job \
-            --app-id "${{ secrets.AMPLIFY_APP_ID }}" \
+          JOB_ID=$(aws amplify start-job \
+            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
             --job-type RELEASE \
-            --output json)
-          echo "Start-job response: $JOB_JSON"
-          JOB_ID=$(echo "$JOB_JSON" | jq -r '.jobSummary.jobId')
-
-          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "null" ]; then
-            echo "Unable to read Amplify job ID from start-job response."
-            exit 1
-          fi
-
+            --query 'jobSummary.jobId' \
+            --output text)
           echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+          echo "Started Amplify job $JOB_ID"
 
-      - name: Wait for Amplify Build to Finish
-        id: amplify_status
+      - name: Wait for Amplify build to finish
+        id: wait_amplify
+        env:
+          APP_ID: ${{ secrets.AMPLIFY_APP_ID }}
+          JOB_ID: ${{ steps.start_amplify.outputs.job_id }}
         run: |
           set -euo pipefail
-          APP_ID="${{ secrets.AMPLIFY_APP_ID }}"
-          BRANCH="main"
-          JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
-
-          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "null" ]; then
-            echo "Unable to read Amplify job ID."
-            echo "status=FAILED" >> "$GITHUB_OUTPUT"
-            exit 1
-          fi
-
-          echo "Waiting for Amplify job $JOB_ID..."
-          sleep 5
-          MAX_TRIES=120
-          TRY=1
-
-          while [ $TRY -le $MAX_TRIES ]; do
+          echo "Waiting for Amplify job $JOB_ID"
+          for attempt in {1..60}; do
             STATUS=$(aws amplify get-job \
               --app-id "$APP_ID" \
-              --branch-name "$BRANCH" \
+              --branch-name main \
               --job-id "$JOB_ID" \
               --query 'job.summary.status' \
-              --output text 2>/dev/null || echo "PENDING")
-
-            echo "Attempt $TRY/$MAX_TRIES - status: $STATUS"
-
-            if [ "$STATUS" = "SUCCEED" ] || [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "CANCELLED" ]; then
+              --output text)
+            echo "Attempt ${attempt}: $STATUS"
+            if [ "$STATUS" = "SUCCEED" ]; then
               echo "status=$STATUS" >> "$GITHUB_OUTPUT"
-              break
+              exit 0
+            elif [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "CANCELLED" ]; then
+              echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+              exit 1
             fi
-
-            TRY=$((TRY + 1))
-            sleep 15
+            sleep 30
           done
+          echo "status=TIMEOUT" >> "$GITHUB_OUTPUT"
+          exit 1
 
-          FINAL_STATUS=$(aws amplify get-job \
-            --app-id "$APP_ID" \
-            --branch-name "$BRANCH" \
-            --job-id "$JOB_ID" \
-            --query 'job.summary.status' \
-            --output text 2>/dev/null || echo "UNKNOWN")
-
-          echo "status=$FINAL_STATUS" >> "$GITHUB_OUTPUT"
-
-          if [ "$FINAL_STATUS" != "SUCCEED" ]; then
-            echo "Amplify build did not succeed. Final status: $FINAL_STATUS"
-            exit 1
-          fi
-
-      - name: Push Notification (Discord)
+      - name: Notify Discord
         if: always()
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          JOB_ID: ${{ steps.start_amplify.outputs.job_id }}
+          STATUS: ${{ steps.wait_amplify.outputs.status }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         run: |
-          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
-            echo "DISCORD_WEBHOOK_URL is not set. Skipping Discord notification."
-            exit 0
-          fi
-
-          STATUS="${{ steps.amplify_status.outputs.status }}"
-          JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
-          COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
-          BRANCH="${{ github.ref_name }}"
-          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
-
-          if [ -z "$STATUS" ]; then
-            STATUS="UNKNOWN"
-          fi
-
-          if [ "$STATUS" = "SUCCEED" ]; then
-            ICON="[SUCCESS]"
-            COLOR="5763719"
-          else
-            ICON="[FAILED]"
-            COLOR="15548997"
-          fi
-
-          curl -f -sS -X POST "$DISCORD_WEBHOOK_URL" \
-            -H "Content-Type: application/json" \
-            -d "{
-              \"username\": \"Amplify CI\",
-              \"embeds\": [
-                {
-                  \"title\": \"$ICON Amplify Build $STATUS\",
-                  \"color\": $COLOR,
-                  \"fields\": [
-                    {\"name\": \"Repository\", \"value\": \"${{ github.repository }}\", \"inline\": true},
-                    {\"name\": \"Branch\", \"value\": \"$BRANCH\", \"inline\": true},
-                    {\"name\": \"Job ID\", \"value\": \"$JOB_ID\", \"inline\": true},
-                    {\"name\": \"Commit\", \"value\": \"$COMMIT_URL\", \"inline\": false},
-                    {\"name\": \"Run\", \"value\": \"$RUN_URL\", \"inline\": false}
-                  ]
-                }
-              ]
-            }"
+          set -euo pipefail
+          STATUS="${STATUS:-UNKNOWN}"
+          JOB_ID="${JOB_ID:-n/a}"
+          MESSAGE="Amplify build for ${REPO} on branch main finished with status: ${STATUS}. Job ID: ${JOB_ID}. Workflow run: ${RUN_URL}"
+          curl -X POST -H "Content-Type: application/json" \
+            -d "{\"content\": \"${MESSAGE}\"}" \
+            "$DISCORD_WEBHOOK_URL"
