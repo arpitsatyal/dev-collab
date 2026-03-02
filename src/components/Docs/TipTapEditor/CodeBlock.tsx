@@ -12,7 +12,7 @@ export default function CodeBlock({
     return (
         <NodeViewWrapper
             className="code-block"
-            style={{ position: 'relative', margin: '1rem 0', width: 'fit-content', maxWidth: '100%', minWidth: '400px' }}
+            style={{ position: 'relative', margin: '1rem 0', width: 'fit-content', maxWidth: '100%' }}
         >
             <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 3 }}>
                 <ExportSnippetAction code={textContent || ''} language={language} />
@@ -44,7 +44,6 @@ export default function CodeBlock({
                     fontSize: '0.9rem',
                     whiteSpace: 'pre-wrap',
                     wordBreak: 'break-all',
-                    minWidth: '200px',
                 }}
             >
                 <NodeViewContent as="code" />
