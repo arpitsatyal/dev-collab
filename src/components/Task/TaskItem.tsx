@@ -67,7 +67,7 @@ const TaskItem = ({ task }: { task: Task }) => {
         taskId={task.id}
         taskTitle={task.title}
         projectId={task.projectId}
-        initialPlan={task.aiPlan}
+        initialPlan={task.aiPlan ? JSON.parse(task.aiPlan) : null}
       />
     </>
   );

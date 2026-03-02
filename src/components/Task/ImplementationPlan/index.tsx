@@ -64,7 +64,7 @@ const ImplementationPlanModal = ({
                     label: filename,
                     projectId,
                     roomId: "", // Handled by API
-                    content: plan,
+                    content: plan
                 }
             }).unwrap();
             setSaveSuccess(true);

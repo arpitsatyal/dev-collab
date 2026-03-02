@@ -8,7 +8,6 @@ import { useEditor, EditorContent, ReactNodeViewRenderer } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlock from "@tiptap/extension-code-block";
 import { Markdown } from "tiptap-markdown";
-import { marked } from "marked";
 import styles from "./TipTapEditor.module.css";
 import { useEffect } from "react";
 import Threads from "../Threads/Threads";
@@ -19,10 +18,9 @@ interface TiptapEditorProps {
 }
 
 export default function TiptapEditor({ initialContent }: TiptapEditorProps) {
-  const htmlContent = initialContent ? marked.parse(initialContent, { async: false }) as string : '';
 
   const liveblocks = useLiveblocksExtension({
-    initialContent: htmlContent,
+    initialContent: initialContent,
   });
 
   const editor = useEditor({

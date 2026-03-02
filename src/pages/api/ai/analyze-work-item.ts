@@ -20,7 +20,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         // Cache the Plan within the task
         await prisma.task.update({
             where: { id: taskId },
-            data: { aiPlan: plan }
+            data: { aiPlan: JSON.stringify(plan) }
         });
 
         return res.status(200).json({ plan });

@@ -26,6 +26,11 @@ const DocsIndex = () => {
   const { data: docs } = useGetDocsQuery(projectId ? { projectId } : skipToken);
   const selectedDoc = docId ? docs?.find((doc) => doc.id === docId) : null;
 
+  const markdownContent =
+    typeof selectedDoc?.content === 'string' && selectedDoc.content.trim().length > 0
+      ? selectedDoc.content
+      : null;
+
   const [docForm, setDocForm] = useState<DocCreateData>({
     label: "",
     projectId: "",
@@ -92,7 +97,7 @@ const DocsIndex = () => {
           }}
         >
           <ClientSideSuspense fallback={<Loading isEditorLoading />}>
-            <TiptapEditor initialContent={typeof selectedDoc?.content === 'string' ? selectedDoc.content : null} />
+            <TiptapEditor initialContent={markdownContent} />
           </ClientSideSuspense>
         </RoomProvider>
       ) : (
