@@ -55,7 +55,7 @@ jobs:
             --branch-name main \
             --job-type RELEASE \
             --query 'jobSummary.jobId' \
-            --output text)
+            --output text | tr -d '\r\n')
           echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
 
       - name: Wait for Amplify Build to Finish
@@ -72,6 +72,7 @@ jobs:
           fi
 
           echo "Waiting for Amplify job $JOB_ID..."
+          sleep 5
           MAX_TRIES=120
           TRY=1
 
@@ -81,7 +82,7 @@ jobs:
               --branch-name "$BRANCH" \
               --job-id "$JOB_ID" \
               --query 'job.summary.status' \
-              --output text)
+              --output text 2>/dev/null || echo "PENDING")
 
             echo "Attempt $TRY/$MAX_TRIES - status: $STATUS"
 
@@ -99,7 +100,7 @@ jobs:
             --branch-name "$BRANCH" \
             --job-id "$JOB_ID" \
             --query 'job.summary.status' \
-            --output text)
+            --output text 2>/dev/null || echo "UNKNOWN")
 
           echo "status=$FINAL_STATUS" >> "$GITHUB_OUTPUT"
 
