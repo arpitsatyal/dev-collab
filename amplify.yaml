@@ -5,6 +5,7 @@ applications:
         preBuild:
           commands:
             - nvm use 20
+            - npm config set prefer-offline true
             - NODE_ENV=development npm ci --legacy-peer-deps
             - npx prisma generate
         build:
@@ -21,5 +22,11 @@ applications:
       cache:
         paths:
           - node_modules/**/*
+          - .npm
+          - .cache
+          - .next/cache
+          - node_modules/.prisma
+          - .prisma
       environment:
         PRISMA_CLI_BINARY_TARGETS: rhel-openssl-1.0.x
+        PRISMA_CLI_QUERY_ENGINE_TYPE: binary
