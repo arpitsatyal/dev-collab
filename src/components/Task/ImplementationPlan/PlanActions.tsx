@@ -11,6 +11,7 @@ interface PlanActionsProps {
     isSaving?: boolean;
     onSaveDocument?: () => void;
     saveSuccess?: boolean;
+    showSaveActions?: boolean;
 }
 
 const PlanActions = ({
@@ -20,20 +21,21 @@ const PlanActions = ({
     setSuggestedFileName,
     isSaving,
     onSaveDocument,
-    saveSuccess
+    saveSuccess,
+    showSaveActions
 }: PlanActionsProps) => {
     return (
         <>
             <Divider mt="xl" mb="md" />
             <Group justify="space-between" align="center" wrap="wrap">
                 <Group>
-                    {setSuggestedFileName && onSaveDocument && (
+                    {showSaveActions && (
                         <>
                             <TextInput
                                 size="sm"
                                 placeholder="Filename (e.g., Plan.md)"
                                 value={suggestedFileName}
-                                onChange={(e) => setSuggestedFileName(e.currentTarget.value)}
+                                onChange={(e) => setSuggestedFileName?.(e.currentTarget.value)}
                                 w={300}
                                 disabled={isSaving || saveSuccess}
                             />

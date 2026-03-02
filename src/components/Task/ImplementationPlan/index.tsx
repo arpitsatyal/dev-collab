@@ -94,43 +94,56 @@ const ImplementationPlanModal = ({
         >
             <Stack gap="md" style={{ maxWidth: '100%', overflowX: 'hidden' }} ref={viewportRef}>
                 <div ref={topAnchorRef} />
-                {!plan && !loading && (
-                    <PlanEmptyState onGenerate={handleGeneratePlan} />
-                )}
 
-                {loading && (
-                    <PlanLoadingState message="AI is analyzing the linked code context..." />
-                )}
+                {/* State-driven rendering */}
+                {(() => {
+                    if (!plan && loading) {
+                        return <PlanLoadingState message="AI is analyzing the linked code context..." />;
+                    }
 
-                {!loading && plan && (
-                    <Stack gap="md">
-                        {saveSuccess && (
-                            <Notification icon={<IconCheck size={18} />} color="teal" title="Document Saved" onClose={() => setSaveSuccess(false)}>
-                                Successfully saved &quot;{suggestedFileName}&quot; to project documents.
-                            </Notification>
-                        )}
-                        <Paper
-                            withBorder
-                            p="md"
-                            radius="md"
-                            bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
-                        >
-                            <MarkdownContent content={plan} />
-                        </Paper>
-                    </Stack>
-                )}
+                    if (!plan) {
+                        return <PlanEmptyState onGenerate={handleGeneratePlan} />;
+                    }
 
-                {(plan || loading) && (
-                    <PlanActions
-                        loadingPlan={loading}
-                        onRegeneratePlan={handleGeneratePlan}
-                        suggestedFileName={suggestedFileName}
-                        setSuggestedFileName={setSuggestedFileName}
-                        isSaving={isSaving}
-                        onSaveDocument={plan ? () => handleSaveDocument(suggestedFileName) : undefined}
-                        saveSuccess={saveSuccess}
-                    />
-                )}
+                    return (
+                        <Stack gap="md">
+                            {saveSuccess && (
+                                <Notification
+                                    icon={<IconCheck size={18} />}
+                                    color="teal"
+                                    title="Document Saved"
+                                    onClose={() => setSaveSuccess(false)}
+                                >
+                                    Successfully saved &quot;{suggestedFileName}&quot; to project documents.
+                                </Notification>
+                            )}
+
+                            <Paper
+                                withBorder
+                                p="md"
+                                radius="md"
+                                bg="light-dark(var(--mantine-color-gray-0), var(--mantine-color-dark-6))"
+                                pos="relative"
+                            >
+                                {loading && (
+                                    <PlanLoadingState message="Regenerating..." />
+                                )}
+                                <MarkdownContent content={plan} />
+                            </Paper>
+
+                            <PlanActions
+                                loadingPlan={loading}
+                                onRegeneratePlan={handleGeneratePlan}
+                                suggestedFileName={suggestedFileName}
+                                setSuggestedFileName={setSuggestedFileName}
+                                isSaving={isSaving}
+                                onSaveDocument={() => handleSaveDocument(suggestedFileName)}
+                                saveSuccess={saveSuccess}
+                                showSaveActions={plan !== initialPlan && !saveSuccess}
+                            />
+                        </Stack>
+                    );
+                })()}
             </Stack>
         </Modal>
     );
