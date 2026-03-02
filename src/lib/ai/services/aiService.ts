@@ -9,6 +9,8 @@ import { constructPrompt, buildChatMessages, buildIntentClassificationPrompt, bu
 import { generateAnswer } from "./generationService";
 
 const MAX_CHAT_ITERATIONS = 5;
+const APP_SCOPE_REPLY =
+    "I can assist with Dev-Collab only, including projects, tasks, snippets, documentation, and workspace code. Please ask a question related to your application data or workflow.";
 
 async function getChatHistory(chatId: string): Promise<string> {
     const pastMessages = await prisma.message.findMany({
@@ -80,6 +82,14 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
     const queries = await generateQueryVariations(question, queryGenLlm);
     const filteredResults = await performHybridSearch(queries, question, filters);
 
+    if (filteredResults.length === 0) {
+        return {
+            answer: `${APP_SCOPE_REPLY} Try referencing a project entity like a task title, snippet filename, or doc label.`,
+            context: "",
+            validated: { isValid: true, warning: null }
+        };
+    }
+
     filteredResults.forEach(([doc, score]: any, i: number) => {
         console.log(`Result ${i + 1}: Score: ${score.toFixed(4)}, Type: ${doc.metadata?.type}, Title: ${doc.metadata?.projectTitle}`);
     });
@@ -107,11 +117,15 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     const intentMessages = buildIntentClassificationPrompt(question);
 
     let intent = "PROJECT_QUERY";
+    let scope: "APP_SPECIFIC" | "OUT_OF_SCOPE" = filters?.projectId
+        ? "APP_SPECIFIC"
+        : "OUT_OF_SCOPE";
 
     try {
         const result = await classifierLlm.invoke(intentMessages);
         if (result.confidence > 0.4) {
             intent = result.intent;
+            scope = result.scope;
         } else {
             console.warn("[Intent Classification] Low confidence, defaulting to PROJECT_QUERY");
         }
@@ -121,6 +135,9 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
 
     // 2. Direct Conversational Response
     if (intent === "CONVERSATIONAL") {
+        if (scope === "OUT_OF_SCOPE") {
+            return { answer: APP_SCOPE_REPLY, context: "", validated: { isValid: true, warning: null } };
+        }
         console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
         const history = await getChatHistory(chatId);
         const conversationalMessages = buildConversationalMessages(history, question);
@@ -131,6 +148,10 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     }
 
     // 3. Project Query Routing
+    if (scope === "OUT_OF_SCOPE" && !filters?.projectId) {
+        return { answer: APP_SCOPE_REPLY, context: "", validated: { isValid: true, warning: null } };
+    }
+
     if (filters?.projectId) {
         return getAIResponseWithTools(chatId, question, filters.projectId);
     }

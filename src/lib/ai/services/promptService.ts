@@ -189,16 +189,25 @@ ${SHARED_TONE}`;
 
 export const IntentSchema = z.object({
     intent: z.enum(["CONVERSATIONAL", "PROJECT_QUERY", "GLOBAL_SEARCH"]),
+    scope: z.enum(["APP_SPECIFIC", "OUT_OF_SCOPE"]),
     confidence: z.number().min(0).max(1),
     reasoning: z.string()
 });
 
 export function buildIntentClassificationPrompt(question: string) {
     const systemPrompt = `You are a strict JSON intent classification engine.
-Your goal is to categorize the user's input based on:
+Your goal is to categorize the user's input by INTENT and SCOPE.
+
+INTENT:
 1. CONVERSATIONAL: Greetings, pleasantries, general chat, or simple acknowledgments (e.g., "Hi", "Hello", "Thanks", "How are you?").
 2. PROJECT_QUERY: Questions about the project, code, tasks, documentation, or requests for help with software development.
 3. GLOBAL_SEARCH: The user wants to generally search the whole application (if there is no specific project context implied).
+
+SCOPE:
+- APP_SPECIFIC: Clearly about Dev-Collab data/workflows (projects, tasks, snippets, docs, code context, app usage).
+- OUT_OF_SCOPE: Generic/world knowledge, unrelated trivia, tutoring, life advice, or broad topics not tied to Dev-Collab context.
+
+Return valid JSON that matches the schema exactly.
 
 Always populate your reasoning before your final decision so you can think step-by-step. Let your reasoning dictate your final intent categorization.`;
 
