@@ -26,37 +26,6 @@ describe("AI Response Quality", () => {
     expect(response.answer.length).toBeGreaterThan(0);
   }, 30000);
 
-  //   test("should ground responses in retrieved context", async () => {
-  //     const query = "What features does the collaborative playground have?";
-  //     const response = await getAIResponse("test-chat-id", query);
-
-  //     // If context was found, answer should reference it
-  //     if (
-  //       response.context &&
-  //       !response.context.includes("don't have enough specific information")
-  //     ) {
-  //       // Answer should not be generic
-  //       const genericPhrases = [
-  //         "in general",
-  //         "typically",
-  //         "usually",
-  //         "most platforms",
-  //       ];
-  //       const isGeneric = genericPhrases.some((phrase) =>
-  //         response.answer.toLowerCase().includes(phrase),
-  //       );
-
-  //       // Prefer specific answers over generic ones
-  //       if (isGeneric) {
-  //         console.warn(
-  //           "Warning: Response may be too generic despite having context",
-  //         );
-  //       }
-  //     }
-
-  //     expect(response.answer.length).toBeGreaterThan(20);
-  //   }, 30000);
-
   test("should handle conversational queries appropriately", async () => {
     const response = await getAIResponse("test-chat-id", "Thanks!");
 

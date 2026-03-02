@@ -28,5 +28,28 @@ backend:
   phases:
     preBuild:
       commands:
-        - amplifyPush
+        - |
+          echo "Checking for Amplify backend changes..."
+          amplify status --json > /tmp/amplify-status.json
+          node - <<'NODE'
+          const fs = require('fs');
+          const status = JSON.parse(fs.readFileSync('/tmp/amplify-status.json', 'utf8'));
+          const resources = status.resources || [];
+          const hasChanges = resources.some(r => (r.status || '').toLowerCase() !== 'no change');
+          const rootStatus = (status.rootStackStatus || '').toLowerCase();
+          const stackChanged = rootStatus && rootStatus !== 'no change';
+          if (hasChanges || stackChanged) {
+            console.log('changes');
+            process.exit(0);
+          } else {
+            console.log('no-changes');
+            process.exit(1);
+          }
+          NODE
+          if [ $? -eq 0 ]; then
+            echo "Backend changes detected; running amplifyPush --simple"
+            amplifyPush --simple
+          else
+            echo "No backend changes; skipping amplifyPush"
+          fi
   appRoot: .
