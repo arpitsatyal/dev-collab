@@ -13,7 +13,20 @@ export const aiApi = createApi({
                 method: "GET", // RTK Query mutations can still make GET requests if they cause side-effects like DB caching
             }),
         }),
+        suggestSnippetFilename: builder.mutation<
+            { fileName: string },
+            { projectId: string; code: string; language?: string }
+        >({
+            query: ({ projectId, code, language }) => ({
+                url: "suggest-snippet-filename",
+                method: "POST",
+                body: { projectId, code, language },
+            }),
+        }),
     }),
 });
 
-export const { useGenerateImplementationPlanMutation } = aiApi;
+export const {
+    useGenerateImplementationPlanMutation,
+    useSuggestSnippetFilenameMutation,
+} = aiApi;

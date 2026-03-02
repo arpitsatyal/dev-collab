@@ -56,9 +56,26 @@ export const SnippetSlice = createSlice({
         };
       }
     },
+
+    removeSnippet: (
+      state,
+      action: PayloadAction<{ projectId: string; snippetId: string }>
+    ) => {
+      const { projectId, snippetId } = action.payload;
+      const existingSnippets = state.loadedSnippets[projectId];
+
+      if (!existingSnippets) {
+        return;
+      }
+
+      state.loadedSnippets[projectId] = existingSnippets.filter(
+        (snippet) => snippet.id !== snippetId
+      );
+    },
   },
 });
 
-export const { setSnippets, addSnippet, updateSnippet } = SnippetSlice.actions;
+export const { setSnippets, addSnippet, updateSnippet, removeSnippet } =
+  SnippetSlice.actions;
 
 export default SnippetSlice.reducer;

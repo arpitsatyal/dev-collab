@@ -1,11 +1,17 @@
 import prisma from "../../db/prisma";
 import z from "zod";
 import { StringOutputParser } from "@langchain/core/output_parsers";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import {
     buildSuggestWorkItemsMessages,
     buildImplementationPlanMessages
 } from "./promptService";
 import { getReasoningLLM, getReasoningStructuredLLM } from "../llmFactory";
+import { getExtensionFromLanguage } from "../../../utils/languageMapper";
+import {
+    inferFallbackBaseName,
+    normalizeBaseName
+} from "../../../utils/snippetNaming";
 
 export const WorkItemSuggestionSchema = z.object({
     title: z.string().describe("Concise title of the task"),
@@ -19,6 +25,12 @@ export const WorkItemSuggestionsSchema = z.object({
 });
 
 export type WorkItemSuggestion = z.infer<typeof WorkItemSuggestionSchema>;
+
+const SnippetFileNameSchema = z.object({
+    baseName: z
+        .string()
+        .describe("Short descriptive file name without extension, lowercase with underscores"),
+});
 
 export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
     // Fetch all context in parallel — deterministic, no LLM discretion
@@ -118,5 +130,82 @@ export async function generateImplementationPlan(taskId: string): Promise<string
     } catch (error) {
         console.error("[Analysis Engine] Error generating plan:", error);
         return "Failed to generate implementation plan. Please try again.";
+    }
+}
+
+const buildUniqueFileName = (
+    baseName: string,
+    extension: string,
+    existingNames: Set<string>
+) => {
+    const safeBase = normalizeBaseName(baseName) || "snippet";
+    let candidate = `${safeBase}.${extension}`;
+    let index = 1;
+
+    while (existingNames.has(candidate.toLowerCase())) {
+        candidate = `${safeBase}_${index}.${extension}`;
+        index += 1;
+    }
+
+    return candidate;
+};
+
+export async function suggestSnippetFilenameForCode({
+    projectId,
+    code,
+    language,
+}: {
+    projectId: string;
+    code: string;
+    language?: string;
+}): Promise<string> {
+    const normalizedLanguage = (language || "plaintext").toLowerCase();
+    const extension = getExtensionFromLanguage(normalizedLanguage);
+
+    const existing = await prisma.snippet.findMany({
+        where: { projectId },
+        select: { title: true, extension: true },
+    });
+
+    const existingNames = new Set(
+        existing.map((snippet) =>
+            `${snippet.title}.${snippet.extension || "txt"}`.toLowerCase()
+        )
+    );
+
+    try {
+        const llm = await getReasoningStructuredLLM(
+            SnippetFileNameSchema,
+            "suggest_snippet_filename"
+        );
+
+        const truncatedCode = code.slice(0, 3000);
+        const messages = [
+            new SystemMessage(
+                "You generate concise software filename suggestions. Return only JSON fields that match schema."
+            ),
+            new HumanMessage(`Suggest a short descriptive filename base (no extension) for this ${normalizedLanguage} code snippet.
+Rules:
+- lowercase, underscores, alphanumeric only
+- max 48 characters
+- avoid generic names like file/code/snippet unless unavoidable
+- return baseName only
+
+Code:
+\`\`\`${normalizedLanguage}
+${truncatedCode}
+\`\`\``),
+        ];
+
+        const result = await llm.invoke(messages);
+        const aiBaseName = normalizeBaseName(result?.baseName || "");
+        return buildUniqueFileName(
+            aiBaseName || inferFallbackBaseName(code),
+            extension,
+            existingNames
+        );
+    } catch (error) {
+        console.error("[Suggestion Engine] Failed to suggest snippet filename:", error);
+        return buildUniqueFileName(inferFallbackBaseName(code), extension, existingNames);
     }
 }

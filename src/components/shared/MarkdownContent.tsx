@@ -4,6 +4,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { vscDarkPlus } from 'react-syntax-highlighter/dist/cjs/styles/prism';
+import ExportSnippetAction from "../Snippets/ExportSnippetAction";
 
 /**
  * Shared code block styling constants used across the app.
@@ -28,20 +29,36 @@ export const codeTagStyle: React.CSSProperties = {
 export const HighlightedCode = ({
     code,
     language = 'text',
+    showExportAction = true,
 }: {
     code: string;
     language?: string;
+    showExportAction?: boolean;
 }) => (
-    <SyntaxHighlighter
-        style={vscDarkPlus}
-        language={language}
-        PreTag="div"
-        showLineNumbers={false}
-        customStyle={codeBlockCustomStyle}
-        codeTagProps={{ style: codeTagStyle }}
-    >
-        {code}
-    </SyntaxHighlighter>
+    <div style={{ position: 'relative', display: 'inline-block', maxWidth: '100%' }}>
+        {showExportAction && (
+            <div
+                style={{
+                    position: 'absolute',
+                    top: '0.5rem',
+                    right: '0.5rem',
+                    zIndex: 2,
+                }}
+            >
+                <ExportSnippetAction code={code} language={language} />
+            </div>
+        )}
+        <SyntaxHighlighter
+            style={vscDarkPlus}
+            language={language}
+            PreTag="div"
+            showLineNumbers={false}
+            customStyle={codeBlockCustomStyle}
+            codeTagProps={{ style: codeTagStyle }}
+        >
+            {code}
+        </SyntaxHighlighter>
+    </div>
 );
 
 const MarkdownComponents: any = {
@@ -52,17 +69,10 @@ const MarkdownComponents: any = {
 
         if (isBlock) {
             return (
-                <SyntaxHighlighter
-                    style={vscDarkPlus}
+                <HighlightedCode
+                    code={String(children).replace(/\n$/, '')}
                     language={language || 'text'}
-                    PreTag="div"
-                    showLineNumbers={false}
-                    customStyle={codeBlockCustomStyle}
-                    codeTagProps={{ style: codeTagStyle }}
-                    {...props}
-                >
-                    {String(children).replace(/\n$/, '')}
-                </SyntaxHighlighter>
+                />
             );
         }
 

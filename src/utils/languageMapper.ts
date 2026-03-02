@@ -45,11 +45,55 @@ export const extensionToLanguageMap: Record<string, string> = {
   ps1: "powershell",
 };
 
+export const languageToExtensionMap: Record<string, string> = {
+  javascript: "js",
+  typescript: "ts",
+  python: "py",
+  ruby: "rb",
+  java: "java",
+  cpp: "cpp",
+  c: "c",
+  csharp: "cs",
+  go: "go",
+  php: "php",
+  html: "html",
+  css: "css",
+  scss: "scss",
+  json: "json",
+  xml: "xml",
+  yaml: "yml",
+  markdown: "md",
+  sql: "sql",
+  shell: "sh",
+  dockerfile: "dockerfile",
+  hcl: "hcl",
+  rust: "rs",
+  swift: "swift",
+  kotlin: "kt",
+  dart: "dart",
+  lua: "lua",
+  perl: "pl",
+  r: "r",
+  scala: "scala",
+  ini: "ini",
+  bat: "bat",
+  powershell: "ps1",
+  plaintext: "txt",
+  text: "txt",
+};
+
 export function getLanguageFromExtension(extension: string | undefined | null): string {
   if (!extension) return "plaintext";
 
   const cleanExt = extension.startsWith('.') ? extension.slice(1) : extension;
   return extensionToLanguageMap[cleanExt.toLowerCase()] || "plaintext";
+}
+
+export function getExtensionFromLanguage(
+  language: string | undefined | null
+): string {
+  if (!language) return "txt";
+  return languageToExtensionMap[language.toLowerCase()] || "txt";
 }
 
 // Keep the old array for backward compatibility if needed, 

@@ -1,6 +1,7 @@
 import { NodeViewWrapper, NodeViewContent } from '@tiptap/react';
 import React from 'react';
 import { HighlightedCode } from '../../shared/MarkdownContent';
+import ExportSnippetAction from '../../Snippets/ExportSnippetAction';
 
 export default function CodeBlock({
     node: { attrs, textContent },
@@ -13,6 +14,10 @@ export default function CodeBlock({
             className="code-block"
             style={{ position: 'relative', margin: '1rem 0', width: 'fit-content', maxWidth: '100%', minWidth: '400px' }}
         >
+            <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 3 }}>
+                <ExportSnippetAction code={textContent || ''} language={language} />
+            </div>
+
             <div
                 contentEditable={false}
                 style={{
@@ -21,7 +26,11 @@ export default function CodeBlock({
                     position: 'relative'
                 }}
             >
-                <HighlightedCode code={textContent || ' '} language={language} />
+                <HighlightedCode
+                    code={textContent || ' '}
+                    language={language}
+                    showExportAction={false}
+                />
             </div>
 
             <pre
