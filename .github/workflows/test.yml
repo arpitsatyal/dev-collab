@@ -48,8 +48,98 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}  # e.g., us-east-1
       
       - name: Trigger Amplify Build
+        id: start_amplify
         run: |
-          aws amplify start-job \
+          JOB_ID=$(aws amplify start-job \
             --app-id ${{ secrets.AMPLIFY_APP_ID }} \
             --branch-name main \
-            --job-type RELEASE
+            --job-type RELEASE \
+            --query 'jobSummary.jobId' \
+            --output text)
+          echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
+
+      - name: Wait for Amplify Build to Finish
+        id: amplify_status
+        run: |
+          APP_ID="${{ secrets.AMPLIFY_APP_ID }}"
+          BRANCH="main"
+          JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
+
+          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "null" ]; then
+            echo "Unable to read Amplify job ID."
+            echo "status=FAILED" >> "$GITHUB_OUTPUT"
+            exit 1
+          fi
+
+          echo "Waiting for Amplify job $JOB_ID..."
+          MAX_TRIES=120
+          TRY=1
+
+          while [ $TRY -le $MAX_TRIES ]; do
+            STATUS=$(aws amplify get-job \
+              --app-id "$APP_ID" \
+              --branch-name "$BRANCH" \
+              --job-id "$JOB_ID" \
+              --query 'job.summary.status' \
+              --output text)
+
+            echo "Attempt $TRY/$MAX_TRIES - status: $STATUS"
+
+            if [ "$STATUS" = "SUCCEED" ] || [ "$STATUS" = "FAILED" ] || [ "$STATUS" = "CANCELLED" ]; then
+              echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+              break
+            fi
+
+            TRY=$((TRY + 1))
+            sleep 15
+          done
+
+          FINAL_STATUS=$(aws amplify get-job \
+            --app-id "$APP_ID" \
+            --branch-name "$BRANCH" \
+            --job-id "$JOB_ID" \
+            --query 'job.summary.status' \
+            --output text)
+
+          echo "status=$FINAL_STATUS" >> "$GITHUB_OUTPUT"
+
+          if [ "$FINAL_STATUS" != "SUCCEED" ]; then
+            echo "Amplify build did not succeed. Final status: $FINAL_STATUS"
+            exit 1
+          fi
+
+      - name: Push Notification (Discord)
+        if: always() && secrets.DISCORD_WEBHOOK_URL != ''
+        run: |
+          STATUS="${{ steps.amplify_status.outputs.status }}"
+          JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
+          COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
+          BRANCH="${{ github.ref_name }}"
+          RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+
+          if [ "$STATUS" = "SUCCEED" ]; then
+            ICON="✅"
+            COLOR="5763719"
+          else
+            ICON="❌"
+            COLOR="15548997"
+          fi
+
+          curl -sS -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d "{
+              \"username\": \"Amplify CI\",
+              \"embeds\": [
+                {
+                  \"title\": \"$ICON Amplify Build $STATUS\",
+                  \"color\": $COLOR,
+                  \"fields\": [
+                    {\"name\": \"Repository\", \"value\": \"${{ github.repository }}\", \"inline\": true},
+                    {\"name\": \"Branch\", \"value\": \"$BRANCH\", \"inline\": true},
+                    {\"name\": \"Job ID\", \"value\": \"$JOB_ID\", \"inline\": true},
+                    {\"name\": \"Commit\", \"value\": \"$COMMIT_URL\", \"inline\": false},
+                    {\"name\": \"Run\", \"value\": \"$RUN_URL\", \"inline\": false}
+                  ]
+                }
+              ]
+            }"
