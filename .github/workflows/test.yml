@@ -9,20 +9,20 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-      
+
       - name: Install dependencies
         run: npm ci
-      
+
       - name: Run tests
         run: npm run test
         env:
@@ -35,18 +35,18 @@ jobs:
           NEXTAUTH_URL: ${{ secrets.NEXTAUTH_URL }}
 
   deploy:
-    needs: test  # Only runs if tests pass
+    needs: test
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'  # Only deploy on push to main
-    
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
     steps:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.AWS_REGION }}  # e.g., us-east-1
-      
+          aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Trigger Amplify Build
         id: start_amplify
         run: |
@@ -109,23 +109,34 @@ jobs:
           fi
 
       - name: Push Notification (Discord)
-        if: always() && secrets.DISCORD_WEBHOOK_URL != ''
+        if: always()
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
+          if [ -z "$DISCORD_WEBHOOK_URL" ]; then
+            echo "DISCORD_WEBHOOK_URL is not set. Skipping Discord notification."
+            exit 0
+          fi
+
           STATUS="${{ steps.amplify_status.outputs.status }}"
           JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
           COMMIT_URL="${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}"
           BRANCH="${{ github.ref_name }}"
           RUN_URL="${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
 
+          if [ -z "$STATUS" ]; then
+            STATUS="UNKNOWN"
+          fi
+
           if [ "$STATUS" = "SUCCEED" ]; then
-            ICON="✅"
+            ICON="[SUCCESS]"
             COLOR="5763719"
           else
-            ICON="❌"
+            ICON="[FAILED]"
             COLOR="15548997"
           fi
 
-          curl -sS -X POST "${{ secrets.DISCORD_WEBHOOK_URL }}" \
+          curl -f -sS -X POST "$DISCORD_WEBHOOK_URL" \
             -H "Content-Type: application/json" \
             -d "{
               \"username\": \"Amplify CI\",
