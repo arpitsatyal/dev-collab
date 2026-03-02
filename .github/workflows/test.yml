@@ -50,17 +50,26 @@ jobs:
       - name: Trigger Amplify Build
         id: start_amplify
         run: |
-          JOB_ID=$(aws amplify start-job \
-            --app-id ${{ secrets.AMPLIFY_APP_ID }} \
+          set -euo pipefail
+          JOB_JSON=$(aws amplify start-job \
+            --app-id "${{ secrets.AMPLIFY_APP_ID }}" \
             --branch-name main \
             --job-type RELEASE \
-            --query 'jobSummary.jobId' \
-            --output text | tr -d '\r\n')
+            --output json)
+          echo "Start-job response: $JOB_JSON"
+          JOB_ID=$(echo "$JOB_JSON" | jq -r '.jobSummary.jobId')
+
+          if [ -z "$JOB_ID" ] || [ "$JOB_ID" = "null" ]; then
+            echo "Unable to read Amplify job ID from start-job response."
+            exit 1
+          fi
+
           echo "job_id=$JOB_ID" >> "$GITHUB_OUTPUT"
 
       - name: Wait for Amplify Build to Finish
         id: amplify_status
         run: |
+          set -euo pipefail
           APP_ID="${{ secrets.AMPLIFY_APP_ID }}"
           BRANCH="main"
           JOB_ID="${{ steps.start_amplify.outputs.job_id }}"
