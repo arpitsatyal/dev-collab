@@ -6,15 +6,14 @@ import {
   Stack,
   Text,
   Tooltip,
+  Loader,
+  Group,
 } from "@mantine/core";
 import { IconTrash } from "@tabler/icons-react";
-import { useEffect, useState } from "react";
 import styles from "./AIChat.module.css";
-import axios from "axios";
 import Loading from "../Loader/Loader";
 import dayjs from "dayjs";
 import { useGetChatsQuery } from "../../store/api/chatApi";
-import { ChatWithMessages } from "../../types";
 
 interface ChatListingProps {
   onSelectChat: (chatId: string) => void;
@@ -22,13 +21,21 @@ interface ChatListingProps {
 }
 
 const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
-  const { data: chats = [], isLoading, error } = useGetChatsQuery();
+  const {
+    data: chats = [],
+    isLoading,
+    isFetching,
+    isError,
+    error,
+  } = useGetChatsQuery();
 
-  if (isLoading) {
+  const isInitialLoading = isLoading && chats.length === 0;
+
+  if (isInitialLoading) {
     return <Loading />;
   }
 
-  if (error) {
+  if (isError) {
     return (
       <div className={styles.errorContainer}>
         <Text c="red">Error: {error.toString()}</Text>
@@ -39,13 +46,23 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
   return (
     <ScrollArea className={styles.chatListing}>
       <Stack gap="sm" p="md">
+        {isFetching && chats.length > 0 && (
+          <Group gap="xs" justify="flex-start" align="center" px="xs">
+            <Loader size="xs" />
+            <Text size="xs" c="dimmed">
+              Refreshing chats…
+            </Text>
+          </Group>
+        )}
         {chats.map((chat) => {
           const userMessage = chat.messages
-            ?.sort(
-              (a, b) =>
-                dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf()
-            )
-            .find((msg) => msg.isUser === true);
+            ? [...chat.messages]
+              .sort(
+                (a, b) =>
+                  dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf()
+              )
+              .find((msg) => msg.isUser === true)
+            : undefined;
 
           return (
             <Box key={chat.id} className={styles.chatItem}>

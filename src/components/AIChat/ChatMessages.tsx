@@ -28,6 +28,7 @@ import { extractDate, extractTime } from "../../utils/dateUtils";
 import MarkdownContent from "../shared/MarkdownContent";
 import { useRouter } from "next/router";
 import Image from "next/image";
+import Loading from "../Loader/Loader";
 
 interface MessageProps {
   chatId: string;
@@ -49,7 +50,13 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   const lastMessageRef = useRef<HTMLDivElement | null>(null);
   const image = session?.user?.image || "/user.png";
 
-  const { data: chatData } = useGetChatQuery(chatId, {
+  const {
+    data: chatData,
+    isLoading: isChatLoading,
+    isFetching: isChatFetching,
+    isError: isChatError,
+    error: chatError,
+  } = useGetChatQuery(chatId, {
     skip: !chatId,
   });
   const [askAI, { isLoading }] = useAskAIMutation();
@@ -57,8 +64,12 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   useEffect(() => {
     if (chatData?.messages) {
       setMessages(chatData.messages);
+    } else if (chatId) {
+      setMessages([]);
     }
   }, [chatData]);
+
+  const isInitialLoading = Boolean(chatId) && (isChatLoading || (isChatFetching && !chatData));
 
   const sendMessage = async (content: string) => {
     if (!content.trim()) return;
@@ -116,6 +127,31 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     }
   }, [messages]);
 
+  if (isInitialLoading) {
+    return (
+      <Box className={styles.chatContainer}>
+        <Loading loaderHeight="100%" />
+      </Box>
+    );
+  }
+
+  if (isChatError) {
+    return (
+      <Box className={styles.chatContainer}>
+        <Stack align="center" justify="center" style={{ height: "100%" }}>
+          <Text c="red" fw={500}>
+            Failed to load chat.
+          </Text>
+          {chatError && (
+            <Text size="sm" c="dimmed">
+              {chatError.toString()}
+            </Text>
+          )}
+        </Stack>
+      </Box>
+    );
+  }
+
   return (
     <Box className={styles.chatContainer}>
       <Box style={{ flexGrow: 1 }}>
@@ -147,6 +183,16 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
           </Stack>
         )}
         <ScrollArea className={styles.messageList}>
+          {isChatFetching && chatData && (
+            <Group gap="xs" pb="sm">
+              <Skeleton height={8} width={8} radius="xl" />
+              <Skeleton height={8} width={8} radius="xl" />
+              <Skeleton height={8} width={8} radius="xl" />
+              <Text size="xs" c="dimmed">
+                Syncing latest messages…
+              </Text>
+            </Group>
+          )}
           {messages.map((message, index) => (
             <div
               ref={index === messages.length - 1 ? lastMessageRef : null}

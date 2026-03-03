@@ -91,7 +91,12 @@ const AIChat = () => {
         </Popover.Target>
         <Popover.Dropdown className={styles.popoverContent}>
           <Stack className={styles.contentWrapper}>
-            <Group justify="space-between" align="center" px="md" pt="md">
+            <Group
+              justify="space-between"
+              align="center"
+              px="md"
+              pt="md"
+            >
               {!showListing ? (
                 <Button
                   onClick={() => setShowListing(!showListing)}
