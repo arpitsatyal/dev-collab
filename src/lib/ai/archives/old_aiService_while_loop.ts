@@ -1,13 +1,25 @@
+/**
+ * ARCHIVED: Original while-loop based AI chat engine.
+ * Replaced by LangGraph StateGraph implementation in March 2026.
+ *
+ * Limitations:
+ *  - Hard-coded 5-iteration cap that stops arbitrarily mid-reasoning
+ *  - Manual messages array state management
+ *  - No observability into which step failed
+ *  - No streaming, checkpointing, or human-in-the-loop support
+ *  - Sequential tool execution only
+ */
 
-import { getReasoningLLM, getSpeedyLLM, getReasoningStructuredLLM } from "../llmFactory";
+import { getReasoningLLM, getSpeedyLLM, getReasoningToolBoundLLM, getReasoningStructuredLLM } from "../llmFactory";
 import prisma from "../../db/prisma";
-import { BaseMessage } from "@langchain/core/messages";
+import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { performHybridSearch, generateQueryVariations } from "./retrievalService";
-import { constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "./promptService";
-import { generateAnswer } from "./generationService";
-import { runAgentGraph } from "./langGraphService";
+import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "../services/toolService";
+import { performHybridSearch, generateQueryVariations } from "../services/retrievalService";
+import { constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "../services/promptService";
+import { generateAnswer } from "../services/generationService";
 
+const MAX_CHAT_ITERATIONS = 5;
 const APP_SCOPE_REPLY =
     "I can assist with Dev-Collab only, including projects, tasks, snippets, documentation, and workspace code. Please ask a question related to your application data or workflow.";
 
@@ -22,19 +34,78 @@ async function getChatHistory(chatId: string): Promise<string> {
         .join("\n");
 }
 
-// ── Path A: Tool-calling loop (project-scoped chat via LangGraph) ──────────────
+// ── Path A: Tool-calling loop (project-scoped chat) ────────────────────────────
 async function getAIResponseWithTools(chatId: string, question: string, projectId: string) {
+    const tools = [getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool];
+    const llmWithTools = await getReasoningToolBoundLLM(tools);
     const history = await getChatHistory(chatId);
-    const initialMessages: BaseMessage[] = buildChatMessages(history, question);
-    const answer = await runAgentGraph(initialMessages, projectId);
+
+    let messages: BaseMessage[] = buildChatMessages(history, question);
+    let iterations = 0;
+
+    // ── The old while loop ─────────────────────────────────────────────────────
+    while (iterations < MAX_CHAT_ITERATIONS) {
+        iterations++;
+        const response = await llmWithTools.invoke(messages) as AIMessage;
+        messages.push(response);
+
+        if (!response.tool_calls || response.tool_calls.length === 0) {
+            // LLM is done calling tools — use this message as the final answer
+            console.log(`[Chat Engine] Loop ended after ${iterations} iterations.`);
+            break;
+        }
+
+        console.log(`[Chat Engine] Iteration ${iterations}: executing ${response.tool_calls.length} tool(s).`);
+
+        // Execute each requested tool call manually
+        for (const toolCall of response.tool_calls) {
+            const tool = tools.find(t => t.name === toolCall.name);
+            if (!tool) {
+                messages.push(new ToolMessage({
+                    tool_call_id: toolCall.id ?? "",
+                    content: `Tool "${toolCall.name}" not found.`,
+                    name: toolCall.name,
+                }));
+                continue;
+            }
+
+            let args = toolCall.args;
+            if (typeof args === "string") {
+                try { args = JSON.parse(args); } catch { args = {}; }
+            }
+
+            try {
+                // @ts-ignore - inject projectId into args
+                const result = await tool.invoke({ ...args, projectId });
+                messages.push(new ToolMessage({
+                    tool_call_id: toolCall.id ?? "",
+                    content: typeof result === "string" ? result : JSON.stringify(result),
+                    name: toolCall.name,
+                }));
+            } catch (err) {
+                messages.push(new ToolMessage({
+                    tool_call_id: toolCall.id ?? "",
+                    content: `Error executing tool: ${err}`,
+                    name: toolCall.name,
+                }));
+            }
+        }
+    }
+
+    // Final synthesis pass with a faster/cheaper model
+    const msgsWithInstruction = [
+        ...messages,
+        new HumanMessage("Please provide your final answer to the user's question based on the information gathered."),
+    ];
+    const llm = await getSpeedyLLM();
+    const answer = await llm.pipe(new StringOutputParser()).invoke(msgsWithInstruction);
+
     return { answer, context: "", validated: { isValid: true, warning: null } };
 }
 
 // ── Path B: Hybrid vector search fallback (global / no project) ───────────────
 async function getAIResponseWithSearch(chatId: string, question: string, filters?: Record<string, any>) {
-    // Query generation for search needs to be accurate: use REASONING
     const queryGenLlm = await getReasoningLLM();
-
     const queries = await generateQueryVariations(question, queryGenLlm);
     const filteredResults = await performHybridSearch(queries, question, filters);
 
@@ -60,22 +131,17 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
 
     const history = await getChatHistory(chatId);
     const fullPrompt = constructPrompt(context, history, question);
-    // Generate final answer using SPEED model (generateAnswer is just summarizing)
     const answerLlm = await getSpeedyLLM();
     return await generateAnswer(answerLlm, fullPrompt, context, filteredResults);
 }
 
 // ── Public entrypoint ─────────────────────────────────────────────────────────
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
-    // 1. Intent Classification
-    // Intent Classification needs reliable JSON: use REASONING
     const classifierLlm = await getReasoningStructuredLLM(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
 
     let intent = "PROJECT_QUERY";
-    let scope: "APP_SPECIFIC" | "OUT_OF_SCOPE" = filters?.projectId
-        ? "APP_SPECIFIC"
-        : "OUT_OF_SCOPE";
+    let scope: "APP_SPECIFIC" | "OUT_OF_SCOPE" = filters?.projectId ? "APP_SPECIFIC" : "OUT_OF_SCOPE";
 
     try {
         const result = await classifierLlm.invoke(intentMessages);
@@ -89,21 +155,17 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         console.warn("[Intent Classification] Failed, defaulting to PROJECT_QUERY:", e);
     }
 
-    // 2. Direct Conversational Response
     if (intent === "CONVERSATIONAL") {
         if (scope === "OUT_OF_SCOPE") {
             return { answer: APP_SCOPE_REPLY, context: "", validated: { isValid: true, warning: null } };
         }
-        console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
         const history = await getChatHistory(chatId);
         const conversationalMessages = buildConversationalMessages(history, question);
-        // Conversational responses should be fast: use SPEEDY
         const conversationalLlm = await getSpeedyLLM();
         const answer = await conversationalLlm.pipe(new StringOutputParser()).invoke(conversationalMessages);
         return { answer, context: "", validated: { isValid: true, warning: null } };
     }
 
-    // 3. Project Query Routing
     if (scope === "OUT_OF_SCOPE" && !filters?.projectId) {
         return { answer: APP_SCOPE_REPLY, context: "", validated: { isValid: true, warning: null } };
     }

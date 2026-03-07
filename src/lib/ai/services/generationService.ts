@@ -7,9 +7,9 @@ import { validateResponse } from "../../../pages/api/utils/validateLLMResponse";
 export function improveResponseWithCitations(answer: string, filteredResults: any[]) {
     // Add source citations at the end ONLY if we used context
     if (filteredResults.length > 0 && !answer.includes("Source:")) {
-        const sources = [...new Set(
+        const sources = Array.from(new Set(
             filteredResults.map(([doc]: any) => doc.metadata?.type || 'Documentation')
-        )];
+        ));
 
         // We only append sources if the LLM didn't give a "no info" response
         const containsInfo = !answer.toLowerCase().includes("i don't have information");

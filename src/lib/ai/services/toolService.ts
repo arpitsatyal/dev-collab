@@ -13,14 +13,16 @@ const safeParseContent = (content: any): string => {
     }
 };
 
+// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getSnippetsTool = new DynamicStructuredTool({
     name: "getSnippets",
-    description: "Fetch code snippets by their title or keywords (e.g. 'Auth Hook'). Use this tool when you need to see existing implementation patterns or match the project's coding style. If you don't know the title at all, you can omit it to see general project snippets, or use semanticSearch for conceptual queries.",
+    description: "Fetch ALL code snippets in the project. Use this to list what snippets exist or find a specific snippet by its EXACT known title. If you are NOT 100% sure of the exact title, DO NOT provide it — omit it and all snippets will be returned. Never guess a title.",
     schema: z.object({
-        projectId: z.string(),
-        title: z.string().optional().describe("Specific human-readable name of the snippet to search for. DO NOT place code strings here.")
+        title: z.string().optional().describe("ONLY provide if you know the EXACT title of the snippet. If unsure, omit this field entirely.")
     }),
-    func: async ({ projectId, title }) => {
+    func: async ({ title }, _runManager, config) => {
+        const projectId = config?.configurable?.projectId as string;
+        console.log(`[Tool: getSnippets] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId}"`);
         const whereClause: any = { projectId };
 
         if (title) {
@@ -34,28 +36,33 @@ export const getSnippetsTool = new DynamicStructuredTool({
             select: { title: true, content: true, language: true }
         });
 
+        console.log(`[Tool: getSnippets] ✅ Found ${snippets.length} snippets: ${snippets.map(s => s.title).join(', ')}`);
+
         if (snippets.length === 0) {
             return title
                 ? `No code snippets found matching the title or keywords: '${title}'.`
                 : "No code snippets have been created for this project yet.";
         }
 
-        return JSON.stringify(snippets.map((s: any) => ({
+        const output = snippets.map((s: any) => ({
             title: s.title,
             language: s.language,
             content: safeParseContent(s.content).slice(0, 600) + "..."
-        })));
+        }));
+        return `Found exactly ${output.length} snippet(s).\n${JSON.stringify(output)}`;
     }
 });
 
+// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getDocsTool = new DynamicStructuredTool({
     name: "getDocs",
-    description: "Fetch project documentation items by their human-readable Label (e.g. 'Database Schema'). Use this tool when you want to list or catalog available documentation. If you want to list ALL docs in the project, omit 'label'. DO NOT use this tool for conceptual keyword searches — use semanticSearch for that.",
+    description: "Fetch ALL project documentation. If you want a specific doc by its exact known name, provide 'label'. If you are NOT 100% sure of the exact label, DO NOT provide it — omit it and all docs will be returned. Never guess or infer the label from the user's question.",
     schema: z.object({
-        projectId: z.string(),
-        label: z.string().optional().describe("Specific human-readable name of the document to search for. DO NOT place code or conceptual strings here.")
+        label: z.string().optional().describe("ONLY provide if you know the EXACT label name of the document. If unsure, omit this field entirely.")
     }),
-    func: async ({ projectId, label }) => {
+    func: async ({ label }, _runManager, config) => {
+        const projectId = config?.configurable?.projectId as string;
+        console.log(`[Tool: getDocs] Invoked with label: "${label || 'N/A'}", projectId: "${projectId}"`);
         const whereClause: any = { projectId };
 
         if (label) {
@@ -69,27 +76,32 @@ export const getDocsTool = new DynamicStructuredTool({
             select: { label: true, content: true }
         });
 
+        console.log(`[Tool: getDocs] ✅ Found ${docs.length} docs: ${docs.map(d => d.label).join(', ')}`);
+
         if (docs.length === 0) {
             return label
                 ? `No documentation found matching the label: '${label}'.`
                 : "No project documentation documents have been found for this project.";
         }
 
-        return JSON.stringify(docs.map((d: any) => ({
+        const output = docs.map((d: any) => ({
             label: d.label,
             content: safeParseContent(d.content).slice(0, 600) + "..."
-        })));
+        }));
+        return `Found exactly ${output.length} doc(s).\n${JSON.stringify(output)}`;
     }
 });
 
+// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getExistingTasksTool = new DynamicStructuredTool({
     name: "getExistingTasks",
-    description: "Fetch existing tasks and their implementation status (TODO/IN_PROGRESS/DONE). If you are looking for a specific task by name, provide the 'title'. If you are looking for general project progress, omit 'title'.",
+    description: "Fetch ALL tasks and their status (TODO/IN_PROGRESS/DONE). Use this to list what work exists in the project. If you want a specific task by its EXACT known title, provide it. If you are NOT 100% sure of the exact title, DO NOT provide it — omit it and all tasks will be returned. Never guess a title.",
     schema: z.object({
-        projectId: z.string(),
-        title: z.string().optional().describe("Optional keywords or specific name of the task to search for.")
+        title: z.string().optional().describe("ONLY provide if you know the EXACT title of the task. If unsure, omit this field entirely.")
     }),
-    func: async ({ projectId, title }) => {
+    func: async ({ title }, _runManager, config) => {
+        const projectId = config?.configurable?.projectId as string;
+        console.log(`[Tool: getExistingTasks] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId}"`);
         const whereClause: any = { projectId };
 
         if (title) {
@@ -103,29 +115,37 @@ export const getExistingTasksTool = new DynamicStructuredTool({
             select: { title: true, description: true, status: true }
         });
 
+        console.log(`[Tool: getExistingTasks] ✅ Found ${tasks.length} tasks: ${tasks.map(t => t.title).join(', ')}`);
+
         if (tasks.length === 0) {
             return title
                 ? `No tasks found matching the title: '${title}'.`
                 : "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
         }
 
-        return JSON.stringify(tasks.map((t: any) => ({
+        const output = tasks.map((t: any) => ({
             title: t.title,
             description: t.description || "",
             status: t.status
-        })));
+        }));
+        return `Found exactly ${output.length} task(s).\n${JSON.stringify(output)}`;
     }
 });
 
+// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const semanticSearchTool = new DynamicStructuredTool({
     name: "semanticSearch",
-    description: "Search across all project content (snippets, docs, tasks) using semantic similarity. Use this for open-ended or conceptual questions like 'how does X work?' or 'explain the auth flow' — when you need to find relevant information without knowing exactly where it lives.",
+    description: "Search across all project content using semantic/conceptual similarity. Use ONLY for open-ended or conceptual questions like 'how does authentication work?' or 'explain the payment flow' — when you need to find relevant content without knowing its exact name. Do NOT use this as a shortcut when getSnippets, getDocs, or getExistingTasks would give a more precise answer.",
     schema: z.object({
-        projectId: z.string(),
-        query: z.string().describe("The search query to find relevant content"),
+        query: z.string().describe("A natural language question or concept to search for. Be specific and descriptive.")
     }),
-    func: async ({ projectId, query }) => {
+    func: async ({ query }, _runManager, config) => {
+        const projectId = config?.configurable?.projectId as string;
+        console.log(`[Tool: semanticSearch] Invoked with query: "${query}", projectId: "${projectId}"`);
+
         const results = await performHybridSearch([query], query, { projectId });
+        console.log(`[Tool: semanticSearch] ✅ Found ${results.length} results: ${results.map(([doc]: any) => doc.metadata?.type || 'unknown').join(', ')}`);
+
         if (results.length === 0) {
             return "No relevant content found for that query.";
         }
