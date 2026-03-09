@@ -146,8 +146,8 @@ export async function performHybridSearch(queries: string[], originalQuery: stri
     // Sort by score (descending)
     combinedResults.sort((a, b) => b[1] - a[1]);
 
-    // Top 10
-    const finalResults = combinedResults.filter(([doc, score]) => score >= scoreThreshold).slice(0, 10);
+    // Top 50
+    const finalResults = combinedResults.filter(([doc, score]) => score >= scoreThreshold).slice(0, 50);
 
     return finalResults;
 }

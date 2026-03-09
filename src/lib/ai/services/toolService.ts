@@ -22,8 +22,8 @@ export const getSnippetsTool = new DynamicStructuredTool({
     }),
     func: async ({ title }, _runManager, config) => {
         const projectId = config?.configurable?.projectId as string;
-        console.log(`[Tool: getSnippets] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId}"`);
-        const whereClause: any = { projectId };
+        console.log(`[Tool: getSnippets] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId || 'GLOBAL'}"`);
+        const whereClause: any = projectId ? { projectId } : {};
 
         if (title) {
             whereClause.title = { contains: title, mode: 'insensitive' };
@@ -31,25 +31,25 @@ export const getSnippetsTool = new DynamicStructuredTool({
 
         const snippets = await prisma.snippet.findMany({
             where: whereClause,
-            take: 10,
+            take: 100,
             orderBy: { updatedAt: "desc" },
             select: { title: true, content: true, language: true }
         });
 
-        console.log(`[Tool: getSnippets] ✅ Found ${snippets.length} snippets: ${snippets.map(s => s.title).join(', ')}`);
+        console.log(`[Tool: getSnippets] ✅ Found ${snippets.length} snippets.`);
 
         if (snippets.length === 0) {
             return title
                 ? `No code snippets found matching the title or keywords: '${title}'.`
-                : "No code snippets have been created for this project yet.";
+                : "No code snippets have been created yet.";
         }
 
         const output = snippets.map((s: any) => ({
             title: s.title,
             language: s.language,
-            content: safeParseContent(s.content).slice(0, 600) + "..."
+            content: safeParseContent(s.content).slice(0, 400) + "..."
         }));
-        return `Found exactly ${output.length} snippet(s).\n${JSON.stringify(output)}`;
+        return `Found exactly ${snippets.length} snippet(s) total in the workspace.\n${JSON.stringify(output)}`;
     }
 });
 
@@ -62,8 +62,8 @@ export const getDocsTool = new DynamicStructuredTool({
     }),
     func: async ({ label }, _runManager, config) => {
         const projectId = config?.configurable?.projectId as string;
-        console.log(`[Tool: getDocs] Invoked with label: "${label || 'N/A'}", projectId: "${projectId}"`);
-        const whereClause: any = { projectId };
+        console.log(`[Tool: getDocs] Invoked with label: "${label || 'N/A'}", projectId: "${projectId || 'GLOBAL'}"`);
+        const whereClause: any = projectId ? { projectId } : {};
 
         if (label) {
             whereClause.label = { contains: label, mode: 'insensitive' };
@@ -71,24 +71,24 @@ export const getDocsTool = new DynamicStructuredTool({
 
         const docs = await prisma.doc.findMany({
             where: whereClause,
-            take: 10,
+            take: 100,
             orderBy: { updatedAt: "desc" },
             select: { label: true, content: true }
         });
 
-        console.log(`[Tool: getDocs] ✅ Found ${docs.length} docs: ${docs.map(d => d.label).join(', ')}`);
+        console.log(`[Tool: getDocs] ✅ Found ${docs.length} docs.`);
 
         if (docs.length === 0) {
             return label
                 ? `No documentation found matching the label: '${label}'.`
-                : "No project documentation documents have been found for this project.";
+                : "No documentation documents have been found.";
         }
 
         const output = docs.map((d: any) => ({
             label: d.label,
-            content: safeParseContent(d.content).slice(0, 600) + "..."
+            content: safeParseContent(d.content).slice(0, 400) + "..."
         }));
-        return `Found exactly ${output.length} doc(s).\n${JSON.stringify(output)}`;
+        return `Found exactly ${docs.length} doc(s) total in the workspace.\n${JSON.stringify(output)}`;
     }
 });
 
@@ -101,8 +101,8 @@ export const getExistingTasksTool = new DynamicStructuredTool({
     }),
     func: async ({ title }, _runManager, config) => {
         const projectId = config?.configurable?.projectId as string;
-        console.log(`[Tool: getExistingTasks] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId}"`);
-        const whereClause: any = { projectId };
+        console.log(`[Tool: getExistingTasks] 🔍 Invoked with title: "${title || 'N/A'}", projectId: "${projectId || 'GLOBAL'}"`);
+        const whereClause: any = projectId ? { projectId } : {};
 
         if (title) {
             whereClause.title = { contains: title, mode: 'insensitive' };
@@ -110,17 +110,17 @@ export const getExistingTasksTool = new DynamicStructuredTool({
 
         const tasks = await prisma.task.findMany({
             where: whereClause,
-            take: 15,
+            take: 100,
             orderBy: { createdAt: "desc" },
             select: { title: true, description: true, status: true }
         });
 
-        console.log(`[Tool: getExistingTasks] ✅ Found ${tasks.length} tasks: ${tasks.map(t => t.title).join(', ')}`);
+        console.log(`[Tool: getExistingTasks] ✅ Found ${tasks.length} tasks.`);
 
         if (tasks.length === 0) {
             return title
                 ? `No tasks found matching the title: '${title}'.`
-                : "No tasks have been created in this project yet. Start by suggesting foundational tasks.";
+                : "No tasks have been created yet.";
         }
 
         const output = tasks.map((t: any) => ({
@@ -128,7 +128,7 @@ export const getExistingTasksTool = new DynamicStructuredTool({
             description: t.description || "",
             status: t.status
         }));
-        return `Found exactly ${output.length} task(s).\n${JSON.stringify(output)}`;
+        return `Found exactly ${tasks.length} task(s) total in the workspace.\n${JSON.stringify(output)}`;
     }
 });
 
