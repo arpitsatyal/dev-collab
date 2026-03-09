@@ -32,6 +32,18 @@ export async function getReasoningStructuredLLM(schema: any, name: string) {
     });
 }
 
+export async function getSpeedyStructuredLLM(schema: any, name: string) {
+    const primary = getGroqLLM();
+    const fallback = getTogetherLLM();
+
+    const structuredPrimary = primary.withStructuredOutput(schema, { name });
+    const structuredFallback = fallback.withStructuredOutput(schema, { name });
+
+    return structuredPrimary.withFallbacks({
+        fallbacks: [structuredFallback],
+    });
+}
+
 // ─── Tool-Bound Wrappers ───────────────────────────────────────────────────
 
 export async function getReasoningToolBoundLLM(tools: any[]) {

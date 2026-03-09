@@ -1,5 +1,5 @@
 
-import { getSpeedyLLM, getReasoningStructuredLLM } from "../llmFactory";
+import { getSpeedyLLM, getSpeedyStructuredLLM } from "../llmFactory";
 import prisma from "../../db/prisma";
 import { BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
@@ -25,13 +25,11 @@ async function getAIResponseWithTools(chatId: string, question: string, projectI
     return { answer, context: "", validated: { isValid: true, warning: null } };
 }
 
-
-
 // ── Public entrypoint ─────────────────────────────────────────────────────────
 export async function getAIResponse(chatId: string, question: string, filters?: Record<string, any>) {
     // 1. Intent Classification
-    // Intent Classification needs reliable JSON: use REASONING
-    const classifierLlm = await getReasoningStructuredLLM(IntentSchema, "classify_intent");
+    // Use SPEEDY model for intent to reduce latency.
+    const classifierLlm = await getSpeedyStructuredLLM(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
 
     let intent = "PROJECT_QUERY";
@@ -41,15 +39,17 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         if (result.confidence > 0.4) {
             intent = result.intent;
         } else {
-            console.warn("[Intent Classification] Low confidence, defaulting to PROJECT_QUERY");
+            console.warn("[Chat Engine] Intent classification low confidence, defaulting to PROJECT_QUERY");
         }
     } catch (e) {
-        console.warn("[Intent Classification] Failed, defaulting to PROJECT_QUERY:", e);
+        console.warn("[Chat Engine] Intent classification failed:", e);
     }
+
+    console.log(`[Chat Engine] Intent: ${intent} | Question: "${question.substring(0, 50)}..."`);
 
     // 2. Direct Conversational Response
     if (intent === "CONVERSATIONAL") {
-        console.log("[Chat Engine] Intent classified as CONVERSATIONAL. Skipping tools/search.");
+        console.log("[Chat Engine] Path: Conversational LLM");
         const history = await getChatHistory(chatId);
         const conversationalMessages = buildConversationalMessages(history, question);
         // Conversational responses should be fast: use SPEEDY
@@ -59,5 +59,6 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     }
 
     const effectiveProjectId = filters?.projectId || "";
+    console.log(`[Chat Engine] Path: Agent Graph | Context: ${effectiveProjectId ? `Project (${effectiveProjectId})` : "Global"}`);
     return getAIResponseWithTools(chatId, question, effectiveProjectId);
 }

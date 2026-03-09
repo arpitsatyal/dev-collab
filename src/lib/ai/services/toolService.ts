@@ -13,7 +13,6 @@ const safeParseContent = (content: any): string => {
     }
 };
 
-// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getSnippetsTool = new DynamicStructuredTool({
     name: "getSnippets",
     description: "Fetch ALL code snippets in the project. Use this to list what snippets exist or find a specific snippet by its EXACT known title. If you are NOT 100% sure of the exact title, DO NOT provide it — omit it and all snippets will be returned. Never guess a title.",
@@ -53,7 +52,6 @@ export const getSnippetsTool = new DynamicStructuredTool({
     }
 });
 
-// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getDocsTool = new DynamicStructuredTool({
     name: "getDocs",
     description: "Fetch ALL project documentation. If you want a specific doc by its exact known name, provide 'label'. If you are NOT 100% sure of the exact label, DO NOT provide it — omit it and all docs will be returned. Never guess or infer the label from the user's question.",
@@ -92,7 +90,6 @@ export const getDocsTool = new DynamicStructuredTool({
     }
 });
 
-// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const getExistingTasksTool = new DynamicStructuredTool({
     name: "getExistingTasks",
     description: "Fetch ALL tasks and their status (TODO/IN_PROGRESS/DONE). Use this to list what work exists in the project. If you want a specific task by its EXACT known title, provide it. If you are NOT 100% sure of the exact title, DO NOT provide it — omit it and all tasks will be returned. Never guess a title.",
@@ -132,7 +129,6 @@ export const getExistingTasksTool = new DynamicStructuredTool({
     }
 });
 
-// @ts-ignore: TS2589 Type instantiation excessively deep and possibly infinite
 export const semanticSearchTool = new DynamicStructuredTool({
     name: "semanticSearch",
     description: "Search across all project content using semantic/conceptual similarity. Use ONLY for open-ended or conceptual questions like 'how does authentication work?' or 'explain the payment flow' — when you need to find relevant content without knowing its exact name. Do NOT use this as a shortcut when getSnippets, getDocs, or getExistingTasks would give a more precise answer.",

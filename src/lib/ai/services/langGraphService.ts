@@ -40,6 +40,8 @@ export async function runAgentGraph(
         .compile();
 
     // ── Execution ──────────────────────────────────────────────────────────────
+    console.log(`[LangGraph] Starting Agent Graph | Context: ${projectId || "Global"}`);
+
     // projectId flows into each tool via config?.configurable?.projectId
     const finalState = await app.invoke(
         { messages },
@@ -51,9 +53,9 @@ export async function runAgentGraph(
         .map((m: ToolMessage) => m.name);
 
     if (calledTools.length === 0) {
-        console.log("[LangGraph] Agent answered directly (no tools called).");
+        console.log("[LangGraph] Response: Direct LLM (no tools used)");
     } else {
-        console.log(`[LangGraph] Tools called (${calledTools.length}): ${calledTools.join(" → ")}`);
+        console.log(`[LangGraph] Response: Tool Sequence [${calledTools.join(" → ")}]`);
     }
 
     // The last AIMessage already contains the final reasoned answer after seeing tool output.
