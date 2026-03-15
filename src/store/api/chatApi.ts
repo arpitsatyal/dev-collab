@@ -1,11 +1,12 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 import { Chat, Message } from "@prisma/client";
 
 export type ChatWithMessages = Chat & { messages?: Message[] };
 
 export const chatApi = createApi({
     reducerPath: "chatApi",
-    baseQuery: fetchBaseQuery({ baseUrl: "/api/" }),
+    baseQuery: baseQuery,
     tagTypes: ["Chat"],
     endpoints: (builder) => ({
         getChats: builder.query<ChatWithMessages[], void>({
@@ -16,7 +17,7 @@ export const chatApi = createApi({
                     : [{ type: "Chat", id: "LIST" }],
         }),
         getChat: builder.query<ChatWithMessages, string>({
-            query: (chatId) => `chats?chatId=${chatId}`,
+            query: (chatId) => `chats/${chatId}`,
             providesTags: (result, error, chatId) => [{ type: "Chat", id: chatId }],
         }),
         createChat: builder.mutation<Chat, void>({
@@ -28,7 +29,7 @@ export const chatApi = createApi({
         }),
         deleteChat: builder.mutation<void, string>({
             query: (chatId) => ({
-                url: `chats?id=${chatId}`,
+                url: `chats/${chatId}`,
                 method: "DELETE",
             }),
             invalidatesTags: (result, error, chatId) => [
@@ -41,9 +42,9 @@ export const chatApi = createApi({
             { chatId: string; question: string; projectId: string }
         >({
             query: ({ chatId, question, projectId }) => ({
-                url: `ai/ask?chatId=${chatId}`,
+                url: `ai/ask?chatId=${chatId}&workspaceId=${projectId}`,
                 method: "POST",
-                body: { question, projectId },
+                body: { question },
             }),
             invalidatesTags: (result, error, { chatId }) => [{ type: "Chat", id: chatId }],
         }),

@@ -1,11 +1,11 @@
-// lib/withoutAuth.ts
-import { getServerSession } from "next-auth/next";
+import apiClient from "../lib/apiClient";
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
   GetServerSidePropsResult,
 } from "next";
-import { authOptions } from "../pages/api/auth/[...nextauth]";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export function withoutAuth<P extends Record<string, any>>(
   handler: (
@@ -13,19 +13,23 @@ export function withoutAuth<P extends Record<string, any>>(
   ) => Promise<GetServerSidePropsResult<P>>
 ): GetServerSideProps<P> {
   return async (context) => {
-    const session = await getServerSession(
-      context.req,
-      context.res,
-      authOptions
-    );
+    try {
+      // Check session on NestJS side
+      const cookie = context.req.headers.cookie;
+      const response = await apiClient.get("/auth/me", {
+        headers: { cookie: cookie || "" },
+      });
 
-    if (session?.user) {
-      return {
-        redirect: {
-          destination: "/dashboard",
-          permanent: false,
-        },
-      };
+      if (response.data) {
+        return {
+          redirect: {
+            destination: "/dashboard",
+            permanent: false,
+          },
+        };
+      }
+    } catch (error) {
+      // Not authenticated, proceed to handler
     }
 
     return handler(context);

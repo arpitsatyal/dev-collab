@@ -1,15 +1,16 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 import { Snippet } from "@prisma/client";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 
 export const snippetApi = createApi({
   reducerPath: "snippetApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/" }),
+  baseQuery: baseQuery,
   tagTypes: ["Snippets"],
 
   endpoints: (builder) => ({
     getSnippets: builder.query<Snippet[], { projectId: string }>({
-      query: ({ projectId }) => `snippets?projectId=${projectId}`,
+      query: ({ projectId }) => `workspaces/${projectId}/snippets`,
     }),
 
     getSnippet: builder.query<
@@ -17,7 +18,7 @@ export const snippetApi = createApi({
       { projectId: string; snippetId: string }
     >({
       query: ({ projectId, snippetId }) =>
-        `snippets?projectId=${projectId}&snippetId=${snippetId}`,
+        `workspaces/${projectId}/snippets/${snippetId}`,
     }),
 
     createSnippet: builder.mutation<
@@ -25,7 +26,7 @@ export const snippetApi = createApi({
       { projectId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
     >({
       query: ({ projectId, snippet }) => ({
-        url: `snippets?projectId=${projectId}`,
+        url: `workspaces/${projectId}/snippets`,
         method: "POST",
         body: snippet,
       }),
@@ -40,7 +41,7 @@ export const snippetApi = createApi({
       }
     >({
       query: ({ projectId, snippet, snippetId }) => ({
-        url: `snippets?projectId=${projectId}&snippetId=${snippetId}`,
+        url: `workspaces/${projectId}/snippets/${snippetId}`,
         method: "PATCH",
         body: snippet,
       }),

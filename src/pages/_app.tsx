@@ -9,7 +9,7 @@ import "@liveblocks/react-ui/styles/dark/media-query.css";
 
 import type { AppProps } from "next/app";
 import { MantineProvider } from "@mantine/core";
-import { SessionProvider } from "next-auth/react";
+import { AuthProvider } from "../components/providers/AuthProvider";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 import { Notifications } from "@mantine/notifications";
@@ -50,7 +50,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
           debouncedFetchMentionSuggestions(text) ?? []
         }
       >
-        <SessionProvider session={pageProps.session}>
+        <AuthProvider>
           <MantineProvider
             theme={theme}
             withGlobalClasses
@@ -61,7 +61,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               {getLayout(<Component {...pageProps} />)}
             </MantineEmotionProvider>
           </MantineProvider>
-        </SessionProvider>
+        </AuthProvider>
       </LiveblocksProvider>
     </Provider>
   );

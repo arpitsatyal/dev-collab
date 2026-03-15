@@ -4,7 +4,6 @@ import { notifications } from "@mantine/notifications";
 import Layout from "../../../../../components/Layout/Layout";
 import Loading from "../../../../../components/Loader/Loader";
 import { RoomProvider, useRoom, useStorage } from "@liveblocks/react";
-import { useSession } from "next-auth/react";
 import { useEditSnippetMutation } from "../../../../../store/api/snippetApi";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import { updateSnippet } from "../../../../../store/slices/snippetSlice";
@@ -19,6 +18,7 @@ import useAutoSave, {
   SaveSnippetProps,
 } from "../../../../../hooks/useAutoSave";
 import { SaveStatus } from "../../../../../types";
+import { useSession } from "../../../../../components/providers/AuthProvider";
 
 const EditSnippetForm = ({ snippet }: { snippet: Snippet }) => {
   const router = useRouter();

@@ -11,7 +11,7 @@ import { notifications } from "@mantine/notifications";
 import { Snippet } from "@prisma/client";
 import { IconCheck, IconCodePlus, IconLoader2 } from "@tabler/icons-react";
 import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
+import { useSession } from "../providers/AuthProvider";
 import React, { useEffect, useMemo, useState } from "react";
 import {
   useCreateSnippetMutation,

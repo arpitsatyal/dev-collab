@@ -2,7 +2,7 @@ import { Box, Button, Stack } from "@mantine/core";
 import React, { useEffect } from "react";
 import { useRouter } from "next/router";
 import { useMutation } from "@liveblocks/react";
-import { useSession } from "next-auth/react";
+import { useSession } from "../providers/AuthProvider";
 import Loading from "../Loader/Loader";
 import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";

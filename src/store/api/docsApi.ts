@@ -1,15 +1,16 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 import { Doc } from "@prisma/client";
 import { DocCreateData } from "../../pages/api/docs";
 
 export const docsApi = createApi({
   reducerPath: "docsApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/" }),
+  baseQuery: baseQuery,
   tagTypes: ["Docs"],
 
   endpoints: (builder) => ({
     getDocs: builder.query<Doc[], { projectId: string }>({
-      query: ({ projectId }) => `docs?projectId=${projectId}`,
+      query: ({ projectId }) => `workspaces/${projectId}/docs`,
       providesTags: (result, error, { projectId }) =>
         result ? [{ type: "Docs", id: projectId }] : [],
     }),
@@ -17,7 +18,7 @@ export const docsApi = createApi({
     createDoc: builder.mutation<Doc, { projectId: string; doc: DocCreateData }>(
       {
         query: ({ projectId, doc }) => ({
-          url: `docs?projectId=${projectId}`,
+          url: `workspaces/${projectId}/docs`,
           method: "POST",
           body: doc,
         }),
@@ -36,7 +37,7 @@ export const docsApi = createApi({
       }
     >({
       query: ({ projectId, doc, docId }) => ({
-        url: `docs?projectId=${projectId}&docId=${docId}`,
+        url: `workspaces/${projectId}/docs/${docId}`,
         method: "PATCH",
         body: doc,
       }),

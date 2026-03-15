@@ -1,5 +1,5 @@
 import type { NextPage } from "next";
-import { signIn } from "next-auth/react";
+import { signIn } from "../components/providers/AuthProvider";
 import { withoutAuth } from "../guards/withoutAuth";
 import SignIn from "../components/SignIn/SignIn";
 

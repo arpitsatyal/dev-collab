@@ -1,34 +1,41 @@
-import { getServerSession } from "next-auth/next";
+import apiClient from "../lib/apiClient";
 import {
   GetServerSideProps,
   GetServerSidePropsContext,
   GetServerSidePropsResult,
 } from "next";
-import { Session } from "next-auth";
-import { authOptions } from "../pages/api/auth/[...nextauth]";
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export function withAuth<P extends Record<string, any>>(
   handler: (
     context: GetServerSidePropsContext,
-    session: Session
+    session: any
   ) => Promise<GetServerSidePropsResult<P>>
 ): GetServerSideProps<P> {
   return async (context) => {
-    const session = await getServerSession(
-      context.req,
-      context.res,
-      authOptions
-    );
+    try {
+      const cookie = context.req.headers.cookie;
+      const response = await apiClient.get("/auth/me", {
+        headers: { cookie: cookie || "" },
+      });
 
-    if (!session || !session.user) {
-      return {
-        redirect: {
-          destination: "/",
-          permanent: false,
-        },
-      };
+      if (response.data) {
+        const session = {
+          user: response.data,
+          expires: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(),
+        };
+        return handler(context, session);
+      }
+    } catch (error) {
+      // Not authenticated
     }
 
-    return handler(context, session);
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
   };
 }

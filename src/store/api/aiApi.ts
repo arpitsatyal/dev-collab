@@ -1,26 +1,27 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 
 export const aiApi = createApi({
     reducerPath: "aiApi",
-    baseQuery: fetchBaseQuery({ baseUrl: "/api/ai/" }),
+    baseQuery: baseQuery,
     endpoints: (builder) => ({
         generateImplementationPlan: builder.mutation<
             { plan: string },
             { taskId: string }
         >({
-            query: ({ taskId }) => ({
-                url: `analyze-work-item?taskId=${taskId}`,
-                method: "GET", // RTK Query mutations can still make GET requests if they cause side-effects like DB caching
+            query: ({ taskId }: { taskId: string }) => ({
+                url: `ai/analyze-work-item?workItemId=${taskId}`,
+                method: "POST", // Controller has @Post
             }),
         }),
         suggestSnippetFilename: builder.mutation<
             { fileName: string },
             { projectId: string; code: string; language?: string }
         >({
-            query: ({ projectId, code, language }) => ({
-                url: "suggest-snippet-filename",
+            query: ({ projectId, code, language }: { projectId: string; code: string; language?: string }) => ({
+                url: `ai/suggest-snippet-filename?workspaceId=${projectId}`,
                 method: "POST",
-                body: { projectId, code, language },
+                body: { code, language },
             }),
         }),
     }),

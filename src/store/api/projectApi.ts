@@ -1,18 +1,19 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
 import { uniqBy } from "lodash";
 import { ProjectWithPin } from "../../types";
 import { RootState } from "../store";
 
 export const projectApi = createApi({
   reducerPath: "projectApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+  baseQuery: baseQuery,
   tagTypes: ["Projects", "Project"],
   endpoints: (builder) => ({
     getProjects: builder.query<
       { items: ProjectWithPin[]; hasMore: boolean },
       { skip: number; limit: number }
     >({
-      query: ({ skip, limit }) => `projects?skip=${skip}&limit=${limit}`,
+      query: ({ skip, limit }) => `workspaces?skip=${skip}&take=${limit}`,
       transformResponse: (response: ProjectWithPin[], meta, arg) => ({
         items: response,
         hasMore: response.length === arg.limit,
@@ -21,7 +22,7 @@ export const projectApi = createApi({
       merge: (currentCache, newData) => {
         currentCache.items = uniqBy(
           [...(currentCache.items || []), ...newData.items],
-          "id"
+          "id",
         );
         currentCache.hasMore = newData.hasMore;
       },
@@ -30,21 +31,21 @@ export const projectApi = createApi({
       providesTags: (result) =>
         result
           ? [
-            ...result.items.map(
-              ({ id }) => ({ type: "Project", id } as const)
-            ),
-            { type: "Projects", id: "LIST" },
-          ]
+              ...result.items.map(
+                ({ id }) => ({ type: "Project", id }) as const,
+              ),
+              { type: "Projects", id: "LIST" },
+            ]
           : [{ type: "Projects", id: "LIST" }],
       keepUnusedDataFor: 300, // 5 minutes
     }),
     getProjectById: builder.query<ProjectWithPin, string>({
-      query: (id) => `projects?projectId=${id}`,
+      query: (id) => `workspaces/${id}`,
       providesTags: (result, error, id) => [{ type: "Project", id }],
     }),
     createProject: builder.mutation<ProjectWithPin, Partial<ProjectWithPin>>({
       query: (project) => ({
-        url: "projects",
+        url: "workspaces",
         method: "POST",
         body: project,
       }),
@@ -55,13 +56,13 @@ export const projectApi = createApi({
       { projectId: string; isPinned: boolean }
     >({
       query: ({ projectId, isPinned }) => ({
-        url: `projects?projectId=${projectId}`,
+        url: `workspaces/${projectId}`,
         method: "PATCH",
         body: { isPinned },
       }),
       async onQueryStarted(
         { projectId, isPinned },
-        { dispatch, getState, queryFulfilled }
+        { dispatch, getState, queryFulfilled },
       ) {
         const state = getState() as RootState;
         const { skip, pageSize } = state.project;
@@ -71,7 +72,9 @@ export const projectApi = createApi({
             "getProjects",
             { skip, limit: pageSize },
             (draft) => {
-              const item = draft.items.find((p: ProjectWithPin) => p.id === projectId);
+              const item = draft.items.find(
+                (p: ProjectWithPin) => p.id === projectId,
+              );
               if (item) {
                 item.isPinned = isPinned;
 
@@ -85,8 +88,8 @@ export const projectApi = createApi({
                   );
                 });
               }
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -95,20 +98,26 @@ export const projectApi = createApi({
           dispatch(
             projectApi.endpoints.getProjects.initiate(
               { skip, limit: pageSize },
-              { forceRefetch: true }
-            )
+              { forceRefetch: true },
+            ),
           );
         } catch {
           patchResult.undo();
         }
       },
     }),
-    getRepoTree: builder.query<{ files: { path: string, size: number }[] }, string>({
-      query: (url) => `projects/import/tree?url=${encodeURIComponent(url)}`,
+    getRepoTree: builder.query<
+      { files: { path: string; size: number }[] },
+      string
+    >({
+      query: (url) => `workspaces/import/tree?url=${encodeURIComponent(url)}`,
     }),
-    importProject: builder.mutation<{ project: any, stats: { snippets: number, docs: number } }, { url: string, selectedFiles: string[] }>({
+    importProject: builder.mutation<
+      { project: any; stats: { snippets: number; docs: number } },
+      { url: string; selectedFiles: string[] }
+    >({
       query: (body) => ({
-        url: "projects/import",
+        url: "workspaces/import",
         method: "POST",
         body,
       }),

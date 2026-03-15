@@ -26,7 +26,7 @@ import { Snippet, Task } from "@prisma/client";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
 import { CacheDataSource, ProjectWithPin, TypedItems } from "../../types";
-import { useSession } from "next-auth/react";
+import { useSession } from "../providers/AuthProvider";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 import ShortcutHint from "./ShortcutHint";
