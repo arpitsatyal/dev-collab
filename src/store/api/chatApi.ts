@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
-import { Chat, Message } from "@prisma/client";
+import { Chat, Message } from "../../types";
 
 export type ChatWithMessages = Chat & { messages?: Message[] };
 
@@ -39,10 +39,10 @@ export const chatApi = createApi({
         }),
         askAI: builder.mutation<
             { answer: string },
-            { chatId: string; question: string; projectId: string }
+            { chatId: string; question: string; workspaceId: string }
         >({
-            query: ({ chatId, question, projectId }) => ({
-                url: `ai/ask?chatId=${chatId}&workspaceId=${projectId}`,
+            query: ({ chatId, question, workspaceId }) => ({
+                url: `ai/ask?chatId=${chatId}&workspaceId=${workspaceId}`,
                 method: "POST",
                 body: { question },
             }),

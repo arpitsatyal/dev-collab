@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../../types";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 
 export const snippetApi = createApi({
@@ -9,24 +9,24 @@ export const snippetApi = createApi({
   tagTypes: ["Snippets"],
 
   endpoints: (builder) => ({
-    getSnippets: builder.query<Snippet[], { projectId: string }>({
-      query: ({ projectId }) => `workspaces/${projectId}/snippets`,
+    getSnippets: builder.query<Snippet[], { workspaceId: string }>({
+      query: ({ workspaceId }) => `workspaces/${workspaceId}/snippets`,
     }),
 
     getSnippet: builder.query<
       Snippet,
-      { projectId: string; snippetId: string }
+      { workspaceId: string; snippetId: string }
     >({
-      query: ({ projectId, snippetId }) =>
-        `workspaces/${projectId}/snippets/${snippetId}`,
+      query: ({ workspaceId, snippetId }) =>
+        `workspaces/${workspaceId}/snippets/${snippetId}`,
     }),
 
     createSnippet: builder.mutation<
       Snippet,
-      { projectId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
+      { workspaceId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
     >({
-      query: ({ projectId, snippet }) => ({
-        url: `workspaces/${projectId}/snippets`,
+      query: ({ workspaceId, snippet }) => ({
+        url: `workspaces/${workspaceId}/snippets`,
         method: "POST",
         body: snippet,
       }),
@@ -35,13 +35,13 @@ export const snippetApi = createApi({
     editSnippet: builder.mutation<
       Snippet,
       {
-        projectId: string;
+        workspaceId: string;
         snippet: Partial<Snippet>;
         snippetId: string;
       }
     >({
-      query: ({ projectId, snippet, snippetId }) => ({
-        url: `workspaces/${projectId}/snippets/${snippetId}`,
+      query: ({ workspaceId, snippet, snippetId }) => ({
+        url: `workspaces/${workspaceId}/snippets/${snippetId}`,
         method: "PATCH",
         body: snippet,
       }),

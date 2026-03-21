@@ -9,13 +9,13 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
 import Loading from "../Loader/Loader";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { setProjectsOpen } from "../../store/slices/projectSlice";
+import { setWorkspacesOpen } from "../../store/slices/workspaceSlice";
 import {
-  useGetProjectByIdQuery,
-  useGetProjectsQuery,
-} from "../../store/api/projectApi";
+  useGetWorkspaceByIdQuery,
+  useGetWorkspacesQuery,
+} from "../../store/api/workspaceApi";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
+import { useWorkspaceCacheUpdater } from "../../hooks/useWorkspaceCacheUpdater";
 import { IconMenu2 } from "@tabler/icons-react";
 import AIChat from "../AIChat/AIChat";
 
@@ -28,28 +28,28 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [navWidth, setNavWidth] = useState(400);
   const [isNavigating, setIsNavigating] = useState(false);
   const dispatch = useAppDispatch();
-  const { pageSize, skip } = useAppSelector((state) => state.project);
-  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
+  const { pageSize, skip } = useAppSelector((state) => state.workspace);
+  const { data, isLoading: isWorkspacesLoading } = useGetWorkspacesQuery({
     skip,
     limit: pageSize,
   });
-  const updateQueryData = useProjectCacheUpdater();
+  const updateQueryData = useWorkspaceCacheUpdater();
 
-  const loadedProjects = data?.items;
-  const projectId = router.query.projectId;
-  const isValidProjectId =
-    typeof projectId === "string" && projectId.trim() !== "";
+  const loadedWorkspaces = data?.items;
+  const workspaceId = router.query.workspaceId;
+  const isValidWorkspaceId =
+    typeof workspaceId === "string" && workspaceId.trim() !== "";
 
-  const isProjectLoaded = loadedProjects?.find(
-    (loaded) => loaded.id === projectId
+  const isWorkspaceLoaded = loadedWorkspaces?.find(
+    (loaded) => loaded.id === workspaceId
   );
 
-  const { data: projectData } = useGetProjectByIdQuery(
-    isValidProjectId && !isProjectLoaded ? projectId : skipToken
+  const { data: workspaceData } = useGetWorkspaceByIdQuery(
+    isValidWorkspaceId && !isWorkspaceLoaded ? workspaceId : skipToken
   );
 
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false);
-  const isDocsRoute = router.pathname.startsWith("/projects/[projectId]/docs");
+  const isDocsRoute = router.pathname.startsWith("/workspaces/[workspaceId]/docs");
 
   const handleToggleSideNav = () => {
     setIsSideNavCollapsed(!isSideNavCollapsed);
@@ -73,18 +73,18 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [router]);
 
   useEffect(() => {
-    if (isValidProjectId) {
-      dispatch(setProjectsOpen(true));
+    if (isValidWorkspaceId) {
+      dispatch(setWorkspacesOpen(true));
 
-      if (!isProjectLoaded && projectData) {
-        updateQueryData(projectId, projectData);
+      if (!isWorkspaceLoaded && workspaceData) {
+        updateQueryData(workspaceId, workspaceData);
       }
     }
   }, [
-    projectId,
-    isValidProjectId,
-    projectData,
-    isProjectLoaded,
+    workspaceId,
+    isValidWorkspaceId,
+    workspaceData,
+    isWorkspaceLoaded,
     router,
     dispatch,
     updateQueryData,
@@ -139,7 +139,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         )}
       </AppShell.Navbar>
       <AppShell.Main>
-        {isNavigating || isProjectsLoading ? <Loading /> : children}
+        {isNavigating || isWorkspacesLoading ? <Loading /> : children}
       </AppShell.Main>
       <AIChat/>
     </AppShell>

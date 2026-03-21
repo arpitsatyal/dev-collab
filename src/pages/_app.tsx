@@ -23,6 +23,7 @@ import {
   resolveUsers,
 } from "../utils/liveblocksHelpers";
 import { debounce } from "lodash";
+import apiClient from "../lib/apiClient";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -44,7 +45,10 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <Provider store={store}>
       <LiveblocksProvider
-        authEndpoint="/api/liveblocks-auth"
+        authEndpoint={async (room) => {
+          const { data } = await apiClient.post("/collaboration/auth", { room });
+          return data;
+        }}
         resolveUsers={resolveUsers}
         resolveMentionSuggestions={({ text }) =>
           debouncedFetchMentionSuggestions(text) ?? []

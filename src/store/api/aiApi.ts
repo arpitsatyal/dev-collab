@@ -7,19 +7,19 @@ export const aiApi = createApi({
     endpoints: (builder) => ({
         generateImplementationPlan: builder.mutation<
             { plan: string },
-            { taskId: string }
+            { workItemId: string }
         >({
-            query: ({ taskId }: { taskId: string }) => ({
-                url: `ai/analyze-work-item?workItemId=${taskId}`,
+            query: ({ workItemId }: { workItemId: string }) => ({
+                url: `ai/analyze-work-item?workItemId=${workItemId}`,
                 method: "POST", // Controller has @Post
             }),
         }),
         suggestSnippetFilename: builder.mutation<
             { fileName: string },
-            { projectId: string; code: string; language?: string }
+            { workspaceId: string; code: string; language?: string }
         >({
-            query: ({ projectId, code, language }: { projectId: string; code: string; language?: string }) => ({
-                url: `ai/suggest-snippet-filename?workspaceId=${projectId}`,
+            query: ({ workspaceId, code, language }: { workspaceId: string; code: string; language?: string }) => ({
+                url: `ai/suggest-snippet-filename?workspaceId=${workspaceId}`,
                 method: "POST",
                 body: { code, language },
             }),

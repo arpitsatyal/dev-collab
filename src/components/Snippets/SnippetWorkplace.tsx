@@ -8,7 +8,7 @@ import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";
 import { DebouncedFunc } from "lodash";
 import { SaveStatus } from "../../types";
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../../types";
 
 type SnippetWorkplaceProps = {
   snippet: Snippet;

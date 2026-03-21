@@ -1,7 +1,7 @@
 import { getSecret } from "../../utils/secrets";
 import { qstash } from "./client";
 
-export type EventType = 'project' | 'task' | 'snippet' | 'doc';
+export type EventType = 'workspace' | 'workItem' | 'snippet' | 'doc';
 
 export async function publishSyncEvent(
     type: EventType,

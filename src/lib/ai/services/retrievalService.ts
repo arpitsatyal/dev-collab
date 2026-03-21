@@ -26,12 +26,12 @@ export async function generateQueryVariations(query: string, llm: BaseChatModel)
 // Helper for database keyword search (Hybrid Search)
 async function keywordSearch(query: string, filters?: Record<string, any>) {
     const results: any[] = [];
-    const projectId = filters?.projectId;
+    const workspaceId = filters?.workspaceId;
 
     try {
-        // Projects
-        if (!projectId) { // If filtering by project, we don't need to search for other projects
-            const projects = await prisma.project.findMany({
+        // Workspaces
+        if (!workspaceId) { // If filtering by workspace, we don't need to search for other workspaces
+            const workspaces = await prisma.workspace.findMany({
                 where: {
                     OR: [
                         { title: { contains: query, mode: 'insensitive' } },
@@ -40,61 +40,61 @@ async function keywordSearch(query: string, filters?: Record<string, any>) {
                 },
                 take: 3
             });
-            results.push(...projects.map(p => ({
-                pageContent: `Project Title: ${p.title}\nDescription: ${p.description || "No description"}`,
-                metadata: { type: 'project', projectId: p.id, projectTitle: p.title }
+            results.push(...workspaces.map(p => ({
+                pageContent: `Workspace Title: ${p.title}\nDescription: ${p.description || "No description"}`,
+                metadata: { type: 'workspace', workspaceId: p.id, workspaceTitle: p.title }
             })));
         }
 
-        if (projectId) {
-            // Tasks
-            const tasks = await prisma.task.findMany({
+        if (workspaceId) {
+            // WorkItems
+            const workItems = await prisma.workItem.findMany({
                 where: {
-                    projectId,
+                    workspaceId,
                     OR: [
                         { title: { contains: query, mode: 'insensitive' } },
                         { description: { contains: query, mode: 'insensitive' } }
                     ]
                 },
                 take: 3,
-                include: { project: true }
+                include: { workspace: true }
             });
-            results.push(...tasks.map(t => ({
-                pageContent: `Task Title: ${t.title}\nStatus: ${t.status}\nDescription: ${t.description || "No description"}`,
-                metadata: { type: 'task', projectId: t.projectId, projectTitle: t.project.title }
+            results.push(...workItems.map(t => ({
+                pageContent: `WorkItem Title: ${t.title}\nStatus: ${t.status}\nDescription: ${t.description || "No description"}`,
+                metadata: { type: 'workItem', workspaceId: t.workspaceId, workspaceTitle: t.workspace.title }
             })));
 
             // Snippets
             const snippets = await prisma.snippet.findMany({
                 where: {
-                    projectId,
+                    workspaceId,
                     OR: [
                         { title: { contains: query, mode: 'insensitive' } },
                         { content: { contains: query, mode: 'insensitive' } }
                     ]
                 },
                 take: 3,
-                include: { project: true }
+                include: { workspace: true }
             });
             results.push(...snippets.map(s => ({
                 pageContent: `Snippet Title: ${s.title}\nLanguage: ${s.language}\nContent:\n${s.content}`,
-                metadata: { type: 'snippet', projectId: s.projectId, projectTitle: s.project.title }
+                metadata: { type: 'snippet', workspaceId: s.workspaceId, workspaceTitle: s.workspace.title }
             })));
 
             // Docs
             const docs = await prisma.doc.findMany({
                 where: {
-                    projectId,
+                    workspaceId,
                     label: { contains: query, mode: 'insensitive' }
                 },
                 take: 3,
-                include: { project: true }
+                include: { workspace: true }
             });
             results.push(...docs.map(d => {
                 const contentStr = typeof d.content === 'string' ? d.content : JSON.stringify(d.content || {});
                 return {
                     pageContent: `Doc Label: ${d.label}\nContent:\n${contentStr}`,
-                    metadata: { type: 'doc', projectId: d.projectId, projectTitle: d.project.title }
+                    metadata: { type: 'doc', workspaceId: d.workspaceId, workspaceTitle: d.workspace.title }
                 }
             }));
         }

@@ -2,20 +2,20 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../types";
 import { v4 as uuidv4 } from "uuid";
 import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface DocCreateData {
   label: string;
-  projectId: string;
+  workspaceId: string;
   roomId: string;
   content?: string;
 }
 
 export interface DocUpdateData {
   content: string;
-  projectId: string;
+  workspaceId: string;
 }
 
 export default async function handler(
@@ -37,9 +37,9 @@ export default async function handler(
     return res.status(404).json({ error: "User not found" });
   }
 
-  const { projectId, docId } = req.query;
-  if (!projectId) {
-    return res.status(400).json({ error: "Project ID is required" });
+  const { workspaceId, docId } = req.query;
+  if (!workspaceId) {
+    return res.status(400).json({ error: "Workspace ID is required" });
   }
 
   switch (req.method) {
@@ -56,7 +56,7 @@ export default async function handler(
         }
 
         const docs = await prisma.doc.findMany({
-          where: { projectId: projectId as string },
+          where: { workspaceId: workspaceId as string },
         });
         return res.status(200).json(docs);
       } catch (error) {
@@ -75,7 +75,7 @@ export default async function handler(
         const doc = await prisma.doc.create({
           data: {
             label,
-            projectId: projectId as string,
+            workspaceId: workspaceId as string,
             roomId: `docs_${uuidv4()}`,
             content: content || "",
           },

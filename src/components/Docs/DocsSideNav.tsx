@@ -9,17 +9,17 @@ import { useRouter } from "next/router";
 
 const DocsSideNav = () => {
   const router = useRouter();
-  const projectId = getSingleQueryParam(router.query.projectId) || "unknown";
+  const workspaceId = getSingleQueryParam(router.query.workspaceId) || "unknown";
   const currentDocId = getSingleQueryParam(router.query.docId) || "";
 
-  const isValidProjectId =
-    typeof projectId === "string" && projectId.trim() !== "";
+  const isValidWorkspaceId =
+    typeof workspaceId === "string" && workspaceId.trim() !== "";
 
   const { data: docs, isLoading } = useGetDocsQuery(
-    isValidProjectId ? { projectId } : skipToken
+    isValidWorkspaceId ? { workspaceId } : skipToken
   );
 
-  if (isLoading || !isValidProjectId) return <Loading loaderHeight="20vh" />;
+  if (isLoading || !isValidWorkspaceId) return <Loading loaderHeight="20vh" />;
   return (
     <nav className={styles.sidenav}>
       {docs && docs.length > 0 ? (
@@ -38,7 +38,7 @@ const DocsSideNav = () => {
               onClick={() =>
                 router.push(
                   {
-                    pathname: `/projects/${projectId}/docs`,
+                    pathname: `/workspaces/${workspaceId}/docs`,
                     query: { docId: item.id },
                   },
                   undefined,

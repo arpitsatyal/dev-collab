@@ -1,18 +1,18 @@
 import { useRouter } from "next/router";
 import { getSingleQueryParam } from "../utils/getSingleQueryParam";
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../types";
 
 export function useSnippetFromRouter(
   loadedSnippets: Record<string, Snippet[]>
 ) {
   const router = useRouter();
 
-  const projectId = getSingleQueryParam(router.query.projectId);
+  const workspaceId = getSingleQueryParam(router.query.workspaceId);
   const snippetId = getSingleQueryParam(router.query.snippetId);
 
-  if (!projectId || !snippetId) {
+  if (!workspaceId || !snippetId) {
     return undefined;
   }
 
-  return loadedSnippets[projectId]?.find((s) => s.id === snippetId);
+  return loadedSnippets[workspaceId]?.find((s) => s.id === snippetId);
 }

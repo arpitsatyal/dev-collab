@@ -1,20 +1,20 @@
 import { configureStore } from "@reduxjs/toolkit";
-import { projectApi } from "./api/projectApi";
+import { workspaceApi } from "./api/workspaceApi";
 import snippetReducer from "./slices/snippetSlice";
-import projectReducer from "./slices/projectSlice";
+import workspaceReducer from "./slices/workspaceSlice";
 import { snippetApi } from "./api/snippetApi";
 import { userApi } from "./api/userApi";
-import { taskApi } from "./api/taskApi";
+import { workItemApi } from "./api/workItemApi";
 import { docsApi } from "./api/docsApi";
 import { aiApi } from "./api/aiApi";
 import { chatApi } from "./api/chatApi";
 
 export const store = configureStore({
   reducer: {
-    project: projectReducer,
-    [projectApi.reducerPath]: projectApi.reducer,
+    workspace: workspaceReducer,
+    [workspaceApi.reducerPath]: workspaceApi.reducer,
     [userApi.reducerPath]: userApi.reducer,
-    [taskApi.reducerPath]: taskApi.reducer,
+    [workItemApi.reducerPath]: workItemApi.reducer,
     [docsApi.reducerPath]: docsApi.reducer,
     [aiApi.reducerPath]: aiApi.reducer,
     [chatApi.reducerPath]: chatApi.reducer,
@@ -23,10 +23,10 @@ export const store = configureStore({
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
-      projectApi.middleware,
+      workspaceApi.middleware,
       snippetApi.middleware,
       userApi.middleware,
-      taskApi.middleware,
+      workItemApi.middleware,
       docsApi.middleware,
       aiApi.middleware,
       chatApi.middleware

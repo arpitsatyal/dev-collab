@@ -2,21 +2,21 @@ import { AIMessage, BaseMessage, ToolMessage } from "@langchain/core/messages";
 import { StateGraph, MessagesAnnotation } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
 import { getReasoningToolBoundLLM } from "../llmFactory";
-import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "./toolService";
+import { getSnippetsTool, getDocsTool, getExistingWorkItemsTool, semanticSearchTool } from "./toolService";
 
 /**
- * Runs the LangGraph agent loop for project-scoped queries.
+ * Runs the LangGraph agent loop for workspace-scoped queries.
  * The graph cycles between an agent node (LLM reasoning) and a tools node
  * (executing tool calls) until the LLM stops requesting tools.
  *
- * projectId is passed via `configurable` and automatically threaded
+ * workspaceId is passed via `configurable` and automatically threaded
  * into each tool's third `config` argument by LangGraph.
  */
 export async function runAgentGraph(
     messages: BaseMessage[],
-    projectId: string
+    workspaceId: string
 ): Promise<string> {
-    const tools = [getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool];
+    const tools = [getSnippetsTool, getDocsTool, getExistingWorkItemsTool, semanticSearchTool];
     const llmWithTools = await getReasoningToolBoundLLM(tools);
 
     // ── Nodes ──────────────────────────────────────────────────────────────────
@@ -40,12 +40,12 @@ export async function runAgentGraph(
         .compile();
 
     // ── Execution ──────────────────────────────────────────────────────────────
-    console.log(`[LangGraph] Starting Agent Graph | Context: ${projectId || "Global"}`);
+    console.log(`[LangGraph] Starting Agent Graph | Context: ${workspaceId || "Global"}`);
 
-    // projectId flows into each tool via config?.configurable?.projectId
+    // workspaceId flows into each tool via config?.configurable?.workspaceId
     const finalState = await app.invoke(
         { messages },
-        { recursionLimit: 10, configurable: { projectId } }
+        { recursionLimit: 10, configurable: { workspaceId } }
     );
 
     const calledTools = finalState.messages

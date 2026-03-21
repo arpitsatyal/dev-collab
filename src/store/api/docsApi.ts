@@ -1,6 +1,6 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
-import { Doc } from "@prisma/client";
+import { Doc } from "../../types";
 import { DocCreateData } from "../../pages/api/docs";
 
 export const docsApi = createApi({
@@ -9,21 +9,21 @@ export const docsApi = createApi({
   tagTypes: ["Docs"],
 
   endpoints: (builder) => ({
-    getDocs: builder.query<Doc[], { projectId: string }>({
-      query: ({ projectId }) => `workspaces/${projectId}/docs`,
-      providesTags: (result, error, { projectId }) =>
-        result ? [{ type: "Docs", id: projectId }] : [],
+    getDocs: builder.query<Doc[], { workspaceId: string }>({
+      query: ({ workspaceId }) => `workspaces/${workspaceId}/docs`,
+      providesTags: (result, error, { workspaceId }) =>
+        result ? [{ type: "Docs", id: workspaceId }] : [],
     }),
 
-    createDoc: builder.mutation<Doc, { projectId: string; doc: DocCreateData }>(
+    createDoc: builder.mutation<Doc, { workspaceId: string; doc: DocCreateData }>(
       {
-        query: ({ projectId, doc }) => ({
-          url: `workspaces/${projectId}/docs`,
+        query: ({ workspaceId, doc }) => ({
+          url: `workspaces/${workspaceId}/docs`,
           method: "POST",
           body: doc,
         }),
-        invalidatesTags: (result, error, { projectId }) => [
-          { type: "Docs", id: projectId },
+        invalidatesTags: (result, error, { workspaceId }) => [
+          { type: "Docs", id: workspaceId },
         ],
       }
     ),
@@ -31,13 +31,13 @@ export const docsApi = createApi({
     editDoc: builder.mutation<
       Doc,
       {
-        projectId: string;
+        workspaceId: string;
         doc: Partial<Doc>;
         docId: string;
       }
     >({
-      query: ({ projectId, doc, docId }) => ({
-        url: `workspaces/${projectId}/docs/${docId}`,
+      query: ({ workspaceId, doc, docId }) => ({
+        url: `workspaces/${workspaceId}/docs/${docId}`,
         method: "PATCH",
         body: doc,
       }),

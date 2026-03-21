@@ -1,4 +1,4 @@
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../../types";
 import { createSlice } from "@reduxjs/toolkit";
 import type { PayloadAction } from "@reduxjs/toolkit";
 
@@ -16,42 +16,42 @@ export const SnippetSlice = createSlice({
   reducers: {
     setSnippets: (
       state,
-      action: PayloadAction<{ projectId: string; snippets: Snippet[] }>
+      action: PayloadAction<{ workspaceId: string; snippets: Snippet[] }>
     ) => {
-      const { projectId, snippets } = action.payload || {};
-      state.loadedSnippets[projectId] = snippets;
+      const { workspaceId, snippets } = action.payload || {};
+      state.loadedSnippets[workspaceId] = snippets;
     },
     addSnippet: (
       state,
-      action: PayloadAction<{ projectId: string; snippet: Snippet }>
+      action: PayloadAction<{ workspaceId: string; snippet: Snippet }>
     ) => {
-      const { projectId, snippet } = action.payload;
-      const existingSnippets = state.loadedSnippets[projectId] || [];
+      const { workspaceId, snippet } = action.payload;
+      const existingSnippets = state.loadedSnippets[workspaceId] || [];
 
       const alreadyExists = existingSnippets.some((s) => s.id === snippet.id);
 
       if (!alreadyExists) {
-        state.loadedSnippets[projectId] = [...existingSnippets, snippet];
+        state.loadedSnippets[workspaceId] = [...existingSnippets, snippet];
       }
     },
 
     updateSnippet: (
       state,
       action: PayloadAction<{
-        projectId: string;
+        workspaceId: string;
         snippetId: string;
         editedSnippet: Partial<Snippet>;
       }>
     ) => {
-      const { projectId, snippetId, editedSnippet } = action.payload || {};
+      const { workspaceId, snippetId, editedSnippet } = action.payload || {};
 
-      const snippetIndex = state.loadedSnippets[projectId].findIndex(
+      const snippetIndex = state.loadedSnippets[workspaceId].findIndex(
         (snippet) => snippet.id === snippetId
       );
 
       if (snippetIndex != -1) {
-        state.loadedSnippets[projectId][snippetIndex] = {
-          ...state.loadedSnippets[projectId][snippetIndex],
+        state.loadedSnippets[workspaceId][snippetIndex] = {
+          ...state.loadedSnippets[workspaceId][snippetIndex],
           ...editedSnippet,
         };
       }
@@ -59,16 +59,16 @@ export const SnippetSlice = createSlice({
 
     removeSnippet: (
       state,
-      action: PayloadAction<{ projectId: string; snippetId: string }>
+      action: PayloadAction<{ workspaceId: string; snippetId: string }>
     ) => {
-      const { projectId, snippetId } = action.payload;
-      const existingSnippets = state.loadedSnippets[projectId];
+      const { workspaceId, snippetId } = action.payload;
+      const existingSnippets = state.loadedSnippets[workspaceId];
 
       if (!existingSnippets) {
         return;
       }
 
-      state.loadedSnippets[projectId] = existingSnippets.filter(
+      state.loadedSnippets[workspaceId] = existingSnippets.filter(
         (snippet) => snippet.id !== snippetId
       );
     },

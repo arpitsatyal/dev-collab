@@ -26,7 +26,7 @@ const CreateDocModal = ({
   const [errors, setErrors] = useState<{ label?: string }>({});
 
   const validateForm = () => {
-    const newErrors: { label?: string; projectId?: string } = {};
+    const newErrors: { label?: string; workspaceId?: string } = {};
     if (!docForm.label?.trim()) newErrors.label = "Label is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;

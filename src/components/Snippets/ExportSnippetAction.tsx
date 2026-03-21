@@ -8,7 +8,7 @@ import {
   Tooltip,
 } from "@mantine/core";
 import { notifications } from "@mantine/notifications";
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../../types";
 import { IconCheck, IconCodePlus, IconLoader2 } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useSession } from "../providers/AuthProvider";
@@ -76,7 +76,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
   const dispatch = useAppDispatch();
   const [createSnippet, { isLoading: isCreatingSnippet }] =
     useCreateSnippetMutation();
-  const [triggerGetSnippets, { data: fetchedProjectSnippets = [] }] =
+  const [triggerGetSnippets, { data: fetchedWorkspaceSnippets = [] }] =
     useLazyGetSnippetsQuery();
   const [suggestSnippetFilename, { isLoading: isSuggestingFileName }] =
     useSuggestSnippetFilenameMutation();
@@ -84,18 +84,18 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
   const [fileName, setFileName] = useState("");
   const [fileNameError, setFileNameError] = useState("");
   const [saved, setSaved] = useState(false);
-  const projectId = getSingleQueryParam(router.query.projectId);
+  const workspaceId = getSingleQueryParam(router.query.workspaceId);
 
-  const loadedProjectSnippets = useAppSelector((state) =>
-    projectId ? state.snippet.loadedSnippets[projectId] || [] : [],
+  const loadedWorkspaceSnippets = useAppSelector((state) =>
+    workspaceId ? state.snippet.loadedSnippets[workspaceId] || [] : [],
   );
 
   useEffect(() => {
-    if (!projectId) {
+    if (!workspaceId) {
       return;
     }
-    triggerGetSnippets({ projectId });
-  }, [projectId, triggerGetSnippets]);
+    triggerGetSnippets({ workspaceId });
+  }, [workspaceId, triggerGetSnippets]);
 
   const normalizedLanguage = useMemo(
     () => (language || "plaintext").toLowerCase(),
@@ -105,7 +105,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
   const existingFileNames = useMemo(() => {
     const uniqueById = new Map<string, Snippet>();
 
-    [...loadedProjectSnippets, ...fetchedProjectSnippets].forEach((snippet) => {
+    [...loadedWorkspaceSnippets, ...fetchedWorkspaceSnippets].forEach((snippet) => {
       uniqueById.set(snippet.id, snippet);
     });
 
@@ -114,7 +114,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
         `${snippet.title}.${snippet.extension || "txt"}`.toLowerCase(),
       ),
     );
-  }, [loadedProjectSnippets, fetchedProjectSnippets]);
+  }, [loadedWorkspaceSnippets, fetchedWorkspaceSnippets]);
 
   const validateFileName = (value: string): string => {
     const parsed = parseFilename(value);
@@ -124,7 +124,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
 
     const fullName = `${parsed.title}.${parsed.extension}`.toLowerCase();
     if (existingFileNames.has(fullName)) {
-      return "A snippet with this filename already exists in this project.";
+      return "A snippet with this filename already exists in this workspace.";
     }
 
     return "";
@@ -133,10 +133,10 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
   const openFilenamePrompt = async () => {
     const content = code?.trim() ? code : "";
 
-    if (!projectId) {
+    if (!workspaceId) {
       notifications.show({
         title: "Unable to export snippet",
-        message: "Project context is missing for this code block.",
+        message: "Workspace context is missing for this code block.",
         color: "red",
       });
       return;
@@ -157,7 +157,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
 
     try {
       const { fileName: apiSuggestedFileName } = await suggestSnippetFilename({
-        projectId,
+        workspaceId,
         code: content,
         language: normalizedLanguage,
       }).unwrap();
@@ -184,7 +184,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
   };
 
   const handleConfirmExport = async () => {
-    if (!projectId) {
+    if (!workspaceId) {
       return;
     }
 
@@ -219,7 +219,7 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
       content,
       createdAt: now,
       updatedAt: now,
-      projectId,
+      workspaceId,
       authorId: session.data?.user?.id || null,
       lastEditedById: session.data?.user?.id || null,
       extension,
@@ -227,26 +227,26 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
 
     dispatch(
       addSnippet({
-        projectId,
+        workspaceId,
         snippet: optimisticSnippet,
       }),
     );
 
     try {
       const data = await createSnippet({
-        projectId,
+        workspaceId,
         snippet: {
           title,
           language: resolvedLanguage,
           content,
-          projectId,
+          workspaceId,
           extension,
         },
       }).unwrap();
 
       dispatch(
         updateSnippet({
-          projectId,
+          workspaceId,
           snippetId: tempId,
           editedSnippet: data,
         }),
@@ -257,13 +257,13 @@ const ExportSnippetAction = ({ code, language }: ExportSnippetActionProps) => {
       window.setTimeout(() => setSaved(false), 1500);
       notifications.show({
         title: "Snippet exported",
-        message: `${data.title}.${data.extension || "txt"} saved to this project.`,
+        message: `${data.title}.${data.extension || "txt"} saved to this workspace.`,
         color: "teal",
       });
     } catch (error) {
       dispatch(
         removeSnippet({
-          projectId,
+          workspaceId,
           snippetId: tempId,
         }),
       );

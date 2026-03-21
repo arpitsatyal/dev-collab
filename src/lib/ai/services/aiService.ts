@@ -17,11 +17,11 @@ async function getChatHistory(chatId: string): Promise<string> {
         .join("\n");
 }
 
-// ── Path A: Tool-calling loop (project-scoped chat via LangGraph) ──────────────
-async function getAIResponseWithTools(chatId: string, question: string, projectId: string) {
+// ── Path A: Tool-calling loop (workspace-scoped chat via LangGraph) ──────────────
+async function getAIResponseWithTools(chatId: string, question: string, workspaceId: string) {
     const history = await getChatHistory(chatId);
     const initialMessages: BaseMessage[] = buildChatMessages(history, question);
-    const answer = await runAgentGraph(initialMessages, projectId);
+    const answer = await runAgentGraph(initialMessages, workspaceId);
     return { answer, context: "", validated: { isValid: true, warning: null } };
 }
 
@@ -32,14 +32,14 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     const classifierLlm = await getSpeedyStructuredLLM(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
 
-    let intent = "PROJECT_QUERY";
+    let intent = "WORKSPACE_QUERY";
 
     try {
         const result = await classifierLlm.invoke(intentMessages);
         if (result.confidence > 0.4) {
             intent = result.intent;
         } else {
-            console.warn("[Chat Engine] Intent classification low confidence, defaulting to PROJECT_QUERY");
+            console.warn("[Chat Engine] Intent classification low confidence, defaulting to WORKSPACE_QUERY");
         }
     } catch (e) {
         console.warn("[Chat Engine] Intent classification failed:", e);
@@ -58,7 +58,7 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         return { answer, context: "", validated: { isValid: true, warning: null } };
     }
 
-    const effectiveProjectId = filters?.projectId || "";
-    console.log(`[Chat Engine] Path: Agent Graph | Context: ${effectiveProjectId ? `Project (${effectiveProjectId})` : "Global"}`);
-    return getAIResponseWithTools(chatId, question, effectiveProjectId);
+    const effectiveWorkspaceId = filters?.workspaceId || "";
+    console.log(`[Chat Engine] Path: Agent Graph | Context: ${effectiveWorkspaceId ? `Workspace (${effectiveWorkspaceId})` : "Global"}`);
+    return getAIResponseWithTools(chatId, question, effectiveWorkspaceId);
 }

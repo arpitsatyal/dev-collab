@@ -33,7 +33,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
             Welcome to Dev-Collab
           </Title>
           <Text size="md" ta="center" className="secondary">
-            Sign in to collaborate, share, and build amazing projects together.
+            Sign in to collaborate, share, and build amazing workspaces together.
           </Text>
           <Stack w="100%" gap="md">
             <Button

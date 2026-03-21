@@ -104,7 +104,7 @@ export default async function handler(
         where: {
           roomId: mention.roomId,
         },
-        select: { label: true, projectId: true, id: true },
+        select: { label: true, workspaceId: true, id: true },
       });
 
       try {
