@@ -29,8 +29,8 @@ export default async function handler(
 
     // Get AI response from service
     const filters: any = {};
-    if (req.body.projectId) {
-      filters.projectId = req.body.projectId;
+    if (req.body.workspaceId) {
+      filters.workspaceId = req.body.workspaceId;
     }
 
     const { answer } = await getAIResponse(chatId, question, filters);

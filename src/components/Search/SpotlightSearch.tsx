@@ -3,8 +3,8 @@ import React, { useState, useMemo, useCallback, JSX } from "react";
 import {
   IconSearch,
   IconFolder,
-  IconSubtask,
   IconClearAll,
+  IconSubtask,
 } from "@tabler/icons-react";
 import {
   ActionIcon,
@@ -22,18 +22,18 @@ import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader/Loader";
 import FileIcon from "../FileIcon";
-import { Snippet, Task } from "@prisma/client";
+import { Snippet, WorkItem } from "../../types";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { CacheDataSource, ProjectWithPin, TypedItems } from "../../types";
-import { useSession } from "next-auth/react";
+import { CacheDataSource, WorkspaceWithPin, TypedItems } from "../../types";
+import { useSession } from "../providers/AuthProvider";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
 import ShortcutHint from "./ShortcutHint";
-import { useGetProjectsQuery } from "../../store/api/projectApi";
-import { setProjectsOpen } from "../../store/slices/projectSlice";
+import { useGetWorkspacesQuery } from "../../store/api/workspaceApi";
+import { setWorkspacesOpen } from "../../store/slices/workspaceSlice";
 import { uniqBy } from "lodash";
-import { useProjectCacheUpdater } from "../../hooks/useProjectCacheUpdater";
+import { useWorkspaceCacheUpdater } from "../../hooks/useWorkspaceCacheUpdater";
 
 interface DataItem {
   id: string;
@@ -75,11 +75,11 @@ const ActionItem = ({ item }: { item: DataItem }) => (
       {item.icon}
       <Box style={{ flex: 1 }} p={3} onClick={item.onClick}>
         <Text>{item.title}</Text>
-        {item.meta?.projectTitle ? (
+        {item.meta?.workspaceTitle ? (
           <Group gap="xs">
             <IconFolder size={16} />
             <Text size="xs" opacity={0.6}>
-              {item.meta.projectTitle}
+              {item.meta.workspaceTitle}
             </Text>
           </Group>
         ) : (
@@ -101,13 +101,13 @@ const SpotlightSearch = ({
 }) => {
   const router = useRouter();
   const [query, setQuery] = useState("");
-  const { pageSize, skip } = useAppSelector((state) => state.project);
-  const { data, isLoading: isProjectsLoading } = useGetProjectsQuery({
+  const { pageSize, skip } = useAppSelector((state) => state.workspace);
+  const { data, isLoading: isWorkspacesLoading } = useGetWorkspacesQuery({
     skip,
     limit: pageSize,
   });
 
-  const loadedProjects = data?.items;
+  const loadedWorkspaces = data?.items;
 
   const {
     matchedResults,
@@ -129,9 +129,9 @@ const SpotlightSearch = ({
   const dispatch = useAppDispatch();
   const computedColorScheme = useComputedColorScheme();
   const theme = useMantineTheme();
-  const updateQueryData = useProjectCacheUpdater();
+  const updateQueryData = useWorkspaceCacheUpdater();
 
-  const currentProjectId = router.query.projectId as string | undefined;
+  const currentWorkspaceId = router.query.workspaceId as string | undefined;
   const searchCacheArray = Array.from(searchCache.values()).flat();
   const uniqueCacheResults = uniqBy(searchCacheArray, "id");
 
@@ -142,16 +142,16 @@ const SpotlightSearch = ({
       const [type, id] = key.split(":");
       let item;
 
-      if (type === "project") {
+      if (type === "workspace") {
         item =
-          loadedProjects?.find((p) => p.id === id) ||
-          uniqueCacheResults.find((r) => r.type === "project" && r.id === id);
+          loadedWorkspaces?.find((p) => p.id === id) ||
+          uniqueCacheResults.find((r) => r.type === "workspace" && r.id === id);
       } else if (type === "snippet") {
         item =
           snippets.find((s) => s.id === id) ||
           uniqueCacheResults.find((r) => r.type === "snippet" && r.id === id);
-      } else if (type === "task") {
-        item = uniqueCacheResults.find((r) => r.type === "task" && r.id === id);
+      } else if (type === "workItem") {
+        item = uniqueCacheResults.find((r) => r.type === "workItem" && r.id === id);
       }
 
       if (item) {
@@ -161,57 +161,57 @@ const SpotlightSearch = ({
 
     // Now return in the same order
     return recentSearchOrder.map((key) => itemsMap.get(key)).filter(Boolean); // remove nulls
-  }, [recentSearchOrder, loadedProjects, snippets, uniqueCacheResults]);
+  }, [recentSearchOrder, loadedWorkspaces, snippets, uniqueCacheResults]);
 
-  const projectSource = useMemo<Omit<DataSource<ProjectWithPin>, "data">>(
+  const workspaceSource = useMemo<Omit<DataSource<WorkspaceWithPin>, "data">>(
     () => ({
-      name: "projects",
-      groupLabel: "Projects",
-      filterData: (projects, query, { matchedResults, isSearchLoading }) => {
-        const localProjects = filterByQuery(projects, query);
-        const apiProjects =
+      name: "workspaces",
+      groupLabel: "Workspaces",
+      filterData: (workspaces, query, { matchedResults, isSearchLoading }) => {
+        const localWorkspaces = filterByQuery(workspaces, query);
+        const apiWorkspaces =
           !isSearchLoading && matchedResults?.length > 0
             ? matchedResults.filter(
-                (apiResult: TypedItems) =>
-                  apiResult.type === "project" &&
-                  !localProjects.some(
-                    (local: ProjectWithPin) => local.id === apiResult.id
-                  )
-              )
+              (apiResult: TypedItems) =>
+                apiResult.type === "workspace" &&
+                !localWorkspaces.some(
+                  (local: WorkspaceWithPin) => local.id === apiResult.id
+                )
+            )
             : [];
-        return [...localProjects, ...apiProjects];
+        return [...localWorkspaces, ...apiWorkspaces];
       },
       toDataItem: (
-        project,
+        workspace,
         {
           router,
           addRecentItems,
         }: { router: NextRouter; addRecentItems: (items: TypedItems[]) => void }
       ) => ({
-        id: project.id,
-        title: project.title,
-        description: project.description ?? "-",
+        id: workspace.id,
+        title: workspace.title,
+        description: workspace.description ?? "-",
         icon: <IconFolder size={24} stroke={1.5} />,
         onClick: () => {
-          const isProjectLoaded = loadedProjects?.find(
-            (loaded) => loaded.id === project.id
+          const isWorkspaceLoaded = loadedWorkspaces?.find(
+            (loaded) => loaded.id === workspace.id
           );
 
-          if (!isProjectLoaded) {
-            updateQueryData(project.id, project);
+          if (!isWorkspaceLoaded) {
+            updateQueryData(workspace.id, workspace);
           }
-          dispatch(setProjectsOpen(true));
-          addRecentItems([{ ...project, type: "project" }]);
-          router.push(`/projects/${project.id}`);
+          dispatch(setWorkspacesOpen(true));
+          addRecentItems([{ ...workspace, type: "workspace" }]);
+          router.push(`/workspaces/${workspace.id}`);
         },
-        groupLabel: "Projects",
+        groupLabel: "Workspaces",
       }),
     }),
-    [dispatch, loadedProjects, updateQueryData]
+    [dispatch, loadedWorkspaces, updateQueryData]
   );
 
   const snippetSource = useMemo<
-    Omit<DataSource<Snippet & { project?: ProjectWithPin }>, "data">
+    Omit<DataSource<Snippet & { workspace?: WorkspaceWithPin }>, "data">
   >(
     () => ({
       name: "snippets",
@@ -221,12 +221,12 @@ const SpotlightSearch = ({
         const apiSnippets =
           !isSearchLoading && matchedResults?.length > 0
             ? matchedResults.filter(
-                (apiResult: TypedItems) =>
-                  apiResult.type === "snippet" &&
-                  !localSnippets.some(
-                    (local: Snippet) => local.id === apiResult.id
-                  )
-              )
+              (apiResult: TypedItems) =>
+                apiResult.type === "snippet" &&
+                !localSnippets.some(
+                  (local: Snippet) => local.id === apiResult.id
+                )
+            )
             : [];
         return [...localSnippets, ...apiSnippets];
       },
@@ -234,11 +234,11 @@ const SpotlightSearch = ({
         snippet,
         {
           router,
-          projects,
+          workspaces,
           addRecentItems,
         }: {
           router: NextRouter;
-          projects: ProjectWithPin[];
+          workspaces: WorkspaceWithPin[];
           addRecentItems: (items: TypedItems[]) => void;
         }
       ) => ({
@@ -246,80 +246,80 @@ const SpotlightSearch = ({
         title: `${snippet.title}.${snippet.extension ?? ""}`,
         icon: <FileIcon snippet={snippet} />,
         onClick: () => {
-          const isProjectLoaded = loadedProjects?.find(
-            (loaded) => loaded.id === snippet.projectId
+          const isWorkspaceLoaded = loadedWorkspaces?.find(
+            (loaded) => loaded.id === snippet.workspaceId
           );
-          const project = snippet.project;
-          if (!isProjectLoaded && project) {
-            updateQueryData(snippet.projectId, project);
+          const workspace = snippet.workspace;
+          if (!isWorkspaceLoaded && workspace) {
+            updateQueryData(snippet.workspaceId, workspace);
           }
-          dispatch(setProjectsOpen(true));
+          dispatch(setWorkspacesOpen(true));
           addRecentItems([{ ...snippet, type: "snippet" }]);
-          router.push(`/projects/${snippet.projectId}/snippets/${snippet.id}`);
+          router.push(`/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`);
         },
         groupLabel: "Snippets",
         meta: {
-          projectTitle:
-            projects?.find((project) => project.id === snippet.projectId)
+          workspaceTitle:
+            workspaces?.find((workspace) => workspace.id === snippet.workspaceId)
               ?.title ?? "",
         },
       }),
     }),
-    [dispatch, loadedProjects, updateQueryData]
+    [dispatch, loadedWorkspaces, updateQueryData]
   );
 
-  const taskSource = useMemo<
-    Omit<DataSource<Task & { project?: ProjectWithPin }>, "data">
+  const workItemSource = useMemo<
+    Omit<DataSource<WorkItem & { workspace?: WorkspaceWithPin }>, "data">
   >(
     () => ({
-      name: "tasks",
-      groupLabel: "Tasks",
+      name: "workItems",
+      groupLabel: "WorkItems",
       filterData: (_, __, { matchedResults, isSearchLoading }) => {
-        const apiTasks =
+        const apiWorkItems =
           !isSearchLoading && matchedResults?.length > 0
             ? matchedResults.filter(
-                (apiResult: TypedItems) => apiResult.type === "task"
-              )
+              (apiResult: TypedItems) => apiResult.type === "workItem"
+            )
             : [];
-        return apiTasks;
+        return apiWorkItems;
       },
       toDataItem: (
-        task,
+        workItem,
         {
           router,
-          projects,
+          workspaces,
           addRecentItems,
         }: {
           router: NextRouter;
-          projects: ProjectWithPin[];
+          workspaces: WorkspaceWithPin[];
           addRecentItems: (items: TypedItems[]) => void;
         }
       ) => ({
-        id: task.id,
-        title: task.title,
-        description: task.description ?? "-",
+        id: workItem.id,
+        title: workItem.title,
+        description: workItem.description ?? "-",
         icon: <IconSubtask />,
         onClick: () => {
-          const isProjectLoaded = loadedProjects?.find(
-            (loaded) => loaded.id === task.projectId
+          const isWorkspaceLoaded = loadedWorkspaces?.find(
+            (loaded) => loaded.id === workItem.workspaceId
           );
-          const project = task.project;
-          if (!isProjectLoaded && project) {
-            updateQueryData(task.projectId, project);
+          const workspace = workItem.workspace;
+          if (!isWorkspaceLoaded && workspace) {
+            updateQueryData(workItem.workspaceId, workspace);
           }
-          dispatch(setProjectsOpen(true));
-          addRecentItems([{ ...task, type: "task" }]);
-          router.push(`/projects/${task.projectId}/tasks`);
+          dispatch(setWorkspacesOpen(true));
+          addRecentItems([{ ...workItem, type: "workItem" }]);
+          router.push(`/workspaces/${workItem.workspaceId}/workItems`);
         },
-        groupLabel: "tasks",
+        groupLabel: "workItems",
         meta: {
-          projectTitle:
-            projects?.find((project) => project.id === task.projectId)?.title ??
+          workspaceTitle:
+            workspaces?.find((workspace) => workspace.id === workItem.workspaceId)?.title ??
             "",
         },
       }),
     }),
-    [dispatch, loadedProjects, updateQueryData]
+    [dispatch, loadedWorkspaces, updateQueryData]
   );
 
   const cacheSource = useMemo<Omit<DataSource<CacheDataSource>, "data">>(
@@ -327,11 +327,11 @@ const SpotlightSearch = ({
       name: "cacheResults",
       groupLabel: "Recently Searched",
       filterData: (results, query, context) => {
-        const { matchedResults, projects, snippets, recentSearchOrder } =
+        const { matchedResults, workspaces, snippets, recentSearchOrder } =
           context;
 
         const hasOtherResults =
-          filterByQuery(projects, query)?.length > 0 ||
+          filterByQuery(workspaces, query)?.length > 0 ||
           filterByQuery(snippets, query)?.length > 0 ||
           matchedResults?.length > 0;
 
@@ -355,25 +355,25 @@ const SpotlightSearch = ({
       },
       toDataItem: (
         item,
-        { router, projects }: { router: NextRouter; projects: ProjectWithPin[] }
+        { router, workspaces }: { router: NextRouter; workspaces: WorkspaceWithPin[] }
       ) => {
-        if (item.type === "project") {
+        if (item.type === "workspace") {
           return {
             id: item.id,
             title: item.title,
             description: item.description ?? "-",
             icon: <IconFolder size={24} stroke={1.5} />,
             onClick: () => {
-              const isProjectLoaded = loadedProjects?.find(
+              const isWorkspaceLoaded = loadedWorkspaces?.find(
                 (loaded) => loaded.id === item.id
               );
 
-              if (!isProjectLoaded) {
+              if (!isWorkspaceLoaded) {
                 updateQueryData(item.id, item);
               }
 
-              dispatch(setProjectsOpen(true));
-              router.push(`/projects/${item.id}`);
+              dispatch(setWorkspacesOpen(true));
+              router.push(`/workspaces/${item.id}`);
             },
             groupLabel: "Recently Searched",
           };
@@ -383,44 +383,44 @@ const SpotlightSearch = ({
             title: `${item.title}.${item.extension ?? ""}`,
             icon: <FileIcon snippet={item} />,
             onClick: () => {
-              const isProjectLoaded = loadedProjects?.find(
-                (loaded) => loaded.id === item.projectId
+              const isWorkspaceLoaded = loadedWorkspaces?.find(
+                (loaded) => loaded.id === item.workspaceId
               );
-              const project = item["project"];
-              if (!isProjectLoaded && project) {
-                updateQueryData(item.projectId, project);
+              const workspace = item["workspace"];
+              if (!isWorkspaceLoaded && workspace) {
+                updateQueryData(item.workspaceId, workspace);
               }
-              dispatch(setProjectsOpen(true));
-              router.push(`/projects/${item.projectId}/snippets/${item.id}`);
+              dispatch(setWorkspacesOpen(true));
+              router.push(`/workspaces/${item.workspaceId}/snippets/${item.id}`);
             },
             groupLabel: "Recently Searched",
             meta: {
-              projectTitle:
-                projects?.find((project) => project.id === item.projectId)
+              workspaceTitle:
+                workspaces?.find((workspace) => workspace.id === item.workspaceId)
                   ?.title ?? "",
             },
           };
-        } else if (item.type === "task") {
+        } else if (item.type === "workItem") {
           return {
             id: item.id,
             title: item.title,
             description: item.description ?? "-",
             icon: <IconSubtask />,
             onClick: () => {
-              const isProjectLoaded = loadedProjects?.find(
-                (loaded) => loaded.id === item.projectId
+              const isWorkspaceLoaded = loadedWorkspaces?.find(
+                (loaded) => loaded.id === item.workspaceId
               );
-              const project = item["project"];
-              if (!isProjectLoaded && project) {
-                updateQueryData(item.projectId, project);
+              const workspace = item["workspace"];
+              if (!isWorkspaceLoaded && workspace) {
+                updateQueryData(item.workspaceId, workspace);
               }
-              dispatch(setProjectsOpen(true));
-              router.push(`/projects/${item.projectId}/tasks`);
+              dispatch(setWorkspacesOpen(true));
+              router.push(`/workspaces/${item.workspaceId}/workItems`);
             },
             groupLabel: "Recently Searched",
             meta: {
-              projectTitle:
-                projects?.find((project) => project.id === item.projectId)
+              workspaceTitle:
+                workspaces?.find((workspace) => workspace.id === item.workspaceId)
                   ?.title ?? "",
             },
           };
@@ -431,27 +431,27 @@ const SpotlightSearch = ({
           title: "",
           description: "",
           icon: <IconFolder />,
-          onClick: () => {},
+          onClick: () => { },
           groupLabel: "",
           meta: {},
         };
       },
     }),
-    [updateQueryData, dispatch, loadedProjects]
+    [updateQueryData, dispatch, loadedWorkspaces]
   );
 
   const dataSources = useMemo<DataSource[]>(
     () => [
       {
-        ...projectSource,
-        data: loadedProjects ?? [],
+        ...workspaceSource,
+        data: loadedWorkspaces ?? [],
       },
       {
         ...snippetSource,
         data: snippets,
       },
       {
-        ...taskSource,
+        ...workItemSource,
         data: [],
       },
       {
@@ -460,12 +460,12 @@ const SpotlightSearch = ({
       },
     ],
     [
-      loadedProjects,
+      loadedWorkspaces,
       snippets,
       recentItems,
-      projectSource,
+      workspaceSource,
       snippetSource,
-      taskSource,
+      workItemSource,
       cacheSource,
     ]
   );
@@ -477,12 +477,12 @@ const SpotlightSearch = ({
   const baseContext = useMemo(
     () => ({
       router,
-      projects: loadedProjects,
+      workspaces: loadedWorkspaces,
       matchedResults,
-      currentProjectId,
+      currentWorkspaceId,
       isSearchLoading,
     }),
-    [router, loadedProjects, matchedResults, currentProjectId, isSearchLoading]
+    [router, loadedWorkspaces, matchedResults, currentWorkspaceId, isSearchLoading]
   );
 
   const context = useMemo(
@@ -508,7 +508,7 @@ const SpotlightSearch = ({
 
   const showClearAll = recentItems.length > 0 && query.length === 0;
   const showEmpty = allItems.length === 0 && !isSearchLoading;
-  const loading = isProjectsLoading || isSearchLoading;
+  const loading = isWorkspacesLoading || isSearchLoading;
 
   const strokeColor =
     computedColorScheme === "dark"
@@ -610,9 +610,8 @@ const SpotlightSearch = ({
                 <CollapsibleActionsGroup
                   key={source.name}
                   label={source.groupLabel}
-                  groupLabel={`${items.length} ${
-                    items.length === 1 ? "Result" : "Results"
-                  }`}
+                  groupLabel={`${items.length} ${items.length === 1 ? "Result" : "Results"
+                    }`}
                 >
                   {items.map((item) => (
                     <ActionItem key={`${resultsKey}-${item.id}`} item={item} />
@@ -627,10 +626,10 @@ const SpotlightSearch = ({
           {showEmpty && (
             <Spotlight.Empty>
               {query.length === 0
-                ? "Search for any Projects, Snippets or Tasks!"
+                ? "Search for any Workspaces, Snippets or WorkItems!"
                 : isTyping
-                ? "Searching..."
-                : "Nothing found..."}
+                  ? "Searching..."
+                  : "Nothing found..."}
             </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>

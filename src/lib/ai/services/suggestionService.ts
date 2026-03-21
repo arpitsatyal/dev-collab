@@ -14,7 +14,7 @@ import {
 } from "../../../utils/snippetNaming";
 
 export const WorkItemSuggestionSchema = z.object({
-    title: z.string().describe("Concise title of the task"),
+    title: z.string().describe("Concise title of the workItem"),
     description: z.string().describe("Clear explanation of what needs to be done"),
     priority: z.enum(["LOW", "MEDIUM", "HIGH"]).describe("Priority level"),
     category: z.string().describe("Short category (e.g., 'Refactor', 'Feature')"),
@@ -32,37 +32,37 @@ const SnippetFileNameSchema = z.object({
         .describe("Short descriptive file name without extension, lowercase with underscores"),
 });
 
-export async function suggestWorkItems(projectId: string): Promise<WorkItemSuggestion[]> {
+export async function suggestWorkItems(workspaceId: string): Promise<WorkItemSuggestion[]> {
     // Fetch all context in parallel — deterministic, no LLM discretion
-    const [project, tasks, snippets, docs] = await Promise.all([
-        prisma.project.findUnique({
-            where: { id: projectId },
+    const [workspace, workItems, snippets, docs] = await Promise.all([
+        prisma.workspace.findUnique({
+            where: { id: workspaceId },
             select: { title: true, description: true }
         }),
-        prisma.task.findMany({
-            where: { projectId },
+        prisma.workItem.findMany({
+            where: { workspaceId },
             take: 20,
             orderBy: { createdAt: "desc" },
             select: { title: true, description: true, status: true }
         }),
         prisma.snippet.findMany({
-            where: { projectId },
+            where: { workspaceId },
             take: 5,
             orderBy: { updatedAt: "desc" },
             select: { title: true, language: true, content: true }
         }),
         prisma.doc.findMany({
-            where: { projectId },
+            where: { workspaceId },
             take: 3,
             orderBy: { updatedAt: "desc" },
             select: { label: true, content: true }
         }),
     ]);
 
-    console.log(`[Suggestion Engine] Fetched context — tasks: ${tasks.length}, snippets: ${snippets.length}, docs: ${docs.length}`);
+    console.log(`[Suggestion Engine] Fetched context — workItems: ${workItems.length}, snippets: ${snippets.length}, docs: ${docs.length}`);
 
     try {
-        const messages = buildSuggestWorkItemsMessages({ project, projectId, tasks, snippets, docs });
+        const messages = buildSuggestWorkItemsMessages({ workspace, workspaceId, workItems, snippets, docs });
         const structuredLlm = await getReasoningStructuredLLM(WorkItemSuggestionsSchema, "suggest_work_items");
         const result = await structuredLlm.invoke(messages);
         return result?.suggestions || [];
@@ -85,15 +85,15 @@ function formatContextSnippets(snippets: any[]): string {
 }
 
 /**
- * Fetches the task, its linked snippets, and relevant project-wide context.
+ * Fetches the workItem, its linked snippets, and relevant workspace-wide context.
  * Merges snippets uniquely by title.
  */
-async function getRichTaskContext(taskId: string) {
-    const task = await prisma.task.findUnique({
-        where: { id: taskId },
+async function getRichWorkItemContext(workItemId: string) {
+    const workItem = await prisma.workItem.findUnique({
+        where: { id: workItemId },
         include: {
             snippets: true,
-            project: {
+            workspace: {
                 include: {
                     snippets: {
                         take: 5,
@@ -105,26 +105,26 @@ async function getRichTaskContext(taskId: string) {
         }
     });
 
-    if (!task) throw new Error("Work Item not found");
+    if (!workItem) throw new Error("Work Item not found");
 
-    const allSnippets = [...task.snippets, ...(task.project?.snippets || [])];
+    const allSnippets = [...workItem.snippets, ...(workItem.workspace?.snippets || [])];
     const uniqueSnippetsMap = new Map();
     allSnippets.forEach(s => uniqueSnippetsMap.set(s.title, s));
     const mergedSnippets = Array.from(uniqueSnippetsMap.values());
 
     return {
-        task,
+        workItem,
         contextStr: formatContextSnippets(mergedSnippets),
-        projectContext: task.project
-            ? `Project: ${task.project.title}\nDescription: ${task.project.description || "No description"}`
+        workspaceContext: workItem.workspace
+            ? `Workspace: ${workItem.workspace.title}\nDescription: ${workItem.workspace.description || "No description"}`
             : ""
     };
 }
 
-export async function generateImplementationPlan(taskId: string): Promise<string> {
+export async function generateImplementationPlan(workItemId: string): Promise<string> {
     try {
-        const { task, contextStr } = await getRichTaskContext(taskId);
-        const messages = buildImplementationPlanMessages(task.title, task.description ?? "", contextStr);
+        const { workItem, contextStr } = await getRichWorkItemContext(workItemId);
+        const messages = buildImplementationPlanMessages(workItem.title, workItem.description ?? "", contextStr);
         const llm = await getReasoningLLM();
         return await llm.pipe(new StringOutputParser()).invoke(messages);
     } catch (error) {
@@ -151,11 +151,11 @@ const buildUniqueFileName = (
 };
 
 export async function suggestSnippetFilenameForCode({
-    projectId,
+    workspaceId,
     code,
     language,
 }: {
-    projectId: string;
+    workspaceId: string;
     code: string;
     language?: string;
 }): Promise<string> {
@@ -163,7 +163,7 @@ export async function suggestSnippetFilenameForCode({
     const extension = getExtensionFromLanguage(normalizedLanguage);
 
     const existing = await prisma.snippet.findMany({
-        where: { projectId },
+        where: { workspaceId },
         select: { title: true, extension: true },
     });
 

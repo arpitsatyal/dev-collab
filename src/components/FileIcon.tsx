@@ -1,4 +1,4 @@
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../types";
 import {
   IconBrandHtml5,
   IconBrandJavascript,

@@ -17,22 +17,22 @@ import classes from "./SideNav.module.css";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
 import {
-  useGetProjectsQuery,
+  useGetWorkspacesQuery,
   useUpdatePinnedStatusMutation,
-} from "../../store/api/projectApi";
+} from "../../store/api/workspaceApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
-import { Snippet, Task } from "@prisma/client";
+import { Snippet, WorkItem } from "../../types";
 import {
   incrementPage,
-  setProjectsOpen,
-} from "../../store/slices/projectSlice";
-import useProjectTransform from "../../hooks/useProjectTransform";
+  setWorkspacesOpen,
+} from "../../store/slices/workspaceSlice";
+import useWorkspaceTransform from "../../hooks/useWorkspaceTransform";
 import { uniqBy } from "lodash";
 import SideNavFooter from "./SideNavFooter";
 import { notifications } from "@mantine/notifications";
-import { ProjectWithPin } from "../../types";
+import { WorkspaceWithPin } from "../../types";
 
 export interface NavItemProps {
   id: string;
@@ -40,43 +40,43 @@ export interface NavItemProps {
   icon: React.ComponentType<any>;
   path?: string;
   handler?: () => void;
-  children?: (ProjectWithPin | NavItemProps)[];
+  children?: (WorkspaceWithPin | NavItemProps)[];
   snippets?: Snippet[];
-  tasks?: Task[];
+  workItems?: WorkItem[];
 }
 
 const SideNav = () => {
   const router = useRouter();
   const [openItem, setOpenItem] = useState<string | null>(null);
   const listRef = useRef<VariableSizeList>(null);
-  const [loadingProjectId, setLoadingProjectId] = useState<string | null>(null);
+  const [loadingWorkspaceId, setLoadingWorkspaceId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
-  const lastProjectIdRef = useRef<string | null>(null);
+  const lastWorkspaceIdRef = useRef<string | null>(null);
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
 
   const dispatch = useAppDispatch();
   const loadedSnippets = useAppSelector(
     (state) => state.snippet.loadedSnippets
   );
-  const { pageSize, skip, projectsOpen, isInsertingProject } = useAppSelector(
-    (state) => state.project
+  const { pageSize, skip, workspacesOpen, isInsertingWorkspace } = useAppSelector(
+    (state) => state.workspace
   );
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
   const [updatePinnedStatus] = useUpdatePinnedStatusMutation();
 
-  const transformProject = useProjectTransform();
-  const { data, isLoading, isFetching, isError } = useGetProjectsQuery(
+  const transformWorkspace = useWorkspaceTransform();
+  const { data, isLoading, isFetching, isError } = useGetWorkspacesQuery(
     { skip, limit: pageSize },
-    { skip: !projectsOpen }
+    { skip: !workspacesOpen }
   );
-  const loadedProjects = useMemo(() => data?.items || [], [data?.items]);
+  const loadedWorkspaces = useMemo(() => data?.items || [], [data?.items]);
   const hasMore = data?.hasMore || false;
 
-  const currentProjectId = useMemo(() => {
-    const id = router.query.projectId;
+  const currentWorkspaceId = useMemo(() => {
+    const id = router.query.workspaceId;
     if (!id || typeof id !== "string" || id === "create") return null;
     return id;
-  }, [router.query.projectId]);
+  }, [router.query.workspaceId]);
 
   const navItems = useMemo<NavItemProps[]>(
     () => [
@@ -91,45 +91,45 @@ const SideNav = () => {
         id: "create-workspace",
         icon: IconPencil,
         label: "Create Workspace",
-        path: "/projects/create",
+        path: "/workspaces/create",
       },
       {
         id: "import-workspace",
         icon: IconCloudDownload,
         label: "Import from GitHub",
-        path: "/projects/import",
+        path: "/workspaces/import",
       },
       {
         id: "workspaces",
         icon: IconActivity,
         label: "Workspaces",
-        path: "/projects",
+        path: "/workspaces",
       },
     ],
     []
   );
 
-  const navItemsWithProjects = useMemo(() => {
+  const navItemsWithWorkspaces = useMemo(() => {
     const items = [...navItems];
-    const projectsItem = items.find((item) => item.label === "Workspaces");
-    if (projectsItem) {
-      const uniqueProjects = uniqBy(loadedProjects, "id");
-      projectsItem.children = uniqueProjects;
+    const workspacesItem = items.find((item) => item.label === "Workspaces");
+    if (workspacesItem) {
+      const uniqueWorkspaces = uniqBy(loadedWorkspaces, "id");
+      workspacesItem.children = uniqueWorkspaces;
     }
     return items;
-  }, [navItems, loadedProjects]);
+  }, [navItems, loadedWorkspaces]);
 
-  const projectNavItem = navItemsWithProjects.find(
+  const workspaceNavItem = navItemsWithWorkspaces.find(
     (item) => item.label === "Workspaces"
   );
-  const projectItems = useMemo(
-    () => projectNavItem?.children || [],
-    [projectNavItem?.children]
+  const workspaceItems = useMemo(
+    () => workspaceNavItem?.children || [],
+    [workspaceNavItem?.children]
   );
 
   const scrollItemIntoView = useCallback(
     (id: string) => {
-      const index = projectItems.findIndex((item) => item.id === id);
+      const index = workspaceItems.findIndex((item) => item.id === id);
       if (index === -1 || !listRef.current) return;
 
       const list = listRef.current as any;
@@ -148,20 +148,20 @@ const SideNav = () => {
         behavior: "smooth",
       });
     },
-    [projectItems]
+    [workspaceItems]
   );
 
   const fetchSnippets = useCallback(
-    async (projectId: string) => {
-      if (!loadedSnippets[projectId]) {
-        setLoadingProjectId(projectId);
+    async (workspaceId: string) => {
+      if (!loadedSnippets[workspaceId]) {
+        setLoadingWorkspaceId(workspaceId);
         try {
-          const result = await triggerGetSnippets({ projectId }).unwrap();
-          dispatch(setSnippets({ projectId, snippets: result }));
+          const result = await triggerGetSnippets({ workspaceId }).unwrap();
+          dispatch(setSnippets({ workspaceId, snippets: result }));
         } catch (e) {
           console.error("Failed to load snippets", e);
         } finally {
-          setLoadingProjectId(null);
+          setLoadingWorkspaceId(null);
         }
       }
     },
@@ -170,14 +170,14 @@ const SideNav = () => {
 
   const handleScrollToItem = useCallback(
     (id: string) => {
-      const isValidId = projectItems.some((item) => item.id === id);
+      const isValidId = workspaceItems.some((item) => item.id === id);
       if (!isValidId || !listRef.current) return;
 
       setOpenItem(id);
-      dispatch(setProjectsOpen(true));
+      dispatch(setWorkspacesOpen(true));
       scrollItemIntoView(id);
     },
-    [projectItems, listRef, setOpenItem, scrollItemIntoView, dispatch]
+    [workspaceItems, listRef, setOpenItem, scrollItemIntoView, dispatch]
   );
 
   // Reset list heights
@@ -188,17 +188,17 @@ const SideNav = () => {
   }, [openItem, loadedSnippets]);
 
   useEffect(() => {
-    if (!currentProjectId || !projectItems.length) return;
-    if (!projectItems.some((item) => item.id === currentProjectId)) return;
-    if (lastProjectIdRef.current === currentProjectId) return;
+    if (!currentWorkspaceId || !workspaceItems.length) return;
+    if (!workspaceItems.some((item) => item.id === currentWorkspaceId)) return;
+    if (lastWorkspaceIdRef.current === currentWorkspaceId) return;
 
     const timeout = setTimeout(() => {
-      handleScrollToItem(currentProjectId);
-      lastProjectIdRef.current = currentProjectId;
+      handleScrollToItem(currentWorkspaceId);
+      lastWorkspaceIdRef.current = currentWorkspaceId;
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [currentProjectId, projectItems, handleScrollToItem, loadedSnippets]);
+  }, [currentWorkspaceId, workspaceItems, handleScrollToItem, loadedSnippets]);
 
   useEffect(() => {
     if (!openItem || loadedSnippets[openItem]) return;
@@ -207,9 +207,9 @@ const SideNav = () => {
 
   const isItemLoaded = useCallback(
     (index: number) => {
-      return index < projectItems.length;
+      return index < workspaceItems.length;
     },
-    [projectItems.length]
+    [workspaceItems.length]
   );
 
   useEffect(() => {
@@ -218,7 +218,7 @@ const SideNav = () => {
     toggleOpenItem(pendingScrollId);
     scrollItemIntoView(pendingScrollId);
     setPendingScrollId(null);
-  }, [pendingScrollId, projectItems, scrollItemIntoView]);
+  }, [pendingScrollId, workspaceItems, scrollItemIntoView]);
 
   const loadMoreItems = useCallback(
     (startIndex: number, stopIndex: number) => {
@@ -231,10 +231,10 @@ const SideNav = () => {
 
   const getItemSize = useCallback(
     (index: number) => {
-      const item = projectItems[index];
+      const item = workspaceItems[index];
       if (!item) return 40;
 
-      const isLoading = loadingProjectId === item.id;
+      const isLoading = loadingWorkspaceId === item.id;
       if (isLoading) return 80;
 
       const isExpanded = openItem === item.id && loadedSnippets[item.id];
@@ -242,7 +242,7 @@ const SideNav = () => {
         const pinIcon = 30;
         const snippetCount = loadedSnippets[item.id]?.length || 0;
         const baseHeight = 40;
-        const taskHeight = 40;
+        const workItemHeight = 40;
         const createSnippetHeight = 40;
         const snippetHeight = 40;
         const docsHeight = 40;
@@ -250,7 +250,7 @@ const SideNav = () => {
         return (
           pinIcon +
           baseHeight +
-          taskHeight +
+          workItemHeight +
           createSnippetHeight +
           docsHeight +
           snippetCount * snippetHeight
@@ -259,7 +259,7 @@ const SideNav = () => {
 
       return 40;
     },
-    [openItem, loadedSnippets, projectItems, loadingProjectId]
+    [openItem, loadedSnippets, workspaceItems, loadingWorkspaceId]
   );
 
   const handleNavClick = useCallback(
@@ -268,7 +268,7 @@ const SideNav = () => {
 
       if (path) {
         if (label === "Workspaces") {
-          dispatch(setProjectsOpen());
+          dispatch(setWorkspacesOpen());
           setOpenItem(null);
         }
         router.push(path);
@@ -298,47 +298,47 @@ const SideNav = () => {
     (item: NavItemProps) => {
       if (item.label !== "Workspaces") return false;
 
-      if (projectsOpen !== null) {
-        return projectsOpen;
+      if (workspacesOpen !== null) {
+        return workspacesOpen;
       }
 
-      const projectsItem = navItemsWithProjects.find(
+      const workspacesItem = navItemsWithWorkspaces.find(
         (i) => i.label === "Workspaces"
       );
-      if (!projectsItem?.children) return false;
+      if (!workspacesItem?.children) return false;
 
-      return projectsItem.children.some((child) => {
+      return workspacesItem.children.some((child) => {
         const navItem =
           "path" in child
             ? child
-            : transformProject(child as ProjectWithPin, loadedSnippets);
+            : transformWorkspace(child as WorkspaceWithPin, loadedSnippets);
         return openItem === navItem.id || isActive(navItem.path);
       });
     },
     [
-      projectsOpen,
-      navItemsWithProjects,
+      workspacesOpen,
+      navItemsWithWorkspaces,
       loadedSnippets,
       openItem,
       isActive,
-      transformProject,
+      transformWorkspace,
     ]
   );
 
-  const handleUpdatePinnedStatus = async (project: ProjectWithPin) => {
+  const handleUpdatePinnedStatus = async (workspace: WorkspaceWithPin) => {
     try {
-      toggleOpenItem(project.id);
+      toggleOpenItem(workspace.id);
 
       await updatePinnedStatus({
-        projectId: project.id,
-        isPinned: !project.isPinned,
+        workspaceId: workspace.id,
+        isPinned: !workspace.isPinned,
       }).unwrap();
 
-      setPendingScrollId(project.id);
+      setPendingScrollId(workspace.id);
 
       notifications.show({
         title: "Job done!",
-        message: `Workspace ${!project.isPinned ? "Pinned" : "Unpinned"
+        message: `Workspace ${!workspace.isPinned ? "Pinned" : "Unpinned"
           } Successfully! 🌟`,
       });
     } catch (error) {
@@ -357,8 +357,8 @@ const SideNav = () => {
     index: number;
     style: React.CSSProperties;
   }) => {
-    // Show loading indicator row if index === projectItems.length (last row)
-    const isLoadingRow = hasMore && index === projectItems.length;
+    // Show loading indicator row if index === workspaceItems.length (last row)
+    const isLoadingRow = hasMore && index === workspaceItems.length;
     if (isLoadingRow) {
       return (
         <Box style={style} key={`loading-${index}`} ta="center">
@@ -367,12 +367,12 @@ const SideNav = () => {
       );
     }
 
-    const project = projectItems[
-      isInsertingProject ? index - 1 : index
-    ] as ProjectWithPin;
-    if (!project) return null;
+    const workspace = workspaceItems[
+      isInsertingWorkspace ? index - 1 : index
+    ] as WorkspaceWithPin;
+    if (!workspace) return null;
 
-    const child = transformProject(project, loadedSnippets);
+    const child = transformWorkspace(workspace, loadedSnippets);
 
     return (
       <Box style={style} key={child.id}>
@@ -402,7 +402,7 @@ const SideNav = () => {
           }}
         >
           <Box>
-            {loadingProjectId === child.id ? (
+            {loadingWorkspaceId === child.id ? (
               <Loading loaderHeight="5vh" />
             ) : (
               <>
@@ -410,10 +410,10 @@ const SideNav = () => {
                   variant="subtle"
                   onClick={(e) => {
                     e.stopPropagation();
-                    handleUpdatePinnedStatus(project);
+                    handleUpdatePinnedStatus(workspace);
                   }}
                   style={(theme) => ({
-                    color: project.isPinned
+                    color: workspace.isPinned
                       ? theme.colors.yellow[5]
                       : theme.colors.gray[5],
                     "&:hover": {
@@ -427,15 +427,15 @@ const SideNav = () => {
 
                 <NavLink
                   label="Work Items"
-                  active={isActive(`/projects/${child.id}/tasks`)}
+                  active={isActive(`/workspaces/${child.id}/workItems`)}
                   leftSection={<IconSubtask size={16} />}
-                  onClick={() => router.push(`/projects/${child.id}/tasks`)}
+                  onClick={() => router.push(`/workspaces/${child.id}/workItems`)}
                 />
                 <NavLink
                   label="Docs"
                   active={router.pathname.includes("docs")}
                   leftSection={<IconBrandPagekit size={16} />}
-                  onClick={() => router.push(`/projects/${child.id}/docs`)}
+                  onClick={() => router.push(`/workspaces/${child.id}/docs`)}
                 />
                 <SnippetList
                   snippets={loadedSnippets[child.id] ?? []}
@@ -454,7 +454,7 @@ const SideNav = () => {
   return (
     <>
       <AppShell.Section grow my="md" className={classes.section}>
-        {navItemsWithProjects.map((item) => (
+        {navItemsWithWorkspaces.map((item) => (
           <NavLink
             key={item.id}
             active={isActive(item.path, item.id)}
@@ -467,9 +467,9 @@ const SideNav = () => {
               <Box pr="xs">
                 {isLoading ? (
                   <Loading />
-                ) : isInsertingProject ? (
+                ) : isInsertingWorkspace ? (
                   <Loading loaderHeight="20vh" />
-                ) : projectItems.length === 0 ? (
+                ) : workspaceItems.length === 0 ? (
                   <Text size="xs" c="dimmed" ta="center" py="sm" fs="italic">
                     No workspaces added yet
                   </Text>
@@ -477,7 +477,7 @@ const SideNav = () => {
                   <InfiniteLoader
                     isItemLoaded={isItemLoaded}
                     itemCount={
-                      hasMore ? projectItems.length + 1 : projectItems.length
+                      hasMore ? workspaceItems.length + 1 : workspaceItems.length
                     }
                     loadMoreItems={loadMoreItems}
                   >
@@ -487,8 +487,8 @@ const SideNav = () => {
                         width="100%"
                         itemCount={
                           hasMore
-                            ? projectItems.length + 1
-                            : projectItems.length
+                            ? workspaceItems.length + 1
+                            : workspaceItems.length
                         }
                         itemSize={getItemSize}
                         onItemsRendered={onItemsRendered}

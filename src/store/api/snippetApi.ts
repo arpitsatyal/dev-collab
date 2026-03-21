@@ -1,31 +1,32 @@
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { Snippet } from "@prisma/client";
+import { createApi } from "@reduxjs/toolkit/query/react";
+import { baseQuery } from "./baseQuery";
+import { Snippet } from "../../types";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 
 export const snippetApi = createApi({
   reducerPath: "snippetApi",
-  baseQuery: fetchBaseQuery({ baseUrl: "/api/" }),
+  baseQuery: baseQuery,
   tagTypes: ["Snippets"],
 
   endpoints: (builder) => ({
-    getSnippets: builder.query<Snippet[], { projectId: string }>({
-      query: ({ projectId }) => `snippets?projectId=${projectId}`,
+    getSnippets: builder.query<Snippet[], { workspaceId: string }>({
+      query: ({ workspaceId }) => `workspaces/${workspaceId}/snippets`,
     }),
 
     getSnippet: builder.query<
       Snippet,
-      { projectId: string; snippetId: string }
+      { workspaceId: string; snippetId: string }
     >({
-      query: ({ projectId, snippetId }) =>
-        `snippets?projectId=${projectId}&snippetId=${snippetId}`,
+      query: ({ workspaceId, snippetId }) =>
+        `workspaces/${workspaceId}/snippets/${snippetId}`,
     }),
 
     createSnippet: builder.mutation<
       Snippet,
-      { projectId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
+      { workspaceId: string; snippet: Omit<SnippetsCreateData, "authorId"> }
     >({
-      query: ({ projectId, snippet }) => ({
-        url: `snippets?projectId=${projectId}`,
+      query: ({ workspaceId, snippet }) => ({
+        url: `workspaces/${workspaceId}/snippets`,
         method: "POST",
         body: snippet,
       }),
@@ -34,13 +35,13 @@ export const snippetApi = createApi({
     editSnippet: builder.mutation<
       Snippet,
       {
-        projectId: string;
+        workspaceId: string;
         snippet: Partial<Snippet>;
         snippetId: string;
       }
     >({
-      query: ({ projectId, snippet, snippetId }) => ({
-        url: `snippets?projectId=${projectId}&snippetId=${snippetId}`,
+      query: ({ workspaceId, snippet, snippetId }) => ({
+        url: `workspaces/${workspaceId}/snippets/${snippetId}`,
         method: "PATCH",
         body: snippet,
       }),

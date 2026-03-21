@@ -8,18 +8,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const session = await getServerSession(req, res, authOptions);
     if (!session) return res.status(401).json({ error: "Unauthorized" });
 
-    const { taskId } = req.query;
+    const { workItemId } = req.query;
 
-    if (!taskId || typeof taskId !== "string") {
-        return res.status(400).json({ error: "Task ID is required" });
+    if (!workItemId || typeof workItemId !== "string") {
+        return res.status(400).json({ error: "WorkItem ID is required" });
     }
 
     try {
-        const plan = await generateImplementationPlan(taskId);
+        const plan = await generateImplementationPlan(workItemId);
 
-        // Cache the Plan within the task
-        await prisma.task.update({
-            where: { id: taskId },
+        // Cache the Plan within the workItem
+        await prisma.workItem.update({
+            where: { id: workItemId },
             data: { aiPlan: JSON.stringify(plan) }
         });
 

@@ -2,7 +2,7 @@ import { NextApiRequest, NextApiResponse } from "next";
 import prisma from "../../../lib/db/prisma";
 import { getServerSession } from "next-auth";
 import { authOptions } from "../auth/[...nextauth]";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../../types";
 import { publishSyncEvent } from "../../../lib/qstash/producer";
 
 export interface SnippetsCreateData {
@@ -10,7 +10,7 @@ export interface SnippetsCreateData {
   language: string;
   content: string;
   authorId: string;
-  projectId: string;
+  workspaceId: string;
   extension?: string;
 }
 
@@ -43,12 +43,12 @@ export default async function handler(
   }
 
   const {
-    query: { projectId, snippetId },
+    query: { workspaceId, snippetId },
     method,
   } = req;
 
-  if (!projectId) {
-    return res.status(400).json({ error: "Project ID is required" });
+  if (!workspaceId) {
+    return res.status(400).json({ error: "Workspace ID is required" });
   }
 
   switch (method) {
@@ -69,10 +69,10 @@ export default async function handler(
           return res.status(200).json(snippet);
         }
 
-        //snippets for project
+        //snippets for workspace
         const snippets = await prisma.snippet.findMany({
           where: {
-            projectId: projectId as string,
+            workspaceId: workspaceId as string,
           },
         });
 
@@ -94,7 +94,7 @@ export default async function handler(
             content,
             extension,
             authorId: user.id,
-            projectId: projectId as string,
+            workspaceId: workspaceId as string,
           },
         });
 
@@ -110,7 +110,7 @@ export default async function handler(
         const { title, language, content, lastEditedById, extension } =
           (req.body as SnippetsUpdateData) || {};
 
-        const updateData: Prisma.SnippetUpdateInput = {};
+        const updateData: Record<string, any> = {};
 
         if (title) updateData.title = title;
         if (language) updateData.language = language;

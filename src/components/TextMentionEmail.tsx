@@ -1,4 +1,4 @@
-import { Doc } from "@prisma/client";
+import { Doc } from "../types";
 import { ReactNode } from "react";
 
 interface TextMentionEmailProps {
@@ -12,9 +12,9 @@ const TextMentionEmail = ({
   docs,
   content,
 }: TextMentionEmailProps) => {
-  const { label, id, projectId } = docs || {};
+  const { label, id, workspaceId } = docs || {};
 
-  const mentionUrl = `https://www.devcollab.store/projects/${projectId}/docs?docId=${id}`;
+  const mentionUrl = `https://www.devcollab.store/workspaces/${workspaceId}/docs?docId=${id}`;
 
   return (
     <html>

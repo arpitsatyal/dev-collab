@@ -83,13 +83,13 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     setMessages((prev) => [...prev, newMessage]);
     setInput("");
 
-    const projectId = router.query.projectId as string;
+    const workspaceId = router.query.workspaceId as string;
 
     try {
       const response = await askAI({
         chatId,
         question: content,
-        projectId,
+        workspaceId,
       }).unwrap();
 
       setMessages((prev) => [

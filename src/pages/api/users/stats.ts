@@ -17,10 +17,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         if (!user) return res.status(404).json({ error: "User not found" });
 
         const [workspacesCount, snippetsCount, docsCount, workItemsCount] = await Promise.all([
-            prisma.project.count({ where: { ownerId: user.id } }),
+            prisma.workspace.count({ where: { ownerId: user.id } }),
             prisma.snippet.count({ where: { authorId: user.id } }),
-            prisma.doc.count({ where: { project: { ownerId: user.id } } }),
-            prisma.task.count({ where: { project: { ownerId: user.id } } }),
+            prisma.doc.count({ where: { workspace: { ownerId: user.id } } }),
+            prisma.workItem.count({ where: { workspace: { ownerId: user.id } } }),
         ]);
 
         return res.status(200).json({

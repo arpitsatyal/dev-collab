@@ -10,7 +10,7 @@ const indexName = getSecret("PINECONE_INDEX");
 const pc = new Pinecone({ apiKey });
 const embeddings = new PineconeInferenceEmbeddings();
 
-export type SyncType = 'project' | 'task' | 'snippet' | 'doc';
+export type SyncType = 'workspace' | 'workItem' | 'snippet' | 'doc';
 
 export async function syncToVectorStore(
     type: SyncType,
@@ -33,25 +33,25 @@ export async function syncToVectorStore(
     let data: any;
     try {
         switch (type) {
-            case 'project':
-                data = await prisma.project.findUnique({ where: { id } });
+            case 'workspace':
+                data = await prisma.workspace.findUnique({ where: { id } });
                 break;
-            case 'task':
-                data = await prisma.task.findUnique({
+            case 'workItem':
+                data = await prisma.workItem.findUnique({
                     where: { id },
-                    include: { project: true }
+                    include: { workspace: true }
                 });
                 break;
             case 'snippet':
                 data = await prisma.snippet.findUnique({
                     where: { id },
-                    include: { project: true }
+                    include: { workspace: true }
                 });
                 break;
             case 'doc':
                 data = await prisma.doc.findUnique({
                     where: { id },
-                    include: { project: true }
+                    include: { workspace: true }
                 });
                 break;
         }
@@ -69,16 +69,16 @@ export async function syncToVectorStore(
     let text = "";
     let metadata: any = {
         type,
-        projectId: data.projectId || data.id,
-        projectTitle: data.project?.title || data.title || "Unknown",
+        workspaceId: data.workspaceId || data.id,
+        workspaceTitle: data.workspace?.title || data.title || "Unknown",
     };
 
     switch (type) {
-        case 'project':
-            text = `Project Title: ${data.title}\nDescription: ${data.description || "No description"}`;
+        case 'workspace':
+            text = `Workspace Title: ${data.title}\nDescription: ${data.description || "No description"}`;
             break;
-        case 'task':
-            text = `Task Title: ${data.title}\nStatus: ${data.status}\nDescription: ${data.description || "No description"}`;
+        case 'workItem':
+            text = `WorkItem Title: ${data.title}\nStatus: ${data.status}\nDescription: ${data.description || "No description"}`;
             break;
         case 'snippet':
             text = `Snippet Title: ${data.title}\nLanguage: ${data.language}\nContent:\n${data.content}`;

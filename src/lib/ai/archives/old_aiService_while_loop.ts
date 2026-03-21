@@ -14,14 +14,14 @@ import { getReasoningLLM, getSpeedyLLM, getReasoningToolBoundLLM, getReasoningSt
 import prisma from "../../db/prisma";
 import { ToolMessage, AIMessage, HumanMessage, BaseMessage } from "@langchain/core/messages";
 import { StringOutputParser } from "@langchain/core/output_parsers";
-import { getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool } from "../services/toolService";
+import { getSnippetsTool, getDocsTool, getExistingWorkItemsTool, semanticSearchTool } from "../services/toolService";
 import { performHybridSearch, generateQueryVariations } from "../services/retrievalService";
 import { constructPrompt, buildChatMessages, buildIntentClassificationPrompt, buildConversationalMessages, IntentSchema } from "../services/promptService";
 import { generateAnswer } from "../services/generationService";
 
 const MAX_CHAT_ITERATIONS = 5;
 const APP_SCOPE_REPLY =
-    "I can assist with Dev-Collab only, including projects, tasks, snippets, documentation, and workspace code. Please ask a question related to your application data or workflow.";
+    "I can assist with Dev-Collab only, including workspaces, workItems, snippets, documentation, and workspace code. Please ask a question related to your application data or workflow.";
 
 async function getChatHistory(chatId: string): Promise<string> {
     const pastMessages = await prisma.message.findMany({
@@ -34,9 +34,9 @@ async function getChatHistory(chatId: string): Promise<string> {
         .join("\n");
 }
 
-// ── Path A: Tool-calling loop (project-scoped chat) ────────────────────────────
-async function getAIResponseWithTools(chatId: string, question: string, projectId: string) {
-    const tools = [getSnippetsTool, getDocsTool, getExistingTasksTool, semanticSearchTool];
+// ── Path A: Tool-calling loop (workspace-scoped chat) ────────────────────────────
+async function getAIResponseWithTools(chatId: string, question: string, workspaceId: string) {
+    const tools = [getSnippetsTool, getDocsTool, getExistingWorkItemsTool, semanticSearchTool];
     const llmWithTools = await getReasoningToolBoundLLM(tools);
     const history = await getChatHistory(chatId);
 
@@ -75,8 +75,8 @@ async function getAIResponseWithTools(chatId: string, question: string, projectI
             }
 
             try {
-                // @ts-ignore - inject projectId into args
-                const result = await tool.invoke({ ...args, projectId });
+                // @ts-ignore - inject workspaceId into args
+                const result = await tool.invoke({ ...args, workspaceId });
                 messages.push(new ToolMessage({
                     tool_call_id: toolCall.id ?? "",
                     content: typeof result === "string" ? result : JSON.stringify(result),
@@ -103,7 +103,7 @@ async function getAIResponseWithTools(chatId: string, question: string, projectI
     return { answer, context: "", validated: { isValid: true, warning: null } };
 }
 
-// ── Path B: Hybrid vector search fallback (global / no project) ───────────────
+// ── Path B: Hybrid vector search fallback (global / no workspace) ───────────────
 async function getAIResponseWithSearch(chatId: string, question: string, filters?: Record<string, any>) {
     const queryGenLlm = await getReasoningLLM();
     const queries = await generateQueryVariations(question, queryGenLlm);
@@ -111,21 +111,21 @@ async function getAIResponseWithSearch(chatId: string, question: string, filters
 
     if (filteredResults.length === 0) {
         return {
-            answer: `${APP_SCOPE_REPLY} Try referencing a project entity like a task title, snippet filename, or doc label.`,
+            answer: `${APP_SCOPE_REPLY} Try referencing a workspace entity like a workItem title, snippet filename, or doc label.`,
             context: "",
             validated: { isValid: true, warning: null }
         };
     }
 
     filteredResults.forEach(([doc, score]: any, i: number) => {
-        console.log(`Result ${i + 1}: Score: ${score.toFixed(4)}, Type: ${doc.metadata?.type}, Title: ${doc.metadata?.projectTitle}`);
+        console.log(`Result ${i + 1}: Score: ${score.toFixed(4)}, Type: ${doc.metadata?.type}, Title: ${doc.metadata?.workspaceTitle}`);
     });
 
     const context = filteredResults.length > 0
         ? filteredResults.map(([doc]: any) => {
             const type = doc.metadata?.type || "General Info";
-            const title = doc.metadata?.projectTitle || "Unknown Project";
-            return `--- Source: Information from ${type} within project "${title}" ---\n${doc.pageContent}`;
+            const title = doc.metadata?.workspaceTitle || "Unknown Workspace";
+            return `--- Source: Information from ${type} within workspace "${title}" ---\n${doc.pageContent}`;
         }).join("\n\n")
         : "I don't have enough specific information in my records to answer this fully.";
 
@@ -140,8 +140,8 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
     const classifierLlm = await getReasoningStructuredLLM(IntentSchema, "classify_intent");
     const intentMessages = buildIntentClassificationPrompt(question);
 
-    let intent = "PROJECT_QUERY";
-    let scope: "APP_SPECIFIC" | "OUT_OF_SCOPE" = filters?.projectId ? "APP_SPECIFIC" : "OUT_OF_SCOPE";
+    let intent = "WORKSPACE_QUERY";
+    let scope: "APP_SPECIFIC" | "OUT_OF_SCOPE" = filters?.workspaceId ? "APP_SPECIFIC" : "OUT_OF_SCOPE";
 
     try {
         const result = await classifierLlm.invoke(intentMessages);
@@ -149,10 +149,10 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
             intent = result.intent;
             scope = result.scope;
         } else {
-            console.warn("[Intent Classification] Low confidence, defaulting to PROJECT_QUERY");
+            console.warn("[Intent Classification] Low confidence, defaulting to WORKSPACE_QUERY");
         }
     } catch (e) {
-        console.warn("[Intent Classification] Failed, defaulting to PROJECT_QUERY:", e);
+        console.warn("[Intent Classification] Failed, defaulting to WORKSPACE_QUERY:", e);
     }
 
     if (intent === "CONVERSATIONAL") {
@@ -166,12 +166,12 @@ export async function getAIResponse(chatId: string, question: string, filters?: 
         return { answer, context: "", validated: { isValid: true, warning: null } };
     }
 
-    if (scope === "OUT_OF_SCOPE" && !filters?.projectId) {
+    if (scope === "OUT_OF_SCOPE" && !filters?.workspaceId) {
         return { answer: APP_SCOPE_REPLY, context: "", validated: { isValid: true, warning: null } };
     }
 
-    if (filters?.projectId) {
-        return getAIResponseWithTools(chatId, question, filters.projectId);
+    if (filters?.workspaceId) {
+        return getAIResponseWithTools(chatId, question, filters.workspaceId);
     }
     return getAIResponseWithSearch(chatId, question, filters);
 }

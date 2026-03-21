@@ -4,13 +4,13 @@ import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import { SaveStatus } from "../types";
 
 export interface SaveSnippetProps {
-  projectId: string | undefined;
+  workspaceId: string | undefined;
   snippetId: string | undefined;
   content: string;
 }
 
 interface AutoSaveProps {
-  projectId: string | undefined;
+  workspaceId: string | undefined;
   snippetId: string | undefined;
   provider: LiveblocksYjsProvider;
   setSaveStatus: (status: SaveStatus) => void;
@@ -18,7 +18,7 @@ interface AutoSaveProps {
 }
 
 const useAutoSave = ({
-  projectId,
+  workspaceId,
   snippetId,
   provider,
   setSaveStatus,
@@ -27,7 +27,7 @@ const useAutoSave = ({
   const lastSavedContentRef = useRef<string | null>(null);
 
   const saveFn = useCallback(async () => {
-    if (!projectId || !snippetId) {
+    if (!workspaceId || !snippetId) {
       setSaveStatus("idle");
       return;
     }
@@ -44,7 +44,7 @@ const useAutoSave = ({
         return;
       }
 
-      await saveSnippet({ projectId, snippetId, content: codeToSave });
+      await saveSnippet({ workspaceId, snippetId, content: codeToSave });
 
       lastSavedContentRef.current = codeToSave;
       setSaveStatus("saved");
@@ -55,7 +55,7 @@ const useAutoSave = ({
       setSaveStatus("error");
       setTimeout(() => setSaveStatus("idle"), 3000);
     }
-  }, [projectId, snippetId, provider, saveSnippet, setSaveStatus]);
+  }, [workspaceId, snippetId, provider, saveSnippet, setSaveStatus]);
 
   const debounceSave = useMemo(
     () =>

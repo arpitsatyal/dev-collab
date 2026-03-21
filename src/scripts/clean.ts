@@ -1,5 +1,5 @@
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "../types";
 
 const prisma = new PrismaClient();
 
@@ -14,24 +14,24 @@ async function main() {
     if (user) {
         console.log(`👤 Found seed user: ${user.email} (${user.id})`);
 
-        // Find projects owned by user
-        const projects = await prisma.project.findMany({
+        // Find workspaces owned by user
+        const workspaces = await prisma.workspace.findMany({
             where: { ownerId: user.id },
             select: { id: true }
         });
-        const projectIds = projects.map(p => p.id);
+        const workspaceIds = workspaces.map(p => p.id);
 
-        if (projectIds.length > 0) {
+        if (workspaceIds.length > 0) {
             // Delete related records in batches to avoid large transaction limits if possible, 
             // but deleteMany is efficient enough for 1000s records usually.
-            console.log(`🗑️ Deleting data for ${projectIds.length} projects...`);
+            console.log(`🗑️ Deleting data for ${workspaceIds.length} workspaces...`);
 
-            await prisma.snippet.deleteMany({ where: { projectId: { in: projectIds } } });
-            await prisma.task.deleteMany({ where: { projectId: { in: projectIds } } });
-            await prisma.doc.deleteMany({ where: { projectId: { in: projectIds } } });
+            await prisma.snippet.deleteMany({ where: { workspaceId: { in: workspaceIds } } });
+            await prisma.workItem.deleteMany({ where: { workspaceId: { in: workspaceIds } } });
+            await prisma.doc.deleteMany({ where: { workspaceId: { in: workspaceIds } } });
 
-            // Delete projects
-            await prisma.project.deleteMany({ where: { id: { in: projectIds } } });
+            // Delete workspaces
+            await prisma.workspace.deleteMany({ where: { id: { in: workspaceIds } } });
         }
 
         await prisma.user.delete({ where: { id: user.id } });

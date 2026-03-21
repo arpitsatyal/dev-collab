@@ -12,10 +12,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(405).json({ error: `Method ${req.method} Not Allowed` });
     }
 
-    const { projectId, code, language } = req.body || {};
+    const { workspaceId, code, language } = req.body || {};
 
-    if (!projectId || typeof projectId !== "string") {
-        return res.status(400).json({ error: "Project ID is required" });
+    if (!workspaceId || typeof workspaceId !== "string") {
+        return res.status(400).json({ error: "Workspace ID is required" });
     }
 
     if (!code || typeof code !== "string" || !code.trim()) {
@@ -24,7 +24,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     try {
         const fileName = await suggestSnippetFilenameForCode({
-            projectId,
+            workspaceId,
             code,
             language: typeof language === "string" ? language : undefined,
         });

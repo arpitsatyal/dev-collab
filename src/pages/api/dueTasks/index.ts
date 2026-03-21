@@ -14,7 +14,7 @@ export default async function handler(
       const thresholdDays = 1;
       const thresholdDate = dayjs().add(thresholdDays, "day");
 
-      const nearingDueTasks = await prisma.task.findMany({
+      const nearingDueWorkItems = await prisma.workItem.findMany({
         where: {
           dueDate: {
             gte: now.toDate(),
@@ -25,7 +25,7 @@ export default async function handler(
           id: true,
           title: true,
           dueDate: true,
-          projectId: true,
+          workspaceId: true,
           assignedTo: {
             select: {
               name: true,
@@ -35,7 +35,7 @@ export default async function handler(
         },
       });
 
-      return res.status(200).json(nearingDueTasks);
+      return res.status(200).json(nearingDueWorkItems);
     }
 
     default:

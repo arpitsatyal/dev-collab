@@ -9,7 +9,7 @@ import "@liveblocks/react-ui/styles/dark/media-query.css";
 
 import type { AppProps } from "next/app";
 import { MantineProvider } from "@mantine/core";
-import { SessionProvider } from "next-auth/react";
+import { AuthProvider } from "../components/providers/AuthProvider";
 import { ReactElement, ReactNode } from "react";
 import { NextPage } from "next";
 import { Notifications } from "@mantine/notifications";
@@ -23,6 +23,7 @@ import {
   resolveUsers,
 } from "../utils/liveblocksHelpers";
 import { debounce } from "lodash";
+import apiClient from "../lib/apiClient";
 
 /* eslint-disable @typescript-eslint/no-empty-object-type */
 export type NextPageWithLayout<P = {}, IP = P> = NextPage<P, IP> & {
@@ -44,13 +45,16 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
   return (
     <Provider store={store}>
       <LiveblocksProvider
-        authEndpoint="/api/liveblocks-auth"
+        authEndpoint={async (room) => {
+          const { data } = await apiClient.post("/collaboration/auth", { room });
+          return data;
+        }}
         resolveUsers={resolveUsers}
         resolveMentionSuggestions={({ text }) =>
           debouncedFetchMentionSuggestions(text) ?? []
         }
       >
-        <SessionProvider session={pageProps.session}>
+        <AuthProvider>
           <MantineProvider
             theme={theme}
             withGlobalClasses
@@ -61,7 +65,7 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
               {getLayout(<Component {...pageProps} />)}
             </MantineEmotionProvider>
           </MantineProvider>
-        </SessionProvider>
+        </AuthProvider>
       </LiveblocksProvider>
     </Provider>
   );

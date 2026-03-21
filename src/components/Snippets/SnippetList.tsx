@@ -11,7 +11,7 @@ import {
   Box,
 } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
-import { Snippet } from "@prisma/client";
+import { Snippet } from "../../types";
 import { useAppDispatch } from "../../store/hooks";
 import {
   useCreateSnippetMutation,
@@ -23,7 +23,7 @@ import { notifications } from "@mantine/notifications";
 import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 import FileIcon from "../FileIcon";
-import { useGetProjectByIdQuery } from "../../store/api/projectApi";
+import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import classes from "./Snippet.module.css";
 import { useMediaQuery } from "@mantine/hooks";
@@ -51,12 +51,12 @@ const SnippetList = ({
   const [editSnippet, { isLoading: isEditing }] = useEditSnippetMutation();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
-  const isValidProjectId =
-    typeof selectedSnippet?.projectId === "string" &&
-    selectedSnippet?.projectId.trim() !== "";
+  const isValidWorkspaceId =
+    typeof selectedSnippet?.workspaceId === "string" &&
+    selectedSnippet?.workspaceId.trim() !== "";
 
-  const { data: projectData } = useGetProjectByIdQuery(
-    isValidProjectId ? selectedSnippet?.projectId : skipToken
+  const { data: workspaceData } = useGetWorkspaceByIdQuery(
+    isValidWorkspaceId ? selectedSnippet?.workspaceId : skipToken
   );
 
   useEffect(() => {
@@ -143,7 +143,7 @@ const SnippetList = ({
 
       if (modalMode === "rename" && selectedSnippet) {
         const data = await editSnippet({
-          projectId: selectedSnippet.projectId,
+          workspaceId: selectedSnippet.workspaceId,
           snippet: {
             ...selectedSnippet,
             title,
@@ -155,7 +155,7 @@ const SnippetList = ({
 
         dispatch(
           updateSnippet({
-            projectId: selectedSnippet.projectId,
+            workspaceId: selectedSnippet.workspaceId,
             snippetId: selectedSnippet.id,
             editedSnippet: data,
           })
@@ -166,26 +166,26 @@ const SnippetList = ({
           message: "Snippet updated successfully! 🌟",
         });
 
-        await syncMeiliSearch({ ...data, project: projectData }, "snippet");
+        await syncMeiliSearch({ ...data, workspace: workspaceData }, "snippet");
       } else if (modalMode === "create") {
-        const projectId = router.query.projectId as string;
+        const workspaceId = router.query.workspaceId as string;
 
         const snippet: Omit<SnippetsCreateData, "authorId"> = {
           title,
           content: "",
           language,
-          projectId,
+          workspaceId,
           extension,
         };
 
         const data = await createSnippet({
-          projectId,
+          workspaceId,
           snippet,
         }).unwrap();
 
         dispatch(
           addSnippet({
-            projectId,
+            workspaceId,
             snippet: data,
           })
         );
@@ -194,8 +194,8 @@ const SnippetList = ({
           message: "Snippet created successfully! 🌟",
         });
 
-        await syncMeiliSearch({ ...data, project: projectData }, "snippet");
-        router.push(`/projects/${projectId}/snippets/${data.id}`);
+        await syncMeiliSearch({ ...data, workspace: workspaceData }, "snippet");
+        router.push(`/workspaces/${workspaceId}/snippets/${data.id}`);
       }
 
       setModalOpened(false);
@@ -279,7 +279,7 @@ const SnippetList = ({
               onClick={() =>
                 handleSnippetClick(
                   snippet.id,
-                  `/projects/${snippet.projectId}/snippets/${snippet.id}`
+                  `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`
                 )
               }
             />

@@ -116,7 +116,7 @@ export const useRecentItems = (
 
       setRecentSearchOrder((prevOrder) => {
         const newKeys = items.map((item) => {
-          const type = "type" in item ? item.type : "project";
+          const type = "type" in item ? item.type : "workspace";
           return `${type}:${item.id}`;
         });
 

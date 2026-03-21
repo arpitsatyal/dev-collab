@@ -1,10 +1,10 @@
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "../types";
 
 const prisma = new PrismaClient();
 
 // --- Configuration ---
-const TARGET_PROJECT_COUNT = 1000;
+const TARGET_WORKSPACE_COUNT = 1000;
 const BATCH_SIZE = 50;
 
 // --- Data Types ---
@@ -16,10 +16,10 @@ type SnippetTemplate = {
     content: string;
 };
 
-type ProjectArchetype = {
+type WorkspaceArchetype = {
     category: string;
     descriptionTemplates: string[];
-    tasks: string[];
+    workItems: string[];
     docs: string[];
     snippets: SnippetTemplate[];
     titleGenerators: {
@@ -31,14 +31,14 @@ type ProjectArchetype = {
 
 // --- Content Pools ---
 
-const COMMON_TASKS = [
+const COMMON_WORK_ITEMS = [
     "Update README with latest instructions", "Fix typos in documentation",
     "Bump dependency versions", "Refactor messy code in utils",
     "Add more unit tests", "Setup prettier configuration",
     "Review pull requests", "Update license file"
 ];
 
-const ARCHETYPES: ProjectArchetype[] = [
+const ARCHETYPES: WorkspaceArchetype[] = [
     {
         category: "Frontend",
         titleGenerators: {
@@ -52,8 +52,8 @@ const ARCHETYPES: ProjectArchetype[] = [
             "Modern web experience leveraging the latest browser APIs.",
             "Internal tool for managing business operations efficiently."
         ],
-        tasks: [
-            ...COMMON_TASKS,
+        workItems: [
+            ...COMMON_WORK_ITEMS,
             "Implement Dark Mode toggle", "Fix responsive layout on mobile", "Optimize image loading with lazy load",
             "Integrate Stripe payment gateway", "Refactor Context API to Redux", "Add unit tests for Button component",
             "Update dependencies to latest React", "Accessibility audit (WCAG 2.1)", "Setup Storybook",
@@ -94,7 +94,7 @@ const ARCHETYPES: ProjectArchetype[] = [
         titleGenerators: {
             adjectives: ["Scalable", "Distributed", "Secure", "Real-time", "Serverless", "Monolithic", "Microservice", "Async"],
             techs: ["Node.js", "Go", "Python", "GraphQL", "Redis", "Kafka", "PostgreSQL", "gRPC"],
-            types: ["API Gateway", "Auth Service", "Payment Processor", "Indexer", "Task Queue", "Websocket Server", "Data Aggregator", "CRUD API"]
+            types: ["API Gateway", "Auth Service", "Payment Processor", "Indexer", "WorkItem Queue", "Websocket Server", "Data Aggregator", "CRUD API"]
         },
         descriptionTemplates: [
             "Robust backend service handling millions of requests.",
@@ -102,8 +102,8 @@ const ARCHETYPES: ProjectArchetype[] = [
             "Secure API gateway protecting internal resources.",
             "Data processing pipeline for real-time analytics."
         ],
-        tasks: [
-            ...COMMON_TASKS,
+        workItems: [
+            ...COMMON_WORK_ITEMS,
             "Optimize SQL query performance", "Implement JWT authentication", "Add rate limiting middleware",
             "Setup CI/CD pipeline for Docker build", "Migrate database schema", "Write integration tests for payment flow",
             "Refactor error handling logic", "Update API documentation (Swagger)", "Implement caching with Redis",
@@ -149,11 +149,11 @@ const ARCHETYPES: ProjectArchetype[] = [
         descriptionTemplates: [
             "Advanced machine learning model for pattern recognition.",
             "Scalable data pipeline for training and inference.",
-            "Experimental research project exploring new architectures.",
+            "Experimental research workspace exploring new architectures.",
             "Production-ready AI service for intelligent automation."
         ],
-        tasks: [
-            ...COMMON_TASKS,
+        workItems: [
+            ...COMMON_WORK_ITEMS,
             "Clean training dataset", "Tune hyperparameters for Random Forest", "Deploy model to AWS SageMaker",
             "Optimize inference latency", "Visualize confusion matrix", "Implement data augmentation",
             "Refactor feature engineering pipeline", "Upgrade pandas version", "Implement early stopping",
@@ -197,8 +197,8 @@ const ARCHETYPES: ProjectArchetype[] = [
             "Offline-capable application for field operations.",
             "Social networking app connecting users worldwide."
         ],
-        tasks: [
-            ...COMMON_TASKS,
+        workItems: [
+            ...COMMON_WORK_ITEMS,
             "Fix splash screen delay", "Implement push notifications", "Optimize battery usage",
             "Add biometric authentication", "Fix keyboard overlapping input fields", "Update app store screenshots",
             "Request camera permissions correctly", "Implement deep linking", "Refactor navigation stack",
@@ -233,8 +233,8 @@ const ARCHETYPES: ProjectArchetype[] = [
             "Observability stack for monitoring system health.",
             "Kubernetes cluster configuration for microservices."
         ],
-        tasks: [
-            ...COMMON_TASKS,
+        workItems: [
+            ...COMMON_WORK_ITEMS,
             "Provision EKS cluster", "Rotate IAM keys", "Optimize auto-scaling policies",
             "Setup Grafana dashboards", "Configure ELK stack", "Write Terraform modules for VPC",
             "Audit security groups", "Implement canary deployments", "Reduce build time costs",
@@ -274,7 +274,7 @@ function getRandomSubset(arr: any[], min: number, max: number) {
     return shuffled.slice(0, count);
 }
 
-function generateTitle(generators: ProjectArchetype['titleGenerators']) {
+function generateTitle(generators: WorkspaceArchetype['titleGenerators']) {
     const adj = getRandom(generators.adjectives);
     const tech = getRandom(generators.techs);
     const type = getRandom(generators.types);
@@ -289,9 +289,9 @@ async function main() {
     // 1. Idempotency Check
     const existingSeedUser = await prisma.user.findFirst({ where: { email: 'seed@devcollab.com' } });
     if (existingSeedUser) {
-        const projectCount = await prisma.project.count({ where: { ownerId: existingSeedUser.id } });
-        if (projectCount > 0) {
-            console.log(`⚠️  Seed data already exists (${projectCount} projects). Skipping...`);
+        const workspaceCount = await prisma.workspace.count({ where: { ownerId: existingSeedUser.id } });
+        if (workspaceCount > 0) {
+            console.log(`⚠️  Seed data already exists (${workspaceCount} workspaces). Skipping...`);
             console.log(`💡 Run 'npm run clean' to wipe existing data first.`);
             return;
         }
@@ -310,15 +310,15 @@ async function main() {
         }
     });
 
-    // 3. Generate Projects
-    const projectsToCreate = TARGET_PROJECT_COUNT;
-    console.log(`🚀 Seeding ${projectsToCreate} highly varied projects...`);
+    // 3. Generate Workspaces
+    const workspacesToCreate = TARGET_WORKSPACE_COUNT;
+    console.log(`🚀 Seeding ${workspacesToCreate} highly varied workspaces...`);
 
     let createdCount = 0;
-    while (createdCount < projectsToCreate) {
-        const batchSize = Math.min(BATCH_SIZE, projectsToCreate - createdCount);
-        const projectsData: any[] = [];
-        const tasksData: any[] = [];
+    while (createdCount < workspacesToCreate) {
+        const batchSize = Math.min(BATCH_SIZE, workspacesToCreate - createdCount);
+        const workspacesData: any[] = [];
+        const workItemsData: any[] = [];
         const docsData: any[] = [];
         const snippetsData: any[] = [];
 
@@ -327,12 +327,12 @@ async function main() {
             const title = generateTitle(archetype.titleGenerators);
 
             // Pre-generate ID
-            const projectId = crypto.randomUUID();
+            const workspaceId = crypto.randomUUID();
             const createdAt = new Date(Date.now() - Math.floor(Math.random() * 10000000000));
             const updatedAt = new Date();
 
-            projectsData.push({
-                id: projectId,
+            workspacesData.push({
+                id: workspaceId,
                 title: title,
                 description: getRandom(archetype.descriptionTemplates),
                 ownerId: seedUser.id,
@@ -341,12 +341,12 @@ async function main() {
                 updatedAt
             });
 
-            // Tasks
-            const selectedTasks = getRandomSubset(archetype.tasks, 4, 8); // Updated count
-            selectedTasks.forEach((taskTitle: string) => {
-                tasksData.push({
-                    title: taskTitle,
-                    projectId: projectId,
+            // WorkItems
+            const selectedWorkItems = getRandomSubset(archetype.workItems, 4, 8); // Updated count
+            selectedWorkItems.forEach((workItemTitle: string) => {
+                workItemsData.push({
+                    title: workItemTitle,
+                    workspaceId: workspaceId,
                     status: getRandom(['TODO', 'IN_PROGRESS', 'DONE']),
                     createdAt,
                     updatedAt
@@ -358,7 +358,7 @@ async function main() {
             selectedDocs.forEach((docLabel: string) => {
                 docsData.push({
                     label: `${docLabel}.md`,
-                    projectId: projectId,
+                    workspaceId: workspaceId,
                     roomId: crypto.randomUUID(),
                     content: {},
                     createdAt,
@@ -374,7 +374,7 @@ async function main() {
                     language: template.language,
                     extension: template.extension,
                     content: JSON.stringify(template.content), // Stringify for frontend compatibility
-                    projectId: projectId,
+                    workspaceId: workspaceId,
                     createdAt,
                     updatedAt
                 });
@@ -383,14 +383,14 @@ async function main() {
 
         // Transaction insert
         await prisma.$transaction([
-            prisma.project.createMany({ data: projectsData }),
-            prisma.task.createMany({ data: tasksData }),
+            prisma.workspace.createMany({ data: workspacesData }),
+            prisma.workItem.createMany({ data: workItemsData }),
             prisma.doc.createMany({ data: docsData }),
             prisma.snippet.createMany({ data: snippetsData }),
         ]);
 
         createdCount += batchSize;
-        console.log(`📦 Created ${createdCount}/${projectsToCreate} projects.`);
+        console.log(`📦 Created ${createdCount}/${workspacesToCreate} workspaces.`);
     }
 
     console.log('✅ Seeding complete!');
