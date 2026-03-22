@@ -20,7 +20,6 @@ import {
 import { languageMapper } from "../../utils/languageMapper";
 import { addSnippet, updateSnippet } from "../../store/slices/snippetSlice";
 import { notifications } from "@mantine/notifications";
-import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import { SnippetsCreateData } from "../../pages/api/snippets";
 import FileIcon from "../FileIcon";
 import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
@@ -165,8 +164,6 @@ const SnippetList = ({
           title: "Done!",
           message: "Snippet updated successfully! 🌟",
         });
-
-        await syncMeiliSearch({ ...data, workspace: workspaceData }, "snippet");
       } else if (modalMode === "create") {
         const workspaceId = router.query.workspaceId as string;
 
@@ -194,7 +191,6 @@ const SnippetList = ({
           message: "Snippet created successfully! 🌟",
         });
 
-        await syncMeiliSearch({ ...data, workspace: workspaceData }, "snippet");
         router.push(`/workspaces/${workspaceId}/snippets/${data.id}`);
       }
 

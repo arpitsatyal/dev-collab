@@ -4,7 +4,6 @@ import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { withAuth } from "../../guards/withAuth";
 import { WorkspaceCreateData } from "../api/workspaces";
-import { syncMeiliSearch } from "../../utils/syncMeiliSearch";
 import CreateWorkspaceForm from "../../components/Workspaces/CreateWorkspaceForm";
 import { useCreateWorkspaceMutation } from "../../store/api/workspaceApi";
 import { Box } from "@mantine/core";
@@ -29,8 +28,6 @@ const CreateWorkspacePage = () => {
         message: "Workspace created successfully! 🌟",
       });
       router.push(`/workspaces/${newWorkspace.id}`);
-
-      await syncMeiliSearch(newWorkspace, "workspace");
     } catch (error) {
       notifications.show({
         title: "Whooops",

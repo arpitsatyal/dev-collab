@@ -13,7 +13,6 @@ import CreateWorkItemModal from "../../../../components/WorkItem/CreateWorkItemM
 import WorkItemBoard from "../../../../components/WorkItem/WorkItemBoard";
 import WorkItemInfo from "../../../../components/WorkItem/WorkItemInfo";
 import Loading from "../../../../components/Loader/Loader";
-import { syncMeiliSearch } from "../../../../utils/syncMeiliSearch";
 import { useGetWorkspaceByIdQuery } from "../../../../store/api/workspaceApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import AISuggestions from "../../../../components/WorkItem/AISuggestions";
@@ -78,8 +77,6 @@ const WorkItemsPage = () => {
       });
 
       close();
-
-      await syncMeiliSearch({ ...data, workspace: workspaceData }, "workItem");
     } catch (error) {
       console.error(error);
       notifications.show({
