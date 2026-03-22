@@ -309,7 +309,7 @@ const SpotlightSearch = ({
           }
           dispatch(setWorkspacesOpen(true));
           addRecentItems([{ ...workItem, type: "workItem" }]);
-          router.push(`/workspaces/${workItem.workspaceId}/workItems`);
+          router.push(`/workspaces/${workItem.workspaceId}/work-items`);
         },
         groupLabel: "workItems",
         meta: {
@@ -415,7 +415,7 @@ const SpotlightSearch = ({
                 updateQueryData(item.workspaceId, workspace);
               }
               dispatch(setWorkspacesOpen(true));
-              router.push(`/workspaces/${item.workspaceId}/workItems`);
+              router.push(`/workspaces/${item.workspaceId}/work-items`);
             },
             groupLabel: "Recently Searched",
             meta: {

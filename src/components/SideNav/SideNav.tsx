@@ -427,9 +427,9 @@ const SideNav = () => {
 
                 <NavLink
                   label="Work Items"
-                  active={isActive(`/workspaces/${child.id}/workItems`)}
+                  active={isActive(`/workspaces/${child.id}/work-items`)}
                   leftSection={<IconSubtask size={16} />}
-                  onClick={() => router.push(`/workspaces/${child.id}/workItems`)}
+                  onClick={() => router.push(`/workspaces/${child.id}/work-items`)}
                 />
                 <NavLink
                   label="Docs"
