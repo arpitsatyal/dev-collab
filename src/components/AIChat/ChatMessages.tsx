@@ -23,12 +23,12 @@ import {
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
-import { useSession } from "next-auth/react";
 import { extractDate, extractTime } from "../../utils/dateUtils";
 import MarkdownContent from "../shared/MarkdownContent";
 import { useRouter } from "next/router";
 import Image from "next/image";
 import Loading from "../Loader/Loader";
+import { useSession } from "../providers/AuthProvider";
 
 interface MessageProps {
   chatId: string;

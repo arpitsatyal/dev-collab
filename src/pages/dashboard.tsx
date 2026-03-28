@@ -2,10 +2,10 @@ import { Container, Title, Text, Box } from "@mantine/core";
 import StatsSummary from "../components/Dashboard/StatsSummary";
 import Layout from "../components/Layout/Layout";
 import { withAuth } from "../guards/withAuth";
-import { Session } from "next-auth";
 import React from "react";
+import { User } from "../types";
 
-const Dashboard = ({ user }: { user: Session["user"] }) => {
+const Dashboard = ({ user }: { user: User }) => {
   return (
     <Container size="xl" py="xl">
       <Box mb="xl">

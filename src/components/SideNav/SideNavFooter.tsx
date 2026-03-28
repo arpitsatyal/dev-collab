@@ -3,8 +3,8 @@ import { IconLogout } from "@tabler/icons-react";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { useMediaQuery } from "@mantine/hooks";
 import classes from "./SideNav.module.css";
-import { signOut } from "next-auth/react";
 import { useRouter } from "next/router";
+import { signOut } from "../providers/AuthProvider";
 
 const SideNavFooter = () => {
   const router = useRouter();

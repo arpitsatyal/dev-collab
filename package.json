@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint . --ignore-path .eslintignore",
     "test": "vitest run",
-    "test:watch": "vitest",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -42,7 +42,6 @@
     "monaco-editor": "^0.52.2",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "next": "15.3.0",
-    "next-auth": "^4.24.11",
     "next-transpile-modules": "^10.0.1",
     "react": "19.1.0",
     "react-dnd": "^16.0.1",
