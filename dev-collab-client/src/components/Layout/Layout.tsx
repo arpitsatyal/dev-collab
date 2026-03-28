@@ -3,7 +3,6 @@ import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "../SideNav/SideNav";
 import SpotlightSearch from "../Search/SpotlightSearch";
 import { useRouter } from "next/router";
-import DevCollabIcon from "../DevCollabIcon";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
@@ -18,6 +17,7 @@ import { skipToken } from "@reduxjs/toolkit/query";
 import { useWorkspaceCacheUpdater } from "../../hooks/useWorkspaceCacheUpdater";
 import { IconMenu2 } from "@tabler/icons-react";
 import AIChat from "../AIChat/AIChat";
+import DevCollabIcon from "../shared/DevCollabIcon";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -141,7 +141,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       <AppShell.Main>
         {isNavigating || isWorkspacesLoading ? <Loading /> : children}
       </AppShell.Main>
-      <AIChat/>
+      <AIChat />
     </AppShell>
   );
 }

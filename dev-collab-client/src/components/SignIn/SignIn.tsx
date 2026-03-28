@@ -1,7 +1,7 @@
 import { Button, Card, Container, Stack, Text, Title } from "@mantine/core";
 import React from "react";
-import DevCollabIcon from "../DevCollabIcon";
 import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
+import DevCollabIcon from "../shared/DevCollabIcon";
 
 interface SignInProps {
   handleGithubSignIn: () => void;

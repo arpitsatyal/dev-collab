@@ -21,7 +21,7 @@ import { languageMapper } from "../../utils/languageMapper";
 import { addSnippet, updateSnippet } from "../../store/slices/snippetSlice";
 import { notifications } from "@mantine/notifications";
 import { SnippetsCreateData } from "../../types";
-import FileIcon from "../FileIcon";
+import FileIcon from "../shared/FileIcon";
 import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import classes from "./Snippet.module.css";

@@ -1,4 +1,4 @@
-import { Doc } from "../types";
+import { Doc } from "../../types";
 import { ReactNode } from "react";
 
 interface TextMentionEmailProps {

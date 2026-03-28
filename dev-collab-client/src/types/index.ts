@@ -37,8 +37,6 @@ export const WorkItemStatus = {
 } as const;
 
 export type WorkItemStatus = (typeof WorkItemStatus)[keyof typeof WorkItemStatus];
-
-
 export type WorkspaceWithPin = Workspace & { isPinned: boolean };
 
 type WithType<T, K extends ItemType> = T & { type: K };

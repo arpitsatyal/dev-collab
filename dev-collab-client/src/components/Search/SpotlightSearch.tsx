@@ -21,7 +21,7 @@ import { truncateByWords } from "../../utils/truncateByWords";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader/Loader";
-import FileIcon from "../FileIcon";
+import FileIcon from "../shared/FileIcon";
 import { Snippet, WorkItem } from "../../types";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
