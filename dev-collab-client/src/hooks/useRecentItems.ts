@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useEffect } from "react";
-import { BaseItems } from "../types";
+import { TypedItems } from "../types";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/browser/indexedDB";
 import { uniq } from "lodash";
@@ -111,14 +111,11 @@ export const useRecentItems = (
   );
 
   const addRecentItems = useCallback(
-    (items: BaseItems[], maxItems: { searchOrder?: number } = {}) => {
+    (items: TypedItems[], maxItems: { searchOrder?: number } = {}) => {
       const effectiveMaxSearchOrder = maxItems.searchOrder ?? maxSearchOrder;
 
       setRecentSearchOrder((prevOrder) => {
-        const newKeys = items.map((item) => {
-          const type = "type" in item ? item.type : "workspace";
-          return `${type}:${item.id}`;
-        });
+        const newKeys = items.map((item) => `${item.type}:${item.id}`);
 
         const allKeys = [...newKeys, ...prevOrder];
         const uniqueKeys = uniq(allKeys);

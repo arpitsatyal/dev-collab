@@ -5,6 +5,8 @@ import {
   IconFolder,
   IconClearAll,
   IconSubtask,
+  IconMessage,
+  IconFileText,
 } from "@tabler/icons-react";
 import {
   ActionIcon,
@@ -25,7 +27,12 @@ import FileIcon from "../shared/FileIcon";
 import { Snippet, WorkItem } from "../../types";
 import classes from "./SpotlightSearch.module.css";
 import { useRecentItems } from "../../hooks/useRecentItems";
-import { CacheDataSource, WorkspaceWithPin, TypedItems } from "../../types";
+import {
+  WorkspaceWithPin,
+  TypedItems,
+  DocWithWorkspace,
+  ChatWithMessages,
+} from "../../types";
 import { useSession } from "../providers/AuthProvider";
 import { RingLoader } from "../Loader/RingLoader";
 import CollapsibleActionsGroup from "./CollapsibleActionsGroup";
@@ -53,11 +60,12 @@ interface DataSource<T = any> {
   toDataItem: (item: T, context: any) => DataItem;
 }
 
-const filterByQuery = <T extends { title: string }>(
+const filterByQuery = <T,>(
   items: T[],
   query: string,
   showAllOnEmpty: boolean = false,
-  field: keyof T = "title"
+  getSearchValue: (item: T) => string = (item: any) =>
+    String(item.title || item.label || item.name || "")
 ): T[] => {
   if (!query && showAllOnEmpty) return items;
   if (!query) return [];
@@ -66,7 +74,27 @@ const filterByQuery = <T extends { title: string }>(
   const escapedQuery = lowerQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   const regex = new RegExp(`\\b${escapedQuery}\\b`, "i");
 
-  return items?.filter((item) => regex.test(String(item[field])));
+  return items?.filter((item) => {
+    const value = getSearchValue(item);
+    return regex.test(value);
+  });
+};
+
+const getDisplayTitle = (item: TypedItems): string => {
+  switch (item.type) {
+    case "workspace":
+      return item.title;
+    case "snippet":
+      return `${item.title}.${item.extension ?? ""}`;
+    case "workItem":
+      return item.title;
+    case "doc":
+      return item.label;
+    case "chat":
+      return item.title ?? "Unnamed Chat";
+    default:
+      return "Untitled";
+  }
 };
 
 const ActionItem = ({ item }: { item: DataItem }) => (
@@ -116,6 +144,7 @@ const SpotlightSearch = ({
     searchCache,
     ringLoader,
     resultsKey,
+    error: searchError,
   } = useSearch(query);
 
   const { data: session } = useSession();
@@ -152,6 +181,8 @@ const SpotlightSearch = ({
           uniqueCacheResults.find((r) => r.type === "snippet" && r.id === id);
       } else if (type === "workItem") {
         item = uniqueCacheResults.find((r) => r.type === "workItem" && r.id === id);
+      } else if (type === "chat") {
+        item = uniqueCacheResults.find((r) => r.type === "chat" && r.id === id);
       }
 
       if (item) {
@@ -159,8 +190,7 @@ const SpotlightSearch = ({
       }
     });
 
-    // Now return in the same order
-    return recentSearchOrder.map((key) => itemsMap.get(key)).filter(Boolean); // remove nulls
+    return recentSearchOrder.map((key) => itemsMap.get(key)).filter((item): item is TypedItems => !!item);
   }, [recentSearchOrder, loadedWorkspaces, snippets, uniqueCacheResults]);
 
   const workspaceSource = useMemo<Omit<DataSource<WorkspaceWithPin>, "data">>(
@@ -168,16 +198,16 @@ const SpotlightSearch = ({
       name: "workspaces",
       groupLabel: "Workspaces",
       filterData: (workspaces, query, { matchedResults, isSearchLoading }) => {
-        const localWorkspaces = filterByQuery(workspaces, query);
+        const localWorkspaces = filterByQuery(workspaces, query, false, (w) => w.title);
         const apiWorkspaces =
           !isSearchLoading && matchedResults?.length > 0
-            ? matchedResults.filter(
+            ? (matchedResults.filter(
               (apiResult: TypedItems) =>
                 apiResult.type === "workspace" &&
                 !localWorkspaces.some(
                   (local: WorkspaceWithPin) => local.id === apiResult.id
                 )
-            )
+            ) as WorkspaceWithPin[])
             : [];
         return [...localWorkspaces, ...apiWorkspaces];
       },
@@ -217,16 +247,16 @@ const SpotlightSearch = ({
       name: "snippets",
       groupLabel: "Snippets",
       filterData: (snippets, query, { matchedResults, isSearchLoading }) => {
-        const localSnippets = filterByQuery(snippets, query);
+        const localSnippets = filterByQuery(snippets, query, false, (s) => s.title);
         const apiSnippets =
           !isSearchLoading && matchedResults?.length > 0
-            ? matchedResults.filter(
+            ? (matchedResults.filter(
               (apiResult: TypedItems) =>
                 apiResult.type === "snippet" &&
                 !localSnippets.some(
                   (local: Snippet) => local.id === apiResult.id
                 )
-            )
+            ) as (Snippet & { workspace?: WorkspaceWithPin })[])
             : [];
         return [...localSnippets, ...apiSnippets];
       },
@@ -243,7 +273,7 @@ const SpotlightSearch = ({
         }
       ) => ({
         id: snippet.id,
-        title: `${snippet.title}.${snippet.extension ?? ""}`,
+        title: getDisplayTitle({ ...snippet, type: "snippet" }),
         icon: <FileIcon snippet={snippet} />,
         onClick: () => {
           const isWorkspaceLoaded = loadedWorkspaces?.find(
@@ -273,7 +303,7 @@ const SpotlightSearch = ({
   >(
     () => ({
       name: "workItems",
-      groupLabel: "WorkItems",
+      groupLabel: "Work Items",
       filterData: (_, __, { matchedResults, isSearchLoading }) => {
         const apiWorkItems =
           !isSearchLoading && matchedResults?.length > 0
@@ -298,7 +328,7 @@ const SpotlightSearch = ({
         id: workItem.id,
         title: workItem.title,
         description: workItem.description ?? "-",
-        icon: <IconSubtask />,
+        icon: <IconSubtask size={24} stroke={1.5} />,
         onClick: () => {
           const isWorkspaceLoaded = loadedWorkspaces?.find(
             (loaded) => loaded.id === workItem.workspaceId
@@ -311,7 +341,7 @@ const SpotlightSearch = ({
           addRecentItems([{ ...workItem, type: "workItem" }]);
           router.push(`/workspaces/${workItem.workspaceId}/work-items`);
         },
-        groupLabel: "workItems",
+        groupLabel: "Work Items",
         meta: {
           workspaceTitle:
             workspaces?.find((workspace) => workspace.id === workItem.workspaceId)?.title ??
@@ -322,7 +352,99 @@ const SpotlightSearch = ({
     [dispatch, loadedWorkspaces, updateQueryData]
   );
 
-  const cacheSource = useMemo<Omit<DataSource<CacheDataSource>, "data">>(
+  const docSource = useMemo<
+    Omit<DataSource<DocWithWorkspace>, "data">
+  >(
+    () => ({
+      name: "docs",
+      groupLabel: "Documents",
+      filterData: (_, __, { matchedResults, isSearchLoading }) => {
+        const apiDocs =
+          !isSearchLoading && matchedResults?.length > 0
+            ? matchedResults.filter(
+              (apiResult: TypedItems) => apiResult.type === "doc"
+            )
+            : [];
+        return apiDocs;
+      },
+      toDataItem: (
+        doc,
+        {
+          router,
+          workspaces,
+          addRecentItems,
+        }: {
+          router: NextRouter;
+          workspaces: WorkspaceWithPin[];
+          addRecentItems: (items: TypedItems[]) => void;
+        }
+      ) => ({
+        id: doc.id,
+        title: getDisplayTitle({ ...doc, type: "doc" }),
+        icon: <IconFileText size={24} stroke={1.5} />,
+        onClick: () => {
+          const isWorkspaceLoaded = loadedWorkspaces?.find(
+            (loaded) => loaded.id === doc.workspaceId
+          );
+          const workspace = doc.workspace;
+          if (!isWorkspaceLoaded && workspace) {
+            updateQueryData(doc.workspaceId, workspace);
+          }
+          dispatch(setWorkspacesOpen(true));
+          addRecentItems([{ ...doc, type: "doc" }]);
+          router.push(`/workspaces/${doc.workspaceId}/docs/${doc.id}`);
+        },
+        groupLabel: "Documents",
+        meta: {
+          workspaceTitle:
+            workspaces?.find((workspace) => workspace.id === doc.workspaceId)?.title ??
+            "",
+        },
+      }),
+    }),
+    [dispatch, loadedWorkspaces, updateQueryData]
+  );
+
+  const chatSource = useMemo<
+    Omit<DataSource<ChatWithMessages>, "data">
+  >(
+    () => ({
+      name: "chats",
+      groupLabel: "Chats",
+      filterData: (_, __, { matchedResults, isSearchLoading }) => {
+        const apiChats =
+          !isSearchLoading && matchedResults?.length > 0
+            ? matchedResults.filter(
+              (apiResult: TypedItems) => apiResult.type === "chat"
+            )
+            : [];
+        return apiChats;
+      },
+      toDataItem: (
+        chat,
+        {
+          router,
+          addRecentItems,
+        }: {
+          router: NextRouter;
+          addRecentItems: (items: TypedItems[]) => void;
+        }
+      ) => ({
+        id: chat.id,
+        title: getDisplayTitle({ ...chat, type: "chat" }),
+        icon: <IconMessage size={24} stroke={1.5} />,
+        onClick: () => {
+          dispatch(setWorkspacesOpen(true));
+          addRecentItems([{ ...chat, type: "chat" }]);
+          router.push(`/chats/${chat.id}`);
+        },
+        groupLabel: "Chats",
+      }),
+    }),
+    [dispatch]
+  );
+
+  const cacheSource = useMemo<Omit<DataSource<TypedItems>, "data">>(
     () => ({
       name: "cacheResults",
       groupLabel: "Recently Searched",
@@ -335,7 +457,7 @@ const SpotlightSearch = ({
           filterByQuery(snippets, query)?.length > 0 ||
           matchedResults?.length > 0;
 
-        if (hasOtherResults) {
+        if (hasOtherResults && query.length > 0) {
           return [];
         }
 
@@ -351,89 +473,113 @@ const SpotlightSearch = ({
           return aIndex - bIndex;
         });
 
-        return filterByQuery(results, query, true);
+        return filterByQuery(results, query, true, (item) => getDisplayTitle(item));
       },
       toDataItem: (
         item,
         { router, workspaces }: { router: NextRouter; workspaces: WorkspaceWithPin[] }
       ) => {
+        const title = getDisplayTitle(item);
+        const baseItem = {
+          id: item.id,
+          title,
+          groupLabel: "Recently Searched",
+        };
+
         if (item.type === "workspace") {
           return {
-            id: item.id,
-            title: item.title,
+            ...baseItem,
             description: item.description ?? "-",
             icon: <IconFolder size={24} stroke={1.5} />,
             onClick: () => {
               const isWorkspaceLoaded = loadedWorkspaces?.find(
                 (loaded) => loaded.id === item.id
               );
-
               if (!isWorkspaceLoaded) {
                 updateQueryData(item.id, item);
               }
-
               dispatch(setWorkspacesOpen(true));
               router.push(`/workspaces/${item.id}`);
             },
-            groupLabel: "Recently Searched",
           };
         } else if (item.type === "snippet") {
           return {
-            id: item.id,
-            title: `${item.title}.${item.extension ?? ""}`,
+            ...baseItem,
             icon: <FileIcon snippet={item} />,
             onClick: () => {
               const isWorkspaceLoaded = loadedWorkspaces?.find(
                 (loaded) => loaded.id === item.workspaceId
               );
-              const workspace = item["workspace"];
+              const workspace = (item as any).workspace;
               if (!isWorkspaceLoaded && workspace) {
                 updateQueryData(item.workspaceId, workspace);
               }
               dispatch(setWorkspacesOpen(true));
               router.push(`/workspaces/${item.workspaceId}/snippets/${item.id}`);
             },
-            groupLabel: "Recently Searched",
             meta: {
               workspaceTitle:
-                workspaces?.find((workspace) => workspace.id === item.workspaceId)
-                  ?.title ?? "",
+                workspaces?.find((workspace) => workspace.id === item.workspaceId)?.title ?? "",
             },
           };
         } else if (item.type === "workItem") {
           return {
-            id: item.id,
-            title: item.title,
+            ...baseItem,
             description: item.description ?? "-",
-            icon: <IconSubtask />,
+            icon: <IconSubtask size={24} stroke={1.5} />,
             onClick: () => {
               const isWorkspaceLoaded = loadedWorkspaces?.find(
                 (loaded) => loaded.id === item.workspaceId
               );
-              const workspace = item["workspace"];
+              const workspace = (item as any).workspace;
               if (!isWorkspaceLoaded && workspace) {
                 updateQueryData(item.workspaceId, workspace);
               }
               dispatch(setWorkspacesOpen(true));
               router.push(`/workspaces/${item.workspaceId}/work-items`);
             },
-            groupLabel: "Recently Searched",
             meta: {
               workspaceTitle:
-                workspaces?.find((workspace) => workspace.id === item.workspaceId)
-                  ?.title ?? "",
+                workspaces?.find((workspace) => workspace.id === item.workspaceId)?.title ?? "",
+            },
+          };
+        } else if (item.type === "doc") {
+          return {
+            ...baseItem,
+            description: "-",
+            icon: <IconFileText size={24} stroke={1.5} />,
+            onClick: () => {
+              const isWorkspaceLoaded = loadedWorkspaces?.find(
+                (loaded) => loaded.id === item.workspaceId
+              );
+              const workspace = (item as any).workspace;
+              if (!isWorkspaceLoaded && workspace) {
+                updateQueryData(item.workspaceId, workspace);
+              }
+              dispatch(setWorkspacesOpen(true));
+              router.push(`/workspaces/${item.workspaceId}/docs/${item.id}`);
+            },
+            meta: {
+              workspaceTitle:
+                workspaces?.find((workspace) => workspace.id === item.workspaceId)?.title ?? "",
+            },
+          };
+        } else if (item.type === "chat") {
+          return {
+            ...baseItem,
+            icon: <IconMessage size={24} stroke={1.5} />,
+            onClick: () => {
+              dispatch(setWorkspacesOpen(true));
+              router.push(`/chats/${item.id}`);
             },
           };
         }
 
         return {
-          id: "",
-          title: "",
-          description: "",
+          ...baseItem,
+          id: "unknown",
           icon: <IconFolder />,
           onClick: () => { },
-          groupLabel: "",
-          meta: {},
         };
       },
     }),
@@ -455,6 +601,14 @@ const SpotlightSearch = ({
         data: [],
       },
       {
+        ...docSource,
+        data: [],
+      },
+      {
+        ...chatSource,
+        data: [],
+      },
+      {
         ...cacheSource,
         data: recentItems,
       },
@@ -466,6 +620,8 @@ const SpotlightSearch = ({
       workspaceSource,
       snippetSource,
       workItemSource,
+      docSource,
+      chatSource,
       cacheSource,
     ]
   );
@@ -623,7 +779,17 @@ const SpotlightSearch = ({
 
           {query.length > 0 && loading && <Loading loaderHeight="5vh" />}
 
-          {showEmpty && (
+          {searchError && (
+            <Spotlight.Empty>
+              <Box p="md">
+                <Text color="red" size="sm" fw={500}>
+                  {searchError}
+                </Text>
+              </Box>
+            </Spotlight.Empty>
+          )}
+
+          {showEmpty && !searchError && (
             <Spotlight.Empty>
               {query.length === 0
                 ? "Search for any Workspaces, Snippets or WorkItems!"

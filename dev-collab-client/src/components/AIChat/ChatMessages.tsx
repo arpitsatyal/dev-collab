@@ -67,7 +67,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     } else if (chatId) {
       setMessages([]);
     }
-  }, [chatData]);
+  }, [chatData, chatId]);
 
   const isInitialLoading = Boolean(chatId) && (isChatLoading || (isChatFetching && !chatData));
 

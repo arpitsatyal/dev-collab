@@ -41,6 +41,7 @@ export const useSearch = (term: string) => {
   const [isTyping, setIsTyping] = useState(false);
   const [ringLoader, setRingLoader] = useState(false);
   const [resultsKey, setResultsKey] = useState(0);
+  const [error, setError] = useState<string | null>(null);
 
   const dbRef = useRef<IDBPDatabase | null>(null);
 
@@ -96,6 +97,7 @@ export const useSearch = (term: string) => {
       controller = new AbortController();
 
       try {
+        setError(null);
         if (showLoading) {
           setLoading(true);
         } else {
@@ -121,7 +123,8 @@ export const useSearch = (term: string) => {
         if (axios.isCancel(err)) {
           console.log("Request canceled", err.message);
         } else {
-          console.error("Failed to fetch snippet:", err);
+          console.error("Failed to fetch search results:", err);
+          setError(err.response?.data?.message || err.message || "Failed to fetch search results");
         }
       } finally {
         if (showLoading) {
@@ -246,5 +249,6 @@ export const useSearch = (term: string) => {
     isTyping,
     ringLoader,
     resultsKey,
+    error,
   };
 };

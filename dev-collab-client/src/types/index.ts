@@ -15,6 +15,42 @@ import type {
 type OptionalFields = 'id' | 'createdAt' | 'updatedAt';
 type MakeCreateData<T> = Omit<T, OptionalFields> & Partial<Pick<T, Extract<keyof T, OptionalFields>>>;
 
+// 1. Central Model Definitions (Mapping Drizzle entities to app keys)
+export type Models = {
+  workspace: DrizzleWorkspace;
+  workItem: DrizzleWorkItem;
+  snippet: DrizzleSnippet;
+  doc: DrizzleDoc;
+  chat: DrizzleChat;
+  message: DrizzleMessage;
+  user: DrizzleUser;
+};
+
+// 2. Specialized Entity Types (pinned, with relation wrappers)
+export type WorkspaceWithPin = DrizzleWorkspace & { isPinned: boolean };
+export type SnippetWithWorkspace = DrizzleSnippet & { workspace?: WorkspaceWithPin };
+export type WorkItemWithWorkspace = DrizzleWorkItem & { workspace?: WorkspaceWithPin };
+export type DocWithWorkspace = DrizzleDoc & { workspace?: WorkspaceWithPin };
+export type ChatWithMessages = DrizzleChat & { messages?: DrizzleMessage[] };
+
+// 3. Unified Discriminated Union (AppItem)
+// This is the core engine for searchable and categorized items.
+export type AppItemType = keyof Omit<Models, 'user'>;
+
+export type TypedItem<K extends AppItemType = AppItemType> = {
+  workspace: WorkspaceWithPin & { type: "workspace" };
+  workItem: WorkItemWithWorkspace & { type: "workItem" };
+  snippet: SnippetWithWorkspace & { type: "snippet" };
+  doc: DocWithWorkspace & { type: "doc" };
+  chat: ChatWithMessages & { type: "chat" };
+  message: DrizzleMessage & { type: "message" };
+}[K];
+
+// 4. Unified Interface Exports (Backward Compatibility & Simplification)
+export type TypedItems = TypedItem<'workspace' | 'workItem' | 'snippet' | 'doc' | 'chat'>;
+export type BaseItems = Models['workspace' | 'workItem' | 'snippet' | 'doc' | 'chat'];
+export type CacheDataSource = TypedItems;
+
 export type Workspace = DrizzleWorkspace;
 export type WorkspaceCreateData = MakeCreateData<DrizzleWorkspaceInsert>;
 export type WorkItem = DrizzleWorkItem;
@@ -37,32 +73,8 @@ export const WorkItemStatus = {
 } as const;
 
 export type WorkItemStatus = (typeof WorkItemStatus)[keyof typeof WorkItemStatus];
-export type WorkspaceWithPin = Workspace & { isPinned: boolean };
-
-type WithType<T, K extends ItemType> = T & { type: K };
-type SnippetWithWorkspace = Snippet & { workspace?: WorkspaceWithPin };
-type WorkItemWithWorkspace = WorkItem & { workspace?: WorkspaceWithPin };
 
 export type SaveStatus = "saving" | "saved" | "error" | "idle" | undefined;
-export type ItemType = "workspace" | "workItem" | "snippet";
-
-type WorkspaceWithType = WithType<WorkspaceWithPin, "workspace">;
-type SnippetWithType = WithType<Snippet, "snippet">;
-type WorkItemWithType = WithType<WorkItem, "workItem">;
-
-export type TypedItems = WorkspaceWithType | SnippetWithType | WorkItemWithType;
-export type BaseItems = WorkspaceWithPin | Snippet | WorkItem;
-export type MeiliSearchPayload =
-  | WorkspaceWithPin
-  | SnippetWithWorkspace
-  | WorkItemWithWorkspace;
-
-export type CacheDataSource =
-  | WithType<WorkspaceWithPin, "workspace">
-  | WithType<SnippetWithWorkspace, "snippet">
-  | WithType<WorkItemWithWorkspace, "workItem">;
-
-export type ChatWithMessages = Chat & { messages?: Message[] };
 
 export interface WorkItemSuggestion {
   title: string;
