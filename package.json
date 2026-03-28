@@ -4,5 +4,16 @@
   "workspaces": [
     "dev-collab-client",
     "devcollab-api"
-  ]
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev -w dev-collab-frontend\" \"npm run start:dev -w devcollab-api\"",
+    "dev:ui": "npm run dev -w dev-collab-frontend",
+    "dev:api": "npm run start:dev -w devcollab-api",
+    "build": "npm run build --workspaces",
+    "install:all": "npm install"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "postgres": "^3.4.8"
+  }
 }
