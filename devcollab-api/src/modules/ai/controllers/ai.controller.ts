@@ -1,3 +1,4 @@
+import { SanitizeIdPipe } from 'src/common/pipes/sanitize-id.pipe';
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { AiService } from '../services/ai.service';
@@ -13,21 +14,14 @@ export class AiController {
   ask(
     @Body() body: AskDto,
     @Query('chatId') chatId: string,
-    @Query('workspaceId') workspaceId?: string,
+    @Query('workspaceId', SanitizeIdPipe) workspaceId?: string,
   ) {
-    const sanitizedWorkspaceId =
-      workspaceId === 'null' || workspaceId === 'undefined' || !workspaceId
-        ? undefined
-        : workspaceId;
-
-    const filters = sanitizedWorkspaceId
-      ? { workspaceId: sanitizedWorkspaceId }
-      : undefined;
+    const filters = workspaceId ? { workspaceId } : undefined;
     return this.aiService.ask(chatId, body.question, filters);
   }
 
   @Post('analyze-work-item')
-  analyze(@Query('workItemId') workItemId: string) {
+  analyze(@Query('workItemId', SanitizeIdPipe) workItemId: string) {
     return this.aiService.analyzeWorkItem(workItemId);
   }
 
@@ -39,8 +33,7 @@ export class AiController {
   }
 
   @Get('suggest-work-items')
-  suggestWorkItems(@Query() query: any) {
-    const workspaceId: string | undefined = query.workspaceId;
+  suggestWorkItems(@Query('workspaceId', SanitizeIdPipe) workspaceId?: string) {
     return this.aiService.suggestWorkItems(workspaceId);
   }
 }

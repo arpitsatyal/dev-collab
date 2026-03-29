@@ -23,14 +23,15 @@ export class WorkspacesController {
 
   @Get()
   getWorkspaces(@Query() query: PaginationQueryDto, @CurrentUser() user: User | null) {
-    const skip = parseInt(query.skip ?? '10');
-    const limit = parseInt(query.limit ?? '10');
-
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    return this.workspacesService.getWorkspaces({ user, skip, take: limit });
+    return this.workspacesService.getWorkspaces({ 
+      user, 
+      skip: query.skip, 
+      take: query.limit 
+    });
   }
 
   @Get('import/tree')
