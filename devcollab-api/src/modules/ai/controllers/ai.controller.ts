@@ -1,21 +1,22 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { AiService } from '../services/ai.service';
+import { AskBodyDto } from '../dto/ask-body.dto';
+import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
 
 @Controller('ai')
 @UseGuards(SessionAuthGuard)
 export class AiController {
-  constructor(private readonly aiService: AiService) {}
+  constructor(private readonly aiService: AiService) { }
 
   @Post('ask')
   ask(
-    @Body() body: { question: string },
+    @Body() body: AskBodyDto,
     @Query('chatId') chatId: string,
     @Query('workspaceId') workspaceId?: string,
   ) {
-    const question = body.question;
     const filters = workspaceId ? { workspaceId } : undefined;
-    return this.aiService.ask(chatId, question, filters);
+    return this.aiService.ask(chatId, body.question, filters);
   }
 
   @Post('analyze-work-item')
@@ -25,10 +26,9 @@ export class AiController {
 
   @Post('suggest-snippet-filename')
   suggestSnippetFilename(
-    @Query('workspaceId') workspaceId: string,
-    @Body() body: { code: string; language?: string },
+    @Body() body: SuggestSnippetFilenameDto,
   ) {
-    return this.aiService.suggestSnippetFilename({ ...body, workspaceId });
+    return this.aiService.suggestSnippetFilename(body);
   }
 
   @Get('suggest-work-items')

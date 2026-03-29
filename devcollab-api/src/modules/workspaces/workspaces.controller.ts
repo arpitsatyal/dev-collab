@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { CreateWorkspaceDto, ImportRepositoryDto } from './dto/workspaces.dto';
+import { CreateWorkspaceDto, ImportRepositoryDto, RepoTreeQueryDto, TogglePinDto } from './dto/workspaces.dto';
 import { CurrentUser } from '../users/user.decorator';
 import type { User } from '../../common/drizzle/schema';
 import { SessionAuthGuard } from '../../common/guards/auth.guard';
@@ -24,18 +24,18 @@ export class WorkspacesController {
   @Get()
   getWorkspaces(@Query() query: PaginationQueryDto, @CurrentUser() user: User | null) {
     const skip = parseInt(query.skip ?? '10');
-    const take = parseInt(query.limit ?? '10');
+    const limit = parseInt(query.limit ?? '10');
 
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    return this.workspacesService.getWorkspaces({ user, skip, take });
+    return this.workspacesService.getWorkspaces({ user, skip, take: limit });
   }
 
   @Get('import/tree')
-  fetchRepoTree(@Query('url') url: string) {
-    return this.workspacesService.fetchRepoTree(url);
+  fetchRepoTree(@Query() query: RepoTreeQueryDto) {
+    return this.workspacesService.fetchRepoTree(query.url);
   }
 
   @Post('import')
@@ -63,7 +63,7 @@ export class WorkspacesController {
   @Patch(':id')
   togglePinWorkspace(
     @Param('id') id: string,
-    @Body() body: { isPinned: boolean },
+    @Body() body: TogglePinDto,
     @CurrentUser() user: User,
   ) {
     return this.workspacesService.togglePinWorkspace(body, user, id);

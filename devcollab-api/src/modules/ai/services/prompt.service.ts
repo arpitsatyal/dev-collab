@@ -33,7 +33,7 @@ If the information isn't in the context, politely let the user know and suggest 
   buildChatMessages(history: string, question: string, workspaceId?: string) {
     let sysMsg = 'You are DevCollab Assistant, a helpful and enthusiastic teammate. Your tone should be friendly, professional, and natural. Avoid being robotic or purely formulaic.';
     if (workspaceId) {
-      sysMsg += `\n\n[MANDATORY STEP]: The user is currently in a workspace (ID: ${workspaceId}). For general questions like "what is this about?", "summarize the workspace", or "give me an overview", you MUST call the "getWorkspaceOverview" tool. \n\n[TONE GUIDELINE]: When summarizing tools results, don't just list counts (e.g., "5 snippets, 0 docs"). Instead, be descriptive and friendly. Talk about the project's purpose based on its title and description, and mention what's available or what's missing in a conversational way (e.g., "It looks like we're just getting started with the documentation!" or "I found some interesting code snippets for your project."). YOU ARE FORBIDDEN from guessing or using general knowledge—always use your tools first.`;
+      sysMsg += `\n\n[CONTEXT]: The user is currently in a workspace (ID: ${workspaceId}).\n\n[TONE GUIDELINE]: When summarizing tools results, don't just list counts (e.g., "5 snippets, 0 docs"). Instead, be descriptive and friendly. Talk about the project's purpose based on its title and description, and mention what's available or what's missing in a conversational way (e.g., "It looks like we're just getting started with the documentation!" or "I found some interesting code snippets for your project."). YOU ARE FORBIDDEN from guessing or using general knowledge—always use your tools first.`;
     }
 
     return [

@@ -14,6 +14,7 @@ import {
   WorkItemCreateDto,
   WorkItemUpdateStatusDto,
 } from './dto/work-items.dto';
+import { GetWorkItemsQueryDto, GetDueSoonQueryDto } from './dto/work-items-query.dto';
 import { CurrentUser } from '../users/user.decorator';
 import type { User } from '../../common/drizzle/schema';
 
@@ -23,13 +24,13 @@ export class WorkItemsController {
   constructor(private readonly workItemsService: WorkItemsService) { }
 
   @Get()
-  getWorkItems(@Query('workspaceId') workspaceId: string) {
-    return this.workItemsService.getWorkItems(workspaceId);
+  getWorkItems(@Query() query: GetWorkItemsQueryDto) {
+    return this.workItemsService.getWorkItems(query.workspaceId);
   }
 
   @Get('due')
-  getDueSoon(@Query('days') days?: string) {
-    const threshold = days ? parseInt(days, 10) : 1;
+  getDueSoon(@Query() query: GetDueSoonQueryDto) {
+    const threshold = query.days ? parseInt(query.days, 10) : 1;
     return this.workItemsService.getDueSoon(threshold);
   }
 
@@ -40,12 +41,12 @@ export class WorkItemsController {
 
   @Post()
   createWorkItem(
-    @Query('workspaceId') workspaceId: string,
+    @Query() query: GetWorkItemsQueryDto,
     @Body() body: WorkItemCreateDto,
     @CurrentUser() user: User,
   ) {
     const authorId = user.id;
-    return this.workItemsService.createWorkItem(workspaceId, authorId, body);
+    return this.workItemsService.createWorkItem(query.workspaceId, authorId, body);
   }
 
   @Patch(':workItemId/status')

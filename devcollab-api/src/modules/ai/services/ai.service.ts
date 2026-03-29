@@ -3,6 +3,7 @@ import { ChatEngineService } from './chat-engine.service';
 import { SuggestionService } from './suggestion.service';
 import { MessageService } from 'src/modules/message/message.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
+import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
 
 @Injectable()
 export class AiService {
@@ -47,11 +48,7 @@ export class AiService {
     return { plan };
   }
 
-  async suggestSnippetFilename(params: {
-    workspaceId: string | undefined;
-    code: string;
-    language?: string;
-  }) {
+  async suggestSnippetFilename(params: SuggestSnippetFilenameDto) {
     if (!params.workspaceId)
       throw new BadRequestException('Workspace ID is required');
     if (!params.code?.trim())

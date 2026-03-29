@@ -2,6 +2,7 @@ import { Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { UsersService } from './users.service';
 import { CurrentUser } from './user.decorator';
+import { SearchUserQueryDto, CollaborationUsersQueryDto } from './dto/users.dto';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('users')
@@ -15,8 +16,8 @@ export class UsersController {
   }
 
   @Get('search/by-name')
-  search(@Query('text') text: string) {
-    return this.usersService.searchByName(text);
+  search(@Query() query: SearchUserQueryDto) {
+    return this.usersService.searchByName(query.text);
   }
 
   @Get('stats/me')
@@ -25,8 +26,9 @@ export class UsersController {
   }
 
   @Get('collaboration')
-  collaboration(@Query('userIds') userIds: string | string[]) {
+  collaboration(@Query() query: CollaborationUsersQueryDto) {
     let ids: string[] = [];
+    const { userIds } = query;
     if (Array.isArray(userIds)) {
       ids = userIds;
     } else if (typeof userIds === 'string') {

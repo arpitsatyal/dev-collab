@@ -4,6 +4,7 @@ import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { workspaces, workItems } from 'src/common/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { LlmGateway } from '../ports/llm.port';
+import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
 
 @Injectable()
 export class SuggestionService {
@@ -57,11 +58,7 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
     }
   }
 
-  async suggestSnippetFilenameForCode(params: {
-    workspaceId: string | undefined;
-    code: string;
-    language?: string;
-  }) {
+  async suggestSnippetFilenameForCode(params: SuggestSnippetFilenameDto) {
     const { code, language, workspaceId } = params;
 
     const workspace = await this.drizzle.db.query.workspaces.findFirst({

@@ -2,6 +2,7 @@ import { Controller, Get, Post, Delete, Param, UseGuards } from '@nestjs/common'
 import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { ChatService } from './chat.service';
 import { CurrentUser } from '../users/user.decorator';
+import { ChatParamsDto } from './dto/chat.dto';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('chats')
@@ -16,8 +17,8 @@ export class ChatController {
   }
 
   @Get(':chatId')
-  getChatById(@Param('chatId') chatId: string) {
-    return this.chatService.getChatById(chatId);
+  getChatById(@Param() params: ChatParamsDto) {
+    return this.chatService.getChatById(params.chatId);
   }
 
   @Post()
@@ -27,7 +28,7 @@ export class ChatController {
   }
 
   @Delete(':chatId')
-  deleteChat(@Param('chatId') chatId: string) {
-    return this.chatService.deleteChat(chatId);
+  deleteChat(@Param() params: ChatParamsDto) {
+    return this.chatService.deleteChat(params.chatId);
   }
 }
