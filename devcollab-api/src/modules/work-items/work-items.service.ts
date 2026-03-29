@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { QueuePort } from 'src/modules/queue/ports/queue.port';
 import {
   WorkItemCreateDto,
@@ -26,10 +22,6 @@ export class WorkItemsService {
   ) {}
 
   async getWorkItems(workspaceId: string) {
-    if (!workspaceId) {
-      throw new BadRequestException('Workspace ID is required');
-    }
-
     return this.workItemRepo.findByWorkspaceId(workspaceId);
   }
 
@@ -87,7 +79,7 @@ export class WorkItemsService {
 
   async updateStatus(workItemId: string, dto: WorkItemUpdateStatusDto) {
     const updatedWorkItem = await this.workItemRepo.update(workItemId, {
-      status: dto.status as WorkItemStatus,
+      status: dto.status,
     });
 
     if (updatedWorkItem.assignedToId) {

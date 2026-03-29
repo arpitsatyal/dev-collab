@@ -35,11 +35,19 @@ export class DocRepository extends BaseRepository<typeof docs> {
     return this.drizzle.db
       .select()
       .from(docs)
-      .where(and(eq(docs.workspaceId, workspaceId), ilike(docs.label, `%${search}%`)))
+      .where(
+        and(
+          eq(docs.workspaceId, workspaceId),
+          ilike(docs.label, `%${search}%`),
+        ),
+      )
       .limit(limit);
   }
 
-  async updateByRoomId(roomId: string, data: Partial<{ content: unknown; updatedAt: Date }>) {
+  async updateByRoomId(
+    roomId: string,
+    data: Partial<{ content: unknown; updatedAt: Date }>,
+  ) {
     const updateData = { ...data };
     if ('updatedAt' in this.table) {
       (updateData as any).updatedAt = new Date();

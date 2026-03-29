@@ -1,6 +1,10 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import { Octokit } from '@octokit/rest';
-import { SourceCodePort, GitRepoDetails, RepoTreeFile } from '../ports/source-code.port';
+import {
+  SourceCodePort,
+  GitRepoDetails,
+  RepoTreeFile,
+} from '../ports/source-code.port';
 
 @Injectable()
 export class GithubClient implements SourceCodePort {

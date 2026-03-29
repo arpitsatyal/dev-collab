@@ -36,12 +36,14 @@ export class WorkspaceRepository extends BaseRepository<typeof workspaces> {
 
   async upsertPin(userId: string, workspaceId: string) {
     // Check if pin exists
-    const existing = await this.drizzle.db.query.userPinnedWorkspaces.findFirst({
-      where: and(
-        eq(userPinnedWorkspaces.userId, userId),
-        eq(userPinnedWorkspaces.workspaceId, workspaceId),
-      ),
-    });
+    const existing = await this.drizzle.db.query.userPinnedWorkspaces.findFirst(
+      {
+        where: and(
+          eq(userPinnedWorkspaces.userId, userId),
+          eq(userPinnedWorkspaces.workspaceId, workspaceId),
+        ),
+      },
+    );
     if (!existing) {
       await this.drizzle.db
         .insert(userPinnedWorkspaces)

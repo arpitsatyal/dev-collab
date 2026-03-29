@@ -14,7 +14,7 @@ export class ToolService implements ToolRegistry {
     private readonly docRepo: DocRepository,
     private readonly workItemRepo: WorkItemRepository,
     private readonly workspacesService: WorkspacesService,
-  ) { }
+  ) {}
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -102,8 +102,16 @@ export class ToolService implements ToolRegistry {
   ): Promise<string> {
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
-    const snippets = await this.snippetRepo.findManyBySearch(workspaceId, query, 3);
-    const workItems = await this.workItemRepo.findManyBySearch(workspaceId, query, 3);
+    const snippets = await this.snippetRepo.findManyBySearch(
+      workspaceId,
+      query,
+      3,
+    );
+    const workItems = await this.workItemRepo.findManyBySearch(
+      workspaceId,
+      query,
+      3,
+    );
     const docs = await this.docRepo.findManyByLabel(workspaceId, query, 3);
 
     if (snippets.length === 0 && workItems.length === 0 && docs.length === 0) {
@@ -113,7 +121,9 @@ export class ToolService implements ToolRegistry {
     return JSON.stringify({ snippets, workItems, docs });
   }
 
-  private async handleGetWorkspaceOverview(workspaceId: string): Promise<string> {
+  private async handleGetWorkspaceOverview(
+    workspaceId: string,
+  ): Promise<string> {
     if (!workspaceId) return 'Workspace ID is required to fetch overview.';
 
     const [workspace, snippets, workItems, docs] = await Promise.all([
@@ -124,23 +134,35 @@ export class ToolService implements ToolRegistry {
     ]);
 
     const items = {
-      snippets: snippets.map((s: any) => ({ title: s.title, language: s.language })),
-      workItems: workItems.map((w: any) => ({ title: w.title, status: w.status })),
+      snippets: snippets.map((s: any) => ({
+        title: s.title,
+        language: s.language,
+      })),
+      workItems: workItems.map((w: any) => ({
+        title: w.title,
+        status: w.status,
+      })),
       docs: docs.map((d: any) => ({ label: d.label })),
     };
 
-    const hasContent = snippets.length > 0 || workItems.length > 0 || docs.length > 0;
+    const hasContent =
+      snippets.length > 0 || workItems.length > 0 || docs.length > 0;
 
     let summary = `Workspace: ${workspace.title}\n`;
-    if (workspace.description) summary += `Description: ${workspace.description}\n`;
+    if (workspace.description)
+      summary += `Description: ${workspace.description}\n`;
     summary += '\nLatest Items:\n';
 
-    if (snippets.length > 0) summary += `- ${snippets.length} snippets (e.g., ${items.snippets.map(s => s.title).join(', ')})\n`;
-    if (workItems.length > 0) summary += `- ${workItems.length} work items (e.g., ${items.workItems.map(w => w.title).join(', ')})\n`;
-    if (docs.length > 0) summary += `- ${docs.length} docs (e.g., ${items.docs.map(d => d.label).join(', ')})\n`;
+    if (snippets.length > 0)
+      summary += `- ${snippets.length} snippets (e.g., ${items.snippets.map((s) => s.title).join(', ')})\n`;
+    if (workItems.length > 0)
+      summary += `- ${workItems.length} work items (e.g., ${items.workItems.map((w) => w.title).join(', ')})\n`;
+    if (docs.length > 0)
+      summary += `- ${docs.length} docs (e.g., ${items.docs.map((d) => d.label).join(', ')})\n`;
 
     if (!hasContent) {
-      summary += 'The workspace currently contains no snippets, work items, or documentation.';
+      summary +=
+        'The workspace currently contains no snippets, work items, or documentation.';
     }
 
     return summary + '\nFull metadata (top 5 each): ' + JSON.stringify(items);
@@ -149,43 +171,68 @@ export class ToolService implements ToolRegistry {
   getToolsForWorkspace(workspaceId: string) {
     const snippetsTool = new DynamicStructuredTool({
       name: 'getSnippets',
-      description: 'Fetch ALL code snippets in the workspace. Optionally filter by title keywords.',
+      description:
+        'Fetch ALL code snippets in the workspace. Optionally filter by title keywords.',
       schema: z.object({
-        titleFilter: z.string().optional().describe('Keyword to filter snippets by title (e.g., "auth" or "utils"). Leave blank to fetch all.'),
+        titleFilter: z
+          .string()
+          .optional()
+          .describe(
+            'Keyword to filter snippets by title (e.g., "auth" or "utils"). Leave blank to fetch all.',
+          ),
       }),
       func: (args) => this.handleGetSnippets(args, workspaceId),
     } as any);
 
     const docsTool = new DynamicStructuredTool({
       name: 'getDocs',
-      description: 'Fetch ALL documentation records in the workspace. Optionally filter by label.',
+      description:
+        'Fetch ALL documentation records in the workspace. Optionally filter by label.',
       schema: z.object({
-        labelFilter: z.string().optional().describe('Label to filter docs (e.g., "manual" or "design-doc"). Leave blank to fetch all documents.'),
+        labelFilter: z
+          .string()
+          .optional()
+          .describe(
+            'Label to filter docs (e.g., "manual" or "design-doc"). Leave blank to fetch all documents.',
+          ),
       }),
       func: (args) => this.handleGetDocs(args, workspaceId),
     } as any);
 
     const existingWorkItemsTool = new DynamicStructuredTool({
       name: 'getWorkItems',
-      description: 'Fetch ALL work items (tasks/tickets) inside the current workspace. Optionally filter by title.',
+      description:
+        'Fetch ALL work items (tasks/tickets) inside the current workspace. Optionally filter by title.',
       schema: z.object({
-        titleFilter: z.string().optional().describe('Search keyword to filter work item titles. Leave blank to fetch all work items in the workspace.'),
+        titleFilter: z
+          .string()
+          .optional()
+          .describe(
+            'Search keyword to filter work item titles. Leave blank to fetch all work items in the workspace.',
+          ),
       }),
       func: (args) => this.handleGetWorkItems(args, workspaceId),
     } as any);
 
     const semanticSearchTool = new DynamicStructuredTool({
       name: 'semanticSearch',
-      description: 'Perform a broad semantic search across snippets, docs, and work items simultaneously.',
+      description:
+        'Perform a broad semantic search across snippets, docs, and work items simultaneously.',
       schema: z.object({
-        searchQuery: z.string().describe('The natural language search query or concept to look for (e.g. "how do we handle errors?").'),
+        searchQuery: z
+          .string()
+          .describe(
+            'The natural language search query or concept to look for (e.g. "how do we handle errors?").',
+          ),
       }),
-      func: (args) => this.handleSemanticSearch({ query: args.searchQuery }, workspaceId),
+      func: (args) =>
+        this.handleSemanticSearch({ query: args.searchQuery }, workspaceId),
     } as any);
 
     const overviewTool = new DynamicStructuredTool({
       name: 'getWorkspaceOverview',
-      description: 'Fetch a high-level overview of everything in the workspace. Best for "what is this about?", "summarize the workspace", or when you need a general status report.',
+      description:
+        'Fetch a high-level overview of everything in the workspace. Best for "what is this about?", "summarize the workspace", or when you need a general status report.',
       schema: z.object({}), // No parameters needed
       func: () => this.handleGetWorkspaceOverview(workspaceId),
     } as any);

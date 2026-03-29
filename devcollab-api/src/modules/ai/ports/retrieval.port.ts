@@ -18,7 +18,10 @@ export interface SearchHit {
 }
 
 export abstract class RetrievalPort {
-  abstract generateQueryVariations(query: string, llm: BaseChatModel): Promise<string[]>;
+  abstract generateQueryVariations(
+    query: string,
+    llm: BaseChatModel,
+  ): Promise<string[]>;
   abstract performHybridSearch(
     queries: string[],
     originalQuery: string,

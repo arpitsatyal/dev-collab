@@ -7,15 +7,8 @@ import { SessionSerializer } from './session.serializer.';
 import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [
-    PassportModule.register({ session: true }),
-    UsersModule,
-  ],
-  providers: [
-    SessionSerializer,
-    GoogleStrategy,
-    GithubStrategy,
-  ],
+  imports: [PassportModule.register({ session: true }), UsersModule],
+  providers: [SessionSerializer, GoogleStrategy, GithubStrategy],
   controllers: [AuthController],
 })
 export class AuthModule {}

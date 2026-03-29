@@ -10,24 +10,32 @@ import {
 } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { PaginationQueryDto } from 'src/common/dto/pagination-query.dto';
-import { CreateWorkspaceDto, ImportRepositoryDto, RepoTreeQueryDto, TogglePinDto } from './dto/workspaces.dto';
+import {
+  CreateWorkspaceDto,
+  ImportRepositoryDto,
+  RepoTreeQueryDto,
+  TogglePinDto,
+} from './dto/workspaces.dto';
 import { CurrentUser } from '../users/user.decorator';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('workspaces')
 export class WorkspacesController {
-  constructor(private workspacesService: WorkspacesService) { }
+  constructor(private workspacesService: WorkspacesService) {}
 
   @Get()
-  getWorkspaces(@Query() query: PaginationQueryDto, @CurrentUser() user: User | null) {
+  getWorkspaces(
+    @Query() query: PaginationQueryDto,
+    @CurrentUser() user: User | null,
+  ) {
     if (!user) {
       throw new UnauthorizedException();
     }
 
-    return this.workspacesService.getWorkspaces({ 
-      user, 
-      skip: query.skip, 
-      take: query.limit 
+    return this.workspacesService.getWorkspaces({
+      user,
+      skip: query.skip,
+      take: query.limit,
     });
   }
 

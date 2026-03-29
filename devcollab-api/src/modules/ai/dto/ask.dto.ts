@@ -5,4 +5,8 @@ export class AskDto {
   @IsString()
   @MaxLength(4000)
   question: string;
+
+  @IsNotEmpty()
+  @IsString()
+  chatId: string;
 }

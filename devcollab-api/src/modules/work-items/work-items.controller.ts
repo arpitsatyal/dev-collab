@@ -13,13 +13,16 @@ import {
   WorkItemCreateDto,
   WorkItemUpdateStatusDto,
 } from './dto/work-items.dto';
-import { GetWorkItemsQueryDto, GetDueSoonQueryDto } from './dto/work-items-query.dto';
+import {
+  GetWorkItemsQueryDto,
+  GetDueSoonQueryDto,
+} from './dto/work-items-query.dto';
 import { CurrentUser } from '../users/user.decorator';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('work-items')
 export class WorkItemsController {
-  constructor(private readonly workItemsService: WorkItemsService) { }
+  constructor(private readonly workItemsService: WorkItemsService) {}
 
   @Get()
   getWorkItems(@Query() query: GetWorkItemsQueryDto) {
@@ -44,7 +47,11 @@ export class WorkItemsController {
     @CurrentUser() user: User,
   ) {
     const authorId = user.id;
-    return this.workItemsService.createWorkItem(query.workspaceId, authorId, body);
+    return this.workItemsService.createWorkItem(
+      query.workspaceId,
+      authorId,
+      body,
+    );
   }
 
   @Patch(':workItemId/status')

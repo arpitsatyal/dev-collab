@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ChatEngineService } from './chat-engine.service';
 import { SuggestionService } from './suggestion.service';
 import { MessageService } from 'src/modules/message/message.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
+import { AiFilters } from '../interfaces';
 
 @Injectable()
 export class AiService {
@@ -14,14 +15,7 @@ export class AiService {
     private readonly workItemsService: WorkItemsService,
   ) { }
 
-  async ask(chatId: string | undefined, question: string | undefined, filters?: Record<string, any>) {
-    if (!chatId) {
-      throw new BadRequestException('Chat Id is required.');
-    }
-    if (!question) {
-      throw new BadRequestException('Question is required.');
-    }
-
+  async ask(chatId: string, question: string, filters?: AiFilters) {
     await this.messageService.saveUserMessage(chatId, question);
 
     const { answer } = await this.chatEngineService.getAIResponse(
@@ -35,11 +29,10 @@ export class AiService {
     return { answer };
   }
 
-  async analyzeWorkItem(workItemId: string | undefined) {
-    if (!workItemId) throw new BadRequestException('Work item ID is required');
-
-    const plan =
-      await this.suggestionService.generateImplementationPlan(workItemId);
+  async analyzeWorkItem(workItemId: string) {
+    const plan = (await this.suggestionService.generateImplementationPlan(
+      workItemId,
+    )) as Record<string, any>;
 
     await this.workItemsService.update(workItemId, {
       aiPlan: JSON.stringify(plan),
@@ -49,20 +42,15 @@ export class AiService {
   }
 
   async suggestSnippetFilename(params: SuggestSnippetFilenameDto) {
-    if (!params.workspaceId)
-      throw new BadRequestException('Workspace ID is required');
-    if (!params.code?.trim())
-      throw new BadRequestException('Code is required to suggest a filename');
-
     const fileName =
       await this.suggestionService.suggestSnippetFilenameForCode(params);
     return { fileName };
   }
 
-  async suggestWorkItems(workspaceId: string | undefined) {
-    if (!workspaceId) throw new BadRequestException('Workspace ID is required');
-    const suggestions =
-      await this.suggestionService.suggestWorkItems(workspaceId);
+  async suggestWorkItems(workspaceId: string) {
+    const suggestions = (await this.suggestionService.suggestWorkItems(
+      workspaceId,
+    )) as any[];
     return { suggestions };
   }
 }

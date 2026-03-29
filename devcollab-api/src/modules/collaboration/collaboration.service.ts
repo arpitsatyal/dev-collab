@@ -68,12 +68,18 @@ export class CollaborationService implements CollaborationPort {
 
       return response.data.toString('utf8');
     } catch (error) {
-      this.logger.error(`Failed to fetch YDoc for room ${roomId}: ${error?.message || error}`);
+      this.logger.error(
+        `Failed to fetch YDoc for room ${roomId}: ${error?.message || error}`,
+      );
       return null;
     }
   }
 
-  async getComment(params: { roomId: string; threadId: string; commentId: string }): Promise<any> {
+  async getComment(params: {
+    roomId: string;
+    threadId: string;
+    commentId: string;
+  }): Promise<any> {
     try {
       return await this.liveblocks.getComment(params);
     } catch (error) {

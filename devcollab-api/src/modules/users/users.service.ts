@@ -2,10 +2,19 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { eq, count, inArray } from 'drizzle-orm';
 import { UserRepository } from './repositories/user.repository';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import { workspaces, snippets, docs, users, workItems } from 'src/common/drizzle/schema';
+import {
+  workspaces,
+  snippets,
+  docs,
+  users,
+  workItems,
+} from 'src/common/drizzle/schema';
 import { InferInsertModel } from 'drizzle-orm';
 
-type CreateUserDTO = Omit<InferInsertModel<typeof users>, 'id' | 'createdAt' | 'emailVerified'>;
+type CreateUserDTO = Omit<
+  InferInsertModel<typeof users>,
+  'id' | 'createdAt' | 'emailVerified'
+>;
 
 @Injectable()
 export class UsersService {
@@ -32,7 +41,9 @@ export class UsersService {
     const decodedText = decodeURIComponent(text).trim().toLowerCase();
     const allUsers = await this.userRepo.findMany();
     return allUsers
-      .filter((user) => user.name && user.name.toLowerCase().includes(decodedText))
+      .filter(
+        (user) => user.name && user.name.toLowerCase().includes(decodedText),
+      )
       .map((user) => user.id);
   }
 
@@ -48,39 +59,40 @@ export class UsersService {
 
     const workspaceIds = userWorkspaces.map((w) => w.id);
 
-    const [workspacesCount, snippetsCount, docsCount, workItemsCount] = await Promise.all([
-      // Count owned workspaces
-      this.drizzle.db
-        .select({ value: count() })
-        .from(workspaces)
-        .where(eq(workspaces.ownerId, user.id))
-        .then((r) => r[0].value),
+    const [workspacesCount, snippetsCount, docsCount, workItemsCount] =
+      await Promise.all([
+        // Count owned workspaces
+        this.drizzle.db
+          .select({ value: count() })
+          .from(workspaces)
+          .where(eq(workspaces.ownerId, user.id))
+          .then((r) => r[0].value),
 
-      // Count snippets authored
-      this.drizzle.db
-        .select({ value: count() })
-        .from(snippets)
-        .where(eq(snippets.authorId, user.id))
-        .then((r) => r[0].value),
+        // Count snippets authored
+        this.drizzle.db
+          .select({ value: count() })
+          .from(snippets)
+          .where(eq(snippets.authorId, user.id))
+          .then((r) => r[0].value),
 
-      // Count docs in user's workspaces
-      workspaceIds.length > 0
-        ? this.drizzle.db
-            .select({ value: count() })
-            .from(docs)
-            .where(inArray(docs.workspaceId, workspaceIds))
-            .then((r) => r[0].value)
-        : Promise.resolve(0),
+        // Count docs in user's workspaces
+        workspaceIds.length > 0
+          ? this.drizzle.db
+              .select({ value: count() })
+              .from(docs)
+              .where(inArray(docs.workspaceId, workspaceIds))
+              .then((r) => r[0].value)
+          : Promise.resolve(0),
 
-      // Count workItems in user's workspaces
-      workspaceIds.length > 0
-        ? this.drizzle.db
-            .select({ value: count() })
-            .from(workItems)
-            .where(inArray(workItems.workspaceId, workspaceIds))
-            .then((r) => r[0].value)
-        : Promise.resolve(0),
-    ]);
+        // Count workItems in user's workspaces
+        workspaceIds.length > 0
+          ? this.drizzle.db
+              .select({ value: count() })
+              .from(workItems)
+              .where(inArray(workItems.workspaceId, workspaceIds))
+              .then((r) => r[0].value)
+          : Promise.resolve(0),
+      ]);
 
     return {
       workspaces: workspacesCount,

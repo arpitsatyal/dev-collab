@@ -42,7 +42,10 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
 
   async findDueSoon(startDate: Date, endDate: Date) {
     return this.drizzle.db.query.workItems.findMany({
-      where: and(gte(workItems.dueDate, startDate), lte(workItems.dueDate, endDate)),
+      where: and(
+        gte(workItems.dueDate, startDate),
+        lte(workItems.dueDate, endDate),
+      ),
       with: {
         assignedTo: true,
       },
@@ -119,7 +122,9 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
         .returning();
 
       if (snippetIds !== undefined) {
-        await tx.delete(workItemsToSnippets).where(eq(workItemsToSnippets.workItemId, id));
+        await tx
+          .delete(workItemsToSnippets)
+          .where(eq(workItemsToSnippets.workItemId, id));
         if (snippetIds.length > 0) {
           await tx.insert(workItemsToSnippets).values(
             snippetIds.map((snippetId) => ({
@@ -136,8 +141,13 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
 
   async delete(id: string) {
     return await this.drizzle.db.transaction(async (tx) => {
-      await tx.delete(workItemsToSnippets).where(eq(workItemsToSnippets.workItemId, id));
-      const [deleted] = await tx.delete(workItems).where(eq(workItems.id, id)).returning();
+      await tx
+        .delete(workItemsToSnippets)
+        .where(eq(workItemsToSnippets.workItemId, id));
+      const [deleted] = await tx
+        .delete(workItems)
+        .where(eq(workItems.id, id))
+        .returning();
       return deleted;
     });
   }

@@ -4,7 +4,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GroqLlmService {
-  constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
   create() {
     return new ChatOpenAI({

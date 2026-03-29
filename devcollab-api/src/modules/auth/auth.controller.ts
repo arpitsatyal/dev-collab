@@ -39,7 +39,9 @@ export class AuthController {
         if (err) {
           throw new UnauthorizedException('Failed to save session');
         }
-        res.redirect(`${this.configService.get<string>('FRONTEND_URL')}/dashboard`);
+        res.redirect(
+          `${this.configService.get<string>('FRONTEND_URL')}/dashboard`,
+        );
       });
     });
   }
@@ -65,7 +67,9 @@ export class AuthController {
         if (err) {
           throw new UnauthorizedException('Failed to save session');
         }
-        res.redirect(`${this.configService.get<string>('FRONTEND_URL')}/dashboard`);
+        res.redirect(
+          `${this.configService.get<string>('FRONTEND_URL')}/dashboard`,
+        );
       });
     });
   }

@@ -1,11 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import {
-  AIMessage,
-  BaseMessage,
-  ToolMessage,
-} from '@langchain/core/messages';
+import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
 import { MessagesAnnotation, StateGraph } from '@langchain/langgraph';
-import { ToolNode } from "@langchain/langgraph/prebuilt";
+import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AiConfig } from '../ai.config';
 import { LlmGateway } from '../ports/llm.port';
 import { ToolRegistry } from '../ports/tool.port';
@@ -19,7 +15,7 @@ export class LangGraphService implements AgentPort {
     private readonly llmGateway: LlmGateway,
     private readonly toolService: ToolRegistry,
     private readonly config: AiConfig,
-  ) { }
+  ) {}
 
   /**
    * Runs a LangGraph loop that alternates between the LLM (agent) and tools
@@ -46,10 +42,15 @@ export class LangGraphService implements AgentPort {
       .addNode('agent', callModel)
       .addNode('tools', toolNode)
       .addEdge('__start__', 'agent')
-      .addConditionalEdges('agent', (state: typeof MessagesAnnotation.State) => {
-        const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-        return lastMessage.tool_calls?.length ? 'tools' : '__end__';
-      })
+      .addConditionalEdges(
+        'agent',
+        (state: typeof MessagesAnnotation.State) => {
+          const lastMessage = state.messages[
+            state.messages.length - 1
+          ] as AIMessage;
+          return lastMessage.tool_calls?.length ? 'tools' : '__end__';
+        },
+      )
       .addEdge('tools', 'agent')
       .compile();
 
@@ -74,12 +75,16 @@ export class LangGraphService implements AgentPort {
 
     const lastAIMessage = [...finalState.messages]
       .reverse()
-      .find((m: BaseMessage) => m instanceof AIMessage) as AIMessage | undefined;
+      .find((m: BaseMessage) => m instanceof AIMessage) as
+      | AIMessage
+      | undefined;
 
     const answer =
       typeof lastAIMessage?.content === 'string'
         ? lastAIMessage.content
-        : JSON.stringify(lastAIMessage?.content ?? 'Unable to generate a response.');
+        : JSON.stringify(
+            lastAIMessage?.content ?? 'Unable to generate a response.',
+          );
 
     return { answer, calledTools };
   }

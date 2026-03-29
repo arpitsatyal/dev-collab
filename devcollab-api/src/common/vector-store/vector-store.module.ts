@@ -9,4 +9,4 @@ import { VectorStorePort } from './ports/vector-store.port';
   ],
   exports: [VectorStoreService, VectorStorePort],
 })
-export class VectorStoreModule { }
+export class VectorStoreModule {}

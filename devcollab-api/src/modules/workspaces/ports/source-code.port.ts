@@ -14,5 +14,8 @@ export interface RepoTreeFile {
 export abstract class SourceCodePort {
   abstract getRepoDetails(url: string): Promise<GitRepoDetails>;
   abstract getRepoTree(details: GitRepoDetails): Promise<RepoTreeFile[]>;
-  abstract fetchFileContent(details: GitRepoDetails, path: string): Promise<string | null>;
+  abstract fetchFileContent(
+    details: GitRepoDetails,
+    path: string,
+  ): Promise<string | null>;
 }

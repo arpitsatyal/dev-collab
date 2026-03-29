@@ -24,7 +24,13 @@ import { RetrievalService } from './services/retrieval.service';
 import { ToolService } from './services/tool.service';
 
 @Module({
-  imports: [MessageModule, WorkItemsModule, LlmModule, VectorStoreModule, WorkspacesModule],
+  imports: [
+    MessageModule,
+    WorkItemsModule,
+    LlmModule,
+    VectorStoreModule,
+    WorkspacesModule,
+  ],
   providers: [
     AiConfig,
     AiService,
@@ -41,4 +47,4 @@ import { ToolService } from './services/tool.service';
   ],
   controllers: [AiController],
 })
-export class AiModule { }
+export class AiModule {}

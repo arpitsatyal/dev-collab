@@ -47,7 +47,6 @@ import { SessionAuthGuard } from './common/guards/auth.guard';
     },
   ],
 })
-
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');

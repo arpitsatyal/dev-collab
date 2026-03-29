@@ -2,7 +2,10 @@ import { Controller, Get, Param, Query } from '@nestjs/common';
 
 import { UsersService } from './users.service';
 import { CurrentUser } from './user.decorator';
-import { SearchUserQueryDto, CollaborationUsersQueryDto } from './dto/users.dto';
+import {
+  SearchUserQueryDto,
+  CollaborationUsersQueryDto,
+} from './dto/users.dto';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('users')
@@ -26,14 +29,7 @@ export class UsersController {
 
   @Get('collaboration')
   collaboration(@Query() query: CollaborationUsersQueryDto) {
-    let ids: string[] = [];
-    const { userIds } = query;
-    if (Array.isArray(userIds)) {
-      ids = userIds;
-    } else if (typeof userIds === 'string') {
-      ids = userIds.split(',');
-    }
-    return this.usersService.getCollaborationUsers(ids);
+    return this.usersService.getCollaborationUsers(query.userIds);
   }
 
   @Get(':id')

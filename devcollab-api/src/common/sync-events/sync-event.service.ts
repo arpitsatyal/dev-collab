@@ -60,7 +60,7 @@ export class SyncEventService implements SyncEventPort {
 
   private async syncMeiliSearch(type: EventType, data: any) {
     try {
-      let syncDoc = { ...data };
+      const syncDoc = { ...data };
       if (data.workspaceId) {
         const workspace = await this.drizzle.db.query.workspaces.findFirst({
           where: eq(workspaces.id, data.workspaceId),
@@ -71,7 +71,9 @@ export class SyncEventService implements SyncEventPort {
       await axios.post(this.meiliUrl as string, { doc: syncDoc, type });
       this.logger.log(`[MeiliSearch] Synced ${type} ${data.id}`);
     } catch (err: any) {
-      this.logger.warn(`[MeiliSearch] Failed to sync ${type}: ${data.id} -> ${err?.message || err}`);
+      this.logger.warn(
+        `[MeiliSearch] Failed to sync ${type}: ${data.id} -> ${err?.message || err}`,
+      );
     }
   }
 }

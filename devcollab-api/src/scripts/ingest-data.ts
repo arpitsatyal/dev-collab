@@ -10,11 +10,13 @@ const DIMENSIONS = 1024;
 const BATCH_SIZE = 50;
 
 async function bootstrap() {
-  console.log('Starting data ingestion with Pinecone Inference API (NestJS CLI)...');
+  console.log(
+    'Starting data ingestion with Pinecone Inference API (NestJS CLI)...',
+  );
 
   // Boot up NestJS Application Context (no HTTP server)
   const app = await NestFactory.createApplicationContext(AppModule);
-  
+
   const drizzle = app.get(DrizzleService);
   const config = app.get(ConfigService);
 
@@ -30,16 +32,23 @@ async function bootstrap() {
     const exists = indexList.indexes?.some((idx) => idx.name === indexName);
 
     if (exists) {
-      console.log(`🗑️ Deleting existing index '${indexName}' for clean ingestion...`);
+      console.log(
+        `🗑️ Deleting existing index '${indexName}' for clean ingestion...`,
+      );
       await pc.deleteIndex(indexName);
       console.log(`⏳ Waiting for deletion to propagate (10s)...`);
       await new Promise((r) => setTimeout(r, 10000));
     }
   } catch (e) {
-    console.warn('Error checking/deleting index, proceeding to creation attempt:', e);
+    console.warn(
+      'Error checking/deleting index, proceeding to creation attempt:',
+      e,
+    );
   }
 
-  console.log(`🆕 Creating index '${indexName}' with dimensions ${DIMENSIONS}...`);
+  console.log(
+    `🆕 Creating index '${indexName}' with dimensions ${DIMENSIONS}...`,
+  );
   try {
     await pc.createIndex({
       name: indexName,
@@ -51,7 +60,9 @@ async function bootstrap() {
     await new Promise((r) => setTimeout(r, 30000));
   } catch (e: any) {
     if (e?.message?.includes('already exists')) {
-      console.log('Index creation race condition - index already exists. Proceeding.');
+      console.log(
+        'Index creation race condition - index already exists. Proceeding.',
+      );
     } else {
       throw e;
     }
@@ -61,9 +72,11 @@ async function bootstrap() {
 
   // Step 2: Fetch Data (Workspaces, Work Items, Snippets, Docs)
   console.log('Fetching data from database via Drizzle...');
-  
+
   const [workspaces, workItems, snippets, docs] = await Promise.all([
-    drizzle.db.query.workspaces.findMany({ with: { workItems: true, snippets: true, docs: true } }),
+    drizzle.db.query.workspaces.findMany({
+      with: { workItems: true, snippets: true, docs: true },
+    }),
     drizzle.db.query.workItems.findMany({ with: { workspace: true } }),
     drizzle.db.query.snippets.findMany({ with: { workspace: true } }),
     drizzle.db.query.docs.findMany({ with: { workspace: true } }),
@@ -78,7 +91,9 @@ async function bootstrap() {
 
   // --- GLOBAL SUMMARY RECORD ---
   const todoItems = workItems.filter((t) => t.status === 'TODO').length;
-  const inProgressItems = workItems.filter((t) => t.status === 'IN_PROGRESS').length;
+  const inProgressItems = workItems.filter(
+    (t) => t.status === 'IN_PROGRESS',
+  ).length;
   const doneItems = workItems.filter((t) => t.status === 'DONE').length;
 
   const globalSummary = `Global Platform Overview & Statistics:
@@ -103,30 +118,35 @@ Use this information when asked about "how many", "total count", "platform summa
   // --- APP FEATURE RECORDS ---
   const appFeatures = [
     {
-      id: "feature-dashboard",
-      title: "Dashboard",
-      description: "The main landing page after login. It provides a grid overview of all your workspaces, including their titles, descriptions, and quick access to work items, snippets, and documentation."
+      id: 'feature-dashboard',
+      title: 'Dashboard',
+      description:
+        'The main landing page after login. It provides a grid overview of all your workspaces, including their titles, descriptions, and quick access to work items, snippets, and documentation.',
     },
     {
-      id: "feature-playground",
-      title: "Collaborative Playground",
-      description: "A collaborative code editor where users can write code in real-time. It's accessible via the /playground route. Users can share the specific room link (e.g., /playground?roomId=xyz) with others to code together live."
+      id: 'feature-playground',
+      title: 'Collaborative Playground',
+      description:
+        "A collaborative code editor where users can write code in real-time. It's accessible via the /playground route. Users can share the specific room link (e.g., /playground?roomId=xyz) with others to code together live.",
     },
     {
-      id: "feature-search",
-      title: "Global Search",
-      description: "A comprehensive search interface that allows users to find workspaces, work items, snippets, and documents across the entire platform. Uses semantic search to find relevant results based on meaning, not just keywords."
+      id: 'feature-search',
+      title: 'Global Search',
+      description:
+        'A comprehensive search interface that allows users to find workspaces, work items, snippets, and documents across the entire platform. Uses semantic search to find relevant results based on meaning, not just keywords.',
     },
     {
-      id: "feature-ai-chat",
-      title: "AI Chat Assistant",
-      description: "A persistent sidebar assistant available throughout the app (except in specific full-screen views). It uses RAG (Retrieval-Augmented Generation) to answer questions about your workspaces and platform features."
+      id: 'feature-ai-chat',
+      title: 'AI Chat Assistant',
+      description:
+        'A persistent sidebar assistant available throughout the app (except in specific full-screen views). It uses RAG (Retrieval-Augmented Generation) to answer questions about your workspaces and platform features.',
     },
     {
-      id: "feature-project-management",
-      title: "Workspace Management",
-      description: "The core functionality for organizing work. Each workspace can contain its own set of work items, code snippets, and structured documentation."
-    }
+      id: 'feature-project-management',
+      title: 'Workspace Management',
+      description:
+        'The core functionality for organizing work. Each workspace can contain its own set of work items, code snippets, and structured documentation.',
+    },
   ];
 
   appFeatures.forEach((feature) => {
@@ -185,7 +205,10 @@ Use this information when asked about "how many", "total count", "platform summa
   docs.forEach((doc) => {
     let contentStr = '';
     try {
-      contentStr = typeof doc.content === 'string' ? doc.content : JSON.stringify(doc.content);
+      contentStr =
+        typeof doc.content === 'string'
+          ? doc.content
+          : JSON.stringify(doc.content);
     } catch (e) {
       contentStr = 'Error parsing content';
     }
@@ -253,7 +276,9 @@ Use this information when asked about "how many", "total count", "platform summa
       await index.upsert({ records: vectors });
 
       successCount += vectors.length;
-      console.log(`✓ Processed batch ${Math.ceil((i + 1) / BATCH_SIZE)}/${Math.ceil(records.length / BATCH_SIZE)} (${successCount}/${records.length})`);
+      console.log(
+        `✓ Processed batch ${Math.ceil((i + 1) / BATCH_SIZE)}/${Math.ceil(records.length / BATCH_SIZE)} (${successCount}/${records.length})`,
+      );
     } catch (e) {
       console.error(`✗ Failed to process batch starting at index ${i}:`, e);
     }

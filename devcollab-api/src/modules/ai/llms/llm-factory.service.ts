@@ -16,7 +16,7 @@ export class LlmFactoryService implements LlmGateway {
   constructor(
     private readonly togetherLlmService: TogetherLlmService,
     private readonly groqLlmService: GroqLlmService,
-  ) { }
+  ) {}
 
   async getReasoningLLM(): Promise<BaseChatModel> {
     if (this.togetherFailed) {
@@ -25,13 +25,16 @@ export class LlmFactoryService implements LlmGateway {
 
     const primary = this.togetherLlmService.create().withListeners({
       onError: (run: any) => {
-        this.logger.warn(`Primary Reasoning (Together) failed: ${run.error}. Switching to persistent fallback.`);
+        this.logger.warn(
+          `Primary Reasoning (Together) failed: ${run.error}. Switching to persistent fallback.`,
+        );
         this.togetherFailed = true;
       },
     });
     const fallback = this.groqLlmService.create().withListeners({
       onStart: () => this.logger.log('Fallback Reasoning (Groq) triggered!'),
-      onError: (run: any) => this.logger.error(`Fallback Reasoning (Groq) failed: ${run.error}`),
+      onError: (run: any) =>
+        this.logger.error(`Fallback Reasoning (Groq) failed: ${run.error}`),
     });
 
     return primary.withFallbacks({
@@ -46,13 +49,16 @@ export class LlmFactoryService implements LlmGateway {
 
     const primary = this.groqLlmService.create().withListeners({
       onError: (run: any) => {
-        this.logger.warn(`Primary Speedy (Groq) failed: ${run.error}. Switching to persistent fallback.`);
+        this.logger.warn(
+          `Primary Speedy (Groq) failed: ${run.error}. Switching to persistent fallback.`,
+        );
         this.groqFailed = true;
       },
     });
     const fallback = this.togetherLlmService.create().withListeners({
       onStart: () => this.logger.log('Fallback Speedy (Together) triggered!'),
-      onError: (run: any) => this.logger.error(`Fallback Speedy (Together) failed: ${run.error}`),
+      onError: (run: any) =>
+        this.logger.error(`Fallback Speedy (Together) failed: ${run.error}`),
     });
 
     return primary.withFallbacks({
@@ -72,16 +78,23 @@ export class LlmFactoryService implements LlmGateway {
     const primary = this.togetherLlmService.create();
     const fallback = this.groqLlmService.create();
 
-    const structuredPrimary = (primary as any).withStructuredOutput(schema, { name }).withListeners({
-      onError: (run: any) => {
-        this.logger.warn(`Primary Structured (Together) failed: ${run.error}. Switching to persistent fallback.`);
-        this.togetherFailed = true;
-      },
-    });
-    const structuredFallback = (fallback as any).withStructuredOutput(schema, { name }).withListeners({
-      onStart: () => this.logger.log('Fallback Structured (Groq) triggered!'),
-      onError: (run: any) => this.logger.error(`Fallback Structured (Groq) failed: ${run.error}`),
-    });
+    const structuredPrimary = (primary as any)
+      .withStructuredOutput(schema, { name })
+      .withListeners({
+        onError: (run: any) => {
+          this.logger.warn(
+            `Primary Structured (Together) failed: ${run.error}. Switching to persistent fallback.`,
+          );
+          this.togetherFailed = true;
+        },
+      });
+    const structuredFallback = (fallback as any)
+      .withStructuredOutput(schema, { name })
+      .withListeners({
+        onStart: () => this.logger.log('Fallback Structured (Groq) triggered!'),
+        onError: (run: any) =>
+          this.logger.error(`Fallback Structured (Groq) failed: ${run.error}`),
+      });
 
     return structuredPrimary.withFallbacks({
       fallbacks: [structuredFallback],
@@ -92,7 +105,9 @@ export class LlmFactoryService implements LlmGateway {
     tools: StructuredTool[],
   ): Promise<BaseChatModel> {
     if (this.togetherFailed) {
-      return this.groqLlmService.create().bindTools(tools) as unknown as BaseChatModel;
+      return this.groqLlmService
+        .create()
+        .bindTools(tools) as unknown as BaseChatModel;
     }
 
     const primary = this.togetherLlmService.create();
@@ -100,13 +115,16 @@ export class LlmFactoryService implements LlmGateway {
 
     const boundPrimary = primary.bindTools(tools).withListeners({
       onError: (run: any) => {
-        this.logger.warn(`Primary ToolBound (Together) failed: ${run.error}. Switching to persistent fallback.`);
+        this.logger.warn(
+          `Primary ToolBound (Together) failed: ${run.error}. Switching to persistent fallback.`,
+        );
         this.togetherFailed = true;
       },
     });
     const boundFallback = fallback.bindTools(tools).withListeners({
       onStart: () => this.logger.log('Fallback ToolBound (Groq) triggered!'),
-      onError: (run: any) => this.logger.error(`Fallback ToolBound (Groq) failed: ${run.error}`),
+      onError: (run: any) =>
+        this.logger.error(`Fallback ToolBound (Groq) failed: ${run.error}`),
     });
 
     return boundPrimary.withFallbacks({

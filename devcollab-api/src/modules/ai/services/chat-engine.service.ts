@@ -24,7 +24,7 @@ export class ChatEngineService {
     private readonly retrievalService: RetrievalPort,
     private readonly generationService: GenerationPort,
     private readonly messageService: MessageService,
-  ) { }
+  ) {}
 
   /**
    * Main entry point for AI responses.
@@ -51,7 +51,9 @@ export class ChatEngineService {
     question: string,
     filters?: Record<string, any>,
   ): IChatContext {
-    const workspaceId = filters?.workspaceId ? String(filters.workspaceId) : undefined;
+    const workspaceId = filters?.workspaceId
+      ? String(filters.workspaceId)
+      : undefined;
     return {
       chatId,
       question,
@@ -77,7 +79,9 @@ export class ChatEngineService {
       if (result.confidence > 0.4) {
         return { intent: result.intent, scope: result.scope };
       }
-      this.logger.warn('Intent Classification: Low confidence, defaulting to WORKSPACE_QUERY');
+      this.logger.warn(
+        'Intent Classification: Low confidence, defaulting to WORKSPACE_QUERY',
+      );
     } catch (e) {
       this.logger.warn(
         `Intent Classification failed: ${e instanceof Error ? e.message : e}`,
@@ -115,7 +119,9 @@ export class ChatEngineService {
     };
   }
 
-  private async handleWorkspaceQuery(context: IChatContext): Promise<IChatResponse> {
+  private async handleWorkspaceQuery(
+    context: IChatContext,
+  ): Promise<IChatResponse> {
     if (context.inWorkspace && context.workspaceId) {
       return this.getAIResponseWithTools(
         context.chatId,
@@ -130,7 +136,10 @@ export class ChatEngineService {
     );
   }
 
-  private async getFormattedHistory(chatId: string, limit: number): Promise<string> {
+  private async getFormattedHistory(
+    chatId: string,
+    limit: number,
+  ): Promise<string> {
     const messages = await this.messageService.getHistory(chatId, limit);
     return messages
       .map((m) => (m.isUser ? `User: ${m.content}` : `AI: ${m.content}`))
@@ -142,7 +151,9 @@ export class ChatEngineService {
     question: string,
     workspaceId: string,
   ): Promise<IChatResponse> {
-    this.logger.log(`LangGraph: Processing with tools for workspace ${workspaceId}`);
+    this.logger.log(
+      `LangGraph: Processing with tools for workspace ${workspaceId}`,
+    );
     const history = await this.getFormattedHistory(chatId, 10);
     const messages: BaseMessage[] = this.promptService.buildChatMessages(
       history,
@@ -184,7 +195,8 @@ export class ChatEngineService {
 
     if (filteredResults.length === 0) {
       return {
-        answer: "I couldn't find any relevant snippets, docs, or work items across your workspaces related to that query. Try using more specific keywords or workspace names.",
+        answer:
+          "I couldn't find any relevant snippets, docs, or work items across your workspaces related to that query. Try using more specific keywords or workspace names.",
         context: '',
         validated: { isValid: true, warning: null },
       };

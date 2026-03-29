@@ -4,9 +4,7 @@ import { CollaborationWebhookDto } from 'src/modules/collaboration/dto/webhook.d
 
 @Controller('webhooks/collaboration')
 export class CollaborationWebhookController {
-  constructor(
-    private readonly webhookService: CollaborationWebhookService,
-  ) {}
+  constructor(private readonly webhookService: CollaborationWebhookService) {}
 
   @Post()
   @HttpCode(200)

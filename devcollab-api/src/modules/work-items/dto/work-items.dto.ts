@@ -5,7 +5,10 @@ import {
   IsArray,
   ArrayUnique,
 } from 'class-validator';
-import { WorkItemStatus, workItemStatusValues } from 'src/common/drizzle/schema';
+import {
+  WorkItemStatus,
+  workItemStatusValues,
+} from 'src/common/drizzle/schema';
 
 export class WorkItemCreateDto {
   @IsString()

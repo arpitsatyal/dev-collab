@@ -10,7 +10,7 @@ import { AiConfig } from '../ai.config';
 
 describe('ChatEngineService', () => {
   let service: ChatEngineService;
-  
+
   const mockPromptPort = {
     buildChatMessages: jest.fn(),
     constructPrompt: jest.fn(),
@@ -63,13 +63,17 @@ describe('ChatEngineService', () => {
 
     // Reset all mocks
     jest.clearAllMocks();
-    
+
     // Default mock implementations
     mockMessageService.getHistory.mockResolvedValue([]);
-    
+
     // Mock classifier LLM returning default intent
     mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-      invoke: jest.fn().mockResolvedValue({ intent: 'WORKSPACE_QUERY', scope: 'APP_SPECIFIC', confidence: 0.9 })
+      invoke: jest.fn().mockResolvedValue({
+        intent: 'WORKSPACE_QUERY',
+        scope: 'APP_SPECIFIC',
+        confidence: 0.9,
+      }),
     });
   });
 
@@ -77,10 +81,16 @@ describe('ChatEngineService', () => {
     it('should route to Conversational logic when intent is CONVERSATIONAL', async () => {
       // Setup classifier to return CONVERSATIONAL
       mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({ intent: 'CONVERSATIONAL', scope: 'APP_SPECIFIC', confidence: 0.9 })
+        invoke: jest.fn().mockResolvedValue({
+          intent: 'CONVERSATIONAL',
+          scope: 'APP_SPECIFIC',
+          confidence: 0.9,
+        }),
       });
-      
-      const mockPipe = jest.fn().mockReturnValue({ invoke: jest.fn().mockResolvedValue('Hello there!') });
+
+      const mockPipe = jest.fn().mockReturnValue({
+        invoke: jest.fn().mockResolvedValue('Hello there!'),
+      });
       mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
 
       const result = await service.getAIResponse('chat-1', 'Hi!');
@@ -91,10 +101,17 @@ describe('ChatEngineService', () => {
 
     it('should return appScopeReply when intent is OUT_OF_SCOPE and no workspaceId is provided', async () => {
       mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({ intent: 'WORKSPACE_QUERY', scope: 'OUT_OF_SCOPE', confidence: 0.9 })
+        invoke: jest.fn().mockResolvedValue({
+          intent: 'WORKSPACE_QUERY',
+          scope: 'OUT_OF_SCOPE',
+          confidence: 0.9,
+        }),
       });
 
-      const result = await service.getAIResponse('chat-1', 'How do I cook pasta?');
+      const result = await service.getAIResponse(
+        'chat-1',
+        'How do I cook pasta?',
+      );
 
       expect(result.answer).toBe(mockAiConfig.appScopeReply);
       expect(mockAgentPort.runAgentGraph).not.toHaveBeenCalled();
@@ -102,32 +119,50 @@ describe('ChatEngineService', () => {
 
     it('should route to LangGraph Agent when workspaceId is provided', async () => {
       mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({ intent: 'WORKSPACE_QUERY', scope: 'APP_SPECIFIC', confidence: 0.9 })
+        invoke: jest.fn().mockResolvedValue({
+          intent: 'WORKSPACE_QUERY',
+          scope: 'APP_SPECIFIC',
+          confidence: 0.9,
+        }),
       });
-      
+
       mockAgentPort.runAgentGraph.mockResolvedValue({
         answer: 'Here are your workspace details.',
-        calledTools: ['getSnippetsTool']
+        calledTools: ['getSnippetsTool'],
       });
 
-      const result = await service.getAIResponse('chat-1', 'What are the tasks?', { workspaceId: 'ws-1' });
+      const result = await service.getAIResponse(
+        'chat-1',
+        'What are the tasks?',
+        { workspaceId: 'ws-1' },
+      );
 
       expect(result.answer).toBe('Here are your workspace details.');
-      expect(mockAgentPort.runAgentGraph).toHaveBeenCalledWith(undefined, 'ws-1');
+      expect(mockAgentPort.runAgentGraph).toHaveBeenCalledWith(
+        undefined,
+        'ws-1',
+      );
     });
 
     it('should route to Global Search when no workspaceId is provided but query is APP_SPECIFIC', async () => {
       mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({ intent: 'WORKSPACE_QUERY', scope: 'APP_SPECIFIC', confidence: 0.9 })
+        invoke: jest.fn().mockResolvedValue({
+          intent: 'WORKSPACE_QUERY',
+          scope: 'APP_SPECIFIC',
+          confidence: 0.9,
+        }),
       });
-      
+
       mockRetrievalPort.performHybridSearch.mockResolvedValue([
-        { doc: { pageContent: 'Global doc content', metadata: {} }, score: 0.9 }
+        {
+          doc: { pageContent: 'Global doc content', metadata: {} },
+          score: 0.9,
+        },
       ]);
-      
+
       mockGenerationPort.generateAnswer.mockResolvedValue({
         answer: 'Generated global answer.',
-        context: 'Global doc content'
+        context: 'Global doc content',
       });
 
       const result = await service.getAIResponse('chat-1', 'Search globally');

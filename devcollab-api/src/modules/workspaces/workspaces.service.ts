@@ -1,9 +1,9 @@
+import { Injectable, NotFoundException } from '@nestjs/common';
 import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
-import { CreateWorkspaceDto } from './dto/workspaces.dto';
+  CreateWorkspaceDto,
+  ImportRepositoryDto,
+  TogglePinDto,
+} from './dto/workspaces.dto';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { randomUUID } from 'crypto';
 import { WorkspaceRepository } from './infrastructure/workspace.repository';
@@ -13,13 +13,12 @@ import { SNIPPET_EXTENSIONS } from './utils/constants';
 
 @Injectable()
 export class WorkspacesService {
-
   constructor(
     private syncPort: SyncEventPort,
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly importRepo: WorkspaceImportRepository,
     private readonly sourceCodeClient: SourceCodePort,
-  ) { }
+  ) {}
 
   async getWorkspace(id: string) {
     const workspace = await this.workspaceRepo.findById(id);
@@ -53,15 +52,11 @@ export class WorkspacesService {
   }
 
   async togglePinWorkspace(
-    params: { isPinned: boolean },
+    dto: TogglePinDto,
     user: { id: string },
     workspaceId: string,
   ) {
-    const { isPinned } = params;
-
-    if (typeof isPinned !== 'boolean') {
-      throw new BadRequestException('isPinned must be a boolean.');
-    }
+    const { isPinned } = dto;
 
     if (isPinned) {
       await this.workspaceRepo.upsertPin(user.id, workspaceId);
@@ -84,15 +79,10 @@ export class WorkspacesService {
     };
   }
 
-  async importRepository(params: {
-    url: string;
-    selectedFiles: string[];
-    user: { id: string };
-  }) {
+  async importRepository(
+    params: ImportRepositoryDto & { user: { id: string } },
+  ) {
     const { url, selectedFiles, user } = params;
-    if (!url) throw new BadRequestException('GitHub URL is required');
-    if (!selectedFiles?.length)
-      throw new BadRequestException('No files selected for import');
 
     const repoDetails = await this.sourceCodeClient.getRepoDetails(url);
 

@@ -4,7 +4,12 @@ import { PineconeStore } from '@langchain/pinecone';
 import { Document } from '@langchain/core/documents';
 import { PineconeInferenceEmbeddings } from './pinecone-embeddings';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import { workspaces, workItems, snippets, docs } from 'src/common/drizzle/schema';
+import {
+  workspaces,
+  workItems,
+  snippets,
+  docs,
+} from 'src/common/drizzle/schema';
 import { eq } from 'drizzle-orm';
 import { VectorStorePort } from './ports/vector-store.port';
 import { ConfigService } from '@nestjs/config';
@@ -26,8 +31,8 @@ export class VectorStoreService implements VectorStorePort {
       apiKey: this.configService.getOrThrow<string>('PINECONE_API_KEY'),
     });
     this.indexName = this.configService.getOrThrow<string>('PINECONE_INDEX');
-    this.embeddings = new PineconeInferenceEmbeddings({ 
-      apiKey: this.configService.getOrThrow<string>('PINECONE_API_KEY') 
+    this.embeddings = new PineconeInferenceEmbeddings({
+      apiKey: this.configService.getOrThrow<string>('PINECONE_API_KEY'),
     });
   }
 

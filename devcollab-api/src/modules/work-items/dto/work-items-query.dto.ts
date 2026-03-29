@@ -1,4 +1,4 @@
-import { IsOptional, IsString } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString } from 'class-validator';
 
 export class GetDueSoonQueryDto {
   @IsOptional()
@@ -7,6 +7,7 @@ export class GetDueSoonQueryDto {
 }
 
 export class GetWorkItemsQueryDto {
+  @IsNotEmpty()
   @IsString()
   workspaceId: string;
 }

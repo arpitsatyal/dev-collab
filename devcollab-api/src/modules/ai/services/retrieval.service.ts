@@ -4,8 +4,17 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { Document } from '@langchain/core/documents';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { VectorStorePort } from 'src/common/vector-store/ports/vector-store.port';
-import { RetrievalPort, SearchHit, SearchDocument } from '../ports/retrieval.port';
-import { workspaces, workItems, snippets, docs } from 'src/common/drizzle/schema';
+import {
+  RetrievalPort,
+  SearchHit,
+  SearchDocument,
+} from '../ports/retrieval.port';
+import {
+  workspaces,
+  workItems,
+  snippets,
+  docs,
+} from 'src/common/drizzle/schema';
 import { eq, or, ilike, and } from 'drizzle-orm';
 
 @Injectable()
@@ -16,7 +25,7 @@ export class RetrievalService implements RetrievalPort {
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly vectorStorePort: VectorStorePort,
-  ) { }
+  ) {}
 
   async generateQueryVariations(
     query: string,
@@ -53,13 +62,15 @@ export class RetrievalService implements RetrievalPort {
 
     try {
       if (!workspaceId) {
-        const foundWorkspaces = await this.drizzle.db.query.workspaces.findMany({
-          where: or(
-            ilike(workspaces.title, `%${query}%`),
-            ilike(workspaces.description, `%${query}%`),
-          ),
-          limit: 3,
-        });
+        const foundWorkspaces = await this.drizzle.db.query.workspaces.findMany(
+          {
+            where: or(
+              ilike(workspaces.title, `%${query}%`),
+              ilike(workspaces.description, `%${query}%`),
+            ),
+            limit: 3,
+          },
+        );
 
         results.push(
           ...foundWorkspaces.map((w) => ({

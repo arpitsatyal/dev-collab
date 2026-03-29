@@ -17,7 +17,7 @@ export class CollaborationWebhookService {
     private readonly queueClient: QueuePort,
     private readonly userRepo: UserRepository,
     private readonly docRepo: DocRepository,
-  ) { }
+  ) {}
 
   async handleWebhook(payload: any): Promise<{ message: string }> {
     const { type, data } = payload || {};
@@ -54,11 +54,14 @@ export class CollaborationWebhookService {
     const comment = await this.collaborationClient.getComment({
       roomId: data.roomId,
       threadId: data.threadId,
-      commentId: data.commentId
+      commentId: data.commentId,
     });
 
     if (!comment?.body) {
-      return { message: 'Mention is already read or comment not found. No notification sent.' };
+      return {
+        message:
+          'Mention is already read or comment not found. No notification sent.',
+      };
     }
 
     const mentionContent = this.extractLexicalText(comment.body);
@@ -87,7 +90,9 @@ export class CollaborationWebhookService {
 
   private async handleYdocUpdated(data: any) {
     try {
-      const content = await this.collaborationClient.getYdocContent(data.roomId);
+      const content = await this.collaborationClient.getYdocContent(
+        data.roomId,
+      );
 
       if (!content) {
         this.logger.log(`No content received for roomId: ${data.roomId}`);

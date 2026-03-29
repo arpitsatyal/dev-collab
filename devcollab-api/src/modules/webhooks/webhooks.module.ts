@@ -27,8 +27,9 @@ import { CollaborationModule } from '../collaboration/collaboration.module';
 })
 export class WebhooksModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(RawBodyMiddleware)
-      .forRoutes({ path: 'webhooks/collaboration', method: RequestMethod.POST });
+    consumer.apply(RawBodyMiddleware).forRoutes({
+      path: 'webhooks/collaboration',
+      method: RequestMethod.POST,
+    });
   }
 }

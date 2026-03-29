@@ -1,9 +1,19 @@
-import { pgTable, text, boolean, timestamp, json, pgEnum } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  boolean,
+  timestamp,
+  json,
+  pgEnum,
+} from 'drizzle-orm/pg-core';
 import { relations, InferSelectModel, InferInsertModel } from 'drizzle-orm';
 
 export const providerEnum = pgEnum('Provider', ['GOOGLE', 'GITHUB', 'LOCAL']);
 export const workItemStatusValues = ['TODO', 'IN_PROGRESS', 'DONE'] as const;
-export const workItemStatusEnum = pgEnum('WorkItemStatus', workItemStatusValues);
+export const workItemStatusEnum = pgEnum(
+  'WorkItemStatus',
+  workItemStatusValues,
+);
 export type WorkItemStatus = (typeof workItemStatusValues)[number];
 
 export const users = pgTable('User', {
@@ -172,13 +182,16 @@ export const workItemsRelations = relations(workItems, ({ one, many }) => ({
   snippets: many(workItemsToSnippets),
 }));
 
-export const workItemsToSnippetsRelations = relations(workItemsToSnippets, ({ one }) => ({
-  workItem: one(workItems, {
-    fields: [workItemsToSnippets.workItemId],
-    references: [workItems.id],
+export const workItemsToSnippetsRelations = relations(
+  workItemsToSnippets,
+  ({ one }) => ({
+    workItem: one(workItems, {
+      fields: [workItemsToSnippets.workItemId],
+      references: [workItems.id],
+    }),
+    snippet: one(snippets, {
+      fields: [workItemsToSnippets.snippetId],
+      references: [snippets.id],
+    }),
   }),
-  snippet: one(snippets, {
-    fields: [workItemsToSnippets.snippetId],
-    references: [snippets.id],
-  }),
-}));
+);
