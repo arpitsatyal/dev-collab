@@ -1,11 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { SearchHit } from './retrieval.port';
-
-export interface AnswerPayload {
-  answer: string;
-  context: string;
-  sources?: string[];
-}
+import { IAiResult } from '../interfaces';
 
 export abstract class GenerationPort {
   abstract generateAnswer(
@@ -13,5 +8,5 @@ export abstract class GenerationPort {
     prompt: string,
     context: string,
     filteredResults: SearchHit[],
-  ): Promise<AnswerPayload>;
+  ): Promise<IAiResult>;
 }

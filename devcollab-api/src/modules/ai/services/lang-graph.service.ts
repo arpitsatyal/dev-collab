@@ -6,6 +6,7 @@ import { AiConfig } from '../ai.config';
 import { LlmGateway } from '../ports/llm.port';
 import { ToolRegistry } from '../ports/tool.port';
 import { AgentPort } from '../ports/agent.port';
+import { IAiResult } from '../interfaces';
 
 @Injectable()
 export class LangGraphService implements AgentPort {
@@ -25,7 +26,7 @@ export class LangGraphService implements AgentPort {
   async runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
-  ): Promise<{ answer: string; calledTools: string[] }> {
+  ): Promise<IAiResult> {
     const { list: tools } = this.toolService.getToolsForWorkspace(workspaceId);
     const llmWithTools = await this.llmGateway.getReasoningToolBoundLLM(tools);
 

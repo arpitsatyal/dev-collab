@@ -22,7 +22,7 @@ export class ChatEngineService {
     private readonly retrievalService: RetrievalPort,
     private readonly generationService: GenerationPort,
     private readonly messageService: MessageService,
-  ) { }
+  ) {}
 
   /**
    * Main entry point for AI responses.
@@ -159,18 +159,19 @@ export class ChatEngineService {
       workspaceId,
     );
 
-    const { answer, calledTools } = await this.langGraphService.runAgentGraph(
+    const result = await this.langGraphService.runAgentGraph(
       messages,
       workspaceId,
     );
 
+    const toolsUsed = result.calledTools ?? [];
     this.logger.log(
-      calledTools.length === 0
+      toolsUsed.length === 0
         ? 'LangGraph: LLM answered directly'
-        : `LangGraph tools used: ${calledTools.join(' -> ')}`,
+        : `LangGraph tools used: ${toolsUsed.join(' -> ')}`,
     );
 
-    return { answer, context: '', validated: { isValid: true, warning: null } };
+    return { ...result, validated: { isValid: true, warning: null } };
   }
 
   private async getAIResponseWithSearch(

@@ -6,9 +6,14 @@ export interface IChatContext {
   workspaceId?: string;
 }
 
-export interface IChatResponse {
+export interface IAiResult {
   answer: string;
-  context: string;
+  context?: string;
+  sources?: string[];
+  calledTools?: string[];
+}
+
+export interface IChatResponse extends IAiResult {
   validated: {
     isValid: boolean;
     warning: string | null;
