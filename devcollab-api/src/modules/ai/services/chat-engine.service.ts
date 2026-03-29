@@ -3,13 +3,14 @@ import { BaseMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { AiConfig } from '../ai.config';
 import { PromptPort } from '../ports/prompt.port';
-import { RetrievalPort, SearchHit } from '../ports/retrieval.port';
+import { RetrievalPort } from '../ports/retrieval.port';
 import { GenerationPort } from '../ports/generation.port';
 import { LlmGateway } from '../ports/llm.port';
 import { MessageService } from 'src/modules/message/message.service';
 import { AgentPort } from '../ports/agent.port';
 import { IntentClassifierLlm } from '../types';
 import { IntentSchema } from '../schemas';
+import { IChatContext, IChatResponse, IintentResult } from '../interfaces';
 
 @Injectable()
 export class ChatEngineService {
@@ -25,6 +26,124 @@ export class ChatEngineService {
     private readonly langGraphService: AgentPort,
   ) { }
 
+  /**
+   * Main entry point for AI responses.
+   * Acts as an orchestrator for intent classification and delegation.
+   */
+  async getAIResponse(
+    chatId: string,
+    question: string,
+    filters?: Record<string, any>,
+  ): Promise<IChatResponse> {
+    const context = this.createChatContext(chatId, question, filters);
+
+    const { intent, scope } = await this.classifyIntent(context);
+
+    // Guard: Out of scope queries not in a workspace
+    if (!context.inWorkspace && scope === 'OUT_OF_SCOPE') {
+      return this.handleOutOfScope();
+    }
+
+    // Delegate based on classified intent
+    if (intent === 'CONVERSATIONAL') {
+      return this.handleConversational(context, scope);
+    }
+
+    return this.handleWorkspaceQuery(context);
+  }
+
+  private createChatContext(
+    chatId: string,
+    question: string,
+    filters?: Record<string, any>,
+  ): IChatContext {
+    const workspaceId = filters?.workspaceId ? String(filters.workspaceId) : undefined;
+    return {
+      chatId,
+      question,
+      filters,
+      inWorkspace: Boolean(workspaceId),
+      workspaceId,
+    };
+  }
+
+  private async classifyIntent(context: IChatContext): Promise<IintentResult> {
+    const classifierLlm = (await this.llmGateway.getReasoningStructuredLLM(
+      IntentSchema,
+      'classify_intent',
+    )) as IntentClassifierLlm;
+
+    const intentMessages = this.promptService.buildIntentClassificationPrompt(
+      context.question,
+      context.inWorkspace,
+    );
+
+    try {
+      const result = await classifierLlm.invoke(intentMessages);
+      if (result.confidence > 0.4) {
+        return { intent: result.intent, scope: result.scope };
+      }
+      this.logger.warn('Intent Classification: Low confidence, defaulting to WORKSPACE_QUERY');
+    } catch (e) {
+      this.logger.warn(
+        `Intent Classification failed: ${e instanceof Error ? e.message : e}`,
+      );
+    }
+
+    return {
+      intent: 'WORKSPACE_QUERY',
+      scope: context.inWorkspace ? 'APP_SPECIFIC' : 'OUT_OF_SCOPE',
+    };
+  }
+
+  private handleOutOfScope(): IChatResponse {
+    return {
+      answer: this.config.appScopeReply,
+      context: '',
+      validated: { isValid: true, warning: null },
+    };
+  }
+
+  private async handleConversational(
+    context: IChatContext,
+    scope: 'APP_SPECIFIC' | 'OUT_OF_SCOPE',
+  ): Promise<IChatResponse> {
+    this.logger.log(`Handling CONVERSATIONAL intent (Scope: ${scope})`);
+
+    const history = await this.getFormattedHistory(context.chatId, 10);
+    const messages = this.promptService.buildConversationalMessages(
+      history,
+      context.question,
+      scope === 'OUT_OF_SCOPE',
+    );
+
+    const conversationalLlm = await this.llmGateway.getSpeedyLLM();
+    const answer = await conversationalLlm
+      .pipe(new StringOutputParser())
+      .invoke(messages);
+
+    return {
+      answer,
+      context: '',
+      validated: { isValid: true, warning: null },
+    };
+  }
+
+  private async handleWorkspaceQuery(context: IChatContext): Promise<IChatResponse> {
+    if (context.inWorkspace && context.workspaceId) {
+      return this.getAIResponseWithTools(
+        context.chatId,
+        context.question,
+        context.workspaceId,
+      );
+    }
+    return this.getAIResponseWithSearch(
+      context.chatId,
+      context.question,
+      context.filters,
+    );
+  }
+
   private async getFormattedHistory(chatId: string, limit: number): Promise<string> {
     const messages = await this.messageService.getHistory(chatId, limit);
     return messages
@@ -36,7 +155,8 @@ export class ChatEngineService {
     chatId: string,
     question: string,
     workspaceId: string,
-  ) {
+  ): Promise<IChatResponse> {
+    this.logger.log(`LangGraph: Processing with tools for workspace ${workspaceId}`);
     const history = await this.getFormattedHistory(chatId, 10);
     const messages: BaseMessage[] = this.promptService.buildChatMessages(
       history,
@@ -49,13 +169,11 @@ export class ChatEngineService {
       workspaceId,
     );
 
-    if (calledTools.length === 0) {
-      this.logger.log('LangGraph: LLM answered directly (no tools).');
-    } else {
-      this.logger.log(
-        `LangGraph tools used (${calledTools.length}): ${calledTools.join(' -> ')}`,
-      );
-    }
+    this.logger.log(
+      calledTools.length === 0
+        ? 'LangGraph: LLM answered directly'
+        : `LangGraph tools used: ${calledTools.join(' -> ')}`,
+    );
 
     return { answer, context: '', validated: { isValid: true, warning: null } };
   }
@@ -64,7 +182,8 @@ export class ChatEngineService {
     chatId: string,
     question: string,
     filters?: Record<string, any>,
-  ) {
+  ): Promise<IChatResponse> {
+    this.logger.log('HybridSearch: Processing global query');
     const queryGenLlm = await this.llmGateway.getReasoningLLM();
 
     const queries = await this.retrievalService.generateQueryVariations(
@@ -85,22 +204,13 @@ export class ChatEngineService {
       };
     }
 
-    filteredResults.forEach(({ doc, score }: SearchHit, i: number) => {
-      this.logger.debug(
-        `Result ${i + 1}: Score: ${score.toFixed(4)}, Type: ${doc.metadata?.type}, Title: ${doc.metadata?.workspaceTitle}`,
-      );
-    });
-
-    const context =
-      filteredResults.length > 0
-        ? filteredResults
-          .map(({ doc }) => {
-            const type = doc.metadata?.type || 'General Info';
-            const title = doc.metadata?.workspaceTitle || 'Unknown Workspace';
-            return `--- Source: Information from ${type} within workspace "${title}" ---\n${doc.pageContent}`;
-          })
-          .join('\n\n')
-        : "I don't have enough specific information in my records to answer this fully.";
+    const context = filteredResults
+      .map(({ doc }) => {
+        const type = doc.metadata?.type || 'General Info';
+        const title = doc.metadata?.workspaceTitle || 'Unknown Workspace';
+        return `--- Source: Information from ${type} within workspace "${title}" ---\n${doc.pageContent}`;
+      })
+      .join('\n\n');
 
     const history = await this.getFormattedHistory(chatId, 10);
     const fullPrompt = await this.promptService.constructPrompt(
@@ -116,85 +226,5 @@ export class ChatEngineService {
       filteredResults,
     );
     return { ...generated, validated: { isValid: true, warning: null } };
-  }
-
-  async getAIResponse(
-    chatId: string,
-    question: string,
-    filters?: Record<string, any>,
-  ) {
-    const inWorkspace = Boolean(filters?.workspaceId);
-
-    const classifierLlm = await this.llmGateway.getReasoningStructuredLLM(
-      IntentSchema,
-      'classify_intent',
-    ) as IntentClassifierLlm;
-
-    const intentMessages =
-      this.promptService.buildIntentClassificationPrompt(question, inWorkspace);
-
-    let intent = 'WORKSPACE_QUERY';
-    let scope: 'APP_SPECIFIC' | 'OUT_OF_SCOPE' = inWorkspace
-      ? 'APP_SPECIFIC'
-      : 'OUT_OF_SCOPE';
-
-    try {
-      const result = await classifierLlm.invoke(intentMessages);
-      if (result.confidence > 0.4) {
-        intent = result.intent;
-        scope = result.scope;
-      } else {
-        this.logger.warn(
-          'Intent Classification: Low confidence, defaulting to WORKSPACE_QUERY',
-        );
-      }
-    } catch (e) {
-      this.logger.warn(
-        `Intent Classification failed, defaulting to WORKSPACE_QUERY: ${e instanceof Error ? e.message : e
-        }`,
-      );
-    }
-
-    if (intent === 'CONVERSATIONAL') {
-      if (!inWorkspace && scope === 'OUT_OF_SCOPE') {
-        return {
-          answer: this.config.appScopeReply,
-          context: '',
-          validated: { isValid: true, warning: null },
-        };
-      }
-      this.logger.log(
-        'Intent classified as CONVERSATIONAL. Skipping tools/search.',
-      );
-
-      const history = await this.getFormattedHistory(chatId, 10);
-      const conversationalMessages =
-        this.promptService.buildConversationalMessages(history, question, scope === 'OUT_OF_SCOPE');
-      const conversationalLlm = await this.llmGateway.getSpeedyLLM();
-
-      const answer = await conversationalLlm
-        .pipe(new StringOutputParser())
-        .invoke(conversationalMessages);
-
-      return {
-        answer,
-        context: '',
-        validated: { isValid: true, warning: null },
-      };
-    }
-
-    if (scope === 'OUT_OF_SCOPE' && !inWorkspace) {
-      return {
-        answer: this.config.appScopeReply,
-        context: '',
-        validated: { isValid: true, warning: null },
-      };
-    }
-
-    if (inWorkspace) {
-      const workspaceId = String(filters!.workspaceId);
-      return this.getAIResponseWithTools(chatId, question, workspaceId);
-    }
-    return this.getAIResponseWithSearch(chatId, question, filters);
   }
 }
