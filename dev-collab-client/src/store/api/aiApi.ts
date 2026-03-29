@@ -19,9 +19,9 @@ export const aiApi = createApi({
             { workspaceId: string; code: string; language?: string }
         >({
             query: ({ workspaceId, code, language }: { workspaceId: string; code: string; language?: string }) => ({
-                url: `ai/suggest-snippet-filename?workspaceId=${workspaceId}`,
+                url: `ai/suggest-snippet-filename`,
                 method: "POST",
-                body: { code, language },
+                body: { workspaceId, code, language },
             }),
         }),
     }),

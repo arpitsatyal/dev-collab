@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { AiConfig } from '../ai.config';
 import { PromptPort } from '../ports/prompt.port';
 import { RetrievalPort } from '../ports/retrieval.port';
 import { GenerationPort } from '../ports/generation.port';
@@ -18,13 +17,12 @@ export class ChatEngineService {
 
   constructor(
     private readonly llmGateway: LlmGateway,
-    private readonly config: AiConfig,
     private readonly langGraphService: AgentPort,
     private readonly promptService: PromptPort,
     private readonly retrievalService: RetrievalPort,
     private readonly generationService: GenerationPort,
     private readonly messageService: MessageService,
-  ) {}
+  ) { }
 
   /**
    * Main entry point for AI responses.
@@ -192,15 +190,6 @@ export class ChatEngineService {
       question,
       filters,
     );
-
-    if (filteredResults.length === 0) {
-      return {
-        answer:
-          "I couldn't find any relevant snippets, docs, or work items across your workspaces related to that query. Try using more specific keywords or workspace names.",
-        context: '',
-        validated: { isValid: true, warning: null },
-      };
-    }
 
     const context = filteredResults
       .map(({ doc }) => {

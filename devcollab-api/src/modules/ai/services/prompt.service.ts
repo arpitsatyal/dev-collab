@@ -47,8 +47,8 @@ If the information isn't in the context, politely let the user know and suggest 
 
   buildIntentClassificationPrompt(question: string, inWorkspace?: boolean) {
     let sysMsg =
-      'Classify the user intent. Decide if the user asks about DevCollab workspace data (WORKSPACE_QUERY) or is just casual chat (CONVERSATIONAL).\n\n' +
-      'Determine scope: APP_SPECIFIC if it clearly refers to app data (snippets, work items, tasks, docs, search/find requests), OUT_OF_SCOPE otherwise.\n\n' +
+      'Classify the user intent. Decide if the user asks about DevCollab workspace data (WORKSPACE_QUERY) or is just casual chat or platform help (CONVERSATIONAL).\n\n' +
+      'Determine scope: APP_SPECIFIC if it refers to app data (snippets, work items, tasks, docs, search/find requests) OR platform help/onboarding (e.g., "how do I get started?", "what can you do?", "how to create a workspace?"). OUT_OF_SCOPE otherwise (e.g., general knowledge, creative writing, unrelated hobbies).\n\n' +
       'Return JSON with fields: intent, scope, confidence (0-1).';
 
     if (inWorkspace) {

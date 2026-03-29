@@ -42,14 +42,15 @@ export const chatApi = createApi({
             { chatId: string; question: string; workspaceId?: string | null }
         >({
             query: ({ chatId, question, workspaceId }) => {
-                const queryParams = new URLSearchParams({ chatId });
+                const queryParams = new URLSearchParams();
                 if (workspaceId && workspaceId !== 'null' && workspaceId !== 'undefined') {
                     queryParams.append('workspaceId', workspaceId);
                 }
+                const queryString = queryParams.toString();
                 return {
-                    url: `ai/ask?${queryParams.toString()}`,
+                    url: `ai/ask${queryString ? `?${queryString}` : ""}`,
                     method: "POST",
-                    body: { question },
+                    body: { chatId, question },
                 };
             },
             invalidatesTags: (result, error, { chatId }) => [{ type: "Chat", id: chatId }],
