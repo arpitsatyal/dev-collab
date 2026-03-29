@@ -13,14 +13,17 @@ import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/AuthenticatedRequest';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private configService: ConfigService) {}
+  @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleLogin() {}
 
+  @Public()
   @Get('google/redirect')
   @UseGuards(AuthGuard('google'))
   async googleAuthRedirect(@Req() req, @Res() res) {
@@ -41,10 +44,12 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
   async githubLogin() {}
 
+  @Public()
   @Get('callback/github')
   @UseGuards(AuthGuard('github'))
   githubCallback(@Req() req, @Res() res) {
@@ -66,11 +71,11 @@ export class AuthController {
   }
 
   @Get('me')
-  @UseGuards(SessionAuthGuard)
   async getProfile(@CurrentUser() user: User) {
     return user;
   }
 
+  @Public()
   @Get('logout')
   async logout(@Req() req: AuthenticatedRequest, @Res() res: Response) {
     try {

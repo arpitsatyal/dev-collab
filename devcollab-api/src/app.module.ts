@@ -1,4 +1,5 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { WorkspacesModule } from './modules/workspaces/workspaces.module';
@@ -17,6 +18,7 @@ import { VectorStoreModule } from './common/vector-store/vector-store.module';
 import { SyncEventModule } from './common/sync-events/sync-event.module';
 import { DrizzleModule } from './common/drizzle/drizzle.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
+import { SessionAuthGuard } from './common/guards/auth.guard';
 
 @Module({
   imports: [
@@ -38,7 +40,12 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
     DrizzleModule,
   ],
   controllers: [AppController],
-  providers: [],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: SessionAuthGuard,
+    },
+  ],
 })
 
 export class AppModule implements NestModule {

@@ -1,12 +1,11 @@
 import { SanitizeIdPipe } from 'src/common/pipes/sanitize-id.pipe';
-import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
-import { SessionAuthGuard } from 'src/common/guards/auth.guard';
+import { Body, Controller, Get, Post, Query } from '@nestjs/common';
+
 import { AiService } from '../services/ai.service';
 import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
 import { AskDto } from '../dto/ask.dto';
 
 @Controller('ai')
-@UseGuards(SessionAuthGuard)
 export class AiController {
   constructor(private readonly aiService: AiService) { }
 

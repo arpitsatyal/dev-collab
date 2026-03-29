@@ -1,5 +1,5 @@
-import { Controller, Post, Body, Res, UseGuards } from '@nestjs/common';
-import { SessionAuthGuard } from 'src/common/guards/auth.guard';
+import { Controller, Post, Body, Res } from '@nestjs/common';
+
 import { CollaborationPort } from './ports/collaboration.port';
 import { Response } from 'express';
 import { CurrentUser } from '../users/user.decorator';
@@ -9,7 +9,6 @@ import { CollaborationUserDto } from './collaboration-user.dto';
 export class CollaborationController {
   constructor(private readonly collaborationPort: CollaborationPort) {}
 
-  @UseGuards(SessionAuthGuard)
   @Post('auth')
   async authorize(
     @CurrentUser() user: CollaborationUserDto,

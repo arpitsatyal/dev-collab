@@ -1,9 +1,7 @@
-import { Controller, Get, Query, UseGuards } from '@nestjs/common';
-import { SessionAuthGuard } from 'src/common/guards/auth.guard';
+import { Controller, Get, Query } from '@nestjs/common';
 import { WorkItemsService } from './work-items.service';
 import { GetDueSoonQueryDto } from './dto/work-items-query.dto';
 
-@UseGuards(SessionAuthGuard)
 @Controller('dueWorkItems')
 export class DueWorkItemsController {
   constructor(private readonly workItemsService: WorkItemsService) {}
