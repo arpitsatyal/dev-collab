@@ -22,8 +22,10 @@ interface ImplementationPlanModalProps {
     workItemId: string;
     workItemTitle: string;
     workspaceId: string;
-    initialPlan?: string | null;
+    initialPlan?: any; // Changed from string | null to any to accommodate objects
 }
+
+import { formatPlanToMarkdown, markdownToHTML } from "../../../utils/markdownUtils";
 
 const ImplementationPlanModal = ({
     opened,
@@ -33,7 +35,8 @@ const ImplementationPlanModal = ({
     workspaceId,
     initialPlan,
 }: ImplementationPlanModalProps) => {
-    const [plan, setPlan] = useState<string | null>(initialPlan || null);
+    const formattedInitialPlan = typeof initialPlan === 'object' ? formatPlanToMarkdown(initialPlan) : (initialPlan || null);
+    const [plan, setPlan] = useState<string | null>(formattedInitialPlan);
     const [suggestedFileName, setSuggestedFileName] = useState<string>("Implementation_Plan.md");
 
     const [createDoc, { isLoading: isSaving }] = useCreateDocMutation();
@@ -48,7 +51,8 @@ const ImplementationPlanModal = ({
         setSaveSuccess(false);
         try {
             const data = await generatePlan({ workItemId }).unwrap();
-            setPlan(data.plan);
+            const formatted = formatPlanToMarkdown(data.plan);
+            setPlan(formatted);
             setSuggestedFileName(`${workItemTitle.replace(/[^a-z0-9]/gi, '_')}_Plan.md`);
         } catch (error) {
             console.error("Failed to generate plan", error);
@@ -58,13 +62,14 @@ const ImplementationPlanModal = ({
     const handleSaveDocument = async (filename: string) => {
         if (!plan) return;
         try {
+            const htmlContent = markdownToHTML(plan);
             await createDoc({
                 workspaceId,
                 doc: {
                     label: filename,
                     workspaceId,
-                    roomId: "", // Handled by API
-                    content: plan
+                    roomId: "", 
+                    content: htmlContent
                 }
             }).unwrap();
             setSaveSuccess(true);

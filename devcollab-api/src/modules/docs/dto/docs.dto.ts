@@ -1,8 +1,11 @@
-import { IsString } from 'class-validator';
+import { IsString, IsOptional } from 'class-validator';
 
 export class DocCreateDto {
   @IsString()
   label: string;
+
+  @IsOptional()
+  content?: any;
 }
 
 export class DocUpdateDto {

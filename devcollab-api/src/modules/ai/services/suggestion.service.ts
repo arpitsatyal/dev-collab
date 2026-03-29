@@ -11,9 +11,9 @@ export class SuggestionService {
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly llmFactory: LlmGateway,
-  ) {}
+  ) { }
 
-  async suggestWorkItems(workspaceId: string) {
+  private async getWorkspaceWithContext(workspaceId: string) {
     const workspace = await this.drizzle.db.query.workspaces.findFirst({
       where: eq(workspaces.id, workspaceId),
       with: {
@@ -27,6 +27,23 @@ export class SuggestionService {
       throw new NotFoundException('Workspace not found');
     }
 
+    return workspace;
+  }
+
+  private parseJsonResponse<T>(text: string, fallback: T): T {
+    try {
+      // Find JSON block within markdown if it exists
+      const jsonMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+      const jsonToParse = jsonMatch ? jsonMatch[1].trim() : text.trim();
+
+      return JSON.parse(jsonToParse) as T;
+    } catch {
+      return fallback;
+    }
+  }
+
+  async suggestWorkItems(workspaceId: string) {
+    const workspace = await this.getWorkspaceWithContext(workspaceId);
     const llm = await this.llmFactory.getReasoningLLM();
 
     const prompt = `
@@ -44,18 +61,16 @@ Docs:
 ${workspace.docs.map((d: Record<string, any>) => `- ${d.label}`).join('\n') || 'None'}
 
 Return 3 concrete work items with a short rationale. Respond in JSON array with fields:
-- title
-- description
-- suggestedStatus (TODO | IN_PROGRESS | DONE)
-- tags (array of strings)
+- title: Concise title
+- description: Short description and rationale
+- suggestedStatus: (TODO | IN_PROGRESS | DONE)
+- tags: Array of short strings (e.g., ["api", "ui"])
+- priority: (HIGH | MEDIUM | LOW)
+- category: Short area name (e.g., "Frontend", "Backend", "Security")
   `;
 
     const output = await llm.pipe(new StringOutputParser()).invoke(prompt);
-    try {
-      return JSON.parse(output) as any[];
-    } catch {
-      return [];
-    }
+    return this.parseJsonResponse<any[]>(output, []);
   }
 
   async suggestSnippetFilenameForCode(params: SuggestSnippetFilenameDto) {
@@ -118,10 +133,11 @@ Return a JSON object with:
 `;
 
     const planText = await llm.pipe(new StringOutputParser()).invoke(prompt);
-    try {
-      return JSON.parse(planText) as Record<string, any>;
-    } catch {
-      return { summary: planText, steps: [], risks: [], estimated_effort: '' };
-    }
+    return this.parseJsonResponse<Record<string, any>>(planText, {
+      summary: planText,
+      steps: [],
+      risks: [],
+      estimated_effort: '',
+    });
   }
 }

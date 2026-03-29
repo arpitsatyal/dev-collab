@@ -6,7 +6,6 @@ import { GenerationPort } from '../ports/generation.port';
 import { LlmGateway } from '../ports/llm.port';
 import { MessageService } from 'src/modules/message/message.service';
 import { AgentPort } from '../ports/agent.port';
-import { AiConfig } from '../ai.config';
 
 describe('ChatEngineService', () => {
   let service: ChatEngineService;
@@ -41,10 +40,6 @@ describe('ChatEngineService', () => {
     runAgentGraph: jest.fn(),
   };
 
-  const mockAiConfig = {
-    appScopeReply: 'I can assist with Dev-Collab only.',
-  };
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -55,7 +50,6 @@ describe('ChatEngineService', () => {
         { provide: LlmGateway, useValue: mockLlmGateway },
         { provide: MessageService, useValue: mockMessageService },
         { provide: AgentPort, useValue: mockAgentPort },
-        { provide: AiConfig, useValue: mockAiConfig },
       ],
     }).compile();
 
@@ -99,21 +93,28 @@ describe('ChatEngineService', () => {
       expect(mockLlmGateway.getSpeedyLLM).toHaveBeenCalled();
     });
 
-    it('should return appScopeReply when intent is OUT_OF_SCOPE and no workspaceId is provided', async () => {
+    it('should return a dynamic AI refusal when intent is CONVERSATIONAL and OUT_OF_SCOPE', async () => {
       mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
         invoke: jest.fn().mockResolvedValue({
-          intent: 'WORKSPACE_QUERY',
+          intent: 'CONVERSATIONAL',
           scope: 'OUT_OF_SCOPE',
           confidence: 0.9,
         }),
       });
+
+      const dynamicRefusal =
+        "Warmly: I'm focusing on DevCollab help. Can I assist with your workspace?";
+      const mockPipe = jest.fn().mockReturnValue({
+        invoke: jest.fn().mockResolvedValue(dynamicRefusal),
+      });
+      mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
 
       const result = await service.getAIResponse(
         'chat-1',
         'How do I cook pasta?',
       );
 
-      expect(result.answer).toBe(mockAiConfig.appScopeReply);
+      expect(result.answer).toBe(dynamicRefusal);
       expect(mockAgentPort.runAgentGraph).not.toHaveBeenCalled();
     });
 
@@ -125,6 +126,8 @@ describe('ChatEngineService', () => {
           confidence: 0.9,
         }),
       });
+
+      mockPromptPort.buildChatMessages.mockReturnValue(['mockMessage']);
 
       mockAgentPort.runAgentGraph.mockResolvedValue({
         answer: 'Here are your workspace details.',
@@ -139,7 +142,7 @@ describe('ChatEngineService', () => {
 
       expect(result.answer).toBe('Here are your workspace details.');
       expect(mockAgentPort.runAgentGraph).toHaveBeenCalledWith(
-        undefined,
+        ['mockMessage'],
         'ws-1',
       );
     });
@@ -163,6 +166,7 @@ describe('ChatEngineService', () => {
       mockGenerationPort.generateAnswer.mockResolvedValue({
         answer: 'Generated global answer.',
         context: 'Global doc content',
+        sources: ['doc'],
       });
 
       const result = await service.getAIResponse('chat-1', 'Search globally');

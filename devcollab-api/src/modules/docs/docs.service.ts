@@ -26,6 +26,7 @@ export class DocsService {
       label: dto.label,
       workspaceId,
       roomId: `docs_${uuidv4()}`,
+      ...(dto.content && { content: dto.content }),
     });
 
     await this.syncPort.publishSyncEvent('doc', doc);

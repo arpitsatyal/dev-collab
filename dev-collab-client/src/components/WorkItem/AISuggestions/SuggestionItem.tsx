@@ -12,6 +12,7 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import { WorkItemSuggestion } from "../../../types";
+import { getColorForString } from "../../../utils/colorUtils";
 
 interface SuggestionItemProps {
     suggestion: WorkItemSuggestion;
@@ -33,19 +34,30 @@ const SuggestionItem = ({
                 <Stack gap={4} style={{ flex: 1 }}>
                     <Group gap="xs">
                         <Text fw={600} size="sm">{suggestion.title}</Text>
-                        <Badge size="xs" color={suggestion.priority === "HIGH" ? "red" : suggestion.priority === "MEDIUM" ? "orange" : "blue"}>
+                        <Badge variant="filled" size="xs" color={suggestion.priority === "HIGH" ? "red" : suggestion.priority === "MEDIUM" ? "orange" : "blue"}>
                             {suggestion.priority}
                         </Badge>
-                        <Badge size="xs" variant="outline">{suggestion.category}</Badge>
+                        <Badge size="xs" variant="light" color={getColorForString(suggestion.category || "")}>{suggestion.category}</Badge>
+                        <Badge size="xs" variant="dot" color={suggestion.suggestedStatus === "DONE" ? "green" : suggestion.suggestedStatus === "IN_PROGRESS" ? "blue" : "gray"}>
+                            {suggestion.suggestedStatus}
+                        </Badge>
                     </Group>
                     <div onClick={(e) => e.stopPropagation()}>
                         <Text
                             size="xs"
                             c="dimmed"
                             lineClamp={2}
+                            mb={6}
                         >
                             {suggestion.description}
                         </Text>
+                        <Group gap={6}>
+                            {suggestion.tags?.map((tag) => (
+                                <Badge key={tag} size="xs" variant="outline" color={getColorForString(tag)} radius="sm">
+                                    {tag}
+                                </Badge>
+                            ))}
+                        </Group>
                     </div>
                 </Stack>
                 <Group gap="xs" wrap="nowrap">

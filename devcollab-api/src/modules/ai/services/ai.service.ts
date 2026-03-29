@@ -30,9 +30,9 @@ export class AiService {
   }
 
   async analyzeWorkItem(workItemId: string) {
-    const plan = (await this.suggestionService.generateImplementationPlan(
+    const plan = await this.suggestionService.generateImplementationPlan(
       workItemId,
-    )) as Record<string, any>;
+    );
 
     await this.workItemsService.update(workItemId, {
       aiPlan: JSON.stringify(plan),
@@ -48,9 +48,10 @@ export class AiService {
   }
 
   async suggestWorkItems(workspaceId: string) {
-    const suggestions = (await this.suggestionService.suggestWorkItems(
+    const suggestions = await this.suggestionService.suggestWorkItems(
       workspaceId,
-    )) as any[];
+    );
+
     return { suggestions };
   }
 }
