@@ -45,9 +45,14 @@ If the information isn't in the context, politely let the user know and suggest 
   }
 
   buildIntentClassificationPrompt(question: string, inWorkspace?: boolean) {
-    let sysMsg = 'Classify the user intent. Decide if the user asks about DevCollab workspace data (WORKSPACE_QUERY) or is just casual chat (CONVERSATIONAL). Determine scope: APP_SPECIFIC if it clearly refers to app data, OUT_OF_SCOPE otherwise. Return JSON with fields intent, scope, confidence (0-1).';
+    let sysMsg = 'Classify the user intent. Decide if the user asks about DevCollab workspace data (WORKSPACE_QUERY) or is just casual chat (CONVERSATIONAL).\n\n' +
+      'Determine scope: APP_SPECIFIC if it clearly refers to app data (snippets, work items, tasks, docs, search/find requests), OUT_OF_SCOPE otherwise.\n\n' +
+      'Return JSON with fields: intent, scope, confidence (0-1).';
+
     if (inWorkspace) {
-      sysMsg += ' NOTE: The user is currently inside a workspace. Ambiguous references like "this", "it", "here", or "this page" MUST be classified as WORKSPACE_QUERY and APP_SPECIFIC because they refer to the active workspace.';
+      sysMsg += '\n\nNOTE: The user is currently inside a workspace. Ambiguous references like "this", "it", "here", or "this page" MUST be classified as WORKSPACE_QUERY and APP_SPECIFIC because they refer to the active workspace.';
+    } else {
+      sysMsg += '\n\nNOTE: The user is NOT in a specific workspace. However, if they ask to "find", "search", "show me", or "lookup" snippets, docs, or work items, this is a GLOBAL system search (WORKSPACE_QUERY and APP_SPECIFIC). Only general knowledge, creative writing, or unrelated off-topic questions are CONVERSATIONAL and OUT_OF_SCOPE.';
     }
     return [
       new SystemMessage(sysMsg),

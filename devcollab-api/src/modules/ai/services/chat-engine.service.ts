@@ -17,13 +17,13 @@ export class ChatEngineService {
   private readonly logger = new Logger(ChatEngineService.name);
 
   constructor(
+    private readonly llmGateway: LlmGateway,
+    private readonly config: AiConfig,
+    private readonly langGraphService: AgentPort,
     private readonly promptService: PromptPort,
     private readonly retrievalService: RetrievalPort,
     private readonly generationService: GenerationPort,
-    private readonly llmGateway: LlmGateway,
     private readonly messageService: MessageService,
-    private readonly config: AiConfig,
-    private readonly langGraphService: AgentPort,
   ) { }
 
   /**
@@ -39,12 +39,6 @@ export class ChatEngineService {
 
     const { intent, scope } = await this.classifyIntent(context);
 
-    // Guard: Out of scope queries not in a workspace
-    if (!context.inWorkspace && scope === 'OUT_OF_SCOPE') {
-      return this.handleOutOfScope();
-    }
-
-    // Delegate based on classified intent
     if (intent === 'CONVERSATIONAL') {
       return this.handleConversational(context, scope);
     }
@@ -62,7 +56,7 @@ export class ChatEngineService {
       chatId,
       question,
       filters,
-      inWorkspace: Boolean(workspaceId),
+      inWorkspace: !!workspaceId,
       workspaceId,
     };
   }
@@ -93,14 +87,6 @@ export class ChatEngineService {
     return {
       intent: 'WORKSPACE_QUERY',
       scope: context.inWorkspace ? 'APP_SPECIFIC' : 'OUT_OF_SCOPE',
-    };
-  }
-
-  private handleOutOfScope(): IChatResponse {
-    return {
-      answer: this.config.appScopeReply,
-      context: '',
-      validated: { isValid: true, warning: null },
     };
   }
 
@@ -198,7 +184,7 @@ export class ChatEngineService {
 
     if (filteredResults.length === 0) {
       return {
-        answer: `${this.config.appScopeReply} Try referencing a workspace entity like a work item title, snippet filename, or doc label.`,
+        answer: "I couldn't find any relevant snippets, docs, or work items across your workspaces related to that query. Try using more specific keywords or workspace names.",
         context: '',
         validated: { isValid: true, warning: null },
       };

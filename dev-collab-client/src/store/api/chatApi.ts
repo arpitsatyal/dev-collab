@@ -39,13 +39,19 @@ export const chatApi = createApi({
         }),
         askAI: builder.mutation<
             { answer: string },
-            { chatId: string; question: string; workspaceId: string }
+            { chatId: string; question: string; workspaceId?: string | null }
         >({
-            query: ({ chatId, question, workspaceId }) => ({
-                url: `ai/ask?chatId=${chatId}&workspaceId=${workspaceId}`,
-                method: "POST",
-                body: { question },
-            }),
+            query: ({ chatId, question, workspaceId }) => {
+                const queryParams = new URLSearchParams({ chatId });
+                if (workspaceId && workspaceId !== 'null' && workspaceId !== 'undefined') {
+                    queryParams.append('workspaceId', workspaceId);
+                }
+                return {
+                    url: `ai/ask?${queryParams.toString()}`,
+                    method: "POST",
+                    body: { question },
+                };
+            },
             invalidatesTags: (result, error, { chatId }) => [{ type: "Chat", id: chatId }],
         }),
     }),

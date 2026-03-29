@@ -1,8 +1,8 @@
 import { Body, Controller, Get, Post, Query, UseGuards } from '@nestjs/common';
 import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { AiService } from '../services/ai.service';
-import { AskBodyDto } from '../dto/ask-body.dto';
 import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
+import { AskDto } from '../dto/ask.dto';
 
 @Controller('ai')
 @UseGuards(SessionAuthGuard)
@@ -11,11 +11,18 @@ export class AiController {
 
   @Post('ask')
   ask(
-    @Body() body: AskBodyDto,
+    @Body() body: AskDto,
     @Query('chatId') chatId: string,
     @Query('workspaceId') workspaceId?: string,
   ) {
-    const filters = workspaceId ? { workspaceId } : undefined;
+    const sanitizedWorkspaceId =
+      workspaceId === 'null' || workspaceId === 'undefined' || !workspaceId
+        ? undefined
+        : workspaceId;
+
+    const filters = sanitizedWorkspaceId
+      ? { workspaceId: sanitizedWorkspaceId }
+      : undefined;
     return this.aiService.ask(chatId, body.question, filters);
   }
 
