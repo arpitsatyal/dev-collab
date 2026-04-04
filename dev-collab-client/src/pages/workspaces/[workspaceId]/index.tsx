@@ -4,7 +4,7 @@ import Loading from "../../../components/Loader/Loader";
 import { withAuth } from "../../../guards/withAuth";
 import WorkspaceDetail from "../../../components/Workspaces/WorkspaceDetail";
 import { useGetWorkspaceByIdQuery } from "../../../store/api/workspaceApi";
-import { getSingleQueryParam } from "../../../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../../../utils/navigation/queryParams";
 import { skipToken } from "@reduxjs/toolkit/query";
 
 const WorkspaceDetailPage = () => {

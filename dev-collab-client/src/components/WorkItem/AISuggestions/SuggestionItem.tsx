@@ -12,7 +12,7 @@ import {
     IconX,
 } from "@tabler/icons-react";
 import { WorkItemSuggestion } from "../../../types";
-import { getColorForString } from "../../../utils/colorUtils";
+import { getColorForString } from "../../../utils/theme/colors";
 
 interface SuggestionItemProps {
     suggestion: WorkItemSuggestion;

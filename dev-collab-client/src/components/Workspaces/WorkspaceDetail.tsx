@@ -1,7 +1,8 @@
-import { Container, Paper, Stack, Text } from "@mantine/core";
+import { Container, Paper } from "@mantine/core";
 import React from "react";
 import classes from "./Workspace.module.css";
 import { WorkspaceWithPin } from "../../types";
+import Section from "../shared/Section";
 
 const WorkspaceDetail = ({ workspace }: { workspace: WorkspaceWithPin }) => {
   return (
@@ -13,20 +14,12 @@ const WorkspaceDetail = ({ workspace }: { workspace: WorkspaceWithPin }) => {
         withBorder
         className={classes.root}
       >
-        <Stack gap="md">
-          <Text size="lg" fw={600} className="title">
-            {workspace?.title}
-          </Text>
-          {workspace?.description ? (
-            <Text size="md" className={classes.description}>
-              {workspace.description}
-            </Text>
-          ) : (
-            <Text size="md" fs="italic" className={classes.noDescription}>
-              No description available
-            </Text>
-          )}
-        </Stack>
+        <Section 
+          title={workspace?.title} 
+          description={workspace?.description || "No description available"}
+        >
+          <div />
+        </Section>
       </Paper>
     </Container>
   );

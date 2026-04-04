@@ -1,18 +1,14 @@
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ActionIcon, AppShell, Box, NavLink, Text } from "@mantine/core";
+import { AppShell, Box, Text } from "@mantine/core";
 import {
-  IconPin,
   IconPlayCard,
-  IconSubtask,
   IconCloudDownload,
   IconGauge,
   IconPencil,
   IconActivity,
-  IconBrandPagekit,
 } from "@tabler/icons-react";
 import { VariableSizeList } from "react-window";
-import InfiniteLoader from "react-window-infinite-loader";
 import classes from "./SideNav.module.css";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useLazyGetSnippetsQuery } from "../../store/api/snippetApi";
@@ -22,7 +18,6 @@ import {
 } from "../../store/api/workspaceApi";
 import { setSnippets } from "../../store/slices/snippetSlice";
 import Loading from "../Loader/Loader";
-import SnippetList from "../Snippets/SnippetList";
 import { Snippet, WorkItem } from "../../types";
 import {
   incrementPage,
@@ -33,6 +28,8 @@ import { uniqBy } from "lodash";
 import SideNavFooter from "./SideNavFooter";
 import { notifications } from "@mantine/notifications";
 import { WorkspaceWithPin } from "../../types";
+import NavItem from "./NavItem";
+import WorkspacesList from "./WorkspacesList";
 
 export interface NavItemProps {
   id: string;
@@ -48,7 +45,7 @@ export interface NavItemProps {
 const SideNav = () => {
   const router = useRouter();
   const [openItem, setOpenItem] = useState<string | null>(null);
-  const listRef = useRef<VariableSizeList>(null);
+  const listRef = useRef<VariableSizeList | null>(null);
   const [loadingWorkspaceId, setLoadingWorkspaceId] = useState<string | null>(null);
   const itemRefs = useRef<Record<string, HTMLAnchorElement | null>>({});
   const lastWorkspaceIdRef = useRef<string | null>(null);
@@ -65,7 +62,7 @@ const SideNav = () => {
   const [updatePinnedStatus] = useUpdatePinnedStatusMutation();
 
   const transformWorkspace = useWorkspaceTransform();
-  const { data, isLoading, isFetching, isError } = useGetWorkspacesQuery(
+  const { data, isLoading, isFetching } = useGetWorkspacesQuery(
     { skip, limit: pageSize },
     { skip: !workspacesOpen }
   );
@@ -198,30 +195,23 @@ const SideNav = () => {
     }, 100);
 
     return () => clearTimeout(timeout);
-  }, [currentWorkspaceId, workspaceItems, handleScrollToItem, loadedSnippets]);
+  }, [currentWorkspaceId, workspaceItems, handleScrollToItem]);
 
   useEffect(() => {
     if (!openItem || loadedSnippets[openItem]) return;
     fetchSnippets(openItem);
   }, [openItem, loadedSnippets, fetchSnippets]);
 
-  const isItemLoaded = useCallback(
-    (index: number) => {
-      return index < workspaceItems.length;
-    },
-    [workspaceItems.length]
-  );
-
   useEffect(() => {
     if (!pendingScrollId) return;
 
-    toggleOpenItem(pendingScrollId);
+    setOpenItem((prev) => (prev === pendingScrollId ? null : pendingScrollId));
     scrollItemIntoView(pendingScrollId);
     setPendingScrollId(null);
   }, [pendingScrollId, workspaceItems, scrollItemIntoView]);
 
   const loadMoreItems = useCallback(
-    (startIndex: number, stopIndex: number) => {
+    () => {
       if (hasMore && !isFetching) {
         dispatch(incrementPage());
       }
@@ -234,13 +224,13 @@ const SideNav = () => {
       const item = workspaceItems[index];
       if (!item) return 40;
 
-      const isLoading = loadingWorkspaceId === item.id;
+      const isLoading = loadingWorkspaceId === (item as WorkspaceWithPin).id;
       if (isLoading) return 80;
 
-      const isExpanded = openItem === item.id && loadedSnippets[item.id];
+      const isExpanded = openItem === (item as WorkspaceWithPin).id && loadedSnippets[(item as WorkspaceWithPin).id];
       if (isExpanded) {
         const pinIcon = 30;
-        const snippetCount = loadedSnippets[item.id]?.length || 0;
+        const snippetCount = loadedSnippets[(item as WorkspaceWithPin).id]?.length || 0;
         const baseHeight = 40;
         const workItemHeight = 40;
         const createSnippetHeight = 40;
@@ -276,10 +266,6 @@ const SideNav = () => {
     },
     [router, dispatch]
   );
-
-  const toggleOpenItem = (id: string) => {
-    setOpenItem((prev) => (prev === id ? null : id));
-  };
 
   const isActive = useCallback(
     (path?: string, id?: string): boolean => {
@@ -327,7 +313,7 @@ const SideNav = () => {
 
   const handleUpdatePinnedStatus = async (workspace: WorkspaceWithPin) => {
     try {
-      toggleOpenItem(workspace.id);
+      setOpenItem((prev) => (prev === workspace.id ? null : workspace.id));
 
       await updatePinnedStatus({
         workspaceId: workspace.id,
@@ -350,117 +336,15 @@ const SideNav = () => {
     }
   };
 
-  const Row = ({
-    index,
-    style,
-  }: {
-    index: number;
-    style: React.CSSProperties;
-  }) => {
-    // Show loading indicator row if index === workspaceItems.length (last row)
-    const isLoadingRow = hasMore && index === workspaceItems.length;
-    if (isLoadingRow) {
-      return (
-        <Box style={style} key={`loading-${index}`} ta="center">
-          <Loading loaderHeight="5vh" />
-        </Box>
-      );
-    }
-
-    const workspace = workspaceItems[
-      isInsertingWorkspace ? index - 1 : index
-    ] as WorkspaceWithPin;
-    if (!workspace) return null;
-
-    const child = transformWorkspace(workspace, loadedSnippets);
-
-    return (
-      <Box style={style} key={child.id}>
-        <NavLink
-          key={child.id}
-          active={isActive(child.path)}
-          opened={openItem === child.id}
-          label={
-            <Text
-              fz="sm"
-              style={{
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {child.label}
-            </Text>
-          }
-          ref={(el) => {
-            itemRefs.current[child.id] = el;
-          }}
-          leftSection={<child.icon size={16} stroke={1.5} />}
-          onClick={() => {
-            toggleOpenItem(child.id);
-            handleNavClick(child.path);
-          }}
-        >
-          <Box>
-            {loadingWorkspaceId === child.id ? (
-              <Loading loaderHeight="5vh" />
-            ) : (
-              <>
-                <ActionIcon
-                  variant="subtle"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleUpdatePinnedStatus(workspace);
-                  }}
-                  style={(theme) => ({
-                    color: workspace.isPinned
-                      ? theme.colors.yellow[5]
-                      : theme.colors.gray[5],
-                    "&:hover": {
-                      color: theme.colors.yellow[7],
-                    },
-                    padding: 5,
-                  })}
-                >
-                  <IconPin size={16} />
-                </ActionIcon>
-
-                <NavLink
-                  label="Work Items"
-                  active={isActive(`/workspaces/${child.id}/work-items`)}
-                  leftSection={<IconSubtask size={16} />}
-                  onClick={() => router.push(`/workspaces/${child.id}/work-items`)}
-                />
-                <NavLink
-                  label="Docs"
-                  active={router.pathname.includes("docs")}
-                  leftSection={<IconBrandPagekit size={16} />}
-                  onClick={() => router.push(`/workspaces/${child.id}/docs`)}
-                />
-                <SnippetList
-                  snippets={loadedSnippets[child.id] ?? []}
-                  isVisible={
-                    openItem === child.id && !!loadedSnippets[child.id]
-                  }
-                />
-              </>
-            )}
-          </Box>
-        </NavLink>
-      </Box>
-    );
-  };
-
   return (
     <>
       <AppShell.Section grow my="md" className={classes.section}>
         {navItemsWithWorkspaces.map((item) => (
-          <NavLink
+          <NavItem
             key={item.id}
+            item={item}
             active={isActive(item.path, item.id)}
             opened={isOpen(item)}
-            label={item.label}
-            leftSection={<item.icon size={16} stroke={1.5} />}
             onClick={() => handleNavClick(item.path, item.handler, item.label)}
           >
             {item.label === "Workspaces" && (
@@ -474,38 +358,27 @@ const SideNav = () => {
                     No workspaces added yet
                   </Text>
                 ) : (
-                  <InfiniteLoader
-                    isItemLoaded={isItemLoaded}
-                    itemCount={
-                      hasMore ? workspaceItems.length + 1 : workspaceItems.length
-                    }
-                    loadMoreItems={loadMoreItems}
-                  >
-                    {({ onItemsRendered, ref }) => (
-                      <VariableSizeList
-                        height={500}
-                        width="100%"
-                        itemCount={
-                          hasMore
-                            ? workspaceItems.length + 1
-                            : workspaceItems.length
-                        }
-                        itemSize={getItemSize}
-                        onItemsRendered={onItemsRendered}
-                        ref={(list) => {
-                          listRef.current = list || null;
-                          ref(list);
-                        }}
-                        className={classes.reactWindowList}
-                      >
-                        {Row}
-                      </VariableSizeList>
-                    )}
-                  </InfiniteLoader>
+                  <WorkspacesList
+                    workspaceItems={workspaceItems as WorkspaceWithPin[]}
+                    hasMore={hasMore}
+                    isFetching={isFetching}
+                    isInsertingWorkspace={isInsertingWorkspace}
+                    openItem={openItem}
+                    loadingWorkspaceId={loadingWorkspaceId}
+                    loadedSnippets={loadedSnippets}
+                    isActive={isActive}
+                    onToggleItem={(id) => setOpenItem((prev) => (prev === id ? null : id))}
+                    onUpdatePinnedStatus={handleUpdatePinnedStatus}
+                    onLoadMore={loadMoreItems}
+                    getItemSize={getItemSize}
+                    transformWorkspace={transformWorkspace}
+                    listRef={listRef}
+                    itemRefs={itemRefs}
+                  />
                 )}
               </Box>
             )}
-          </NavLink>
+          </NavItem>
         ))}
       </AppShell.Section>
 

@@ -19,7 +19,7 @@ import {
   useMantineTheme,
 } from "@mantine/core";
 import { spotlight, Spotlight } from "@mantine/spotlight";
-import { truncateByWords } from "../../utils/truncateByWords";
+import { truncateByWords } from "../../utils/common/truncate";
 import { useAppDispatch, useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
 import Loading from "../Loader/Loader";

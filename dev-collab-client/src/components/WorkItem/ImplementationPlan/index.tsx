@@ -25,7 +25,7 @@ interface ImplementationPlanModalProps {
     initialPlan?: any; // Changed from string | null to any to accommodate objects
 }
 
-import { formatPlanToMarkdown, markdownToHTML } from "../../../utils/markdownUtils";
+import { formatPlanToMarkdown, markdownToHTML } from "../../../utils/ai/markdown";
 
 const ImplementationPlanModal = ({
     opened,

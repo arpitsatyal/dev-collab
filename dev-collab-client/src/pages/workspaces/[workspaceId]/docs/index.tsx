@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import DocsLayout from "../../../../components/Docs/DocsLayout";
-import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../../../../utils/navigation/queryParams";
 import TiptapEditor from "../../../../components/Docs/TipTapEditor/TiptapEditor";
 import { ClientSideSuspense, RoomProvider } from "@liveblocks/react";
 import Loading from "../../../../components/Loader/Loader";

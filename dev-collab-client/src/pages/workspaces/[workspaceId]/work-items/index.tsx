@@ -6,7 +6,7 @@ import Layout from "../../../../components/Layout/Layout";
 import { WorkItemStatus } from "../../../../types";
 import { useCreateWorkItemMutation } from "../../../../store/api/workItemApi";
 import { notifications } from "@mantine/notifications";
-import { getSingleQueryParam } from "../../../../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../../../../utils/navigation/queryParams";
 import { useRouter } from "next/router";
 import { WorkItemCreateData } from "../../../../types";
 import CreateWorkItemModal from "../../../../components/WorkItem/CreateWorkItemModal";

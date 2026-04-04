@@ -1,4 +1,4 @@
-import apiClient from "../lib/apiClient";
+import apiClient from "../../lib/apiClient";
 
 const resolveUsers = async ({ userIds }: { userIds: string[] }) => {
   try {

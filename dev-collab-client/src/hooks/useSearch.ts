@@ -3,9 +3,9 @@ import axios from "axios";
 import { debounce, isEqual } from "lodash";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/browser/indexedDB";
-import { normalizeQuery } from "../utils/normalizeQuery";
+import { normalizeQuery } from "../utils/navigation/normalizeQuery";
 import { TypedItems } from "../types";
-import { levenshtein } from "../utils/levenshtein";
+import { levenshtein } from "../utils/ai/levenshtein";
 
 const MAX_CACHE_SIZE = 50;
 const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;

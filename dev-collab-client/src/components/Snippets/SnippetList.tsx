@@ -17,7 +17,7 @@ import {
   useCreateSnippetMutation,
   useEditSnippetMutation,
 } from "../../store/api/snippetApi";
-import { languageMapper } from "../../utils/languageMapper";
+import { languageMapper } from "../../utils/snippet/languageMapper";
 import { addSnippet, updateSnippet } from "../../store/slices/snippetSlice";
 import { notifications } from "@mantine/notifications";
 import { SnippetsCreateData } from "../../types";
@@ -53,10 +53,6 @@ const SnippetList = ({
   const isValidWorkspaceId =
     typeof selectedSnippet?.workspaceId === "string" &&
     selectedSnippet?.workspaceId.trim() !== "";
-
-  const { data: workspaceData } = useGetWorkspaceByIdQuery(
-    isValidWorkspaceId ? selectedSnippet?.workspaceId : skipToken
-  );
 
   useEffect(() => {
     if (pathParts[4] === "create") {

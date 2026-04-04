@@ -7,7 +7,7 @@ import { notifications } from "@mantine/notifications";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { useMediaQuery } from "@mantine/hooks";
-import { getSingleQueryParam } from "../../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../../utils/navigation/queryParams";
 import {
   useGetWorkItemsForWorkspaceQuery,
   useUpdateStatusMutation,

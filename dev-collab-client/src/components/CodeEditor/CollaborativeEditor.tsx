@@ -5,7 +5,7 @@ import { getYjsProviderForRoom } from "@liveblocks/yjs";
 import { editor } from "monaco-editor";
 import { MonacoBinding } from "y-monaco";
 import { Awareness } from "y-protocols/awareness";
-import { extractCode } from "../../utils/extractCode";
+import { extractCode } from "../../utils/ai/extractCode";
 import {
   Flex,
   Select,
@@ -14,7 +14,7 @@ import {
   Box,
   Paper,
 } from "@mantine/core";
-import { languageOptions } from "../../utils/languageOptions";
+import { languageOptions } from "../../utils/snippet/languageOptions";
 import { useMutation, useStorage } from "@liveblocks/react";
 import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../../store/hooks";

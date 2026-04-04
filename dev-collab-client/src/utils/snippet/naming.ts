@@ -36,3 +36,19 @@ export const inferFallbackBaseName = (code: string): string => {
   return normalizeBaseName(cleaned) || "snippet";
 };
 
+export const buildUniqueFilename = (
+  baseName: string,
+  extension: string,
+  existingNames: Set<string>
+): string => {
+  const safeBase = baseName || "snippet";
+  let candidate = `${safeBase}.${extension}`;
+  let index = 1;
+
+  while (existingNames.has(candidate.toLowerCase())) {
+    candidate = `${safeBase}_${index}.${extension}`;
+    index += 1;
+  }
+
+  return candidate;
+};

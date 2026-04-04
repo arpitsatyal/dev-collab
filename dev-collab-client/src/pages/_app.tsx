@@ -17,11 +17,11 @@ import { LiveblocksProvider } from "@liveblocks/react";
 import { MantineEmotionProvider } from "@mantine/emotion";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
-import { theme } from "../utils/theme";
+import { theme } from "../utils/theme/mantineTheme";
 import {
   fetchMentionSuggestions,
   resolveUsers,
-} from "../utils/liveblocksHelpers";
+} from "../utils/liveblocks/helpers";
 import { debounce } from "lodash";
 import apiClient from "../lib/apiClient";
 

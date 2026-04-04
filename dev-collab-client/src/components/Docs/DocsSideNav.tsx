@@ -1,6 +1,6 @@
 import { NavLink, Tooltip } from "@mantine/core";
 import styles from "./Docs.module.css";
-import { getSingleQueryParam } from "../../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../../utils/navigation/queryParams";
 import { IconBrandPagekit } from "@tabler/icons-react";
 import Loading from "../Loader/Loader";
 import { useGetDocsQuery } from "../../store/api/docsApi";

@@ -1,13 +1,10 @@
 import {
   Box,
-  Button,
-  Group,
   ScrollArea,
-  Stack,
-  Text,
-  Textarea,
+  Group,
   Skeleton,
-  Tooltip,
+  Text,
+  Stack,
 } from "@mantine/core";
 import {
   useGetChatQuery,
@@ -23,12 +20,12 @@ import {
 } from "react";
 import { v4 as uuidv4 } from "uuid";
 import styles from "./AIChat.module.css";
-import { extractDate, extractTime } from "../../utils/dateUtils";
-import MarkdownContent from "../shared/MarkdownContent";
 import { useRouter } from "next/router";
-import Image from "next/image";
 import Loading from "../Loader/Loader";
 import { useSession } from "../providers/AuthProvider";
+import ChatMessage from "./ChatMessage";
+import ChatInput from "./ChatInput";
+import EmptyChatState from "./EmptyChatState";
 
 interface MessageProps {
   chatId: string;
@@ -111,13 +108,6 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     sendMessage(input);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      handleSubmit(e);
-    }
-  };
-
   useEffect(() => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({
@@ -155,33 +145,7 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
   return (
     <Box className={styles.chatContainer}>
       <Box style={{ flexGrow: 1 }}>
-        {messages.length <= 0 && (
-          <Stack className={styles.emptyChat} justify="flex-end">
-            <Text fw={500}>How can I help you?</Text>
-            <Group wrap="wrap" gap="xs">
-              <Button
-                variant="outline"
-                size="sm"
-                radius="xl"
-                onClick={() => sendMessage("How do I get started?")}
-                className={styles.suggestionButton}
-              >
-                How can I get started?
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                radius="xl"
-                onClick={() =>
-                  sendMessage("How to create a new Documentation?")
-                }
-                className={styles.suggestionButton}
-              >
-                How to Create a new Doc?
-              </Button>
-            </Group>
-          </Stack>
-        )}
+        {messages.length <= 0 && <EmptyChatState onSendMessage={sendMessage} />}
         <ScrollArea className={styles.messageList}>
           {isChatFetching && chatData && (
             <Group gap="xs" pb="sm">
@@ -194,38 +158,14 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
             </Group>
           )}
           {messages.map((message, index) => (
-            <div
-              ref={index === messages.length - 1 ? lastMessageRef : null}
+            <ChatMessage
               key={message.id}
-              className={`${styles.messageContainer} ${message.isUser
-                ? styles.userMessageContainer
-                : styles.botMessageContainer
-                }`}
-            >
-              <Image
-                src={message.isUser ? image : "/probot.png"}
-                className={styles.avatarImage}
-                alt={message.isUser ? "User Avatar" : "AI Avatar"}
-                width={40}
-                height={40}
-              />
-
-              <div
-                className={`${styles.messageContent} ${message.isUser ? styles.userMessage : styles.botMessage
-                  }`}
-              >
-                {/* Use MarkdownContent for rendering content with syntax highlighting */}
-                <div className={styles.markdownContent}>
-                  <MarkdownContent content={message.content} />
-                </div>
-              </div>
-
-              <Tooltip label={extractDate(message.createdAt)} withArrow>
-                <Text size="xs" c="dimmed" className={styles.timeText}>
-                  {extractTime(message.createdAt)}
-                </Text>
-              </Tooltip>
-            </div>
+              content={message.content}
+              isUser={message.isUser}
+              image={image}
+              createdAt={message.createdAt}
+              lastMessageRef={index === messages.length - 1 ? (lastMessageRef as any) : undefined}
+            />
           ))}
 
           {isLoading && (
@@ -243,19 +183,12 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
           )}
         </ScrollArea>
       </Box>
-      <form onSubmit={handleSubmit} className={styles.inputForm}>
-        <Textarea
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
-          disabled={isLoading}
-          className={styles.input}
-        />
-        <Button type="submit" disabled={isLoading || !input.trim()} size="sm">
-          Send
-        </Button>
-      </form>
+      <ChatInput
+        input={input}
+        setInput={setInput}
+        onSubmit={handleSubmit}
+        isLoading={isLoading}
+      />
     </Box>
   );
 };

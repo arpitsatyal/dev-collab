@@ -1,14 +1,15 @@
-import { Text, Paper } from "@mantine/core";
+import { Text, Paper, Group, Stack } from "@mantine/core";
 import { WorkItem } from "../../types";
 import { useDrag } from "react-dnd";
 import dayjs from "dayjs";
 import classes from "./WorkItem.module.css";
 import { useDisclosure } from "@mantine/hooks";
 import ImplementationPlanModal from "./ImplementationPlan";
+import StatusBadge from "../shared/StatusBadge";
+import CollapsibleText from "../shared/CollapsibleText";
 
 const WorkItemItem = ({ workItem }: { workItem: WorkItem }) => {
   const [opened, { open, close }] = useDisclosure(false);
-  const [expanded, { toggle: toggleExpanded }] = useDisclosure(false);
   const [{ isDragging }, dragRef] = useDrag({
     type: "WORK_ITEM",
     item: { id: workItem.id, status: workItem.status },
@@ -30,35 +31,20 @@ const WorkItemItem = ({ workItem }: { workItem: WorkItem }) => {
         }}
         onClick={open}
       >
-        <Text fw={500}>{workItem.title}</Text>
-        {workItem.description && (
-          <div onClick={(e) => e.stopPropagation()}>
-            <Text
-              size="sm"
-              c="dimmed"
-              lineClamp={expanded ? undefined : 2}
-              style={{ transition: 'all 0.2s ease' }}
-            >
-              {workItem.description}
+        <Stack gap="xs">
+          <Group justify="space-between" align="flex-start">
+            <Text fw={500} style={{ flexGrow: 1 }}>{workItem.title}</Text>
+            <StatusBadge status={workItem.status} />
+          </Group>
+          
+          <CollapsibleText text={workItem.description ?? ""} />
+
+          {workItem.dueDate && (
+            <Text size="xs" c="dimmed">
+              Due: {dayjs(workItem.dueDate).format("MMM D, YYYY")}
             </Text>
-            {workItem.description.length > 80 && (
-              <Text
-                size="xs"
-                c="blue"
-                span
-                style={{ cursor: 'pointer', fontWeight: 500 }}
-                onClick={toggleExpanded}
-              >
-                {expanded ? "See less" : "See more"}
-              </Text>
-            )}
-          </div>
-        )}
-        {workItem.dueDate && (
-          <Text size="xs" mt="xs">
-            Due: {dayjs(workItem.dueDate).format("MMM D, YYYY")}
-          </Text>
-        )}
+          )}
+        </Stack>
       </Paper>
 
       <ImplementationPlanModal

@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { getSingleQueryParam } from "../utils/getSingleQueryParam";
+import { getSingleQueryParam } from "../utils/navigation/queryParams";
 import { Snippet } from "../types";
 
 export function useSnippetFromRouter(
