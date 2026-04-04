@@ -1,5 +1,5 @@
 import { ActionIcon, Box, Button, Group, Popover, Stack } from "@mantine/core";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IconChevronLeft,
   IconPlus,
@@ -7,10 +7,7 @@ import {
   IconX,
 } from "@tabler/icons-react";
 import styles from "./AIChat.module.css";
-import {
-  useCreateChatMutation,
-  useDeleteChatMutation,
-} from "../../store/api/chatApi";
+import { useAIChatMutations } from "../../hooks/mutations/useAIChatMutations";
 import ChatListing from "./ChatListing";
 import ChatMessages from "./ChatMessages";
 
@@ -20,20 +17,11 @@ const AIChat = () => {
   const [input, setInput] = useState("");
   const [opened, setOpened] = useState(false);
 
-  const [createChat, { isLoading: isCreatingChat }] = useCreateChatMutation();
-  const [deleteChatMutation] = useDeleteChatMutation();
-
-  const addNewChat = useCallback(async () => {
-    if (isCreatingChat) return;
-    try {
-      const response = await createChat().unwrap();
-      setChatId(response.id);
-      setShowListing(false);
-      setInput("");
-    } catch (error) {
-      console.error("Failed to create chat:", error);
-    }
-  }, [isCreatingChat, createChat, setChatId, setShowListing, setInput]);
+  const { addNewChat, deleteChat, isCreatingChat } = useAIChatMutations({
+    setChatId,
+    setShowListing,
+    setInput,
+  });
 
   useEffect(() => {
     if (opened && !chatId && !isCreatingChat) {
@@ -55,14 +43,6 @@ const AIChat = () => {
   const goToChat = (id: string) => {
     setChatId(id);
     setShowListing(false);
-  };
-
-  const deleteChat = async (id: string) => {
-    try {
-      await deleteChatMutation(id).unwrap();
-    } catch (error) {
-      console.error("Failed to delete chat:", error);
-    }
   };
 
   return (

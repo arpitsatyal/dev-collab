@@ -1,25 +1,13 @@
 import { NavLink, Tooltip } from "@mantine/core";
 import styles from "./Docs.module.css";
-import { getSingleQueryParam } from "../../utils/navigation/queryParams";
 import { IconBrandPagekit } from "@tabler/icons-react";
 import Loading from "../Loader/Loader";
-import { useGetDocsQuery } from "../../store/api/docsApi";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { useRouter } from "next/router";
+import { useDocsSideNav } from "../../hooks/useDocsSideNav";
 
 const DocsSideNav = () => {
-  const router = useRouter();
-  const workspaceId = getSingleQueryParam(router.query.workspaceId) || "unknown";
-  const currentDocId = getSingleQueryParam(router.query.docId) || "";
+  const { docs, isLoading, isWorkspaceReady, currentDocId, handleDocClick } = useDocsSideNav();
 
-  const isValidWorkspaceId =
-    typeof workspaceId === "string" && workspaceId.trim() !== "";
-
-  const { data: docs, isLoading } = useGetDocsQuery(
-    isValidWorkspaceId ? { workspaceId } : skipToken
-  );
-
-  if (isLoading || !isValidWorkspaceId) return <Loading loaderHeight="20vh" />;
+  if (isLoading || !isWorkspaceReady) return <Loading loaderHeight="20vh" />;
   return (
     <nav className={styles.sidenav}>
       {docs && docs.length > 0 ? (
@@ -35,16 +23,7 @@ const DocsSideNav = () => {
               label={item.label}
               leftSection={<IconBrandPagekit size={16} />}
               active={currentDocId === item.id}
-              onClick={() =>
-                router.push(
-                  {
-                    pathname: `/workspaces/${workspaceId}/docs`,
-                    query: { docId: item.id },
-                  },
-                  undefined,
-                  { shallow: true }
-                )
-              }
+              onClick={() => handleDocClick(item.id)}
               className={styles.navLink}
             />
           </Tooltip>

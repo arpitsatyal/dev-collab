@@ -1,5 +1,5 @@
 import { NavLink } from "@mantine/core";
-import { NavItemProps } from "../../hooks/useSideNav";
+import type { NavItemProps } from "../../hooks/useSideNav";
 
 interface NavItemSingleProps {
   item: NavItemProps;

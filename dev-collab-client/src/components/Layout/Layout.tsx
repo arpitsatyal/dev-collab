@@ -18,6 +18,7 @@ import { useWorkspaceCacheUpdater } from "../../hooks/useWorkspaceCacheUpdater";
 import { IconMenu2 } from "@tabler/icons-react";
 import AIChat from "../AIChat/AIChat";
 import DevCollabIcon from "../shared/DevCollabIcon";
+import { isValidParam } from "../../utils/navigation/validators";
 
 export default function Layout({ children }: { children: ReactNode }) {
   const router = useRouter();
@@ -37,15 +38,14 @@ export default function Layout({ children }: { children: ReactNode }) {
 
   const loadedWorkspaces = data?.items;
   const workspaceId = router.query.workspaceId;
-  const isValidWorkspaceId =
-    typeof workspaceId === "string" && workspaceId.trim() !== "";
+  const isWorkspaceReady = isValidParam(workspaceId);
 
   const isWorkspaceLoaded = loadedWorkspaces?.find(
     (loaded) => loaded.id === workspaceId
   );
 
   const { data: workspaceData } = useGetWorkspaceByIdQuery(
-    isValidWorkspaceId && !isWorkspaceLoaded ? workspaceId : skipToken
+    isWorkspaceReady && !isWorkspaceLoaded ? (workspaceId as string) : skipToken
   );
 
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false);
@@ -73,16 +73,16 @@ export default function Layout({ children }: { children: ReactNode }) {
   }, [router]);
 
   useEffect(() => {
-    if (isValidWorkspaceId) {
+    if (isWorkspaceReady && workspaceId) {
       dispatch(setWorkspacesOpen(true));
 
       if (!isWorkspaceLoaded && workspaceData) {
-        updateQueryData(workspaceId, workspaceData);
+        updateQueryData(workspaceId as string, workspaceData);
       }
     }
   }, [
     workspaceId,
-    isValidWorkspaceId,
+    isWorkspaceReady,
     workspaceData,
     isWorkspaceLoaded,
     router,

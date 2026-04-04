@@ -1,41 +1,21 @@
 import { Box, Button, Stack } from "@mantine/core";
-import React, { useEffect } from "react";
-import { useRouter } from "next/router";
-import { useMutation } from "@liveblocks/react";
-import { useSession } from "../providers/AuthProvider";
-import Loading from "../Loader/Loader";
+import React from "react";
 import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";
 import { DebouncedFunc } from "lodash";
-import { SaveStatus } from "../../types";
-import { Snippet } from "../../types";
+import { SaveStatus, Snippet } from "../../types";
 
-type SnippetWorkplaceProps = {
+interface SnippetWorkplaceProps {
   snippet: Snippet;
   loading: boolean;
   saveStatus: SaveStatus;
   debounceSave: DebouncedFunc<() => Promise<void>>;
   handleManualSave: () => void;
-};
+}
 
 const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
   const { snippet, loading, handleManualSave, saveStatus, debounceSave } =
     props;
-
-  const router = useRouter();
-  const session = useSession();
-
-  const updateLanguage = useMutation(({ storage }, val: string) => {
-    storage.set("language", val);
-  }, []);
-
-  useEffect(() => {
-    updateLanguage(snippet.language);
-  }, [snippet.language, updateLanguage]);
-
-  if (!router.query.snippetId || !session.data?.user.id) {
-    return <Loading />;
-  }
 
   return (
     <Stack p="md">

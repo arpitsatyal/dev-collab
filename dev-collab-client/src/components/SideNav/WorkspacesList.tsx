@@ -4,44 +4,21 @@ import InfiniteLoader from "react-window-infinite-loader";
 import Loading from "../Loader/Loader";
 import WorkspaceNavItem from "./WorkspaceNavItem";
 import { WorkspaceWithPin } from "../../types";
-import { NavItemProps } from "../../hooks/useSideNav";
+import { useSideNavContext } from "./SideNavContext";
 import classes from "./SideNav.module.css";
 
-interface WorkspacesListProps {
-  workspaceItems: WorkspaceWithPin[];
-  hasMore: boolean;
-  isFetching: boolean;
-  isInsertingWorkspace: boolean;
-  openItem: string | null;
-  loadingWorkspaceId: string | null;
-  loadedSnippets: Record<string, any>;
-  isActive: (path?: string) => boolean;
-  onToggleItem: (id: string) => void;
-  onUpdatePinnedStatus: (workspace: WorkspaceWithPin) => void;
-  onLoadMore: (startIndex: number, stopIndex: number) => void;
-  getItemSize: (index: number) => number;
-  transformWorkspace: (workspace: WorkspaceWithPin, snippets: any) => NavItemProps;
-  listRef: React.MutableRefObject<VariableSizeList | null>;
-  itemRefs: React.MutableRefObject<Record<string, HTMLAnchorElement | null>>;
-}
+const WorkspacesList = () => {
+  const {
+    workspaceItems,
+    hasMore,
+    isInsertingWorkspace,
+    loadedSnippets,
+    loadMoreItems,
+    getItemSize,
+    transformWorkspace,
+    listRef,
+  } = useSideNavContext();
 
-const WorkspacesList = ({
-  workspaceItems,
-  hasMore,
-  isFetching,
-  isInsertingWorkspace,
-  openItem,
-  loadingWorkspaceId,
-  loadedSnippets,
-  isActive,
-  onToggleItem,
-  onUpdatePinnedStatus,
-  onLoadMore,
-  getItemSize,
-  transformWorkspace,
-  listRef,
-  itemRefs,
-}: WorkspacesListProps) => {
   const isItemLoaded = (index: number) => index < workspaceItems.length;
 
   const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
@@ -66,15 +43,6 @@ const WorkspacesList = ({
         style={style}
         workspace={workspace}
         child={child}
-        isActive={isActive}
-        isExpanded={openItem === child.id}
-        isLoading={loadingWorkspaceId === child.id}
-        onToggle={onToggleItem}
-        onUpdatePinnedStatus={onUpdatePinnedStatus}
-        loadedSnippets={loadedSnippets}
-        itemRef={(el) => {
-          itemRefs.current[child.id] = el;
-        }}
       />
     );
   };
@@ -83,7 +51,7 @@ const WorkspacesList = ({
     <InfiniteLoader
       isItemLoaded={isItemLoaded}
       itemCount={hasMore ? workspaceItems.length + 1 : workspaceItems.length}
-      loadMoreItems={onLoadMore}
+      loadMoreItems={loadMoreItems}
     >
       {({ onItemsRendered, ref }) => (
         <VariableSizeList

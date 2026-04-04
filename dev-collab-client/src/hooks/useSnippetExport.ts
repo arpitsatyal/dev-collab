@@ -1,16 +1,16 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { notifications } from "@mantine/notifications";
 import { Snippet } from "../types";
-import { useCreateSnippetMutation, useLazyGetSnippetsQuery } from "../store/api/snippetApi";
+import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { useSuggestSnippetFilenameMutation } from "../store/api/aiApi";
-import { useAppDispatch, useAppSelector } from "../store/hooks";
-import { addSnippet, removeSnippet, updateSnippet } from "../store/slices/snippetSlice";
-import { getExtensionFromLanguage, getLanguageFromExtension } from "../utils/snippet/languageMapper";
+import { useAppSelector } from "../store/hooks";
+import { getExtensionFromLanguage } from "../utils/snippet/languageMapper";
 import { inferFallbackBaseName, buildUniqueFilename } from "../utils/snippet/naming";
 import { parseFilename } from "../utils/snippet/parser";
 import { useSession } from "../components/providers/AuthProvider";
+import { useSnippetMutations } from "./mutations/useSnippetMutations";
 
-interface UseSnippetExportProps {
+interface SnippetExportOptions {
   code: string;
   language?: string;
   workspaceId?: string | null;
@@ -20,11 +20,8 @@ export const useSnippetExport = ({
   code,
   language,
   workspaceId,
-}: UseSnippetExportProps) => {
+}: SnippetExportOptions) => {
   const session = useSession();
-  const dispatch = useAppDispatch();
-
-  const [createSnippet, { isLoading: isCreatingSnippet }] = useCreateSnippetMutation();
   const [triggerGetSnippets, { data: fetchedWorkspaceSnippets = [] }] = useLazyGetSnippetsQuery();
   const [suggestSnippetFilename, { isLoading: isSuggestingFileName }] = useSuggestSnippetFilenameMutation();
 
@@ -32,6 +29,8 @@ export const useSnippetExport = ({
   const [fileName, setFileName] = useState("");
   const [fileNameError, setFileNameError] = useState("");
   const [saved, setSaved] = useState(false);
+
+  const { confirmExport, isCreatingSnippet } = useSnippetMutations();
 
   const loadedWorkspaceSnippets = useAppSelector((state) =>
     workspaceId ? state.snippet.loadedSnippets[workspaceId] || [] : []
@@ -130,84 +129,31 @@ export const useSnippetExport = ({
     }
   };
 
-  const confirmExport = async () => {
+  const handleConfirmExport = useCallback(async () => {
     if (!workspaceId) return;
 
-    const content = code?.trim() ? code : "";
     const validationError = validateFileName(fileName);
     if (validationError) {
       setFileNameError(validationError);
       return;
     }
 
-    const parsed = parseFilename(fileName);
-    if (!parsed) {
-      setFileNameError("Use a valid filename with extension (e.g. auth_service.ts).");
-      return;
-    }
-
-    const now = new Date();
-    const tempId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-    const title = parsed.title;
-    const extension = parsed.extension;
-    const resolvedLanguage =
-      getLanguageFromExtension(extension) === "plaintext"
-        ? normalizedLanguage
-        : getLanguageFromExtension(extension);
-
-    const optimisticSnippet: Snippet = {
-      id: tempId,
-      title,
-      language: resolvedLanguage,
-      content,
-      createdAt: now,
-      updatedAt: now,
-      workspaceId,
-      authorId: session.data?.user?.id || null,
-      lastEditedById: session.data?.user?.id || null,
-      extension,
-    };
-
-    dispatch(addSnippet({ workspaceId, snippet: optimisticSnippet }));
-
     try {
-      const data = await createSnippet({
+      await confirmExport({
+        code,
         workspaceId,
-        snippet: {
-          title,
-          language: resolvedLanguage,
-          content,
-          workspaceId,
-          extension,
-        },
-      }).unwrap();
-
-      dispatch(
-        updateSnippet({
-          workspaceId,
-          snippetId: tempId,
-          editedSnippet: data,
-        })
-      );
+        fileName,
+        normalizedLanguage,
+        userId: session.data?.user?.id || null,
+      });
 
       setSaved(true);
       setOpened(false);
       window.setTimeout(() => setSaved(false), 1500);
-      notifications.show({
-        title: "Snippet exported",
-        message: `${data.title}.${data.extension || "txt"} saved to this workspace.`,
-        color: "teal",
-      });
     } catch (error) {
-      dispatch(removeSnippet({ workspaceId, snippetId: tempId }));
-      console.error("Failed to export snippet:", error);
-      notifications.show({
-        title: "Export failed",
-        message: "Could not save this code block as a snippet.",
-        color: "red",
-      });
+      // Error handled in mutation hook (toasted)
     }
-  };
+  }, [code, workspaceId, fileName, normalizedLanguage, session.data?.user?.id, validateFileName, confirmExport]);
 
   return {
     opened,
@@ -220,7 +166,7 @@ export const useSnippetExport = ({
     isSuggestingFileName,
     saved,
     openPrompt,
-    confirmExport,
+    confirmExport: handleConfirmExport,
     validateFileName,
   };
 };

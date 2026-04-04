@@ -5,7 +5,7 @@ import { setWorkspacesOpen } from "../store/slices/workspaceSlice";
 import { WorkspaceWithPin } from "../types";
 import type { NavItemProps } from "./useSideNavData";
 
-interface UseSideNavEffectsProps {
+interface SideNavEffectsProps {
   currentWorkspaceId: string | null;
   workspaceItems: (WorkspaceWithPin | NavItemProps)[];
   listRef: React.MutableRefObject<VariableSizeList | null>;
@@ -27,7 +27,7 @@ export const useSideNavEffects = ({
   fetchSnippets,
   pendingScrollId,
   setPendingScrollId,
-}: UseSideNavEffectsProps) => {
+}: SideNavEffectsProps) => {
   const lastWorkspaceIdRef = useRef<string | null>(null);
   const dispatch = useAppDispatch();
 

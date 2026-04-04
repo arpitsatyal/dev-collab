@@ -5,34 +5,37 @@ import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
 import { WorkspaceWithPin } from "../../types";
 import { NavItemProps } from "../../hooks/useSideNav";
+import { useSideNavContext } from "./SideNavContext";
 
 interface WorkspaceNavItemProps {
   index: number;
   style: React.CSSProperties;
   workspace: WorkspaceWithPin;
   child: NavItemProps;
-  isActive: (path?: string) => boolean;
-  isExpanded: boolean;
-  isLoading: boolean;
-  onToggle: (id: string) => void;
-  onUpdatePinnedStatus: (workspace: WorkspaceWithPin) => void;
-  loadedSnippets: Record<string, any>;
-  itemRef?: (el: HTMLAnchorElement | null) => void;
 }
 
 const WorkspaceNavItem = ({
   style,
   workspace,
   child,
-  isActive,
-  isExpanded,
-  isLoading,
-  onToggle,
-  onUpdatePinnedStatus,
-  loadedSnippets,
-  itemRef,
 }: WorkspaceNavItemProps) => {
   const router = useRouter();
+  const {
+    isActive,
+    openItem,
+    loadingWorkspaceId,
+    setOpenItem,
+    handleUpdatePinnedStatus,
+    loadedSnippets,
+    itemRefs,
+  } = useSideNavContext();
+
+  const isExpanded = openItem === child.id;
+  const isLoading = loadingWorkspaceId === child.id;
+  
+  const onToggle = (id: string) => {
+    setOpenItem((prev) => (prev === id ? null : id));
+  };
 
   return (
     <Box style={style} key={child.id}>
@@ -52,7 +55,11 @@ const WorkspaceNavItem = ({
             {child.label}
           </Text>
         }
-        ref={itemRef}
+        ref={(el) => {
+          if (itemRefs.current) {
+            itemRefs.current[child.id] = el;
+          }
+        }}
         leftSection={<child.icon size={16} stroke={1.5} />}
         onClick={() => {
           onToggle(child.id);
@@ -67,7 +74,7 @@ const WorkspaceNavItem = ({
                 variant="subtle"
                 onClick={(e) => {
                   e.stopPropagation();
-                  onUpdatePinnedStatus(workspace);
+                  handleUpdatePinnedStatus(workspace);
                 }}
                 style={(theme) => ({
                     color: workspace.isPinned

@@ -1,9 +1,7 @@
 import { useState, useCallback, useMemo } from "react";
 import { useRouter } from "next/router";
-import { notifications } from "@mantine/notifications";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
-import { useUpdatePinnedStatusMutation } from "../store/api/workspaceApi";
 import { setSnippets } from "../store/slices/snippetSlice";
 import { incrementPage, setWorkspacesOpen } from "../store/slices/workspaceSlice";
 import useWorkspaceTransform from "./useWorkspaceTransform";
@@ -11,6 +9,7 @@ import { useSideNavData } from "./useSideNavData";
 import type { NavItemProps } from "./useSideNavData";
 import { useSideNavList } from "./useSideNavList";
 import { useSideNavEffects } from "./useSideNavEffects";
+import { useSideNavMutations } from "./mutations/useSideNavMutations";
 import { WorkspaceWithPin } from "../types";
 
 export type { NavItemProps };
@@ -26,7 +25,6 @@ export const useSideNav = () => {
   const loadedSnippets = useAppSelector((state) => state.snippet.loadedSnippets);
 
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
-  const [updatePinnedStatus] = useUpdatePinnedStatusMutation();
 
   const {
     navItemsWithWorkspaces,
@@ -137,29 +135,10 @@ export const useSideNav = () => {
     [workspacesOpen, navItemsWithWorkspaces, loadedSnippets, openItem, isActive, transformWorkspace]
   );
 
-  const handleUpdatePinnedStatus = async (workspace: WorkspaceWithPin) => {
-    try {
-      setOpenItem((prev) => (prev === workspace.id ? null : workspace.id));
-
-      await updatePinnedStatus({
-        workspaceId: workspace.id,
-        isPinned: !workspace.isPinned,
-      }).unwrap();
-
-      setPendingScrollId(workspace.id);
-
-      notifications.show({
-        title: "Job done!",
-        message: `Workspace ${!workspace.isPinned ? "Pinned" : "Unpinned"} Successfully! 🌟`,
-      });
-    } catch (error) {
-      notifications.show({
-        title: "Error",
-        message: "Failed to update pinned status. Please try again.",
-        color: "red",
-      });
-    }
-  };
+  const { handleUpdatePinnedStatus } = useSideNavMutations({
+    setOpenItem,
+    setPendingScrollId,
+  });
 
   return {
     navItemsWithWorkspaces,

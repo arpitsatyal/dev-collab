@@ -51,20 +51,20 @@ export type TypedItems = TypedItem<'workspace' | 'workItem' | 'snippet' | 'doc' 
 export type BaseItems = Models['workspace' | 'workItem' | 'snippet' | 'doc' | 'chat'];
 export type CacheDataSource = TypedItems;
 
-export type Workspace = DrizzleWorkspace;
-export type WorkspaceCreateData = MakeCreateData<DrizzleWorkspaceInsert>;
-export type WorkItem = DrizzleWorkItem;
-export type WorkItemCreateData = MakeCreateData<DrizzleWorkItemInsert> & { snippetIds?: string[] };
-export type Snippet = DrizzleSnippet;
-export type SnippetsCreateData = MakeCreateData<DrizzleSnippetInsert>;
-export type SnippetsUpdateData = Partial<SnippetsCreateData>;
+export interface Workspace extends DrizzleWorkspace {}
+export interface WorkspaceCreateData extends MakeCreateData<DrizzleWorkspaceInsert> {}
+export interface WorkItem extends DrizzleWorkItem {}
+export interface WorkItemCreateData extends MakeCreateData<DrizzleWorkItemInsert> { snippetIds?: string[] }
+export interface Snippet extends DrizzleSnippet {}
+export interface SnippetsCreateData extends MakeCreateData<DrizzleSnippetInsert> {}
+export interface SnippetsUpdateData extends Partial<SnippetsCreateData> {}
 
-export type Doc = DrizzleDoc;
-export type DocCreateData = MakeCreateData<DrizzleDocInsert>;
-export type User = DrizzleUser;
+export interface Doc extends DrizzleDoc {}
+export interface DocCreateData extends MakeCreateData<DrizzleDocInsert> {}
+export interface User extends DrizzleUser {}
 
-export type Chat = DrizzleChat;
-export type Message = DrizzleMessage;
+export interface Chat extends DrizzleChat {}
+export interface Message extends DrizzleMessage {}
 
 export const WorkItemStatus = {
   TODO: 'TODO',

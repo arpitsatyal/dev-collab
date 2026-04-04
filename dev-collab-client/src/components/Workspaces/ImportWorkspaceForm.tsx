@@ -1,4 +1,3 @@
-
 import {
     Box,
     Button,
@@ -14,18 +13,13 @@ import {
     Badge,
     ActionIcon,
 } from "@mantine/core";
+import classes from "./Workspace.module.css";
 import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { IconSearch, IconX } from "@tabler/icons-react";
-import { useImportWorkspaceMutation, useGetRepoTreeQuery } from "../../store/api/workspaceApi";
-import classes from "./Workspace.module.css";
-
-interface RepoFile {
-    path: string;
-    size: number;
-}
+import { useImportWorkspaceMutations, useImportRepoTree } from "../../hooks/mutations/useImportWorkspaceMutations";
 
 const MAX_FILES = 20;
 
@@ -34,14 +28,10 @@ const ImportWorkspaceForm = () => {
     const [step, setStep] = useState<1 | 2>(1);
     const [search, setSearch] = useState("");
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-
-    const [importWorkspace, { isLoading: isImporting }] = useImportWorkspaceMutation();
-
-    // We only fetch tree when the URL is submitted in step 1
     const [repoUrl, setRepoUrl] = useState<string | null>(null);
-    const { data: treeData, isFetching: isFetchingTree, error: treeError } = useGetRepoTreeQuery(repoUrl!, {
-        skip: !repoUrl,
-    });
+
+    const { isImporting, handleImport } = useImportWorkspaceMutations();
+    const { data: treeData, isFetching: isFetchingTree, error: treeError } = useImportRepoTree(repoUrl);
 
     const form = useForm({
         initialValues: {
@@ -53,7 +43,7 @@ const ImportWorkspaceForm = () => {
         },
     });
 
-    const handleFetchTree = async (values: typeof form.values) => {
+    const handleFetchTree = (values: typeof form.values) => {
         setRepoUrl(values.url);
     };
 
@@ -77,27 +67,14 @@ const ImportWorkspaceForm = () => {
     const repoFiles = treeData?.files || [];
     const isLoading = isFetchingTree || isImporting;
 
-    const handleImport = async () => {
-        if (selectedFiles.length === 0) return;
+    const onImport = async () => {
         try {
-            const data = await importWorkspace({
-                url: form.values.url,
-                selectedFiles: selectedFiles,
-            }).unwrap();
-
-            notifications.show({
-                title: "Success! 🚀",
-                message: `Imported ${data.stats.snippets} snippets and ${data.stats.docs} docs!`,
-                color: "green",
-            });
-
-            router.push(`/workspaces/${data.workspace.id}`);
-        } catch (error: any) {
-            notifications.show({
-                title: "Import Failed",
-                message: error.data?.error || error.message || "Failed to import",
-                color: "red",
-            });
+            const data = await handleImport(form.values.url, selectedFiles);
+            if (data) {
+                router.push(`/workspaces/${data.workspace.id}`);
+            }
+        } catch (error) {
+            // Error handled in hook
         }
     };
 
@@ -208,7 +185,7 @@ const ImportWorkspaceForm = () => {
                         <Button
                             variant="gradient"
                             gradient={{ from: "blue", to: "cyan", deg: 90 }}
-                            onClick={handleImport}
+                            onClick={onImport}
                             loading={isLoading}
                             disabled={selectedFiles.length === 0}
                         >

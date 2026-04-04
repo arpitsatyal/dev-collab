@@ -9,23 +9,34 @@ import {
   Title,
 } from "@mantine/core";
 import classes from "./Workspace.module.css";
-import { UseFormReturnType } from "@mantine/form";
+import { useForm } from "@mantine/form";
+import { useRouter } from "next/router";
 import { WorkspaceCreateData } from "../../types";
+import { useWorkspaceMutations } from "../../hooks/mutations/useWorkspaceMutations";
 
-interface CreateWorkspaceFormProps {
-  form: UseFormReturnType<
-    WorkspaceCreateData,
-    (values: WorkspaceCreateData) => WorkspaceCreateData
-  >;
-  isLoading: boolean;
-  handleSubmit: () => void;
-}
+interface CreateWorkspaceFormProps {}
 
-const CreateWorkspaceForm = ({
-  form,
-  handleSubmit,
-  isLoading,
-}: CreateWorkspaceFormProps) => {
+const CreateWorkspaceForm = ({}: CreateWorkspaceFormProps) => {
+  const router = useRouter(); 
+  const { isLoading, handleCreateWorkspace } = useWorkspaceMutations();
+
+  const form = useForm<WorkspaceCreateData>({
+    initialValues: {
+      title: "",
+      description: "",
+      ownerId: "",
+    },
+  });
+
+  const handleSubmit = async () => {
+    try {
+      const newWorkspace = await handleCreateWorkspace(form.values);
+      router.push(`/workspaces/${newWorkspace.id}`);
+    } catch (error) {
+      // Error handled inside hook (toasts)
+    }
+  };
+
   return (
     <Box
       maw={{ base: "100%", sm: 600, md: 800 }}

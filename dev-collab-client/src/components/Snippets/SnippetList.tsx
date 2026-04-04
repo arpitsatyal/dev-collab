@@ -11,29 +11,20 @@ import {
   Box,
 } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
-import { Snippet } from "../../types";
+import { Snippet, SnippetsCreateData } from "../../types";
 import { useAppDispatch } from "../../store/hooks";
-import {
-  useCreateSnippetMutation,
-  useEditSnippetMutation,
-} from "../../store/api/snippetApi";
+import { useSnippetMutations } from "../../hooks/mutations/useSnippetMutations";
 import { languageMapper } from "../../utils/snippet/languageMapper";
-import { addSnippet, updateSnippet } from "../../store/slices/snippetSlice";
-import { notifications } from "@mantine/notifications";
-import { SnippetsCreateData } from "../../types";
 import FileIcon from "../shared/FileIcon";
-import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
-import { skipToken } from "@reduxjs/toolkit/query";
 import classes from "./Snippet.module.css";
 import { useMediaQuery } from "@mantine/hooks";
 
-const SnippetList = ({
-  snippets,
-  isVisible,
-}: {
+interface SnippetListProps {
   snippets: Snippet[];
   isVisible: boolean;
-}) => {
+}
+
+const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
   const router = useRouter();
   const pathParts = router.asPath.split("/");
   const snippetId = pathParts[4];
@@ -45,14 +36,8 @@ const SnippetList = ({
   const [newSnippetTitle, setNewSnippetTitle] = useState("");
   const [nameError, setNameError] = useState("");
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
-  const dispatch = useAppDispatch();
-  const [createSnippet, { isLoading: isCreating }] = useCreateSnippetMutation();
-  const [editSnippet, { isLoading: isEditing }] = useEditSnippetMutation();
+  const { handleCreateSnippet, handleEditSnippet, isLoading: isMutating } = useSnippetMutations();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
-
-  const isValidWorkspaceId =
-    typeof selectedSnippet?.workspaceId === "string" &&
-    selectedSnippet?.workspaceId.trim() !== "";
 
   useEffect(() => {
     if (pathParts[4] === "create") {
@@ -137,28 +122,11 @@ const SnippetList = ({
         extractSnippetDetails(newSnippetTitle);
 
       if (modalMode === "rename" && selectedSnippet) {
-        const data = await editSnippet({
-          workspaceId: selectedSnippet.workspaceId,
-          snippet: {
-            ...selectedSnippet,
-            title,
-            language,
-            extension,
-          },
-          snippetId: selectedSnippet.id,
-        }).unwrap();
-
-        dispatch(
-          updateSnippet({
-            workspaceId: selectedSnippet.workspaceId,
-            snippetId: selectedSnippet.id,
-            editedSnippet: data,
-          })
-        );
-
-        notifications.show({
-          title: "Done!",
-          message: "Snippet updated successfully! 🌟",
+        await handleEditSnippet(selectedSnippet.workspaceId, selectedSnippet.id, {
+          ...selectedSnippet,
+          title,
+          language,
+          extension,
         });
       } else if (modalMode === "create") {
         const workspaceId = router.query.workspaceId as string;
@@ -171,22 +139,7 @@ const SnippetList = ({
           extension,
         };
 
-        const data = await createSnippet({
-          workspaceId,
-          snippet,
-        }).unwrap();
-
-        dispatch(
-          addSnippet({
-            workspaceId,
-            snippet: data,
-          })
-        );
-        notifications.show({
-          title: "Done!",
-          message: "Snippet created successfully! 🌟",
-        });
-
+        const data = await handleCreateSnippet(workspaceId, snippet);
         router.push(`/workspaces/${workspaceId}/snippets/${data.id}`);
       }
 
@@ -195,14 +148,7 @@ const SnippetList = ({
       setNewSnippetTitle("");
       setDetectedLanguage(null);
     } catch (error) {
-      console.error(
-        `Failed to ${modalMode === "rename" ? "rename" : "create"} snippet:`,
-        error
-      );
-      notifications.show({
-        title: "Whoops!",
-        message: "Something went wrong.",
-      });
+      // Error handled in hook
     }
   };
 
@@ -310,7 +256,7 @@ const SnippetList = ({
           <Button
             onClick={handleModalSubmit}
             disabled={!newSnippetTitle.trim() || !!nameError}
-            loading={modalMode === "rename" ? isEditing : isCreating}
+            loading={isMutating}
           >
             {modalMode === "rename" ? "Rename" : "Create"}
           </Button>
