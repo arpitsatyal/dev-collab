@@ -4,7 +4,7 @@ import InfiniteLoader from "react-window-infinite-loader";
 import Loading from "../Loader/Loader";
 import WorkspaceNavItem from "./WorkspaceNavItem";
 import { WorkspaceWithPin } from "../../types";
-import { NavItemProps } from "./SideNav";
+import { NavItemProps } from "../../hooks/useSideNav";
 import classes from "./SideNav.module.css";
 
 interface WorkspacesListProps {

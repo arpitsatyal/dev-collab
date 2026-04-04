@@ -4,7 +4,7 @@ import { useRouter } from "next/router";
 import Loading from "../Loader/Loader";
 import SnippetList from "../Snippets/SnippetList";
 import { WorkspaceWithPin } from "../../types";
-import { NavItemProps } from "./SideNav";
+import { NavItemProps } from "../../hooks/useSideNav";
 
 interface WorkspaceNavItemProps {
   index: number;

@@ -1,5 +1,5 @@
 import { useCallback, useRef } from "react";
-import { NavItemProps } from "../components/SideNav/SideNav";
+import type { NavItemProps } from "./useSideNav";
 import { IconFolder } from "@tabler/icons-react";
 import { WorkspaceWithPin } from "../types";
 
