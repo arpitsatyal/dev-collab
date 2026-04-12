@@ -42,21 +42,33 @@ const client = new Meilisearch({
   host: process.env.MEILISEARCH_SERVER,
 });
 
-const index = client.index("docs");
+const index = client.index("dev-collab");
 
 app.post("/sync", async function (req, res) {
   try {
-    const doc = req.body.doc;
-    if (!doc) {
-      return res.status(404).json({ msg: "doc not found!" });
+    const { doc, type, batch } = req.body;
+
+    // Handle Batch Sync
+    if (batch && Array.isArray(batch)) {
+      const documents = batch.map((item) => ({
+        ...item.doc,
+        type: item.type,
+      }));
+      await index.addDocuments(documents);
+      return res.status(200).json({ msg: `✅ ${documents.length} docs indexed (batch)` });
     }
-    const document = { ...doc, type: req.body.type };
+
+    // Handle Single Sync
+    if (!doc) {
+      return res.status(404).json({ msg: "doc or batch not found!" });
+    }
+    const document = { ...doc, type: type };
     await index.addDocuments([document]);
 
     return res.status(200).json({ msg: `✅ doc ${doc.id} indexed` });
   } catch (err) {
-    console.error(`❌ Failed to index doc`, err.message);
-    return res.status(400).json({ msg: `❌ Failed to index doc` });
+    console.error(`❌ Failed to sync`, err.message);
+    return res.status(400).json({ msg: `❌ Failed to sync` });
   }
 });
 

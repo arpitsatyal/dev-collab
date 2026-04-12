@@ -3,12 +3,18 @@
     "devcollabapi": {
       "dependsOn": [
         {
-          "attributes": ["Name", "Arn"],
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
           "category": "function",
           "resourceName": "search"
         },
         {
-          "attributes": ["Name", "Arn"],
+          "attributes": [
+            "Name",
+            "Arn"
+          ],
           "category": "function",
           "resourceName": "elasticIndexWebhook"
         }
@@ -22,7 +28,9 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": ["Arn"],
+          "attributes": [
+            "Arn"
+          ],
           "category": "function",
           "resourceName": "devcollabprismalayer"
         }
@@ -50,7 +58,9 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": ["Arn"],
+          "attributes": [
+            "Arn"
+          ],
           "category": "function",
           "resourceName": "devcollabsearchlayer"
         }
@@ -62,7 +72,9 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": ["Arn"],
+          "attributes": [
+            "Arn"
+          ],
           "category": "function",
           "resourceName": "devcollabsearchlayer"
         }
@@ -121,14 +133,6 @@
       ]
     },
     "AMPLIFY_function_TaskNotificationWorker_s3Key": {
-      "usedBy": [
-        {
-          "category": "function",
-          "resourceName": "TaskNotificationWorker"
-        }
-      ]
-    },
-    "AMPLIFY_function_TaskNotificationWorker_sendgridApiKey": {
       "usedBy": [
         {
           "category": "function",

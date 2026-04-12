@@ -28,11 +28,11 @@ app.use((req, res, next) => {
   res.setHeader("Access-Control-Allow-Origin", "*"); // Or specify your Amplify app's domain
   res.setHeader(
     "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS",
+    "GET, POST, PUT, DELETE, OPTIONS"
   );
   res.setHeader(
     "Access-Control-Allow-Headers",
-    "Content-Type, Authorization, *",
+    "Content-Type, Authorization, *"
   );
   // Handle preflight requests
   if (req.method === "OPTIONS") {
@@ -45,7 +45,7 @@ const client = new Meilisearch({
   host: process.env.MEILISEARCH_SERVER,
 });
 
-const index = client.index("docs");
+const index = client.index("dev-collab");
 
 app.post("/search", async (req, res) => {
   const { query } = req.query || {};

@@ -7,7 +7,7 @@
   "dependencies": {
     "@sendgrid/mail": "^8.1.5"
   },
-  "devDependencies": {
+    "devDependencies": {
     "@types/aws-lambda": "^8.10.92"
   }
 }
