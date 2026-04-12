@@ -1,18 +1,9 @@
-import {
-    Box,
-    Button,
-    Paper,
-    Stack,
-    TextInput,
-    Title,
-    Text,
-    Checkbox,
-    ScrollArea,
-    Divider,
-    Group,
-    Badge,
-    ActionIcon,
-} from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import BaseInput from "../shared/base/BaseInput";
+import BaseCard from "../shared/base/BaseCard";
+import BaseBadge from "../shared/base/BaseBadge";
+import BaseActionIcon from "../shared/base/BaseActionIcon";
+import BaseCheckbox from "../shared/base/BaseCheckbox";
 import classes from "./Workspace.module.css";
 import { useForm } from "@mantine/form";
 import { useEffect, useState } from "react";
@@ -20,6 +11,7 @@ import { notifications } from "@mantine/notifications";
 import { useRouter } from "next/router";
 import { IconSearch, IconX } from "@tabler/icons-react";
 import { useImportWorkspaceMutations, useImportRepoTree } from "../../hooks/mutations/useImportWorkspaceMutations";
+import { Box, Divider, Group, ScrollArea, Stack, Text, Title } from "@mantine/core";
 
 const MAX_FILES = 20;
 
@@ -35,13 +27,10 @@ const ImportWorkspaceForm = () => {
 
     const form = useForm({
         initialValues: {
-            url: "",
-        },
+            url: "" },
         validate: {
             url: (value) =>
-                /github\.com\/([^/]+)\/([^/]+)/.test(value) ? null : "Invalid GitHub repository URL",
-        },
-    });
+                /github\.com\/([^/]+)\/([^/]+)/.test(value) ? null : "Invalid GitHub repository URL" } });
 
     const handleFetchTree = (values: typeof form.values) => {
         setRepoUrl(values.url);
@@ -58,8 +47,7 @@ const ImportWorkspaceForm = () => {
             notifications.show({
                 title: "Fetch Failed",
                 message: (treeError as any).data?.error || "Failed to fetch repo structure",
-                color: "red",
-            });
+                color: "red" });
             setRepoUrl(null);
         }
     }, [treeError]);
@@ -95,7 +83,7 @@ const ImportWorkspaceForm = () => {
     if (step === 1) {
         return (
             <Box maw={{ base: "100%", sm: 600, md: 800 }} mx="auto" p={{ base: "sm", sm: "md" }}>
-                <Paper shadow="md" p={{ base: "md", sm: "lg" }} radius="md" withBorder className={classes.root}>
+                <BaseCard className={classes.root}>
                     <Stack gap="md">
                         <Title order={4}>Import from GitHub</Title>
                         <Text size="sm" c="dimmed">
@@ -103,58 +91,52 @@ const ImportWorkspaceForm = () => {
                         </Text>
                         <form onSubmit={form.onSubmit(handleFetchTree)}>
                             <Stack gap="sm">
-                                <TextInput
+                                <BaseInput
                                     label="GitHub Repository URL"
                                     placeholder="https://github.com/owner/repo"
                                     {...form.getInputProps("url")}
                                     size="md"
-                                    variant="filled"
                                     required
-                                    styles={{
-                                        label: { fontWeight: 500, marginBottom: "12px" },
-                                        input: { borderRadius: "8px" },
-                                    }}
                                 />
-                                <Button
+                                <BaseButton
                                     type="submit"
                                     size="md"
                                     variant="gradient"
                                     loading={isLoading}
                                     gradient={{ from: "blue", to: "cyan", deg: 90 }}
                                     mt="md"
-                                    style={{ borderRadius: "8px" }}
                                 >
                                     Fetch Files
-                                </Button>
+                                </BaseButton>
                             </Stack>
                         </form>
                     </Stack>
-                </Paper>
+                </BaseCard>
             </Box>
         );
     }
 
     return (
         <Box maw={{ base: "100%", sm: 600, md: 800 }} mx="auto" p={{ base: "sm", sm: "md" }}>
-            <Paper shadow="md" p={{ base: "md", sm: "lg" }} radius="md" withBorder className={classes.root}>
+            <BaseCard className={classes.root}>
                 <Stack gap="md">
                     <Group justify="space-between">
                         <Title order={4}>Select Files to Import</Title>
-                        <Badge size="lg" variant="light" color={selectedFiles.length === MAX_FILES ? "orange" : "blue"}>
+                        <BaseBadge size="lg" variant="light" color={selectedFiles.length === MAX_FILES ? "orange" : "blue"}>
                             {selectedFiles.length} / {MAX_FILES} Selected
-                        </Badge>
+                        </BaseBadge>
                     </Group>
 
-                    <TextInput
+                    <BaseInput
                         placeholder="Search files..."
                         leftSection={<IconSearch size={16} />}
                         value={search}
                         onChange={(e) => setSearch(e.currentTarget.value)}
                         rightSection={
                             search && (
-                                <ActionIcon variant="transparent" onClick={() => setSearch("")}>
+                                <BaseActionIcon variant="transparent" onClick={() => setSearch("")}>
                                     <IconX size={16} />
-                                </ActionIcon>
+                                </BaseActionIcon>
                             )
                         }
                     />
@@ -162,7 +144,7 @@ const ImportWorkspaceForm = () => {
                     <ScrollArea.Autosize mah={400} type="always">
                         <Stack gap="xs">
                             {filteredFiles.map((file) => (
-                                <Checkbox
+                                <BaseCheckbox
                                     key={file.path}
                                     label={file.path}
                                     checked={selectedFiles.includes(file.path)}
@@ -179,10 +161,10 @@ const ImportWorkspaceForm = () => {
                     <Divider />
 
                     <Group grow>
-                        <Button variant="outline" onClick={() => setStep(1)} disabled={isLoading}>
+                        <BaseButton variant="outline" onClick={() => setStep(1)} disabled={isLoading}>
                             Back
-                        </Button>
-                        <Button
+                        </BaseButton>
+                        <BaseButton
                             variant="gradient"
                             gradient={{ from: "blue", to: "cyan", deg: 90 }}
                             onClick={onImport}
@@ -190,10 +172,10 @@ const ImportWorkspaceForm = () => {
                             disabled={selectedFiles.length === 0}
                         >
                             Import Selected
-                        </Button>
+                        </BaseButton>
                     </Group>
                 </Stack>
-            </Paper>
+            </BaseCard>
         </Box>
     );
 };

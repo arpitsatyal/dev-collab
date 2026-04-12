@@ -1,4 +1,5 @@
-import { Box, Switch, Text } from "@mantine/core";
+import { Box, Text } from "@mantine/core";
+import BaseSwitch from "../shared/base/BaseSwitch";
 import { IconCheck, IconX } from "@tabler/icons-react";
 import { SetStateAction } from "react";
 import { SaveStatus } from "../../types";
@@ -12,11 +13,10 @@ interface AutoSaveSwitchProps {
 const AutoSaveSwitch = ({
   autoSaveOn,
   setAutoSaveOn,
-  saveStatus,
-}: AutoSaveSwitchProps) => {
+  saveStatus }: AutoSaveSwitchProps) => {
   return (
     <Box w={{ base: "100%", md: "auto" }}>
-      <Switch
+      <BaseSwitch
         checked={autoSaveOn}
         onChange={(event) => setAutoSaveOn(event.currentTarget.checked)}
         color="#0074C2"
@@ -47,8 +47,7 @@ const AutoSaveSwitch = ({
         mt="xs"
         style={{
           visibility: saveStatus ? "visible" : "hidden",
-          minHeight: 16,
-        }}
+          minHeight: 16 }}
       >
         {saveStatus === "saving" && "Saving..."}
         {saveStatus === "saved" && "All changes saved."}

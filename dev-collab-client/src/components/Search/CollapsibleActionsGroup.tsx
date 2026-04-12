@@ -1,4 +1,5 @@
-import { Button, Collapse, Group, Text } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import {  Collapse, Group, Text } from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { useState } from "react";
@@ -6,8 +7,7 @@ import { useState } from "react";
 const CollapsibleActionsGroup = ({
   label,
   children,
-  groupLabel,
-}: {
+  groupLabel }: {
   label: string;
   children: React.ReactNode;
   groupLabel: string;
@@ -20,7 +20,7 @@ const CollapsibleActionsGroup = ({
 
   return (
     <>
-      <Button
+      <BaseButton
         variant="subtle"
         onClick={toggleCollapse}
         radius="sm"
@@ -31,9 +31,7 @@ const CollapsibleActionsGroup = ({
             justifyContent: "flex-start",
             alignItems: "center",
             borderRadius: theme.radius.sm,
-            backgroundColor: "transparent",
-          },
-        })}
+            backgroundColor: "transparent" } })}
       >
         <Group gap={6} align="center" wrap="nowrap">
           <Text fw={500} size="sm">
@@ -45,7 +43,7 @@ const CollapsibleActionsGroup = ({
             <IconChevronDown size={14} />
           )}
         </Group>
-      </Button>
+      </BaseButton>
 
       <Collapse
         in={!isCollapsed}

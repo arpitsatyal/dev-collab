@@ -1,10 +1,13 @@
-import { ActionIcon, Box, Button, Group, Popover, Stack } from "@mantine/core";
+import BasePopover from "../shared/base/BasePopover";
+import BaseActionIcon from "../shared/base/BaseActionIcon";
+import BaseButton from "../shared/base/BaseButton";
+import {  Box,  Group,  Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   IconChevronLeft,
   IconPlus,
   IconSparkles,
-  IconX,
+  IconX
 } from "@tabler/icons-react";
 import styles from "./AIChat.module.css";
 import { useAIChatMutations } from "../../hooks/mutations/useAIChatMutations";
@@ -20,7 +23,7 @@ const AIChat = () => {
   const { addNewChat, deleteChat, isCreatingChat } = useAIChatMutations({
     setChatId,
     setShowListing,
-    setInput,
+    setInput
   });
 
   useEffect(() => {
@@ -47,7 +50,7 @@ const AIChat = () => {
 
   return (
     <Box className={styles.aiWidgetContainer}>
-      <Popover
+      <BasePopover
         position="top-end"
         offset={16}
         withArrow
@@ -58,8 +61,8 @@ const AIChat = () => {
         opened={opened}
         onChange={setOpened}
       >
-        <Popover.Target>
-          <ActionIcon
+        <BasePopover.Target>
+          <BaseActionIcon
             className={styles.triggerButton}
             aria-label="Open Dev-Collab Assistant"
             size="xl"
@@ -67,9 +70,9 @@ const AIChat = () => {
             onClick={handleTogglePopover}
           >
             <IconSparkles size={28} />
-          </ActionIcon>
-        </Popover.Target>
-        <Popover.Dropdown className={styles.popoverContent}>
+          </BaseActionIcon>
+        </BasePopover.Target>
+        <BasePopover.Dropdown className={styles.popoverContent}>
           <Stack className={styles.contentWrapper}>
             <Group
               justify="space-between"
@@ -78,7 +81,7 @@ const AIChat = () => {
               pt="md"
             >
               {!showListing ? (
-                <Button
+                <BaseButton
                   onClick={() => setShowListing(!showListing)}
                   leftSection={<IconChevronLeft size={16} />}
                   variant="subtle"
@@ -86,10 +89,10 @@ const AIChat = () => {
                   className={styles.chatButton}
                 >
                   Chats
-                </Button>
+                </BaseButton>
               ) : null}
               <Group gap="xs">
-                <Button
+                <BaseButton
                   onClick={addNewChat}
                   leftSection={<IconPlus size={16} />}
                   variant="subtle"
@@ -98,8 +101,8 @@ const AIChat = () => {
                   disabled={isCreatingChat}
                 >
                   New chat
-                </Button>
-                <ActionIcon
+                </BaseButton>
+                <BaseActionIcon
                   variant="subtle"
                   size="lg"
                   radius="xl"
@@ -108,7 +111,7 @@ const AIChat = () => {
                   onClick={handleClose}
                 >
                   <IconX size={16} />
-                </ActionIcon>
+                </BaseActionIcon>
               </Group>
             </Group>
             <Box className={styles.chatArea}>
@@ -126,8 +129,8 @@ const AIChat = () => {
               )}
             </Box>
           </Stack>
-        </Popover.Dropdown>
-      </Popover>
+        </BasePopover.Dropdown>
+      </BasePopover>
     </Box>
   );
 };

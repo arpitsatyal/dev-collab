@@ -1,6 +1,7 @@
+import BaseButton from "../../shared/base/BaseButton";
 
 import React from 'react';
-import { Paper, Stack, Text, Button } from '@mantine/core';
+import { Paper, Stack, Text } from '@mantine/core';
 import { IconSparkles, IconRobot } from '@tabler/icons-react';
 
 interface PlanEmptyStateProps {
@@ -13,9 +14,9 @@ const PlanEmptyState = ({ onGenerate }: PlanEmptyStateProps) => {
             <Stack align="center" gap="md">
                 <IconSparkles size={48} color="var(--mantine-color-blue-filled)" opacity={0.5} />
                 <Text>Need a technical guide to solve this work item?</Text>
-                <Button leftSection={<IconRobot size={16} />} onClick={onGenerate}>
+                <BaseButton leftSection={<IconRobot size={16} />} onClick={onGenerate}>
                     Generate Execution Plan
-                </Button>
+                </BaseButton>
             </Stack>
         </Paper>
     );

@@ -1,22 +1,25 @@
 import { Box, Loader, Text, Group } from "@mantine/core";
-import spinnerSVG from "../../../public/infinite-spinner.svg";
+import spinnerSVG from "../../../../public/infinite-spinner.svg";
 import Image from "next/image";
+import React from "react";
 
-const Loading = ({
-  isEditorLoading = false,
-  loaderHeight,
-}: {
+export interface BaseLoaderProps {
   isEditorLoading?: boolean;
   loaderHeight?: string;
-}) => {
+  size?: "xs" | "sm" | "md" | "lg" | "xl";
+}
+
+const BaseLoader = ({
+  isEditorLoading = false,
+  loaderHeight,
+  size = "sm" }: BaseLoaderProps) => {
   return (
     <Box
       style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: loaderHeight ?? "80vh",
-      }}
+        height: loaderHeight ?? "80vh" }}
     >
       {isEditorLoading ? (
         <Group>
@@ -24,10 +27,10 @@ const Loading = ({
           <Text size="20">Loading Editor...</Text>
         </Group>
       ) : (
-        <Loader size="sm" />
+        <Loader size={size} />
       )}
     </Box>
   );
 };
 
-export default Loading;
+export default BaseLoader;

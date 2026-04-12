@@ -1,7 +1,8 @@
-import { ActionIcon, Box, NavLink, Text } from "@mantine/core";
+import BaseActionIcon from "../shared/base/BaseActionIcon";
+import {  Box, NavLink, Text } from "@mantine/core";
 import { IconBrandPagekit, IconPin, IconSubtask } from "@tabler/icons-react";
 import { useRouter } from "next/router";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import SnippetList from "../Snippets/SnippetList";
 import { WorkspaceWithPin } from "../../types";
 import { NavItemProps } from "../../hooks/useSideNav";
@@ -17,8 +18,7 @@ interface WorkspaceNavItemProps {
 const WorkspaceNavItem = ({
   style,
   workspace,
-  child,
-}: WorkspaceNavItemProps) => {
+  child }: WorkspaceNavItemProps) => {
   const router = useRouter();
   const {
     isActive,
@@ -27,8 +27,7 @@ const WorkspaceNavItem = ({
     setOpenItem,
     handleUpdatePinnedStatus,
     loadedSnippets,
-    itemRefs,
-  } = useSideNavContext();
+    itemRefs } = useSideNavContext();
 
   const isExpanded = openItem === child.id;
   const isLoading = loadingWorkspaceId === child.id;
@@ -49,8 +48,7 @@ const WorkspaceNavItem = ({
             style={{
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap",
-            }}
+              whiteSpace: "nowrap" }}
           >
             {child.label}
           </Text>
@@ -67,10 +65,10 @@ const WorkspaceNavItem = ({
       >
         <Box>
           {isLoading ? (
-            <Loading loaderHeight="5vh" />
+            <BaseLoader loaderHeight="5vh" />
           ) : (
             <>
-              <ActionIcon
+              <BaseActionIcon
                 variant="subtle"
                 onClick={(e) => {
                   e.stopPropagation();
@@ -81,13 +79,11 @@ const WorkspaceNavItem = ({
                       ? theme.colors.yellow[5]
                       : theme.colors.gray[5],
                     "&:hover": {
-                      color: theme.colors.yellow[7],
-                    },
-                    padding: 5,
-                  })}
+                      color: theme.colors.yellow[7] },
+                    padding: 5 })}
               >
                 <IconPin size={16} />
-              </ActionIcon>
+              </BaseActionIcon>
 
               <NavLink
                 label="Work Items"

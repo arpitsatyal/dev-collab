@@ -1,4 +1,7 @@
-import { Button, Group, Modal, TextInput } from "@mantine/core";
+import { Group } from "@mantine/core";
+import BaseModal from "../shared/base/BaseModal";
+import BaseButton from "../shared/base/BaseButton";
+import BaseInput from "../shared/base/BaseInput";
 import { useEffect, useState } from "react";
 import { notifications } from "@mantine/notifications";
 import { DocCreateData } from "../../types";
@@ -13,8 +16,7 @@ interface CreateDocModalProps {
 
 const CreateDocModal = ({
   opened,
-  close,
-}: CreateDocModalProps) => {
+  close }: CreateDocModalProps) => {
   const router = useRouter();
   const workspaceId = getSingleQueryParam(router.query.workspaceId) ?? "";
   const { isLoading, handleCreateDoc } = useDocMutations();
@@ -22,8 +24,7 @@ const CreateDocModal = ({
   const [docForm, setDocForm] = useState<DocCreateData>({
     label: "",
     workspaceId: workspaceId,
-    roomId: "",
-  });
+    roomId: "" });
 
   const [errors, setErrors] = useState<{ label?: string }>({});
 
@@ -32,8 +33,7 @@ const CreateDocModal = ({
       setDocForm({
         label: "",
         workspaceId,
-        roomId: "",
-      });
+        roomId: "" });
       setErrors({});
     }
   }, [opened, workspaceId]);
@@ -54,8 +54,7 @@ const CreateDocModal = ({
       notifications.show({
         title: "Validation Error",
         message: "Please fill in all required fields.",
-        color: "red",
-      });
+        color: "red" });
       return;
     }
 
@@ -68,14 +67,13 @@ const CreateDocModal = ({
   };
 
   return (
-    <Modal
+    <BaseModal
       opened={opened}
       onClose={close}
       title="Create New Doc"
       size="lg"
-      centered
     >
-      <TextInput
+      <BaseInput
         label="Doc Title"
         placeholder="Enter doc title"
         value={docForm.label ?? ""}
@@ -83,21 +81,16 @@ const CreateDocModal = ({
         mb="md"
         required
         error={errors.label}
-        styles={{
-          label: {
-            padding: 5,
-          },
-        }}
       />
       <Group justify="right">
-        <Button variant="outline" onClick={close} className="cancelButton">
+        <BaseButton variant="outline" onClick={close} className="cancelButton">
           Cancel
-        </Button>
-        <Button onClick={onSubmit} loading={isLoading}>
+        </BaseButton>
+        <BaseButton onClick={onSubmit} loading={isLoading}>
           Create Doc
-        </Button>
+        </BaseButton>
       </Group>
-    </Modal>
+    </BaseModal>
   );
 };
 

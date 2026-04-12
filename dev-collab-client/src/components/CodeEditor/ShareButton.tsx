@@ -1,4 +1,7 @@
-import { Button, CopyButton, Tooltip } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import BaseTooltip from "../shared/base/BaseTooltip";
+import {  CopyButton } from "@mantine/core";
+
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
@@ -17,13 +20,13 @@ const ShareButton = () => {
   return (
     <CopyButton value={link} timeout={2000}>
       {({ copied, copy }) => (
-        <Tooltip
+        <BaseTooltip
           label={copied ? "Link copied!" : "Copy share link"}
           position="bottom"
           withArrow
           offset={8}
         >
-          <Button
+          <BaseButton
             onClick={copy}
             variant="light"
             color={copied ? "teal" : "blue"}
@@ -35,8 +38,8 @@ const ShareButton = () => {
             style={{ margin: "1rem" }}
           >
             {copied ? "Room Link Copied" : "Share Room"}
-          </Button>
-        </Tooltip>
+          </BaseButton>
+        </BaseTooltip>
       )}
     </CopyButton>
   );

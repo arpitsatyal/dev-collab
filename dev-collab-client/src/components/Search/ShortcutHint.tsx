@@ -1,5 +1,4 @@
 import { Box, Paper, Text } from "@mantine/core";
-import { spotlight } from "@mantine/spotlight";
 import classes from "./SpotlightSearch.module.css";
 
 const ShortcutHint = ({ openSpotlight }: any) => (

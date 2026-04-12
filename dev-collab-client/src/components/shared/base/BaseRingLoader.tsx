@@ -1,8 +1,8 @@
 import React, { forwardRef } from "react";
 
-type RingLoaderProps = React.SVGProps<SVGSVGElement>;
+export type BaseRingLoaderProps = React.SVGProps<SVGSVGElement>;
 
-export const RingLoader = forwardRef<SVGSVGElement, RingLoaderProps>(
+const BaseRingLoader = forwardRef<SVGSVGElement, BaseRingLoaderProps>(
   ({ style, ...others }, ref) => (
     <svg
       {...others}
@@ -90,4 +90,6 @@ export const RingLoader = forwardRef<SVGSVGElement, RingLoaderProps>(
   )
 );
 
-RingLoader.displayName = "RingLoader";
+BaseRingLoader.displayName = "BaseRingLoader";
+
+export default BaseRingLoader;

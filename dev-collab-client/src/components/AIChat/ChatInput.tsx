@@ -1,4 +1,5 @@
-import { Button, Textarea } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import BaseTextarea from "../shared/base/BaseTextarea";
 import { Dispatch, FormEvent, SetStateAction } from "react";
 import styles from "./AIChat.module.css";
 
@@ -19,7 +20,7 @@ const ChatInput = ({ input, setInput, onSubmit, isLoading }: ChatInputProps) => 
 
   return (
     <form onSubmit={onSubmit} className={styles.inputForm}>
-      <Textarea
+      <BaseTextarea
         value={input}
         onChange={(e) => setInput(e.target.value)}
         onKeyDown={handleKeyDown}
@@ -27,9 +28,9 @@ const ChatInput = ({ input, setInput, onSubmit, isLoading }: ChatInputProps) => 
         disabled={isLoading}
         className={styles.input}
       />
-      <Button type="submit" disabled={isLoading || !input.trim()} size="sm">
+      <BaseButton type="submit" disabled={isLoading || !input.trim()} size="sm">
         Send
-      </Button>
+      </BaseButton>
     </form>
   );
 };

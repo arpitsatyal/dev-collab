@@ -12,8 +12,7 @@ const SideNav = () => {
     navItemsWithWorkspaces,
     isActive,
     isOpen,
-    handleNavClick,
-  } = sideNavData;
+    handleNavClick } = sideNavData;
 
   return (
     <SideNavProvider value={sideNavData}>

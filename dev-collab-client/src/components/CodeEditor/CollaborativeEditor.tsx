@@ -12,14 +12,13 @@ import {
   Stack,
   useComputedColorScheme,
   Box,
-  Paper,
-} from "@mantine/core";
+  Paper } from "@mantine/core";
 import { languageOptions } from "../../utils/snippet/languageOptions";
 import { useMutation, useStorage } from "@liveblocks/react";
 import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
 import { useAppSelector } from "../../store/hooks";
 import { useGetUserQuery } from "../../store/api/userApi";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import { Cursors } from "./Cursors";
 import { DebouncedFunc } from "lodash";
 import ShareButton from "./ShareButton";
@@ -29,8 +28,7 @@ import { SaveStatus } from "../../types";
 import ActiveCollaborators from "./ActiveCollaborators";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false,
-});
+  ssr: false });
 
 interface CollaborativeEditorProps {
   code: string;
@@ -43,8 +41,7 @@ export function CollaborativeEditor({
   code,
   saveStatus,
   debounceSave,
-  playgroundMode = false,
-}: CollaborativeEditorProps) {
+  playgroundMode = false }: CollaborativeEditorProps) {
   const room = useRoom();
   const provider = getYjsProviderForRoom(room);
   const [editorRef, setEditorRef] =
@@ -61,8 +58,7 @@ export function CollaborativeEditor({
 
   const status = room.getStorageStatus();
   const computedColorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true,
-  });
+    getInitialValueInEffect: true });
 
   const [autoSaveOn, setAutoSaveOn] = useState(true);
   const autoSaveOnRef = useRef(autoSaveOn);
@@ -155,7 +151,7 @@ export function CollaborativeEditor({
   );
 
   if (status === "loading" || userLoading) {
-    return <Loading isEditorLoading />;
+    return <BaseLoader isEditorLoading />;
   }
 
   return (
@@ -219,8 +215,7 @@ export function CollaborativeEditor({
           defaultValue={code}
           options={{
             tabSize: 2,
-            padding: { top: 20 },
-          }}
+            padding: { top: 20 } }}
         />
       </Box>
     </Stack>

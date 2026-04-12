@@ -1,7 +1,7 @@
 import { Box } from "@mantine/core";
 import { VariableSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import WorkspaceNavItem from "../SideNav/WorkspaceNavItem";
 import { WorkspaceWithPin } from "../../types";
 import { useSideNavContext } from "../SideNav/SideNavContext";
@@ -16,8 +16,7 @@ const WorkspacesList = () => {
     loadMoreItems,
     getItemSize,
     transformWorkspace,
-    listRef,
-  } = useSideNavContext();
+    listRef } = useSideNavContext();
 
   const isItemLoaded = (index: number) => index < workspaceItems.length;
 
@@ -26,7 +25,7 @@ const WorkspacesList = () => {
     if (isLoadingRow) {
       return (
         <Box style={style} key={`loading-${index}`} ta="center">
-          <Loading loaderHeight="5vh" />
+          <BaseLoader loaderHeight="5vh" />
         </Box>
       );
     }

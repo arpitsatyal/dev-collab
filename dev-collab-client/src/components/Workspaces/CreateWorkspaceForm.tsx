@@ -1,13 +1,12 @@
 import {
   Box,
-  Button,
   Group,
-  Paper,
   Stack,
-  Textarea,
-  TextInput,
-  Title,
-} from "@mantine/core";
+  Title } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import BaseInput from "../shared/base/BaseInput";
+import BaseCard from "../shared/base/BaseCard";
+import BaseTextarea from "../shared/base/BaseTextarea";
 import classes from "./Workspace.module.css";
 import { useForm } from "@mantine/form";
 import { useRouter } from "next/router";
@@ -22,9 +21,7 @@ const CreateWorkspaceForm = () => {
     initialValues: {
       title: "",
       description: "",
-      ownerId: "",
-    },
-  });
+      ownerId: "" } });
 
   const handleSubmit = async () => {
     try {
@@ -41,78 +38,52 @@ const CreateWorkspaceForm = () => {
       mx="auto"
       p={{ base: "sm", sm: "md" }}
     >
-      <Paper
-        shadow="md"
-        p={{ base: "md", sm: "lg" }}
-        radius="md"
-        withBorder
-        className={classes.root}
-      >
+      <BaseCard className={classes.root}>
         <Stack gap="md">
           <Title order={4}>Create New Workspace</Title>
           <form onSubmit={form.onSubmit(handleSubmit)}>
             <Stack gap="sm">
-              <TextInput
+              <BaseInput
                 label="Title"
                 placeholder="Enter a title"
                 {...form.getInputProps("title")}
                 size="md"
-                variant="filled"
-                styles={{
-                  label: { fontWeight: 500, marginBottom: "12px" },
-                  input: {
-                    borderRadius: "8px",
-                  },
-                }}
                 aria-label="Workspace title input"
               />
 
-              <Textarea
+              <BaseTextarea
                 label="Description"
                 placeholder="Write something about the workspace"
                 {...form.getInputProps("description")}
                 size="md"
-                variant="filled"
                 minRows={4}
-                styles={{
-                  label: { fontWeight: 500, marginBottom: "12px" },
-                  input: {
-                    borderRadius: "8px",
-                  },
-                }}
                 aria-label="Workspace description input"
               />
 
               <Group justify="center" mt="md" gap="lg">
-                <Button
+                <BaseButton
                   type="submit"
                   size="md"
                   variant="gradient"
                   loading={isLoading}
                   gradient={{ from: "blue", to: "cyan", deg: 90 }}
                   disabled={form.values.title.length === 0}
-                  style={{
-                    borderRadius: "8px",
-                  }}
                 >
                   Submit
-                </Button>
-                <Button
+                </BaseButton>
+                <BaseButton
                   size="md"
                   variant="outline"
-                  style={{
-                    borderRadius: "8px",
-                  }}
                   className={classes.cancelButton}
                   onClick={() => form.reset()}
                 >
                   Cancel
-                </Button>
+                </BaseButton>
               </Group>
             </Stack>
           </form>
         </Stack>
-      </Paper>
+          </BaseCard>
     </Box>
   );
 };

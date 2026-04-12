@@ -1,22 +1,22 @@
+import BaseActionIcon from "../../shared/base/BaseActionIcon";
+import BaseTooltip from "../../shared/base/BaseTooltip";
 import {
     Paper,
     Text,
     Group,
     Stack,
-    ActionIcon,
-    Collapse,
-    Tooltip,
-} from "@mantine/core";
+    
+    Collapse } from "@mantine/core";
+
 import {
     IconChevronDown,
     IconChevronUp,
-    IconSparkles,
-} from "@tabler/icons-react";
+    IconSparkles } from "@tabler/icons-react";
 import { useSuggestWorkItemsQuery } from "../../../store/api/workItemApi";
 import { useDisclosure } from "@mantine/hooks";
 import SuggestionItem from "./SuggestionItem";
 import { WorkItemSuggestion } from "../../../types";
-import Loading from "../../Loader/Loader";
+import BaseLoader from "../../shared/base/BaseLoader";
 
 interface AISuggestionsProps {
     workspaceId: string;
@@ -43,7 +43,7 @@ const AISuggestions = ({
         return (
             <Paper withBorder p="md" radius="md" mb="xl">
                 <Stack align="center" gap="sm" py="xs">
-                    <Loading loaderHeight="20vh" />
+                    <BaseLoader loaderHeight="20vh" />
                     <Text size="sm" c="dimmed">AI is analyzing your workspace context...</Text>
                 </Stack>
             </Paper>
@@ -58,17 +58,17 @@ const AISuggestions = ({
                 <Group gap="sm">
                     <IconSparkles size={20} color="var(--mantine-color-blue-filled)" />
                     <Text fw={700} size="sm">AI Agent Suggestions</Text>
-                    {isFetching && <Loading loaderHeight="auto" />}
+                    {isFetching && <BaseLoader loaderHeight="auto" />}
                 </Group>
                 <Group gap="xs">
-                    <ActionIcon variant="subtle" onClick={() => { onClearDismissed(); refetch(); }}>
-                        <Tooltip label="Refresh Suggestions" withArrow position="right">
+                    <BaseActionIcon variant="subtle" onClick={() => { onClearDismissed(); refetch(); }}>
+                        <BaseTooltip label="Refresh Suggestions" withArrow position="right">
                             <IconSparkles size={16} />
-                        </Tooltip>
-                    </ActionIcon>
-                    <ActionIcon variant="subtle" onClick={setOpened.toggle}>
+                        </BaseTooltip>
+                    </BaseActionIcon>
+                    <BaseActionIcon variant="subtle" onClick={setOpened.toggle}>
                         {opened ? <IconChevronUp size={16} /> : <IconChevronDown size={16} />}
-                    </ActionIcon>
+                    </BaseActionIcon>
                 </Group>
             </Group>
 

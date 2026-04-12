@@ -1,13 +1,13 @@
+import BasePopover from "../../shared/base/BasePopover";
 import {
   useInboxNotifications,
   useMarkAllInboxNotificationsAsRead,
-  useUnreadInboxNotificationsCount,
-} from "@liveblocks/react/suspense";
+  useUnreadInboxNotificationsCount } from "@liveblocks/react/suspense";
 import { InboxNotification, InboxNotificationList } from "@liveblocks/react-ui";
 import { Suspense } from "react";
 import styles from "./NotificationsPopover.module.css";
-import Loading from "../../Loader/Loader";
-import { Box, Popover } from "@mantine/core";
+import BaseLoader from "../../shared/base/BaseLoader";
+import { Box } from "@mantine/core";
 import { IconInbox } from "@tabler/icons-react";
 import { useMediaQuery } from "@mantine/hooks";
 
@@ -15,22 +15,22 @@ export default function NotificationsPopover() {
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   return (
-    <Popover width={isSmallScreen ? 300 : 600}>
-      <Popover.Target>
+    <BasePopover width={isSmallScreen ? 300 : 600}>
+      <BasePopover.Target>
         <Box>
           <IconInbox style={{ cursor: "pointer" }} />
           <Suspense fallback={null}>
             <UnreadNotificationsCount />
           </Suspense>
         </Box>
-      </Popover.Target>
+      </BasePopover.Target>
 
-      <Popover.Dropdown>
-        <Suspense fallback={<Loading />}>
+      <BasePopover.Dropdown>
+        <Suspense fallback={<BaseLoader />}>
           <Inbox />
         </Suspense>
-      </Popover.Dropdown>
-    </Popover>
+      </BasePopover.Dropdown>
+    </BasePopover>
   );
 }
 

@@ -5,8 +5,7 @@ import {
     Text,
     Group,
     Paper,
-    Notification,
-} from "@mantine/core";
+    Notification } from "@mantine/core";
 import { IconRobot, IconCheck } from "@tabler/icons-react";
 import React, { useState, useRef } from "react";
 import MarkdownContent from "../../shared/MarkdownContent";
@@ -33,8 +32,7 @@ const ImplementationPlanModal = ({
     workItemId,
     workItemTitle,
     workspaceId,
-    initialPlan,
-}: ImplementationPlanModalProps) => {
+    initialPlan }: ImplementationPlanModalProps) => {
     const formattedInitialPlan = typeof initialPlan === 'object' ? formatPlanToMarkdown(initialPlan) : (initialPlan || null);
     const [plan, setPlan] = useState<string | null>(formattedInitialPlan);
     const [suggestedFileName, setSuggestedFileName] = useState<string>("Implementation_Plan.md");

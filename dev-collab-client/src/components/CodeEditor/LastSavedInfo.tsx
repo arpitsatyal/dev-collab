@@ -18,8 +18,7 @@ const LastSavedInfo = ({ user, updatedAt }: LastSavedInfoProps) => {
         style={{
           whiteSpace: "nowrap",
           overflow: "hidden",
-          textOverflow: "ellipsis",
-        }}
+          textOverflow: "ellipsis" }}
       >
         Last saved: {dayjs(updatedAt).format("MMM D, YYYY [at] h:mm a")}
         {user.name ? ` by ${user.name}` : ""}

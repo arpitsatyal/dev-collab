@@ -1,12 +1,13 @@
+import BaseButton from "../shared/base/BaseButton";
 import { useRouter } from "next/router";
 import DocsLayout from "./DocsLayout";
 import { getSingleQueryParam } from "../../utils/navigation/queryParams";
 import TiptapEditor from "./TipTapEditor/TiptapEditor";
 import { ClientSideSuspense, RoomProvider } from "@liveblocks/react";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import { useGetDocsQuery } from "../../store/api/docsApi";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Box, Button, Flex, Text } from "@mantine/core";
+import { Box,  Flex, Text } from "@mantine/core";
 import CreateDocModal from "./CreateDocModal";
 import { useDisclosure } from "@mantine/hooks";
 import { useMemo } from "react";
@@ -39,10 +40,9 @@ const DocsContainer = () => {
         <RoomProvider
           id={selectedDoc.roomId}
           initialPresence={{
-            cursor: null,
-          }}
+            cursor: null }}
         >
-          <ClientSideSuspense fallback={<Loading isEditorLoading />}>
+          <ClientSideSuspense fallback={<BaseLoader isEditorLoading />}>
             <TiptapEditor initialContent={markdownContent} />
           </ClientSideSuspense>
         </RoomProvider>
@@ -54,7 +54,7 @@ const DocsContainer = () => {
         >
           <Text>Select a document from the sidebar or add a new one.</Text>
           <Box>
-            <Button onClick={open}>Add New Doc</Button>
+            <BaseButton onClick={open}>Add New Doc</BaseButton>
             <CreateDocModal opened={opened} close={close} />
           </Box>
         </Flex>

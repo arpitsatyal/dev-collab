@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import WorkspaceDetail from "./WorkspaceDetail";
 import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
 import { getSingleQueryParam } from "../../utils/navigation/queryParams";
@@ -18,7 +18,7 @@ const WorkspaceDetailContainer = () => {
   } = useGetWorkspaceByIdQuery(isReady ? workspaceId : skipToken);
 
   if (!isReady || !workspace || isLoading || isError) {
-    return <Loading />;
+    return <BaseLoader />;
   }
 
   return <WorkspaceDetail workspace={workspace} />;

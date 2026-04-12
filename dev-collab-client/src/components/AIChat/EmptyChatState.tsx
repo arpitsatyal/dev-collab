@@ -1,4 +1,5 @@
-import { Button, Group, Stack, Text } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import {  Group, Stack, Text } from "@mantine/core";
 import styles from "./AIChat.module.css";
 
 interface EmptyChatStateProps {
@@ -10,7 +11,7 @@ const EmptyChatState = ({ onSendMessage }: EmptyChatStateProps) => {
     <Stack className={styles.emptyChat} justify="flex-end">
       <Text fw={500}>How can I help you?</Text>
       <Group wrap="wrap" gap="xs">
-        <Button
+        <BaseButton
           variant="outline"
           size="sm"
           radius="xl"
@@ -18,8 +19,8 @@ const EmptyChatState = ({ onSendMessage }: EmptyChatStateProps) => {
           className={styles.suggestionButton}
         >
           How can I get started?
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
           variant="outline"
           size="sm"
           radius="xl"
@@ -27,7 +28,7 @@ const EmptyChatState = ({ onSendMessage }: EmptyChatStateProps) => {
           className={styles.suggestionButton}
         >
           How to Create a new Doc?
-        </Button>
+        </BaseButton>
       </Group>
     </Stack>
   );

@@ -25,9 +25,7 @@ const WorkItemColumn = ({ title, workItems, onDropWorkItem }: WorkItemColumnProp
       }
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver(),
-    }),
-  });
+      isOver: monitor.isOver() }) });
 
   return (
     <Grid.Col span={{ base: 12, md: 4 }}>

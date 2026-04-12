@@ -1,7 +1,7 @@
 import { Snippet } from "../../types";
 import { useSession } from "../providers/AuthProvider";
 import { useSnippetEditor } from "../../hooks/useSnippetEditor";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import SnippetWorkplace from "./SnippetWorkplace";
 
 interface EditSnippetFormProps {

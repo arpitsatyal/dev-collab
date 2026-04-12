@@ -1,7 +1,7 @@
 import { Grid } from "@mantine/core";
 import React from "react";
 import { DndProvider } from "react-dnd";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import WorkItemColumn from "./WorkItemColumn";
 import BoardEmptyState from "./BoardEmptyState";
 import { useWorkItemBoard } from "../../hooks/useWorkItemBoard";
@@ -22,10 +22,9 @@ const WorkItemBoard = () => {
     data,
     workItemsByStatus,
     handleDropWorkItem,
-    dndBackend,
-  } = useWorkItemBoard();
+    dndBackend } = useWorkItemBoard();
 
-  if (!workspaceId || isLoading) return <Loading />;
+  if (!workspaceId || isLoading) return <BaseLoader />;
 
   if (data?.length === 0) {
     return <BoardEmptyState />;

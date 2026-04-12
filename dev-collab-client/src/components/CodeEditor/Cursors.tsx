@@ -3,11 +3,11 @@ import { useSelf } from "@liveblocks/react/suspense";
 import { LiveblocksYjsProvider } from "@liveblocks/yjs";
 import { AwarenessList, UserAwareness } from "../../../liveblocks.config";
 
-type Props = {
+interface CursorsProps {
   yProvider: LiveblocksYjsProvider;
-};
+}
 
-export function Cursors({ yProvider }: Props) {
+export function Cursors({ yProvider }: CursorsProps) {
   const userInfo = useSelf((me) => me.info);
 
   const [awarenessUsers, setAwarenessUsers] = useState<AwarenessList>([]);

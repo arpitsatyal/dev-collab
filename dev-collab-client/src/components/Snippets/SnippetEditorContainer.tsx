@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import { ClientSideSuspense, RoomProvider } from "@liveblocks/react";
 import { useAppSelector } from "../../store/hooks";
 import { Snippet } from "../../types";
@@ -27,7 +27,7 @@ const SnippetEditorContainer = () => {
   }, [workspaceId, snippetId, loadedSnippets, isReady]);
 
   if (!isReady || !snippet) {
-    return <Loading />;
+    return <BaseLoader />;
   }
 
   return (
@@ -38,7 +38,7 @@ const SnippetEditorContainer = () => {
         cursor: null,
       }}
     >
-      <ClientSideSuspense fallback={<Loading />}>
+      <ClientSideSuspense fallback={<BaseLoader />}>
         <EditSnippetForm snippet={snippet} />
       </ClientSideSuspense>
     </RoomProvider>

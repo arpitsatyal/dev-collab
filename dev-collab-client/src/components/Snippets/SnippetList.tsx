@@ -1,3 +1,4 @@
+import BaseButton from "../shared/base/BaseButton";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
 import {
@@ -6,10 +7,9 @@ import {
   Menu,
   Modal,
   TextInput,
-  Button,
+  
   Group,
-  Box,
-} from "@mantine/core";
+  Box } from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
 import { Snippet, SnippetsCreateData } from "../../types";
 import { useAppDispatch } from "../../store/hooks";
@@ -126,8 +126,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
           ...selectedSnippet,
           title,
           language,
-          extension,
-        });
+          extension });
       } else if (modalMode === "create") {
         const workspaceId = router.query.workspaceId as string;
 
@@ -136,8 +135,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
           content: "",
           language,
           workspaceId,
-          extension,
-        };
+          extension };
 
         const data = await handleCreateSnippet(workspaceId, snippet);
         router.push(`/workspaces/${workspaceId}/snippets/${data.id}`);
@@ -178,8 +176,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
                   style={{
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                  }}
+                    whiteSpace: "nowrap" }}
                   title={`${snippet.title}.${snippet.extension ?? ""}`}
                 >
                   {`${snippet.title}.${snippet.extension ?? ""}`}
@@ -242,24 +239,22 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
           error={nameError}
           styles={{
             label: {
-              paddingBottom: 10,
-            },
-          }}
+              paddingBottom: 10 } }}
         />
         <Text fz="sm" c="dimmed" mt="xs">
           Detected language: {detectedLanguage || ""}
         </Text>
         <Group align="right" mt="md">
-          <Button variant="outline" onClick={() => setModalOpened(false)}>
+          <BaseButton variant="outline" onClick={() => setModalOpened(false)}>
             Cancel
-          </Button>
-          <Button
+          </BaseButton>
+          <BaseButton
             onClick={handleModalSubmit}
             disabled={!newSnippetTitle.trim() || !!nameError}
             loading={isMutating}
           >
             {modalMode === "rename" ? "Rename" : "Create"}
-          </Button>
+          </BaseButton>
         </Group>
       </Modal>
     </>

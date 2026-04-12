@@ -1,19 +1,12 @@
-import {
-  ActionIcon,
-  Box,
-  Button,
-  ScrollArea,
-  Stack,
-  Text,
-  Tooltip,
-  Loader,
-  Group,
-} from "@mantine/core";
+import BaseLoader from "../shared/base/BaseLoader";
+import BaseTooltip from "../shared/base/BaseTooltip";
+import BaseButton from "../shared/base/BaseButton";
+import BaseActionIcon from "../shared/base/BaseActionIcon";
 import { IconTrash } from "@tabler/icons-react";
 import styles from "./AIChat.module.css";
-import Loading from "../Loader/Loader";
 import dayjs from "dayjs";
 import { useGetChatsQuery } from "../../store/api/chatApi";
+import { Box, Group, ScrollArea, Stack, Text } from "@mantine/core";
 
 interface ChatListingProps {
   onSelectChat: (chatId: string) => void;
@@ -26,13 +19,12 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
     isLoading,
     isFetching,
     isError,
-    error,
-  } = useGetChatsQuery();
+    error } = useGetChatsQuery();
 
   const isInitialLoading = isLoading && chats.length === 0;
 
   if (isInitialLoading) {
-    return <Loading />;
+    return <BaseLoader />;
   }
 
   if (isError) {
@@ -48,7 +40,7 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
       <Stack gap="sm" p="md">
         {isFetching && chats.length > 0 && (
           <Group gap="xs" justify="flex-start" align="center" px="xs">
-            <Loader size="xs" />
+            <BaseLoader size="xs" />
             <Text size="xs" c="dimmed">
               Refreshing chats…
             </Text>
@@ -66,7 +58,7 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
 
           return (
             <Box key={chat.id} className={styles.chatItem}>
-              <Button
+              <BaseButton
                 variant="subtle"
                 onClick={() => onSelectChat(chat.id)}
                 className={styles.chatItemButton}
@@ -81,9 +73,9 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
                     {dayjs(chat.createdAt).format("MMM D, YYYY")}{" "}
                   </Text>
                 </Stack>
-              </Button>
-              <Tooltip label="Delete chat">
-                <ActionIcon
+              </BaseButton>
+              <BaseTooltip label="Delete chat">
+                <BaseActionIcon
                   variant="subtle"
                   color="red"
                   size="sm"
@@ -93,8 +85,8 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
                   className={styles.deleteButton}
                 >
                   <IconTrash size={16} />
-                </ActionIcon>
-              </Tooltip>
+                </BaseActionIcon>
+              </BaseTooltip>
             </Box>
           );
         })}

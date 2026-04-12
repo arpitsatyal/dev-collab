@@ -1,11 +1,11 @@
-import { Button, Group, Text } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import {  Group, Text } from "@mantine/core";
 import React from "react";
 import { WorkspaceWithPin } from "../../types";
 
 const WorkItemInfo = ({
   workspace,
-  open,
-}: {
+  open }: {
   workspace: WorkspaceWithPin;
   open: () => void;
 }) => {
@@ -19,13 +19,12 @@ const WorkItemInfo = ({
           overflow: "hidden",
           textOverflow: "ellipsis",
           wordWrap: "break-word",
-          whiteSpace: "normal",
-        }}
+          whiteSpace: "normal" }}
         className="title"
       >
         Workspace Workspace [{workspace?.title}]
       </Text>
-      <Button onClick={open}>Create Work Item</Button>
+      <BaseButton onClick={open}>Create Work Item</BaseButton>
     </Group>
   );
 };

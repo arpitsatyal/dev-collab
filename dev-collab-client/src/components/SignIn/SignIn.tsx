@@ -1,4 +1,5 @@
-import { Button, Card, Container, Stack, Text, Title } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import {  Card, Container, Stack, Text, Title } from "@mantine/core";
 import React from "react";
 import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
 import DevCollabIcon from "../shared/DevCollabIcon";
@@ -16,8 +17,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
         height: "100vh",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center",
-      }}
+        justifyContent: "center" }}
       p="md"
     >
       <Card
@@ -36,7 +36,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
             Sign in to collaborate, share, and build amazing workspaces together.
           </Text>
           <Stack w="100%" gap="md">
-            <Button
+            <BaseButton
               onClick={handleGithubSignIn}
               leftSection={<IconGitBranch size={20} />}
               variant="filled"
@@ -45,8 +45,8 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
               fullWidth
             >
               Sign in with GitHub
-            </Button>
-            <Button
+            </BaseButton>
+            <BaseButton
               onClick={handleGoogleSignIn}
               leftSection={<IconBrandGoogle size={20} />}
               variant="outline"
@@ -55,7 +55,7 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
               fullWidth
             >
               Sign in with Google
-            </Button>
+            </BaseButton>
           </Stack>
           <Text size="sm" ta="center" className="secondary">
             Don&apos;t have an account? Sign up with one click above!

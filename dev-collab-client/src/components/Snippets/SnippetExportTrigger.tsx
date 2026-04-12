@@ -1,4 +1,6 @@
-import { ActionIcon, Tooltip } from "@mantine/core";
+import BaseActionIcon from "../shared/base/BaseActionIcon";
+import BaseTooltip from "../shared/base/BaseTooltip";
+
 import { IconCheck, IconCodePlus, IconLoader2 } from "@tabler/icons-react";
 
 interface SnippetExportTriggerProps {
@@ -9,8 +11,8 @@ interface SnippetExportTriggerProps {
 
 const SnippetExportTrigger = ({ saved, isLoading, onClick }: SnippetExportTriggerProps) => {
   return (
-    <Tooltip label={saved ? "Saved" : "Save as snippet"} withArrow>
-      <ActionIcon
+    <BaseTooltip label={saved ? "Saved" : "Save as snippet"} withArrow>
+      <BaseActionIcon
         onClick={onClick}
         variant="light"
         color={saved ? "teal" : "gray"}
@@ -25,8 +27,8 @@ const SnippetExportTrigger = ({ saved, isLoading, onClick }: SnippetExportTrigge
         ) : (
           <IconCodePlus size={14} />
         )}
-      </ActionIcon>
-    </Tooltip>
+      </BaseActionIcon>
+    </BaseTooltip>
   );
 };
 

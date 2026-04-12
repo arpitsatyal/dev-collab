@@ -1,13 +1,12 @@
 import {
-  Button,
   Group,
   Input,
-  Modal,
-  Select,
-  Textarea,
-  TextInput,
-  MultiSelect,
-} from "@mantine/core";
+  MultiSelect } from "@mantine/core";
+import BaseModal from "../shared/base/BaseModal";
+import BaseButton from "../shared/base/BaseButton";
+import BaseInput from "../shared/base/BaseInput";
+import BaseSelect from "../shared/base/BaseSelect";
+import BaseTextarea from "../shared/base/BaseTextarea";
 import { DatePicker } from "@mantine/dates";
 import { useState, useMemo } from "react";
 import { notifications } from "@mantine/notifications";
@@ -37,8 +36,7 @@ const CreateWorkItemModal = ({
   close,
   workItemForm,
   isLoading,
-  workspaceTitle,
-}: CreateWorkItemModalProps) => {
+  workspaceTitle }: CreateWorkItemModalProps) => {
   const { data: users = [] } = useGetUsersQuery();
   const [errors, setErrors] = useState<{
     title?: string;
@@ -54,8 +52,7 @@ const CreateWorkItemModal = ({
   const snippetData = useMemo(() => {
     return workspaceSnippets.map((s) => ({
       value: s.id,
-      label: s.title,
-    }));
+      label: s.title }));
   }, [workspaceSnippets]);
 
   const validateForm = () => {
@@ -75,14 +72,13 @@ const CreateWorkItemModal = ({
       notifications.show({
         title: "Validation Error",
         message: "Please fill in all required fields.",
-        color: "red",
-      });
+        color: "red" });
     }
   };
 
   return (
-    <Modal opened={opened} onClose={close} title="Create New Work Item" size="lg">
-      <TextInput
+    <BaseModal opened={opened} onClose={close} title="Create New Work Item" size="lg">
+      <BaseInput
         label="Work Item Title"
         placeholder="Enter work item title"
         value={workItemForm.title ?? ""}
@@ -91,7 +87,7 @@ const CreateWorkItemModal = ({
         required
         error={errors.title}
       />
-      <Textarea
+      <BaseTextarea
         label="Description"
         placeholder="Enter work item description"
         value={workItemForm.description ?? ""}
@@ -100,7 +96,7 @@ const CreateWorkItemModal = ({
         }
         mb="md"
       />
-      <Select
+      <BaseSelect
         label="Status"
         placeholder="Select status"
         data={Object.values(WorkItemStatus)}
@@ -112,14 +108,13 @@ const CreateWorkItemModal = ({
         required
         error={errors.status}
       />
-      <Select
+      <BaseSelect
         label="Assigned To"
         placeholder="Select assignee"
         data={
           users.map((user) => ({
             value: user.id,
-            label: user.name ?? "",
-          })) ?? []
+            label: user.name ?? "" })) ?? []
         }
         value={workItemForm.assignedToId}
         onChange={(value) => handleInputChange("assignedToId", value ?? "")}
@@ -145,7 +140,7 @@ const CreateWorkItemModal = ({
           minDate={dayjs().startOf("day").toDate()}
         />
       </Input.Wrapper>
-      <Select
+      <BaseSelect
         label="Workspace"
         placeholder={workspaceTitle}
         disabled
@@ -155,14 +150,14 @@ const CreateWorkItemModal = ({
         error={errors.workspaceId}
       />
       <Group justify="right">
-        <Button variant="outline" onClick={close} className="cancelButton">
+        <BaseButton variant="outline" onClick={close} className="cancelButton">
           Cancel
-        </Button>
-        <Button onClick={onSubmit} loading={isLoading}>
+        </BaseButton>
+        <BaseButton onClick={onSubmit} loading={isLoading}>
           Create Work Item
-        </Button>
+        </BaseButton>
       </Group>
-    </Modal>
+    </BaseModal>
   );
 };
 

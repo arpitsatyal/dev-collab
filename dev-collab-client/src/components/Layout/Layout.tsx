@@ -1,11 +1,12 @@
-import { AppShell, Box, Burger, Button, Flex } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import { AppShell, Box, Burger,  Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "../SideNav/SideNav";
 import SpotlightSearch from "../Search/SpotlightSearch";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { ReactNode, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import { IconMenu2 } from "@tabler/icons-react";
 import AIChat from "../AIChat/AIChat";
 import DevCollabIcon from "../shared/DevCollabIcon";
@@ -32,8 +33,7 @@ export default function Layout({ children }: { children: ReactNode }) {
       navbar={{
         width: isSideNavCollapsed ? 0 : navWidth,
         breakpoint: "sm",
-        collapsed: { mobile: !opened },
-      }}
+        collapsed: { mobile: !opened } }}
       padding="md"
     >
       <AppShell.Header>
@@ -50,20 +50,19 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Box
             style={{
               width: isSmallScreen ? "auto" : "50%",
-              maxWidth: isSmallScreen ? "none" : 500,
-            }}
+              maxWidth: isSmallScreen ? "none" : 500 }}
           >
             <SpotlightSearch isSmallScreen={isSmallScreen ?? false} />
           </Box>
           {!isSmallScreen && isDocsRoute && (
-            <Button
+            <BaseButton
               variant="outline"
               size="xs"
               leftSection={<IconMenu2 size={16} />}
               onClick={handleToggleSideNav}
             >
               {isSideNavCollapsed ? "Show Main Menu" : "Hide Main Menu"}
-            </Button>
+            </BaseButton>
           )}
           {!isSmallScreen && !isDocsRoute && <ThemeToggle />}
         </Flex>
@@ -75,7 +74,7 @@ export default function Layout({ children }: { children: ReactNode }) {
         )}
       </AppShell.Navbar>
       <AppShell.Main>
-        {isNavigating || isWorkspacesLoading ? <Loading /> : children}
+        {isNavigating || isWorkspacesLoading ? <BaseLoader /> : children}
       </AppShell.Main>
       <AIChat />
     </AppShell>

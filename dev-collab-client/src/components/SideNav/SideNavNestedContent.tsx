@@ -1,5 +1,5 @@
 import { Box, Text } from "@mantine/core";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import WorkspacesList from "../Workspaces/WorkspacesList";
 import { useSideNavContext } from "./SideNavContext";
 import { NavItemProps } from "../../hooks/useSideNavData";
@@ -14,9 +14,9 @@ const SideNavNestedContent = ({ item }: SideNavNestedContentProps) => {
   return (
     <Box pr="xs">
       {isLoading ? (
-        <Loading />
+        <BaseLoader />
       ) : isInsertingWorkspace ? (
-        <Loading loaderHeight="20vh" />
+        <BaseLoader loaderHeight="20vh" />
       ) : workspaceItems.length === 0 ? (
         <Text size="xs" c="dimmed" ta="center" py="sm" fs="italic">
           No workspaces added yet

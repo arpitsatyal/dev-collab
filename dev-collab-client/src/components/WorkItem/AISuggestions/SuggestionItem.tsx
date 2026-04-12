@@ -1,16 +1,16 @@
+import BaseActionIcon from "../../shared/base/BaseActionIcon";
+import BaseTooltip from "../../shared/base/BaseTooltip";
 import {
     Paper,
     Text,
     Group,
     Stack,
-    ActionIcon,
-    Badge,
-    Tooltip,
-} from "@mantine/core";
+    
+    Badge } from "@mantine/core";
+
 import {
     IconCheck,
-    IconX,
-} from "@tabler/icons-react";
+    IconX } from "@tabler/icons-react";
 import { WorkItemSuggestion } from "../../../types";
 import { getColorForString } from "../../../utils/theme/colors";
 
@@ -61,16 +61,16 @@ const SuggestionItem = ({
                     </div>
                 </Stack>
                 <Group gap="xs" wrap="nowrap">
-                    <Tooltip label="Adopt Suggestion">
-                        <ActionIcon color="blue" variant="light" onClick={() => onAdopt(suggestion, realIndex)}>
+                    <BaseTooltip label="Adopt Suggestion">
+                        <BaseActionIcon color="blue" variant="light" onClick={() => onAdopt(suggestion, realIndex)}>
                             <IconCheck size={16} />
-                        </ActionIcon>
-                    </Tooltip>
-                    <Tooltip label="Dismiss">
-                        <ActionIcon color="gray" variant="subtle" onClick={() => handleDismiss(realIndex)}>
+                        </BaseActionIcon>
+                    </BaseTooltip>
+                    <BaseTooltip label="Dismiss">
+                        <BaseActionIcon color="gray" variant="subtle" onClick={() => handleDismiss(realIndex)}>
                             <IconX size={16} />
-                        </ActionIcon>
-                    </Tooltip>
+                        </BaseActionIcon>
+                    </BaseTooltip>
                 </Group>
             </Group>
         </Paper>

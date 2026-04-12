@@ -1,4 +1,5 @@
-import { Box, Button, Group } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import { Box,  Group } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { useMediaQuery } from "@mantine/hooks";
@@ -18,7 +19,7 @@ const SideNavFooter = () => {
   return (
     <Box className={classes.bottomDiv}>
       <Group justify="space-between" gap="sm">
-        <Button
+        <BaseButton
           variant="light"
           color="red"
           onClick={handleLogout}
@@ -28,7 +29,7 @@ const SideNavFooter = () => {
           style={{ fontWeight: 500, transition: "all 0.2s ease" }}
         >
           Logout
-        </Button>
+        </BaseButton>
         {isSmallScreen && <ThemeToggle />}
       </Group>
     </Box>

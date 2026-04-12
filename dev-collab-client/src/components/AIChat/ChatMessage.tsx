@@ -1,4 +1,5 @@
-import { Group, Text, Tooltip } from "@mantine/core";
+import BaseTooltip from "../shared/base/BaseTooltip";
+import { Group, Text } from "@mantine/core";
 import Image from "next/image";
 import styles from "./AIChat.module.css";
 import MarkdownContent from "../shared/MarkdownContent";
@@ -17,8 +18,7 @@ const ChatMessage = ({
   isUser,
   image,
   createdAt,
-  lastMessageRef,
-}: ChatMessageProps) => {
+  lastMessageRef }: ChatMessageProps) => {
   return (
     <div
       ref={lastMessageRef}
@@ -44,11 +44,11 @@ const ChatMessage = ({
         </div>
       </div>
 
-      <Tooltip label={extractDate(createdAt)} withArrow>
+      <BaseTooltip label={extractDate(createdAt)} withArrow>
         <Text size="xs" c="dimmed" className={styles.timeText}>
           {extractTime(createdAt)}
         </Text>
-      </Tooltip>
+      </BaseTooltip>
     </div>
   );
 };

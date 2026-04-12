@@ -1,23 +1,21 @@
 
 import {
     SimpleGrid,
-    Paper,
     Text,
     Group,
     ThemeIcon,
     rem,
     Stack,
-    Center,
-} from "@mantine/core";
+    Center } from "@mantine/core";
+import BaseCard from "../shared/base/BaseCard";
 import {
     IconActivity,
     IconCode,
     IconBrandPagekit,
-    IconSubtask,
-} from "@tabler/icons-react";
+    IconSubtask } from "@tabler/icons-react";
 import { useGetUserStatsQuery } from "../../store/api/userApi";
 import classes from "./StatsSummary.module.css";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 
 const StatsSummary = () => {
     const { data: stats, isLoading } = useGetUserStatsQuery();
@@ -25,7 +23,7 @@ const StatsSummary = () => {
     if (isLoading) {
         return (
             <Center py="xl">
-                <Loading />
+                <BaseLoader />
             </Center>
         );
     }
@@ -37,30 +35,26 @@ const StatsSummary = () => {
             title: "Workspaces",
             value: stats.workspaces,
             icon: IconActivity,
-            color: "blue",
-        },
+            color: "blue" },
         {
             title: "Snippets",
             value: stats.snippets,
             icon: IconCode,
-            color: "cyan",
-        },
+            color: "cyan" },
         {
             title: "Docs",
             value: stats.docs,
             icon: IconBrandPagekit,
-            color: "violet",
-        },
+            color: "violet" },
         {
             title: "Work Items",
             value: stats.workItems,
             icon: IconSubtask,
-            color: "teal",
-        },
+            color: "teal" },
     ];
 
     const statsCards = data.map((stat) => (
-        <Paper withBorder p="md" radius="md" key={stat.title} className={classes.card}>
+        <BaseCard key={stat.title} className={classes.card}>
             <Group justify="space-between">
                 <Stack gap={0}>
                     <Text size="xs" c="dimmed" fw={700} tt="uppercase">
@@ -80,7 +74,7 @@ const StatsSummary = () => {
                     <stat.icon style={{ width: rem(32), height: rem(32) }} stroke={1.5} />
                 </ThemeIcon>
             </Group>
-        </Paper>
+        </BaseCard>
     ));
 
     return (

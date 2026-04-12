@@ -1,4 +1,5 @@
-import { Box, Button, Stack } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import { Box,  Stack } from "@mantine/core";
 import React from "react";
 import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";
@@ -26,7 +27,7 @@ const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
           debounceSave={debounceSave}
         />
       </Box>
-      <Button
+      <BaseButton
         onClick={handleManualSave}
         variant="filled"
         color="blue"
@@ -37,7 +38,7 @@ const SnippetWorkplace = (props: SnippetWorkplaceProps) => {
         aria-label="Save snippet button"
       >
         Save Snippet
-      </Button>
+      </BaseButton>
     </Stack>
   );
 };

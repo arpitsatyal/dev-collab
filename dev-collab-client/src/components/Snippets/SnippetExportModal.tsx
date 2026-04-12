@@ -1,4 +1,5 @@
-import { Button, Group, Modal, Text, TextInput } from "@mantine/core";
+import BaseButton from "../shared/base/BaseButton";
+import {  Group, Modal, Text, TextInput } from "@mantine/core";
 
 interface SnippetExportModalProps {
   opened: boolean;
@@ -19,8 +20,7 @@ const SnippetExportModal = ({
   fileNameError,
   isSuggesting,
   isCreating,
-  onConfirm,
-}: SnippetExportModalProps) => {
+  onConfirm }: SnippetExportModalProps) => {
   return (
     <Modal
       opened={opened}
@@ -44,16 +44,16 @@ const SnippetExportModal = ({
       </Text>
 
       <Group justify="flex-end" mt="md">
-        <Button variant="outline" onClick={onClose}>
+        <BaseButton variant="outline" onClick={onClose}>
           Cancel
-        </Button>
-        <Button
+        </BaseButton>
+        <BaseButton
           onClick={onConfirm}
           loading={isCreating}
           disabled={!fileName.trim() || !!fileNameError}
         >
           Save Snippet
-        </Button>
+        </BaseButton>
       </Group>
     </Modal>
   );

@@ -10,7 +10,7 @@ import { WorkItemCreateData } from "../../types";
 import CreateWorkItemModal from "./CreateWorkItemModal";
 import WorkItemBoard from "./WorkItemBoard";
 import WorkItemInfo from "./WorkItemInfo";
-import Loading from "../Loader/Loader";
+import BaseLoader from "../shared/base/BaseLoader";
 import { useGetWorkspaceByIdQuery } from "../../store/api/workspaceApi";
 import { skipToken } from "@reduxjs/toolkit/query";
 import AISuggestions from "./AISuggestions";
@@ -36,8 +36,7 @@ const WorkItemsContainer = () => {
     status: WorkItemStatus.TODO,
     assignedToId: null,
     dueDate: null,
-    workspaceId: workspaceId ?? "",
-  });
+    workspaceId: workspaceId ?? "" });
 
   const workspaceTitle = workspaceData?.title ?? "Select Workspace";
 
@@ -56,13 +55,11 @@ const WorkItemsContainer = () => {
         status: WorkItemStatus.TODO,
         assignedToId: null,
         dueDate: null,
-        workspaceId: workspaceId ?? "",
-      });
+        workspaceId: workspaceId ?? "" });
 
       await createWorkItem({
         workItem: workItemForm,
-        workspaceId: workItemForm.workspaceId,
-      }).unwrap();
+        workspaceId: workItemForm.workspaceId }).unwrap();
 
       if (adoptingIndex !== null) {
         setDismissedIndices((prev) => [...prev, adoptingIndex]);
@@ -71,16 +68,14 @@ const WorkItemsContainer = () => {
 
       notifications.show({
         title: "Job done!",
-        message: "Work Item created successfully! 🌟",
-      });
+        message: "Work Item created successfully! 🌟" });
 
       close();
     } catch (error) {
       console.error(error);
       notifications.show({
         title: "Whooops",
-        message: "Work Item could not be created.",
-      });
+        message: "Work Item could not be created." });
     }
   };
 
@@ -92,14 +87,13 @@ const WorkItemsContainer = () => {
       assignedToId: null,
       dueDate: null,
       workspaceId: workspaceId ?? "",
-      snippetIds: [],
-    });
+      snippetIds: [] });
     setAdoptingIndex(index);
     open();
   };
 
   if (!workspaceId || !workspaceData) {
-    return <Loading />;
+    return <BaseLoader />;
   }
 
   return (
