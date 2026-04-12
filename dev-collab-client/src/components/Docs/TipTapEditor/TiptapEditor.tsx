@@ -17,7 +17,6 @@ interface TiptapEditorProps {
 }
 
 export default function TiptapEditor({ initialContent }: TiptapEditorProps) {
-
   const liveblocks = useLiveblocksExtension({
     initialContent: initialContent,
   });

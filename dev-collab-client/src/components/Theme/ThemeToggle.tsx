@@ -10,7 +10,8 @@ import classes from "./ThemeToggle.module.css";
 const ThemeToggle = () => {
   const { setColorScheme } = useMantineColorScheme();
   const computedColorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true });
+    getInitialValueInEffect: true,
+  });
 
   return (
     <BaseTooltip label="Toggle theme" position="bottom">

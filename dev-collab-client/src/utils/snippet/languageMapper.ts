@@ -1,4 +1,3 @@
-
 // Map of common extensions to Monaco Editor language IDs
 // Reference: https://github.com/microsoft/monaco-languages
 export const extensionToLanguageMap: Record<string, string> = {
@@ -82,23 +81,27 @@ export const languageToExtensionMap: Record<string, string> = {
   text: "txt",
 };
 
-export function getLanguageFromExtension(extension: string | undefined | null): string {
+export function getLanguageFromExtension(
+  extension: string | undefined | null,
+): string {
   if (!extension) return "plaintext";
 
-  const cleanExt = extension.startsWith('.') ? extension.slice(1) : extension;
+  const cleanExt = extension.startsWith(".") ? extension.slice(1) : extension;
   return extensionToLanguageMap[cleanExt.toLowerCase()] || "plaintext";
 }
 
 export function getExtensionFromLanguage(
-  language: string | undefined | null
+  language: string | undefined | null,
 ): string {
   if (!language) return "txt";
   return languageToExtensionMap[language.toLowerCase()] || "txt";
 }
 
-// Keep the old array for backward compatibility if needed, 
+// Keep the old array for backward compatibility if needed,
 // or derived from the map if iterating is necessary
-export const languageMapper = Object.entries(extensionToLanguageMap).map(([ext, lang]) => ({
-  name: lang,
-  extension: ext
-}));
+export const languageMapper = Object.entries(extensionToLanguageMap).map(
+  ([ext, lang]) => ({
+    name: lang,
+    extension: ext,
+  }),
+);

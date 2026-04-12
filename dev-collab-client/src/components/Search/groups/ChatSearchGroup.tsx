@@ -19,21 +19,24 @@ export const ChatSearchGroup = () => {
     const apiChats =
       !isSearchLoading && matchedResults?.length > 0
         ? (matchedResults.filter(
-          (apiResult: TypedItems) => apiResult.type === "chat"
-        ) as ChatWithMessages[])
+            (apiResult: TypedItems) => apiResult.type === "chat",
+          ) as ChatWithMessages[])
         : [];
 
-    return apiChats.map((chat) => ({
-      id: chat.id,
-      title: getDisplayTitle({ ...chat, type: "chat" } as TypedItems),
-      icon: <IconMessage size={24} stroke={1.5} />,
-      onClick: () => {
-        dispatch(setWorkspacesOpen(true));
-        addRecentItems([{ ...chat, type: "chat" } as TypedItems]);
-        router.push(`/chats/${chat.id}`);
-      },
-      groupLabel: "Chats",
-    } as DataItem));
+    return apiChats.map(
+      (chat) =>
+        ({
+          id: chat.id,
+          title: getDisplayTitle({ ...chat, type: "chat" } as TypedItems),
+          icon: <IconMessage size={24} stroke={1.5} />,
+          onClick: () => {
+            dispatch(setWorkspacesOpen(true));
+            addRecentItems([{ ...chat, type: "chat" } as TypedItems]);
+            router.push(`/chats/${chat.id}`);
+          },
+          groupLabel: "Chats",
+        }) as DataItem,
+    );
   }, [matchedResults, isSearchLoading, addRecentItems, dispatch, router]);
 
   if (!items.length) return null;

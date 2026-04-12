@@ -11,7 +11,9 @@ import { useWorkItemMutations } from "./mutations/useWorkItemMutations";
 export const useWorkItemBoard = () => {
   const router = useRouter();
   const workspaceId = getSingleQueryParam(router.query.workspaceId);
-  const { data, isLoading } = useGetWorkItemsForWorkspaceQuery(workspaceId ?? "");
+  const { data, isLoading } = useGetWorkItemsForWorkspaceQuery(
+    workspaceId ?? "",
+  );
   const [localWorkItems, setLocalWorkItems] = useState<WorkItem[]>([]);
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
@@ -27,7 +29,7 @@ export const useWorkItemBoard = () => {
       [WorkItemStatus.IN_PROGRESS]: [],
       [WorkItemStatus.DONE]: [],
     };
-    
+
     localWorkItems.forEach((item) => {
       if (groups[item.status]) {
         groups[item.status].push(item);

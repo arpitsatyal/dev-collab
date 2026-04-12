@@ -6,7 +6,8 @@ import BaseLoader from "../shared/base/BaseLoader";
 import { useDocsSideNav } from "../../hooks/useDocsSideNav";
 
 const DocsSideNav = () => {
-  const { docs, isLoading, isWorkspaceReady, currentDocId, handleDocClick } = useDocsSideNav();
+  const { docs, isLoading, isWorkspaceReady, currentDocId, handleDocClick } =
+    useDocsSideNav();
 
   if (isLoading || !isWorkspaceReady) return <BaseLoader loaderHeight="20vh" />;
   return (

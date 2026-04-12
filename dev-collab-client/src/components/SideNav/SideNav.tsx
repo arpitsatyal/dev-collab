@@ -8,11 +8,8 @@ import SideNavNestedContent from "./SideNavNestedContent";
 
 const SideNav = () => {
   const sideNavData = useSideNav();
-  const {
-    navItemsWithWorkspaces,
-    isActive,
-    isOpen,
-    handleNavClick } = sideNavData;
+  const { navItemsWithWorkspaces, isActive, isOpen, handleNavClick } =
+    sideNavData;
 
   return (
     <SideNavProvider value={sideNavData}>
@@ -25,7 +22,9 @@ const SideNav = () => {
             opened={isOpen(item)}
             onClick={() => handleNavClick(item.path, item.handler, item.label)}
           >
-            {item.children !== undefined && <SideNavNestedContent item={item} />}
+            {item.children !== undefined && (
+              <SideNavNestedContent item={item} />
+            )}
           </NavItem>
         ))}
       </AppShell.Section>

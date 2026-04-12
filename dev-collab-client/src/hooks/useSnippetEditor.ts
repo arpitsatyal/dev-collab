@@ -13,7 +13,8 @@ export const useSnippetEditor = (snippet: Snippet, session: any) => {
 
   // 1. Synchronization state
   const rawLanguage = useStorage((root) => root.language);
-  const language = typeof rawLanguage === "string" ? rawLanguage : snippet.language;
+  const language =
+    typeof rawLanguage === "string" ? rawLanguage : snippet.language;
   const provider = useMemo(() => getYjsProviderForRoom(room), [room]);
 
   // 2. Storage synchronization side-effect
@@ -41,18 +42,18 @@ export const useSnippetEditor = (snippet: Snippet, session: any) => {
             content: JSON.stringify(content),
             language,
             extension:
-              languageMapper.find((lang) => lang.name === language)?.extension ??
-              "-",
+              languageMapper.find((lang) => lang.name === language)
+                ?.extension ?? "-",
             lastEditedById: session.data?.user.id ?? "",
           },
-          { showNotification: false }
+          { showNotification: false },
         );
         return { success: true };
       } catch (error) {
         return { success: false };
       }
     },
-    [snippet, session, language, handleEditSnippet]
+    [snippet, session, language, handleEditSnippet],
   );
 
   const { debounceSave } = useAutoSave({

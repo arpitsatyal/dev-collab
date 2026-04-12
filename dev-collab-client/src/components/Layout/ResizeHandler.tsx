@@ -30,7 +30,7 @@ export default function ResizeHandle({
         }
       }
     },
-    [isDragging, navbarRef, setNavWidth]
+    [isDragging, navbarRef, setNavWidth],
   );
 
   const handleMouseUp = () => {

@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import { Box,  Group } from "@mantine/core";
+import { Box, Group } from "@mantine/core";
 import { IconLogout } from "@tabler/icons-react";
 import ThemeToggle from "../Theme/ThemeToggle";
 import { useMediaQuery } from "@mantine/hooks";

@@ -9,18 +9,18 @@ interface EditSnippetFormProps {
 }
 
 export const EditSnippetForm = ({ snippet }: EditSnippetFormProps) => {
-    const session = useSession();
+  const session = useSession();
 
-    const { saveStatus, isLoading, handleManualSave, debounceSave } =
-        useSnippetEditor(snippet, session);
+  const { saveStatus, isLoading, handleManualSave, debounceSave } =
+    useSnippetEditor(snippet, session);
 
-    return (
-        <SnippetWorkplace
-            snippet={snippet}
-            handleManualSave={handleManualSave}
-            loading={isLoading}
-            debounceSave={debounceSave}
-            saveStatus={saveStatus}
-        />
-    );
+  return (
+    <SnippetWorkplace
+      snippet={snippet}
+      handleManualSave={handleManualSave}
+      loading={isLoading}
+      debounceSave={debounceSave}
+      saveStatus={saveStatus}
+    />
+  );
 };

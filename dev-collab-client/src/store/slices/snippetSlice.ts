@@ -16,14 +16,14 @@ export const SnippetSlice = createSlice({
   reducers: {
     setSnippets: (
       state,
-      action: PayloadAction<{ workspaceId: string; snippets: Snippet[] }>
+      action: PayloadAction<{ workspaceId: string; snippets: Snippet[] }>,
     ) => {
       const { workspaceId, snippets } = action.payload || {};
       state.loadedSnippets[workspaceId] = snippets;
     },
     addSnippet: (
       state,
-      action: PayloadAction<{ workspaceId: string; snippet: Snippet }>
+      action: PayloadAction<{ workspaceId: string; snippet: Snippet }>,
     ) => {
       const { workspaceId, snippet } = action.payload;
       const existingSnippets = state.loadedSnippets[workspaceId] || [];
@@ -41,12 +41,12 @@ export const SnippetSlice = createSlice({
         workspaceId: string;
         snippetId: string;
         editedSnippet: Partial<Snippet>;
-      }>
+      }>,
     ) => {
       const { workspaceId, snippetId, editedSnippet } = action.payload || {};
 
       const snippetIndex = state.loadedSnippets[workspaceId].findIndex(
-        (snippet) => snippet.id === snippetId
+        (snippet) => snippet.id === snippetId,
       );
 
       if (snippetIndex != -1) {
@@ -59,7 +59,7 @@ export const SnippetSlice = createSlice({
 
     removeSnippet: (
       state,
-      action: PayloadAction<{ workspaceId: string; snippetId: string }>
+      action: PayloadAction<{ workspaceId: string; snippetId: string }>,
     ) => {
       const { workspaceId, snippetId } = action.payload;
       const existingSnippets = state.loadedSnippets[workspaceId];
@@ -69,7 +69,7 @@ export const SnippetSlice = createSlice({
       }
 
       state.loadedSnippets[workspaceId] = existingSnippets.filter(
-        (snippet) => snippet.id !== snippetId
+        (snippet) => snippet.id !== snippetId,
       );
     },
   },

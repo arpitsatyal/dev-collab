@@ -1,9 +1,16 @@
 import { useCallback } from "react";
 import { notifications } from "@mantine/notifications";
 import { Snippet, SnippetsCreateData } from "../../types";
-import { useCreateSnippetMutation, useEditSnippetMutation } from "../../store/api/snippetApi";
+import {
+  useCreateSnippetMutation,
+  useEditSnippetMutation,
+} from "../../store/api/snippetApi";
 import { useAppDispatch } from "../../store/hooks";
-import { addSnippet, removeSnippet, updateSnippet } from "../../store/slices/snippetSlice";
+import {
+  addSnippet,
+  removeSnippet,
+  updateSnippet,
+} from "../../store/slices/snippetSlice";
 import { getLanguageFromExtension } from "../../utils/snippet/languageMapper";
 import { parseFilename } from "../../utils/snippet/parser";
 
@@ -13,14 +20,16 @@ export interface SnippetMutationOptions {
 
 export const useSnippetMutations = () => {
   const dispatch = useAppDispatch();
-  const [createSnippet, { isLoading: isCreatingSnippet }] = useCreateSnippetMutation();
-  const [editSnippet, { isLoading: isEditingSnippet }] = useEditSnippetMutation();
+  const [createSnippet, { isLoading: isCreatingSnippet }] =
+    useCreateSnippetMutation();
+  const [editSnippet, { isLoading: isEditingSnippet }] =
+    useEditSnippetMutation();
 
   const handleCreateSnippet = useCallback(
     async (
       workspaceId: string,
       snippet: Omit<SnippetsCreateData, "authorId">,
-      options: SnippetMutationOptions = {}
+      options: SnippetMutationOptions = {},
     ) => {
       const { showNotification = true } = options;
       try {
@@ -33,7 +42,7 @@ export const useSnippetMutations = () => {
           addSnippet({
             workspaceId,
             snippet: data,
-          })
+          }),
         );
         if (showNotification) {
           notifications.show({
@@ -52,7 +61,7 @@ export const useSnippetMutations = () => {
         throw error;
       }
     },
-    [createSnippet, dispatch]
+    [createSnippet, dispatch],
   );
 
   const handleEditSnippet = useCallback(
@@ -60,7 +69,7 @@ export const useSnippetMutations = () => {
       workspaceId: string,
       snippetId: string,
       snippet: Snippet,
-      options: SnippetMutationOptions = {}
+      options: SnippetMutationOptions = {},
     ) => {
       const { showNotification = true } = options;
       try {
@@ -75,7 +84,7 @@ export const useSnippetMutations = () => {
             workspaceId,
             snippetId,
             editedSnippet: data,
-          })
+          }),
         );
 
         if (showNotification) {
@@ -95,7 +104,7 @@ export const useSnippetMutations = () => {
         throw error;
       }
     },
-    [editSnippet, dispatch]
+    [editSnippet, dispatch],
   );
 
   const confirmExport = useCallback(
@@ -157,7 +166,7 @@ export const useSnippetMutations = () => {
             workspaceId,
             snippetId: tempId,
             editedSnippet: data,
-          })
+          }),
         );
 
         notifications.show({
@@ -177,7 +186,7 @@ export const useSnippetMutations = () => {
         throw error;
       }
     },
-    [createSnippet, dispatch]
+    [createSnippet, dispatch],
   );
 
   return {

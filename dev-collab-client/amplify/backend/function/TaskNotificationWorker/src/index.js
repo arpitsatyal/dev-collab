@@ -39,16 +39,16 @@ exports.handler = async (event) => {
               ...(dueDate && { dueDate }),
             }
           : emailType === "taskUpdated"
-          ? {
-              ...baseData,
-              ...(status && { status }),
-            }
-          : emailType === "nearingDueDate"
-          ? {
-              ...baseData,
-              ...(dueDate && { dueDate }),
-            }
-          : baseData;
+            ? {
+                ...baseData,
+                ...(status && { status }),
+              }
+            : emailType === "nearingDueDate"
+              ? {
+                  ...baseData,
+                  ...(dueDate && { dueDate }),
+                }
+              : baseData;
 
       const msg = {
         to: assigneeEmail,

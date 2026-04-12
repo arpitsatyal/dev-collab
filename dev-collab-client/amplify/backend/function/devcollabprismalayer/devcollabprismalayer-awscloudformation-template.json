@@ -23,9 +23,7 @@
     "LambdaLayerVersiona16fe70b": {
       "Type": "AWS::Lambda::LayerVersion",
       "Properties": {
-        "CompatibleRuntimes": [
-          "nodejs22.x"
-        ],
+        "CompatibleRuntimes": ["nodejs22.x"],
         "Content": {
           "S3Bucket": {
             "Ref": "deploymentBucketName"

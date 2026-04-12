@@ -8,7 +8,8 @@ interface StatusBadgeProps {
 const statusConfig: Record<WorkItemStatus, { color: string; label: string }> = {
   [WorkItemStatus.TODO]: { color: "gray", label: "To Do" },
   [WorkItemStatus.IN_PROGRESS]: { color: "blue", label: "In Progress" },
-  [WorkItemStatus.DONE]: { color: "green", label: "Done" } };
+  [WorkItemStatus.DONE]: { color: "green", label: "Done" },
+};
 
 const StatusBadge = ({ status }: StatusBadgeProps) => {
   const config = statusConfig[status];

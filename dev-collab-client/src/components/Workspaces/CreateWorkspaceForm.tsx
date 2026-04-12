@@ -1,8 +1,4 @@
-import {
-  Box,
-  Group,
-  Stack,
-  Title } from "@mantine/core";
+import { Box, Group, Stack, Title } from "@mantine/core";
 import BaseButton from "../shared/base/BaseButton";
 import BaseInput from "../shared/base/BaseInput";
 import BaseCard from "../shared/base/BaseCard";
@@ -21,7 +17,9 @@ const CreateWorkspaceForm = () => {
     initialValues: {
       title: "",
       description: "",
-      ownerId: "" } });
+      ownerId: "",
+    },
+  });
 
   const handleSubmit = async () => {
     try {
@@ -83,7 +81,7 @@ const CreateWorkspaceForm = () => {
             </Stack>
           </form>
         </Stack>
-          </BaseCard>
+      </BaseCard>
     </Box>
   );
 };

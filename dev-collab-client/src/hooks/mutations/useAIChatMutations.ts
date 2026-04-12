@@ -1,5 +1,8 @@
 import { useCallback } from "react";
-import { useCreateChatMutation, useDeleteChatMutation } from "../../store/api/chatApi";
+import {
+  useCreateChatMutation,
+  useDeleteChatMutation,
+} from "../../store/api/chatApi";
 
 interface UseAIChatMutationsProps {
   setChatId: React.Dispatch<React.SetStateAction<string>>;
@@ -27,13 +30,16 @@ export const useAIChatMutations = ({
     }
   }, [isCreatingChat, createChat, setChatId, setShowListing, setInput]);
 
-  const deleteChat = useCallback(async (id: string) => {
-    try {
-      await deleteChatMutation(id).unwrap();
-    } catch (error) {
-      console.error("Failed to delete chat:", error);
-    }
-  }, [deleteChatMutation]);
+  const deleteChat = useCallback(
+    async (id: string) => {
+      try {
+        await deleteChatMutation(id).unwrap();
+      } catch (error) {
+        console.error("Failed to delete chat:", error);
+      }
+    },
+    [deleteChatMutation],
+  );
 
   return {
     addNewChat,

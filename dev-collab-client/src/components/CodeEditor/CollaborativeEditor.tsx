@@ -12,7 +12,8 @@ import {
   Stack,
   useComputedColorScheme,
   Box,
-  Paper } from "@mantine/core";
+  Paper,
+} from "@mantine/core";
 import { languageOptions } from "../../utils/snippet/languageOptions";
 import { useMutation, useStorage } from "@liveblocks/react";
 import { useSnippetFromRouter } from "../../hooks/useSnippetFromRouter";
@@ -28,7 +29,8 @@ import { SaveStatus } from "../../types";
 import ActiveCollaborators from "./ActiveCollaborators";
 
 const MonacoEditor = dynamic(() => import("@monaco-editor/react"), {
-  ssr: false });
+  ssr: false,
+});
 
 interface CollaborativeEditorProps {
   code: string;
@@ -41,7 +43,8 @@ export function CollaborativeEditor({
   code,
   saveStatus,
   debounceSave,
-  playgroundMode = false }: CollaborativeEditorProps) {
+  playgroundMode = false,
+}: CollaborativeEditorProps) {
   const room = useRoom();
   const provider = getYjsProviderForRoom(room);
   const [editorRef, setEditorRef] =
@@ -49,16 +52,17 @@ export function CollaborativeEditor({
   const bindingRef = useRef<MonacoBinding | null>(null);
   const rawLanguage = useStorage((root) => root.language);
   const loadedSnippets = useAppSelector(
-    (state) => state.snippet.loadedSnippets
+    (state) => state.snippet.loadedSnippets,
   );
   const snippet = useSnippetFromRouter(loadedSnippets);
   const { data: user, isLoading: userLoading } = useGetUserQuery(
-    snippet?.lastEditedById ?? snippet?.authorId ?? ""
+    snippet?.lastEditedById ?? snippet?.authorId ?? "",
   );
 
   const status = room.getStorageStatus();
   const computedColorScheme = useComputedColorScheme("light", {
-    getInitialValueInEffect: true });
+    getInitialValueInEffect: true,
+  });
 
   const [autoSaveOn, setAutoSaveOn] = useState(true);
   const autoSaveOnRef = useRef(autoSaveOn);
@@ -94,7 +98,7 @@ export function CollaborativeEditor({
           yText,
           editorRef.getModel()!,
           new Set([editorRef]),
-          provider.awareness as unknown as Awareness
+          provider.awareness as unknown as Awareness,
         );
         bindingRef.current = binding;
       });
@@ -116,7 +120,7 @@ export function CollaborativeEditor({
         if (model) {
           model.deltaDecorations(
             model.getAllDecorations().map((d) => d.id),
-            []
+            [],
           );
         }
       }
@@ -147,7 +151,7 @@ export function CollaborativeEditor({
         disposable.dispose();
       };
     },
-    [debounceSave]
+    [debounceSave],
   );
 
   if (status === "loading" || userLoading) {
@@ -215,7 +219,8 @@ export function CollaborativeEditor({
           defaultValue={code}
           options={{
             tabSize: 2,
-            padding: { top: 20 } }}
+            padding: { top: 20 },
+          }}
         />
       </Box>
     </Stack>

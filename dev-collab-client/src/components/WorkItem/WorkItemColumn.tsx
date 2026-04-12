@@ -9,7 +9,11 @@ interface WorkItemColumnProps {
   workItems: WorkItem[];
   onDropWorkItem: (workItemId: string, workItemStatus: WorkItemStatus) => void;
 }
-const WorkItemColumn = ({ title, workItems, onDropWorkItem }: WorkItemColumnProps) => {
+const WorkItemColumn = ({
+  title,
+  workItems,
+  onDropWorkItem,
+}: WorkItemColumnProps) => {
   const status =
     title === "To Do"
       ? WorkItemStatus.TODO
@@ -25,7 +29,9 @@ const WorkItemColumn = ({ title, workItems, onDropWorkItem }: WorkItemColumnProp
       }
     },
     collect: (monitor) => ({
-      isOver: monitor.isOver() }) });
+      isOver: monitor.isOver(),
+    }),
+  });
 
   return (
     <Grid.Col span={{ base: 12, md: 4 }}>
@@ -38,7 +44,9 @@ const WorkItemColumn = ({ title, workItems, onDropWorkItem }: WorkItemColumnProp
             No work items in this column
           </Text>
         ) : (
-          workItems.map((workItem) => <WorkItemItem workItem={workItem} key={workItem.id} />)
+          workItems.map((workItem) => (
+            <WorkItemItem workItem={workItem} key={workItem.id} />
+          ))
         )}
       </Paper>
     </Grid.Col>

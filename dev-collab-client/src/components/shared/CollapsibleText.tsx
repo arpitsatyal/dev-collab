@@ -7,7 +7,11 @@ interface CollapsibleTextProps {
   maxLength?: number;
 }
 
-const CollapsibleText = ({ text, lineClamp = 2, maxLength = 80 }: CollapsibleTextProps) => {
+const CollapsibleText = ({
+  text,
+  lineClamp = 2,
+  maxLength = 80,
+}: CollapsibleTextProps) => {
   const [expanded, { toggle }] = useDisclosure(false);
 
   if (!text) return null;

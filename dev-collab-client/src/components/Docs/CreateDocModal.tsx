@@ -14,9 +14,7 @@ interface CreateDocModalProps {
   close: () => void;
 }
 
-const CreateDocModal = ({
-  opened,
-  close }: CreateDocModalProps) => {
+const CreateDocModal = ({ opened, close }: CreateDocModalProps) => {
   const router = useRouter();
   const workspaceId = getSingleQueryParam(router.query.workspaceId) ?? "";
   const { isLoading, handleCreateDoc } = useDocMutations();
@@ -24,7 +22,8 @@ const CreateDocModal = ({
   const [docForm, setDocForm] = useState<DocCreateData>({
     label: "",
     workspaceId: workspaceId,
-    roomId: "" });
+    roomId: "",
+  });
 
   const [errors, setErrors] = useState<{ label?: string }>({});
 
@@ -33,7 +32,8 @@ const CreateDocModal = ({
       setDocForm({
         label: "",
         workspaceId,
-        roomId: "" });
+        roomId: "",
+      });
       setErrors({});
     }
   }, [opened, workspaceId]);
@@ -54,7 +54,8 @@ const CreateDocModal = ({
       notifications.show({
         title: "Validation Error",
         message: "Please fill in all required fields.",
-        color: "red" });
+        color: "red",
+      });
       return;
     }
 
@@ -67,12 +68,7 @@ const CreateDocModal = ({
   };
 
   return (
-    <BaseModal
-      opened={opened}
-      onClose={close}
-      title="Create New Doc"
-      size="lg"
-    >
+    <BaseModal opened={opened} onClose={close} title="Create New Doc" size="lg">
       <BaseInput
         label="Doc Title"
         placeholder="Enter doc title"

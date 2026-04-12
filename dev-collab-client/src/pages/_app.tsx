@@ -39,14 +39,16 @@ function MyApp({ Component, pageProps }: AppPropsWithLayout) {
 
   const debouncedFetchMentionSuggestions = debounce(
     fetchMentionSuggestions,
-    300
+    300,
   );
 
   return (
     <Provider store={store}>
       <LiveblocksProvider
         authEndpoint={async (room) => {
-          const { data } = await apiClient.post("/collaboration/auth", { room });
+          const { data } = await apiClient.post("/collaboration/auth", {
+            room,
+          });
           return data;
         }}
         resolveUsers={resolveUsers}

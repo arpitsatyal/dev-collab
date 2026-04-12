@@ -15,18 +15,19 @@ export const docsApi = createApi({
         result ? [{ type: "Docs", id: workspaceId }] : [],
     }),
 
-    createDoc: builder.mutation<Doc, { workspaceId: string; doc: DocCreateData }>(
-      {
-        query: ({ workspaceId, doc }) => ({
-          url: `workspaces/${workspaceId}/docs`,
-          method: "POST",
-          body: doc,
-        }),
-        invalidatesTags: (result, error, { workspaceId }) => [
-          { type: "Docs", id: workspaceId },
-        ],
-      }
-    ),
+    createDoc: builder.mutation<
+      Doc,
+      { workspaceId: string; doc: DocCreateData }
+    >({
+      query: ({ workspaceId, doc }) => ({
+        url: `workspaces/${workspaceId}/docs`,
+        method: "POST",
+        body: doc,
+      }),
+      invalidatesTags: (result, error, { workspaceId }) => [
+        { type: "Docs", id: workspaceId },
+      ],
+    }),
 
     editDoc: builder.mutation<
       Doc,

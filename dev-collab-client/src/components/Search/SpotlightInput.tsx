@@ -1,6 +1,6 @@
 import BaseActionIcon from "../shared/base/BaseActionIcon";
 import React from "react";
-import {  TextInput, Box } from "@mantine/core";
+import { TextInput, Box } from "@mantine/core";
 import { IconSearch } from "@tabler/icons-react";
 import { spotlight } from "@mantine/spotlight";
 import ShortcutHint from "./ShortcutHint";
@@ -20,7 +20,8 @@ const SpotlightInput: React.FC<SpotlightInputProps> = ({ isSmallScreen }) => {
             <IconSearch
               size={18}
               style={{
-                cursor: "pointer" }}
+                cursor: "pointer",
+              }}
               onClick={() => spotlight.open()}
             />
           }
@@ -30,7 +31,10 @@ const SpotlightInput: React.FC<SpotlightInputProps> = ({ isSmallScreen }) => {
             input: {
               cursor: "pointer",
               "&:focus": {
-                outline: "none" } } }}
+                outline: "none",
+              },
+            },
+          }}
           onClick={() => spotlight.open()}
           onFocus={(e) => e.target.blur()}
           readOnly

@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import {  Group, Modal, Text, TextInput } from "@mantine/core";
+import { Group, Modal, Text, TextInput } from "@mantine/core";
 
 interface SnippetExportModalProps {
   opened: boolean;
@@ -20,7 +20,8 @@ const SnippetExportModal = ({
   fileNameError,
   isSuggesting,
   isCreating,
-  onConfirm }: SnippetExportModalProps) => {
+  onConfirm,
+}: SnippetExportModalProps) => {
   return (
     <Modal
       opened={opened}

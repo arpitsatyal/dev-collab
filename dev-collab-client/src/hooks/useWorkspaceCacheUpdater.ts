@@ -7,7 +7,10 @@ export const useWorkspaceCacheUpdater = () => {
   const dispatch = useAppDispatch();
   const { pageSize } = useAppSelector((state) => state.workspace);
 
-  const updateWorkspaceInCache = (compareId: string, workspace: WorkspaceWithPin) => {
+  const updateWorkspaceInCache = (
+    compareId: string,
+    workspace: WorkspaceWithPin,
+  ) => {
     dispatch(setInsertingWorkspace(true));
     dispatch(
       workspaceApi.util.updateQueryData(
@@ -19,8 +22,8 @@ export const useWorkspaceCacheUpdater = () => {
           if (draft.items.length > pageSize) {
             draft.items = draft.items.slice(0, pageSize);
           }
-        }
-      )
+        },
+      ),
     );
 
     setTimeout(() => {

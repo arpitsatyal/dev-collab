@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import {  Collapse, Group, Text } from "@mantine/core";
+import { Collapse, Group, Text } from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
 import { IconChevronDown, IconChevronRight } from "@tabler/icons-react";
 import { useState } from "react";
@@ -7,7 +7,8 @@ import { useState } from "react";
 const CollapsibleActionsGroup = ({
   label,
   children,
-  groupLabel }: {
+  groupLabel,
+}: {
   label: string;
   children: React.ReactNode;
   groupLabel: string;
@@ -31,7 +32,9 @@ const CollapsibleActionsGroup = ({
             justifyContent: "flex-start",
             alignItems: "center",
             borderRadius: theme.radius.sm,
-            backgroundColor: "transparent" } })}
+            backgroundColor: "transparent",
+          },
+        })}
       >
         <Group gap={6} align="center" wrap="nowrap">
           <Text fw={500} size="sm">

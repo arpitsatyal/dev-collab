@@ -3,18 +3,12 @@
     "devcollabapi": {
       "dependsOn": [
         {
-          "attributes": [
-            "Name",
-            "Arn"
-          ],
+          "attributes": ["Name", "Arn"],
           "category": "function",
           "resourceName": "search"
         },
         {
-          "attributes": [
-            "Name",
-            "Arn"
-          ],
+          "attributes": ["Name", "Arn"],
           "category": "function",
           "resourceName": "elasticIndexWebhook"
         }
@@ -28,9 +22,7 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": [
-            "Arn"
-          ],
+          "attributes": ["Arn"],
           "category": "function",
           "resourceName": "devcollabprismalayer"
         }
@@ -58,9 +50,7 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": [
-            "Arn"
-          ],
+          "attributes": ["Arn"],
           "category": "function",
           "resourceName": "devcollabsearchlayer"
         }
@@ -72,9 +62,7 @@
       "build": true,
       "dependsOn": [
         {
-          "attributes": [
-            "Arn"
-          ],
+          "attributes": ["Arn"],
           "category": "function",
           "resourceName": "devcollabsearchlayer"
         }

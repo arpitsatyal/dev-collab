@@ -27,7 +27,7 @@ const WorkItemsContainer = () => {
   const isWorkspaceReady = isValidParam(workspaceId);
 
   const { data: workspaceData } = useGetWorkspaceByIdQuery(
-    isWorkspaceReady ? workspaceId : skipToken
+    isWorkspaceReady ? workspaceId : skipToken,
   );
 
   const [workItemForm, setWorkItemForm] = useState<WorkItemCreateData>({
@@ -36,13 +36,14 @@ const WorkItemsContainer = () => {
     status: WorkItemStatus.TODO,
     assignedToId: null,
     dueDate: null,
-    workspaceId: workspaceId ?? "" });
+    workspaceId: workspaceId ?? "",
+  });
 
   const workspaceTitle = workspaceData?.title ?? "Select Workspace";
 
   const handleInputChange = <K extends keyof WorkItemCreateData>(
     field: K,
-    value: WorkItemCreateData[K]
+    value: WorkItemCreateData[K],
   ) => {
     setWorkItemForm((prev) => ({ ...prev, [field]: value }));
   };
@@ -55,11 +56,13 @@ const WorkItemsContainer = () => {
         status: WorkItemStatus.TODO,
         assignedToId: null,
         dueDate: null,
-        workspaceId: workspaceId ?? "" });
+        workspaceId: workspaceId ?? "",
+      });
 
       await createWorkItem({
         workItem: workItemForm,
-        workspaceId: workItemForm.workspaceId }).unwrap();
+        workspaceId: workItemForm.workspaceId,
+      }).unwrap();
 
       if (adoptingIndex !== null) {
         setDismissedIndices((prev) => [...prev, adoptingIndex]);
@@ -68,14 +71,16 @@ const WorkItemsContainer = () => {
 
       notifications.show({
         title: "Job done!",
-        message: "Work Item created successfully! 🌟" });
+        message: "Work Item created successfully! 🌟",
+      });
 
       close();
     } catch (error) {
       console.error(error);
       notifications.show({
         title: "Whooops",
-        message: "Work Item could not be created." });
+        message: "Work Item could not be created.",
+      });
     }
   };
 
@@ -87,7 +92,8 @@ const WorkItemsContainer = () => {
       assignedToId: null,
       dueDate: null,
       workspaceId: workspaceId ?? "",
-      snippetIds: [] });
+      snippetIds: [],
+    });
     setAdoptingIndex(index);
     open();
   };

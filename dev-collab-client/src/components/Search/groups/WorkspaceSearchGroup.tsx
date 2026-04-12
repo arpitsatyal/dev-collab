@@ -18,37 +18,45 @@ export const WorkspaceSearchGroup = () => {
   const updateQueryData = useWorkspaceCacheUpdater();
 
   const items = useMemo(() => {
-    const localWorkspaces = filterByQuery(workspaces ?? [], query, false, (w) => w.title);
+    const localWorkspaces = filterByQuery(
+      workspaces ?? [],
+      query,
+      false,
+      (w) => w.title,
+    );
     const apiWorkspaces =
       !isSearchLoading && matchedResults?.length > 0
         ? (matchedResults.filter(
-          (apiResult: TypedItems) =>
-            apiResult.type === "workspace" &&
-            !localWorkspaces.some((local) => local.id === apiResult.id)
-        ) as WorkspaceWithPin[])
+            (apiResult: TypedItems) =>
+              apiResult.type === "workspace" &&
+              !localWorkspaces.some((local) => local.id === apiResult.id),
+          ) as WorkspaceWithPin[])
         : [];
 
     const combined = [...localWorkspaces, ...apiWorkspaces];
 
-    return combined.map((workspace) => ({
-      id: workspace.id,
-      title: workspace.title,
-      description: workspace.description ?? "-",
-      icon: <IconFolder size={24} stroke={1.5} />,
-      onClick: () => {
-        const isWorkspaceLoaded = workspaces?.find(
-          (loaded) => loaded.id === workspace.id
-        );
+    return combined.map(
+      (workspace) =>
+        ({
+          id: workspace.id,
+          title: workspace.title,
+          description: workspace.description ?? "-",
+          icon: <IconFolder size={24} stroke={1.5} />,
+          onClick: () => {
+            const isWorkspaceLoaded = workspaces?.find(
+              (loaded) => loaded.id === workspace.id,
+            );
 
-        if (!isWorkspaceLoaded) {
-          updateQueryData(workspace.id, workspace);
-        }
-        dispatch(setWorkspacesOpen(true));
-        addRecentItems([{ ...workspace, type: "workspace" } as TypedItems]);
-        router.push(`/workspaces/${workspace.id}`);
-      },
-      groupLabel: "Workspaces",
-    } as DataItem));
+            if (!isWorkspaceLoaded) {
+              updateQueryData(workspace.id, workspace);
+            }
+            dispatch(setWorkspacesOpen(true));
+            addRecentItems([{ ...workspace, type: "workspace" } as TypedItems]);
+            router.push(`/workspaces/${workspace.id}`);
+          },
+          groupLabel: "Workspaces",
+        }) as DataItem,
+    );
   }, [
     query,
     workspaces,

@@ -4,10 +4,10 @@ import React, { useState, useMemo, useCallback } from "react";
 import { IconSearch, IconClearAll } from "@tabler/icons-react";
 import {
   Box,
-  
   Text,
   useComputedColorScheme,
-  useMantineTheme } from "@mantine/core";
+  useMantineTheme,
+} from "@mantine/core";
 import { Spotlight } from "@mantine/spotlight";
 import { useAppSelector } from "../../store/hooks";
 import { useSearch } from "../../hooks/useSearch";
@@ -29,14 +29,16 @@ import { ChatSearchGroup } from "./groups/ChatSearchGroup";
 import { RecentSearchGroup } from "./groups/RecentSearchGroup";
 
 const SpotlightSearch = ({
-  isSmallScreen = false }: {
+  isSmallScreen = false,
+}: {
   isSmallScreen: boolean;
 }) => {
   const [query, setQuery] = useState("");
   const { pageSize, skip } = useAppSelector((state) => state.workspace);
   const { data, isLoading: isWorkspacesLoading } = useGetWorkspacesQuery({
     skip,
-    limit: pageSize });
+    limit: pageSize,
+  });
 
   const loadedWorkspaces = data?.items;
 
@@ -46,7 +48,8 @@ const SpotlightSearch = ({
     isTyping,
     searchCache,
     ringLoader,
-    error: searchError } = useSearch(query);
+    error: searchError,
+  } = useSearch(query);
 
   const { data: session } = useSession();
   const userId = session?.user?.id ?? undefined;
@@ -54,7 +57,7 @@ const SpotlightSearch = ({
     useRecentItems(userId);
 
   const snippets = Object.values(
-    useAppSelector((state) => state.snippet.loadedSnippets)
+    useAppSelector((state) => state.snippet.loadedSnippets),
   ).flat();
 
   const computedColorScheme = useComputedColorScheme();
@@ -106,7 +109,8 @@ const SpotlightSearch = ({
       snippets,
       recentSearchOrder,
       recentItems,
-      addRecentItems }),
+      addRecentItems,
+    }),
     [
       query,
       matchedResults,
@@ -116,7 +120,7 @@ const SpotlightSearch = ({
       recentSearchOrder,
       recentItems,
       addRecentItems,
-    ]
+    ],
   );
 
   const showClearAll = recentItems.length > 0 && query.length === 0;
@@ -145,7 +149,8 @@ const SpotlightSearch = ({
           <Box
             style={(theme) => ({
               position: "relative",
-              paddingTop: theme.spacing.lg })}
+              paddingTop: theme.spacing.lg,
+            })}
           >
             {showClearAll && (
               <Box className={classes.clearAll}>
@@ -192,8 +197,8 @@ const SpotlightSearch = ({
               {query.length === 0
                 ? "Search for any Workspaces, Snippets or WorkItems!"
                 : isTyping
-                ? "Searching..."
-                : "Nothing found..."}
+                  ? "Searching..."
+                  : "Nothing found..."}
             </Spotlight.Empty>
           )}
         </Spotlight.ActionsList>

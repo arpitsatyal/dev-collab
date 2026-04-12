@@ -39,7 +39,7 @@ export const inferFallbackBaseName = (code: string): string => {
 export const buildUniqueFilename = (
   baseName: string,
   extension: string,
-  existingNames: Set<string>
+  existingNames: Set<string>,
 ): string => {
   const safeBase = baseName || "snippet";
   let candidate = `${safeBase}.${extension}`;

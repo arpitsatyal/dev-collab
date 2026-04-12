@@ -25,7 +25,7 @@ export const useWorkspaceMutations = () => {
         throw error;
       }
     },
-    [createWorkspace]
+    [createWorkspace],
   );
 
   return {

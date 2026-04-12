@@ -10,7 +10,8 @@ export const workItemApi = createApi({
   endpoints: (builder) => ({
     getWorkItemsForWorkspace: builder.query<WorkItem[], string>({
       query: (id) => `work-items?workspaceId=${id}`,
-      providesTags: (result) => (result ? [{ type: "WorkItems", id: "LIST" }] : []),
+      providesTags: (result) =>
+        result ? [{ type: "WorkItems", id: "LIST" }] : [],
     }),
     createWorkItem: builder.mutation<
       WorkItem,
@@ -21,7 +22,10 @@ export const workItemApi = createApi({
         method: "POST",
         body: workItem,
       }),
-      async onQueryStarted({ workspaceId, workItem }, { dispatch, queryFulfilled }) {
+      async onQueryStarted(
+        { workspaceId, workItem },
+        { dispatch, queryFulfilled },
+      ) {
         const tempId = Math.random().toString(36).substring(2, 15);
         const now = dayjs().toDate();
 
@@ -42,8 +46,8 @@ export const workItemApi = createApi({
                 authorId: null,
                 aiPlan: null,
               } as any);
-            }
-          )
+            },
+          ),
         );
 
         try {
@@ -59,8 +63,8 @@ export const workItemApi = createApi({
                 if (index !== -1) {
                   draft[index] = createdWorkItem;
                 }
-              }
-            )
+              },
+            ),
           );
         } catch {
           // Rollback on failure
@@ -85,7 +89,8 @@ export const workItemApi = createApi({
       invalidatesTags: [{ type: "WorkItems", id: "LIST" }],
     }),
     suggestWorkItems: builder.query<{ suggestions: any[] }, string>({
-      query: (workspaceId) => `ai/suggest-work-items?workspaceId=${workspaceId}`,
+      query: (workspaceId) =>
+        `ai/suggest-work-items?workspaceId=${workspaceId}`,
     }),
   }),
 });

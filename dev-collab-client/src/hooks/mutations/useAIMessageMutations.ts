@@ -24,40 +24,43 @@ export const useAIMessageMutations = ({
   const router = useRouter();
   const [askAI, { isLoading }] = useAskAIMutation();
 
-  const sendMessage = useCallback(async (content: string) => {
-    if (!content.trim()) return;
+  const sendMessage = useCallback(
+    async (content: string) => {
+      if (!content.trim()) return;
 
-    const newMessage: Message = {
-      id: uuidv4(),
-      content,
-      isUser: true,
-      createdAt: new Date().toISOString(),
-    };
-    setMessages((prev) => [...prev, newMessage]);
-    setInput("");
+      const newMessage: Message = {
+        id: uuidv4(),
+        content,
+        isUser: true,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages((prev) => [...prev, newMessage]);
+      setInput("");
 
-    const workspaceId = router.query.workspaceId as string;
+      const workspaceId = router.query.workspaceId as string;
 
-    try {
-      const response = await askAI({
-        chatId,
-        question: content,
-        workspaceId,
-      }).unwrap();
+      try {
+        const response = await askAI({
+          chatId,
+          question: content,
+          workspaceId,
+        }).unwrap();
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: uuidv4(),
-          content: response.answer,
-          isUser: false,
-          createdAt: new Date().toISOString(),
-        },
-      ]);
-    } catch (error) {
-      console.error("Failed to send message:", error);
-    }
-  }, [chatId, setMessages, setInput, router.query.workspaceId, askAI]);
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: uuidv4(),
+            content: response.answer,
+            isUser: false,
+            createdAt: new Date().toISOString(),
+          },
+        ]);
+      } catch (error) {
+        console.error("Failed to send message:", error);
+      }
+    },
+    [chatId, setMessages, setInput, router.query.workspaceId, askAI],
+  );
 
   return {
     sendMessage,

@@ -32,7 +32,7 @@ const findClosestCacheMatch = (term: string): TypedItems[] | null => {
     }
   }
 
-  return bestMatch ? searchCache.get(bestMatch) ?? null : null;
+  return bestMatch ? (searchCache.get(bestMatch) ?? null) : null;
 };
 
 export const useSearch = (term: string) => {
@@ -65,11 +65,11 @@ export const useSearch = (term: string) => {
       if (allKeys.length > MAX_CACHE_SIZE) {
         const allEntries: CacheEntry[] = await store.getAll();
         const sortedEntries = allEntries.sort(
-          (a, b) => a.timestamp - b.timestamp
+          (a, b) => a.timestamp - b.timestamp,
         );
         const excess = sortedEntries.slice(
           0,
-          allEntries.length - MAX_CACHE_SIZE
+          allEntries.length - MAX_CACHE_SIZE,
         );
         for (const entry of excess) {
           await store.delete(entry.query);
@@ -108,7 +108,7 @@ export const useSearch = (term: string) => {
         const { data } = await axios.post(
           `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/search?query=${encodedQuery}`,
           {},
-          { signal: controller.signal }
+          { signal: controller.signal },
         );
 
         const cachedData = searchCache.get(normalizedQuery);
@@ -124,7 +124,11 @@ export const useSearch = (term: string) => {
           console.log("Request canceled", err.message);
         } else {
           console.error("Failed to fetch search results:", err);
-          setError(err.response?.data?.message || err.message || "Failed to fetch search results");
+          setError(
+            err.response?.data?.message ||
+              err.message ||
+              "Failed to fetch search results",
+          );
         }
       } finally {
         if (showLoading) {
@@ -160,7 +164,7 @@ export const useSearch = (term: string) => {
 
         // Filter out expired entries and populate searchCache
         const validEntries = allEntries.filter(
-          (entry) => now - entry.timestamp < CACHE_EXPIRY_MS
+          (entry) => now - entry.timestamp < CACHE_EXPIRY_MS,
         );
         validEntries.forEach((entry) => {
           searchCache.set(entry.query, entry.results);
@@ -181,11 +185,11 @@ export const useSearch = (term: string) => {
         // Trim cache if over size limit
         if (validEntries.length > MAX_CACHE_SIZE) {
           const sortedEntries = validEntries.sort(
-            (a, b) => a.timestamp - b.timestamp
+            (a, b) => a.timestamp - b.timestamp,
           );
           const excess = sortedEntries.slice(
             0,
-            validEntries.length - MAX_CACHE_SIZE
+            validEntries.length - MAX_CACHE_SIZE,
           );
           const txTrim = db.transaction("searchCache", "readwrite");
           const storeTrim = txTrim.objectStore("searchCache");

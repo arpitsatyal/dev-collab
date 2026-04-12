@@ -1,13 +1,13 @@
 import BasePopover from "../shared/base/BasePopover";
 import BaseActionIcon from "../shared/base/BaseActionIcon";
 import BaseButton from "../shared/base/BaseButton";
-import {  Box,  Group,  Stack } from "@mantine/core";
+import { Box, Group, Stack } from "@mantine/core";
 import { useEffect, useState } from "react";
 import {
   IconChevronLeft,
   IconPlus,
   IconSparkles,
-  IconX
+  IconX,
 } from "@tabler/icons-react";
 import styles from "./AIChat.module.css";
 import { useAIChatMutations } from "../../hooks/mutations/useAIChatMutations";
@@ -23,7 +23,7 @@ const AIChat = () => {
   const { addNewChat, deleteChat, isCreatingChat } = useAIChatMutations({
     setChatId,
     setShowListing,
-    setInput
+    setInput,
   });
 
   useEffect(() => {
@@ -74,12 +74,7 @@ const AIChat = () => {
         </BasePopover.Target>
         <BasePopover.Dropdown className={styles.popoverContent}>
           <Stack className={styles.contentWrapper}>
-            <Group
-              justify="space-between"
-              align="center"
-              px="md"
-              pt="md"
-            >
+            <Group justify="space-between" align="center" px="md" pt="md">
               {!showListing ? (
                 <BaseButton
                   onClick={() => setShowListing(!showListing)}

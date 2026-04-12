@@ -1,6 +1,6 @@
 import BaseButton from "../shared/base/BaseButton";
 import BaseTooltip from "../shared/base/BaseTooltip";
-import {  CopyButton } from "@mantine/core";
+import { CopyButton } from "@mantine/core";
 
 import { IconCheck, IconCopy } from "@tabler/icons-react";
 import { useRouter } from "next/router";

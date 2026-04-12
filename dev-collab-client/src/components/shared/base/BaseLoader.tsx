@@ -12,14 +12,16 @@ export interface BaseLoaderProps {
 const BaseLoader = ({
   isEditorLoading = false,
   loaderHeight,
-  size = "sm" }: BaseLoaderProps) => {
+  size = "sm",
+}: BaseLoaderProps) => {
   return (
     <Box
       style={{
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        height: loaderHeight ?? "80vh" }}
+        height: loaderHeight ?? "80vh",
+      }}
     >
       {isEditorLoading ? (
         <Group>

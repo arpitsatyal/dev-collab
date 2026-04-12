@@ -16,11 +16,18 @@ const WorkspacesList = () => {
     loadMoreItems,
     getItemSize,
     transformWorkspace,
-    listRef } = useSideNavContext();
+    listRef,
+  } = useSideNavContext();
 
   const isItemLoaded = (index: number) => index < workspaceItems.length;
 
-  const Row = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+  const Row = ({
+    index,
+    style,
+  }: {
+    index: number;
+    style: React.CSSProperties;
+  }) => {
     const isLoadingRow = hasMore && index === workspaceItems.length;
     if (isLoadingRow) {
       return (
@@ -30,7 +37,9 @@ const WorkspacesList = () => {
       );
     }
 
-    const workspace = workspaceItems[isInsertingWorkspace ? index - 1 : index] as WorkspaceWithPin;
+    const workspace = workspaceItems[
+      isInsertingWorkspace ? index - 1 : index
+    ] as WorkspaceWithPin;
     if (!workspace) return null;
 
     const child = transformWorkspace(workspace, loadedSnippets);
@@ -56,7 +65,9 @@ const WorkspacesList = () => {
         <VariableSizeList
           height={500}
           width="100%"
-          itemCount={hasMore ? workspaceItems.length + 1 : workspaceItems.length}
+          itemCount={
+            hasMore ? workspaceItems.length + 1 : workspaceItems.length
+          }
           itemSize={getItemSize}
           onItemsRendered={onItemsRendered}
           ref={(list) => {

@@ -39,7 +39,7 @@ export const useDocMutations = () => {
         throw error;
       }
     },
-    [createDoc]
+    [createDoc],
   );
 
   return {

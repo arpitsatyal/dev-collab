@@ -10,7 +10,12 @@ interface ChatInputProps {
   isLoading: boolean;
 }
 
-const ChatInput = ({ input, setInput, onSubmit, isLoading }: ChatInputProps) => {
+const ChatInput = ({
+  input,
+  setInput,
+  onSubmit,
+  isLoading,
+}: ChatInputProps) => {
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault();

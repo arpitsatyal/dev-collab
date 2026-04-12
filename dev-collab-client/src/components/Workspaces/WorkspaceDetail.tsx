@@ -14,8 +14,8 @@ const WorkspaceDetail = ({ workspace }: { workspace: WorkspaceWithPin }) => {
         withBorder
         className={classes.root}
       >
-        <Section 
-          title={workspace?.title} 
+        <Section
+          title={workspace?.title}
           description={workspace?.description || "No description available"}
         >
           <div />

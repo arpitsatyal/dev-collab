@@ -23,13 +23,12 @@ export interface NavItemProps {
 }
 
 export const useSideNavData = () => {
-  const { pageSize, skip, workspacesOpen, isInsertingWorkspace } = useAppSelector(
-    (state) => state.workspace
-  );
+  const { pageSize, skip, workspacesOpen, isInsertingWorkspace } =
+    useAppSelector((state) => state.workspace);
 
   const { data, isLoading, isFetching } = useGetWorkspacesQuery(
     { skip, limit: pageSize },
-    { skip: !workspacesOpen }
+    { skip: !workspacesOpen },
   );
 
   const loadedWorkspaces = useMemo(() => data?.items || [], [data?.items]);
@@ -38,12 +37,32 @@ export const useSideNavData = () => {
   const navItems = useMemo<NavItemProps[]>(
     () => [
       { id: "home", icon: IconGauge, label: "Home", path: "/dashboard" },
-      { id: "playground", icon: IconPlayCard, label: "Playground", path: "/new" },
-      { id: "create-workspace", icon: IconPencil, label: "Create Workspace", path: "/workspaces/create" },
-      { id: "import-workspace", icon: IconCloudDownload, label: "Import from GitHub", path: "/workspaces/import" },
-      { id: "workspaces", icon: IconActivity, label: "Workspaces", path: "/workspaces" },
+      {
+        id: "playground",
+        icon: IconPlayCard,
+        label: "Playground",
+        path: "/new",
+      },
+      {
+        id: "create-workspace",
+        icon: IconPencil,
+        label: "Create Workspace",
+        path: "/workspaces/create",
+      },
+      {
+        id: "import-workspace",
+        icon: IconCloudDownload,
+        label: "Import from GitHub",
+        path: "/workspaces/import",
+      },
+      {
+        id: "workspaces",
+        icon: IconActivity,
+        label: "Workspaces",
+        path: "/workspaces",
+      },
     ],
-    []
+    [],
   );
 
   const navItemsWithWorkspaces = useMemo(() => {
@@ -57,11 +76,11 @@ export const useSideNavData = () => {
   }, [navItems, loadedWorkspaces]);
 
   const workspaceNavItem = navItemsWithWorkspaces.find(
-    (item) => item.label === "Workspaces"
+    (item) => item.label === "Workspaces",
   );
   const workspaceItems = useMemo(
     () => workspaceNavItem?.children || [],
-    [workspaceNavItem?.children]
+    [workspaceNavItem?.children],
   );
 
   return {
@@ -71,6 +90,6 @@ export const useSideNavData = () => {
     isFetching,
     isInsertingWorkspace,
     hasMore,
-    workspacesOpen
+    workspacesOpen,
   };
 };

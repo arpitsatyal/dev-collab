@@ -7,24 +7,24 @@ import { isValidParam } from "../utils/navigation/validators";
 
 export const useDocsSideNav = () => {
   const router = useRouter();
-  
+
   const workspaceId = useMemo(
     () => getSingleQueryParam(router.query.workspaceId) || "unknown",
-    [router.query.workspaceId]
+    [router.query.workspaceId],
   );
 
   const currentDocId = useMemo(
     () => getSingleQueryParam(router.query.docId) || "",
-    [router.query.docId]
+    [router.query.docId],
   );
 
   const isWorkspaceReady = useMemo(
     () => isValidParam(workspaceId),
-    [workspaceId]
+    [workspaceId],
   );
 
   const { data: docs, isLoading } = useGetDocsQuery(
-    isWorkspaceReady ? { workspaceId } : skipToken
+    isWorkspaceReady ? { workspaceId } : skipToken,
   );
 
   const handleDocClick = useCallback(
@@ -35,10 +35,10 @@ export const useDocsSideNav = () => {
           query: { docId },
         },
         undefined,
-        { shallow: true }
+        { shallow: true },
       );
     },
-    [router, workspaceId]
+    [router, workspaceId],
   );
 
   return {

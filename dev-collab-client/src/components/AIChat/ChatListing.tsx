@@ -19,7 +19,8 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
     isLoading,
     isFetching,
     isError,
-    error } = useGetChatsQuery();
+    error,
+  } = useGetChatsQuery();
 
   const isInitialLoading = isLoading && chats.length === 0;
 
@@ -49,11 +50,11 @@ const ChatListing = ({ onSelectChat, onDeleteChat }: ChatListingProps) => {
         {chats.map((chat) => {
           const userMessage = chat.messages
             ? [...chat.messages]
-              .sort(
-                (a, b) =>
-                  dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf()
-              )
-              .find((msg) => msg.isUser === true)
+                .sort(
+                  (a, b) =>
+                    dayjs(a.createdAt).valueOf() - dayjs(b.createdAt).valueOf(),
+                )
+                .find((msg) => msg.isUser === true)
             : undefined;
 
           return (

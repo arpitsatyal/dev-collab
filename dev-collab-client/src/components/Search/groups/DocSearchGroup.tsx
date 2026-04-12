@@ -21,32 +21,36 @@ export const DocSearchGroup = () => {
     const apiDocs =
       !isSearchLoading && matchedResults?.length > 0
         ? (matchedResults.filter(
-          (apiResult: TypedItems) => apiResult.type === "doc"
-        ) as DocWithWorkspace[])
+            (apiResult: TypedItems) => apiResult.type === "doc",
+          ) as DocWithWorkspace[])
         : [];
 
-    return apiDocs.map((doc) => ({
-      id: doc.id,
-      title: getDisplayTitle({ ...doc, type: "doc" } as TypedItems),
-      icon: <IconFileText size={24} stroke={1.5} />,
-      onClick: () => {
-        const isWorkspaceLoaded = workspaces?.find(
-          (loaded) => loaded.id === doc.workspaceId
-        );
-        const workspace = doc.workspace;
-        if (!isWorkspaceLoaded && workspace) {
-          updateQueryData(doc.workspaceId, workspace);
-        }
-        dispatch(setWorkspacesOpen(true));
-        addRecentItems([{ ...doc, type: "doc" } as TypedItems]);
-        router.push(`/workspaces/${doc.workspaceId}/docs/${doc.id}`);
-      },
-      groupLabel: "Documents",
-      meta: {
-        workspaceTitle:
-          workspaces?.find((workspace) => workspace.id === doc.workspaceId)?.title ?? "",
-      },
-    } as DataItem));
+    return apiDocs.map(
+      (doc) =>
+        ({
+          id: doc.id,
+          title: getDisplayTitle({ ...doc, type: "doc" } as TypedItems),
+          icon: <IconFileText size={24} stroke={1.5} />,
+          onClick: () => {
+            const isWorkspaceLoaded = workspaces?.find(
+              (loaded) => loaded.id === doc.workspaceId,
+            );
+            const workspace = doc.workspace;
+            if (!isWorkspaceLoaded && workspace) {
+              updateQueryData(doc.workspaceId, workspace);
+            }
+            dispatch(setWorkspacesOpen(true));
+            addRecentItems([{ ...doc, type: "doc" } as TypedItems]);
+            router.push(`/workspaces/${doc.workspaceId}/docs/${doc.id}`);
+          },
+          groupLabel: "Documents",
+          meta: {
+            workspaceTitle:
+              workspaces?.find((workspace) => workspace.id === doc.workspaceId)
+                ?.title ?? "",
+          },
+        }) as DataItem,
+    );
   }, [
     workspaces,
     matchedResults,

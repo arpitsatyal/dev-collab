@@ -5,11 +5,7 @@ const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
-  transpilePackages: [
-    "monaco-editor",
-    "@monaco-editor/react",
-    "y-monaco",
-  ],
+  transpilePackages: ["monaco-editor", "@monaco-editor/react", "y-monaco"],
   experimental: {
     externalDir: true,
   },
@@ -19,19 +15,19 @@ const nextConfig = {
   images: {
     remotePatterns: [
       {
-        protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
+        protocol: "https",
+        hostname: "avatars.githubusercontent.com",
       },
       {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com",
       },
     ],
   },
   webpack: (config, { isServer }) => {
     // Allow monaco-editor CSS imports
     const cssRule = config.module.rules.find((rule) =>
-      Array.isArray(rule.oneOf)
+      Array.isArray(rule.oneOf),
     )?.oneOf;
     if (cssRule) {
       for (const r of cssRule) {
@@ -49,7 +45,7 @@ const nextConfig = {
         new MonacoWebpackPlugin({
           languages: ["javascript", "typescript", "json", "css", "html"],
           filename: "static/[name].worker.js",
-        })
+        }),
       );
     }
     return config;

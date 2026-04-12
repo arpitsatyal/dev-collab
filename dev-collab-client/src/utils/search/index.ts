@@ -1,11 +1,11 @@
 import { TypedItems } from "../../types";
 
-export const filterByQuery = <T,>(
+export const filterByQuery = <T>(
   items: T[],
   query: string,
   showAllOnEmpty: boolean = false,
   getSearchValue: (item: T) => string = (item: any) =>
-    String(item.title || item.label || item.name || "")
+    String(item.title || item.label || item.name || ""),
 ): T[] => {
   if (!query && showAllOnEmpty) return items;
   if (!query) return [];

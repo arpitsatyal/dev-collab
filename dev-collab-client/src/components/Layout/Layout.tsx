@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import { AppShell, Box, Burger,  Flex } from "@mantine/core";
+import { AppShell, Box, Burger, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "../SideNav/SideNav";
 import SpotlightSearch from "../Search/SpotlightSearch";
@@ -21,7 +21,9 @@ export default function Layout({ children }: { children: ReactNode }) {
   const [navWidth, setNavWidth] = useState(400);
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false);
 
-  const isDocsRoute = router.pathname.startsWith("/workspaces/[workspaceId]/docs");
+  const isDocsRoute = router.pathname.startsWith(
+    "/workspaces/[workspaceId]/docs",
+  );
 
   const handleToggleSideNav = () => {
     setIsSideNavCollapsed(!isSideNavCollapsed);
@@ -33,7 +35,8 @@ export default function Layout({ children }: { children: ReactNode }) {
       navbar={{
         width: isSideNavCollapsed ? 0 : navWidth,
         breakpoint: "sm",
-        collapsed: { mobile: !opened } }}
+        collapsed: { mobile: !opened },
+      }}
       padding="md"
     >
       <AppShell.Header>
@@ -50,7 +53,8 @@ export default function Layout({ children }: { children: ReactNode }) {
           <Box
             style={{
               width: isSmallScreen ? "auto" : "50%",
-              maxWidth: isSmallScreen ? "none" : 500 }}
+              maxWidth: isSmallScreen ? "none" : 500,
+            }}
           >
             <SpotlightSearch isSmallScreen={isSmallScreen ?? false} />
           </Box>

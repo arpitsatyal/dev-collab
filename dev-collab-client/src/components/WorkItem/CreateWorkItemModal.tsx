@@ -1,7 +1,4 @@
-import {
-  Group,
-  Input,
-  MultiSelect } from "@mantine/core";
+import { Group, Input, MultiSelect } from "@mantine/core";
 import BaseModal from "../shared/base/BaseModal";
 import BaseButton from "../shared/base/BaseButton";
 import BaseInput from "../shared/base/BaseInput";
@@ -19,7 +16,7 @@ import { IconCode } from "@tabler/icons-react";
 interface CreateWorkItemModalProps {
   handleInputChange: <K extends keyof WorkItemCreateData>(
     field: K,
-    value: WorkItemCreateData[K]
+    value: WorkItemCreateData[K],
   ) => void;
   handleSubmit: () => void;
   opened: boolean;
@@ -36,7 +33,8 @@ const CreateWorkItemModal = ({
   close,
   workItemForm,
   isLoading,
-  workspaceTitle }: CreateWorkItemModalProps) => {
+  workspaceTitle,
+}: CreateWorkItemModalProps) => {
   const { data: users = [] } = useGetUsersQuery();
   const [errors, setErrors] = useState<{
     title?: string;
@@ -46,20 +44,22 @@ const CreateWorkItemModal = ({
 
   const { data: workspaceSnippets = [] } = snippetApi.useGetSnippetsQuery(
     { workspaceId: workItemForm.workspaceId },
-    { skip: !workItemForm.workspaceId }
+    { skip: !workItemForm.workspaceId },
   );
 
   const snippetData = useMemo(() => {
     return workspaceSnippets.map((s) => ({
       value: s.id,
-      label: s.title }));
+      label: s.title,
+    }));
   }, [workspaceSnippets]);
 
   const validateForm = () => {
     const newErrors: { title?: string; workspaceId?: string; status?: string } =
       {};
     if (!workItemForm.title.trim()) newErrors.title = "Title is required";
-    if (!workItemForm.workspaceId) newErrors.workspaceId = "Workspace is required";
+    if (!workItemForm.workspaceId)
+      newErrors.workspaceId = "Workspace is required";
     if (!workItemForm.status) newErrors.status = "Status is required";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -72,12 +72,18 @@ const CreateWorkItemModal = ({
       notifications.show({
         title: "Validation Error",
         message: "Please fill in all required fields.",
-        color: "red" });
+        color: "red",
+      });
     }
   };
 
   return (
-    <BaseModal opened={opened} onClose={close} title="Create New Work Item" size="lg">
+    <BaseModal
+      opened={opened}
+      onClose={close}
+      title="Create New Work Item"
+      size="lg"
+    >
       <BaseInput
         label="Work Item Title"
         placeholder="Enter work item title"
@@ -102,7 +108,10 @@ const CreateWorkItemModal = ({
         data={Object.values(WorkItemStatus)}
         value={workItemForm.status}
         onChange={(value) =>
-          handleInputChange("status", (value as WorkItemStatus) ?? WorkItemStatus.TODO)
+          handleInputChange(
+            "status",
+            (value as WorkItemStatus) ?? WorkItemStatus.TODO,
+          )
         }
         mb="md"
         required
@@ -114,7 +123,8 @@ const CreateWorkItemModal = ({
         data={
           users.map((user) => ({
             value: user.id,
-            label: user.name ?? "" })) ?? []
+            label: user.name ?? "",
+          })) ?? []
         }
         value={workItemForm.assignedToId}
         onChange={(value) => handleInputChange("assignedToId", value ?? "")}

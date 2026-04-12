@@ -7,7 +7,7 @@ import { ClientSideSuspense, RoomProvider } from "@liveblocks/react";
 import BaseLoader from "../shared/base/BaseLoader";
 import { useGetDocsQuery } from "../../store/api/docsApi";
 import { skipToken } from "@reduxjs/toolkit/query";
-import { Box,  Flex, Text } from "@mantine/core";
+import { Box, Flex, Text } from "@mantine/core";
 import CreateDocModal from "./CreateDocModal";
 import { useDisclosure } from "@mantine/hooks";
 import { useMemo } from "react";
@@ -21,16 +21,17 @@ const DocsContainer = () => {
 
   const isWorkspaceReady = useMemo(
     () => isValidParam(workspaceId),
-    [workspaceId]
+    [workspaceId],
   );
 
   const { data: docs } = useGetDocsQuery(
-    isWorkspaceReady ? { workspaceId: workspaceId as string } : skipToken
+    isWorkspaceReady ? { workspaceId: workspaceId as string } : skipToken,
   );
   const selectedDoc = docId ? docs?.find((doc) => doc.id === docId) : null;
 
   const markdownContent =
-    typeof selectedDoc?.content === "string" && selectedDoc.content.trim().length > 0
+    typeof selectedDoc?.content === "string" &&
+    selectedDoc.content.trim().length > 0
       ? selectedDoc.content
       : null;
 
@@ -40,7 +41,8 @@ const DocsContainer = () => {
         <RoomProvider
           id={selectedDoc.roomId}
           initialPresence={{
-            cursor: null }}
+            cursor: null,
+          }}
         >
           <ClientSideSuspense fallback={<BaseLoader isEditorLoading />}>
             <TiptapEditor initialContent={markdownContent} />

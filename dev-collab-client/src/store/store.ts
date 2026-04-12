@@ -29,7 +29,7 @@ export const store = configureStore({
       workItemApi.middleware,
       docsApi.middleware,
       aiApi.middleware,
-      chatApi.middleware
+      chatApi.middleware,
     ),
 });
 

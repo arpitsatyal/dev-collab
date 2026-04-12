@@ -20,34 +20,38 @@ export const WorkItemSearchGroup = () => {
     const apiWorkItems =
       !isSearchLoading && matchedResults?.length > 0
         ? (matchedResults.filter(
-            (apiResult: TypedItems) => apiResult.type === "workItem"
+            (apiResult: TypedItems) => apiResult.type === "workItem",
           ) as (WorkItem & { workspace?: WorkspaceWithPin })[])
         : [];
 
-    return apiWorkItems.map((workItem) => ({
-      id: workItem.id,
-      title: workItem.title,
-      description: workItem.description ?? "-",
-      icon: <IconSubtask size={24} stroke={1.5} />,
-      onClick: () => {
-        const isWorkspaceLoaded = workspaces?.find(
-          (loaded) => loaded.id === workItem.workspaceId
-        );
-        const workspace = workItem.workspace;
-        if (!isWorkspaceLoaded && workspace) {
-          updateQueryData(workItem.workspaceId, workspace);
-        }
-        dispatch(setWorkspacesOpen(true));
-        addRecentItems([{ ...workItem, type: "workItem" } as TypedItems]);
-        router.push(`/workspaces/${workItem.workspaceId}/work-items`);
-      },
-      groupLabel: "Work Items",
-      meta: {
-        workspaceTitle:
-          workspaces?.find((workspace) => workspace.id === workItem.workspaceId)?.title ??
-          "",
-      },
-    } as DataItem));
+    return apiWorkItems.map(
+      (workItem) =>
+        ({
+          id: workItem.id,
+          title: workItem.title,
+          description: workItem.description ?? "-",
+          icon: <IconSubtask size={24} stroke={1.5} />,
+          onClick: () => {
+            const isWorkspaceLoaded = workspaces?.find(
+              (loaded) => loaded.id === workItem.workspaceId,
+            );
+            const workspace = workItem.workspace;
+            if (!isWorkspaceLoaded && workspace) {
+              updateQueryData(workItem.workspaceId, workspace);
+            }
+            dispatch(setWorkspacesOpen(true));
+            addRecentItems([{ ...workItem, type: "workItem" } as TypedItems]);
+            router.push(`/workspaces/${workItem.workspaceId}/work-items`);
+          },
+          groupLabel: "Work Items",
+          meta: {
+            workspaceTitle:
+              workspaces?.find(
+                (workspace) => workspace.id === workItem.workspaceId,
+              )?.title ?? "",
+          },
+        }) as DataItem,
+    );
   }, [
     workspaces,
     matchedResults,

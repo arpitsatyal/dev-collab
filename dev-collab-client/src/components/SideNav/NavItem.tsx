@@ -9,7 +9,13 @@ interface NavItemSingleProps {
   children?: React.ReactNode;
 }
 
-const NavItem = ({ item, active, opened, onClick, children }: NavItemSingleProps) => {
+const NavItem = ({
+  item,
+  active,
+  opened,
+  onClick,
+  children,
+}: NavItemSingleProps) => {
   return (
     <NavLink
       key={item.id}

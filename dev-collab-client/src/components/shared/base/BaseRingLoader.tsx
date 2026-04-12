@@ -87,7 +87,7 @@ const BaseRingLoader = forwardRef<SVGSVGElement, BaseRingLoaderProps>(
         </circle>
       </g>
     </svg>
-  )
+  ),
 );
 
 BaseRingLoader.displayName = "BaseRingLoader";

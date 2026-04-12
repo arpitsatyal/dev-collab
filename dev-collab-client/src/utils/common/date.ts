@@ -1,9 +1,9 @@
-import dayjs from 'dayjs';
+import dayjs from "dayjs";
 
 export function extractTime(date: string | Date): string {
-  return dayjs(date).format('hh:mm A');
+  return dayjs(date).format("hh:mm A");
 }
 
 export function extractDate(date: string | Date): string {
-  return dayjs(date).format('MM/DD/YYYY');
+  return dayjs(date).format("MM/DD/YYYY");
 }

@@ -2,7 +2,8 @@ import BasePopover from "../../shared/base/BasePopover";
 import {
   useInboxNotifications,
   useMarkAllInboxNotificationsAsRead,
-  useUnreadInboxNotificationsCount } from "@liveblocks/react/suspense";
+  useUnreadInboxNotificationsCount,
+} from "@liveblocks/react/suspense";
 import { InboxNotification, InboxNotificationList } from "@liveblocks/react-ui";
 import { Suspense } from "react";
 import styles from "./NotificationsPopover.module.css";

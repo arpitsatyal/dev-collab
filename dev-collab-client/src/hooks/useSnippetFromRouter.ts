@@ -3,7 +3,7 @@ import { getSingleQueryParam } from "../utils/navigation/queryParams";
 import { Snippet } from "../types";
 
 export function useSnippetFromRouter(
-  loadedSnippets: Record<string, Snippet[]>
+  loadedSnippets: Record<string, Snippet[]>,
 ) {
   const router = useRouter();
 

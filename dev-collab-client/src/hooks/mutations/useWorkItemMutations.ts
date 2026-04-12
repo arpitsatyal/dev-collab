@@ -24,8 +24,10 @@ export const useWorkItemMutations = ({
       const previousWorkItems = [...localWorkItems];
       setLocalWorkItems((prev) =>
         prev.map((workItem) =>
-          workItem.id === workItemId ? { ...workItem, status: newStatus } : workItem
-        )
+          workItem.id === workItemId
+            ? { ...workItem, status: newStatus }
+            : workItem,
+        ),
       );
 
       try {
@@ -48,7 +50,7 @@ export const useWorkItemMutations = ({
         });
       }
     },
-    [localWorkItems, setLocalWorkItems, updateStatus, workspaceId]
+    [localWorkItems, setLocalWorkItems, updateStatus, workspaceId],
   );
 
   return { handleDropWorkItem };

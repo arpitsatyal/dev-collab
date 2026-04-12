@@ -15,7 +15,7 @@ interface RecentOrderEntry {
 
 export const useRecentItems = (
   userId: string | undefined,
-  maxSearchOrder: number = MAX_SEARCH_ORDER
+  maxSearchOrder: number = MAX_SEARCH_ORDER,
 ) => {
   const [recentSearchOrder, setRecentSearchOrder] = useState<string[]>([]);
   const dbRef = useRef<IDBPDatabase | null>(null);
@@ -37,10 +37,10 @@ export const useRecentItems = (
         const allEntries: RecentOrderEntry[] = await store.getAll();
 
         const userEntries = allEntries.filter(
-          (entry) => entry.userId === userId
+          (entry) => entry.userId === userId,
         );
         const validEntries = userEntries.filter(
-          (entry) => now - entry.timestamp < ORDER_EXPIRY_MS
+          (entry) => now - entry.timestamp < ORDER_EXPIRY_MS,
         );
 
         setRecentSearchOrder(validEntries.map((entry) => entry.key));
@@ -86,16 +86,16 @@ export const useRecentItems = (
 
         const allEntries: RecentOrderEntry[] = await store.getAll();
         const userEntries = allEntries.filter(
-          (entry) => entry.userId === userId
+          (entry) => entry.userId === userId,
         );
 
         if (userEntries.length > maxSearchOrder) {
           const sortedEntries = userEntries.sort(
-            (a, b) => a.timestamp - b.timestamp
+            (a, b) => a.timestamp - b.timestamp,
           );
           const excess = sortedEntries.slice(
             0,
-            allEntries.length - maxSearchOrder
+            allEntries.length - maxSearchOrder,
           );
           for (const entry of excess) {
             await store.delete([entry.userId, entry.key]);
@@ -107,7 +107,7 @@ export const useRecentItems = (
         console.error("Failed to save to recentOrder:", error);
       }
     },
-    [dbRef, userId, maxSearchOrder]
+    [dbRef, userId, maxSearchOrder],
   );
 
   const addRecentItems = useCallback(
@@ -126,7 +126,7 @@ export const useRecentItems = (
         return orderedKeys;
       });
     },
-    [maxSearchOrder, saveToDB]
+    [maxSearchOrder, saveToDB],
   );
 
   const clearRecentItems = useCallback(async () => {

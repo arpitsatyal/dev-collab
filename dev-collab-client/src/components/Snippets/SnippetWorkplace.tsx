@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import { Box,  Stack } from "@mantine/core";
+import { Box, Stack } from "@mantine/core";
 import React from "react";
 import classes from "./Snippet.module.css";
 import { CollaborativeEditor } from "../CodeEditor/CollaborativeEditor";

@@ -13,7 +13,8 @@ const WorkspacesIndex = () => {
       }}
     >
       <Text>
-        Please select a workspace from the sidebar or use the search to find one.
+        Please select a workspace from the sidebar or use the search to find
+        one.
       </Text>
     </Box>
   );
@@ -25,6 +26,8 @@ export const getServerSideProps = withAuth(async () => {
   };
 });
 
-WorkspacesIndex.getLayout = (page: React.ReactElement) => <Layout>{page}</Layout>;
+WorkspacesIndex.getLayout = (page: React.ReactElement) => (
+  <Layout>{page}</Layout>
+);
 
 export default WorkspacesIndex;

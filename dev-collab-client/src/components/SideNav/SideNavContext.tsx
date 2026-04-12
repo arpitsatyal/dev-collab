@@ -13,9 +13,7 @@ export const SideNavProvider = ({
   value: SideNavContextType;
 }) => {
   return (
-    <SideNavContext.Provider value={value}>
-      {children}
-    </SideNavContext.Provider>
+    <SideNavContext.Provider value={value}>{children}</SideNavContext.Provider>
   );
 };
 

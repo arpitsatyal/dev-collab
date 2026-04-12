@@ -22,7 +22,8 @@ const WorkItemBoard = () => {
     data,
     workItemsByStatus,
     handleDropWorkItem,
-    dndBackend } = useWorkItemBoard();
+    dndBackend,
+  } = useWorkItemBoard();
 
   if (!workspaceId || isLoading) return <BaseLoader />;
 

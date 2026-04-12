@@ -14,13 +14,13 @@ const SnippetEditorContainer = () => {
 
   const [snippet, setSnippet] = useState<Snippet | null>();
   const loadedSnippets = useAppSelector(
-    (state) => state.snippet.loadedSnippets
+    (state) => state.snippet.loadedSnippets,
   );
 
   useEffect(() => {
     if (isReady && workspaceId) {
       const foundSnippet = loadedSnippets[workspaceId as string]?.find(
-        (s) => s.id === snippetId
+        (s) => s.id === snippetId,
       );
       setSnippet(foundSnippet || null);
     }

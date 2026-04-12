@@ -27,11 +27,13 @@ export const useAppOrchestration = () => {
   const isWorkspaceReady = isValidParam(workspaceId);
 
   const isWorkspaceLoaded = loadedWorkspaces?.find(
-    (loaded) => loaded.id === workspaceId
+    (loaded) => loaded.id === workspaceId,
   );
 
   const { data: workspaceData } = useGetWorkspaceByIdQuery(
-    isWorkspaceReady && !isWorkspaceLoaded ? (workspaceId as string) : skipToken
+    isWorkspaceReady && !isWorkspaceLoaded
+      ? (workspaceId as string)
+      : skipToken,
   );
 
   // Handle router events for loading state

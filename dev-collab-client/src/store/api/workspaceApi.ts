@@ -43,7 +43,10 @@ export const workspaceApi = createApi({
       query: (id) => `workspaces/${id}`,
       providesTags: (result, error, id) => [{ type: "Workspace", id }],
     }),
-    createWorkspace: builder.mutation<WorkspaceWithPin, Partial<WorkspaceWithPin>>({
+    createWorkspace: builder.mutation<
+      WorkspaceWithPin,
+      Partial<WorkspaceWithPin>
+    >({
       query: (workspace) => ({
         url: "workspaces",
         method: "POST",

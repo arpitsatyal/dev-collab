@@ -9,7 +9,11 @@ interface SnippetExportTriggerProps {
   onClick: () => void;
 }
 
-const SnippetExportTrigger = ({ saved, isLoading, onClick }: SnippetExportTriggerProps) => {
+const SnippetExportTrigger = ({
+  saved,
+  isLoading,
+  onClick,
+}: SnippetExportTriggerProps) => {
   return (
     <BaseTooltip label={saved ? "Saved" : "Save as snippet"} withArrow>
       <BaseActionIcon

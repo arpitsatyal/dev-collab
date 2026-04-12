@@ -24,7 +24,8 @@ const ActiveCollaborators = () => {
                 style={{
                   flex: 1,
                   overflow: "hidden",
-                  textOverflow: "ellipsis" }}
+                  textOverflow: "ellipsis",
+                }}
               >
                 {info.name}
               </Text>

@@ -14,7 +14,9 @@ const WorkItemItem = ({ workItem }: { workItem: WorkItem }) => {
     type: "WORK_ITEM",
     item: { id: workItem.id, status: workItem.status },
     collect: (monitor) => ({
-      isDragging: monitor.isDragging() }) });
+      isDragging: monitor.isDragging(),
+    }),
+  });
 
   return (
     <>
@@ -25,15 +27,18 @@ const WorkItemItem = ({ workItem }: { workItem: WorkItem }) => {
         className={classes.item}
         style={{
           opacity: isDragging ? 0.5 : 1,
-          cursor: "pointer" }}
+          cursor: "pointer",
+        }}
         onClick={open}
       >
         <Stack gap="xs">
           <Group justify="space-between" align="flex-start">
-            <Text fw={500} style={{ flexGrow: 1 }}>{workItem.title}</Text>
+            <Text fw={500} style={{ flexGrow: 1 }}>
+              {workItem.title}
+            </Text>
             <StatusBadge status={workItem.status} />
           </Group>
-          
+
           <CollapsibleText text={workItem.description ?? ""} />
 
           {workItem.dueDate && (

@@ -13,7 +13,8 @@ interface AutoSaveSwitchProps {
 const AutoSaveSwitch = ({
   autoSaveOn,
   setAutoSaveOn,
-  saveStatus }: AutoSaveSwitchProps) => {
+  saveStatus,
+}: AutoSaveSwitchProps) => {
   return (
     <Box w={{ base: "100%", md: "auto" }}>
       <BaseSwitch
@@ -39,15 +40,16 @@ const AutoSaveSwitch = ({
           saveStatus === "saving"
             ? "yellow"
             : saveStatus === "error"
-            ? "red"
-            : "green"
+              ? "red"
+              : "green"
         }
         fs="italic"
         fz="xs"
         mt="xs"
         style={{
           visibility: saveStatus ? "visible" : "hidden",
-          minHeight: 16 }}
+          minHeight: 16,
+        }}
       >
         {saveStatus === "saving" && "Saving..."}
         {saveStatus === "saved" && "All changes saved."}

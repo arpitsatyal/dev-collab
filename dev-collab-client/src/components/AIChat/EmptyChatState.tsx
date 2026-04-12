@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import {  Group, Stack, Text } from "@mantine/core";
+import { Group, Stack, Text } from "@mantine/core";
 import styles from "./AIChat.module.css";
 
 interface EmptyChatStateProps {

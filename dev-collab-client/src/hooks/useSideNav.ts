@@ -3,7 +3,10 @@ import { useRouter } from "next/router";
 import { useAppDispatch, useAppSelector } from "../store/hooks";
 import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { setSnippets } from "../store/slices/snippetSlice";
-import { incrementPage, setWorkspacesOpen } from "../store/slices/workspaceSlice";
+import {
+  incrementPage,
+  setWorkspacesOpen,
+} from "../store/slices/workspaceSlice";
 import useWorkspaceTransform from "./useWorkspaceTransform";
 import { useSideNavData } from "./useSideNavData";
 import type { NavItemProps } from "./useSideNavData";
@@ -22,7 +25,9 @@ export const useSideNav = () => {
   const [openItem, setOpenItem] = useState<string | null>(null);
   const [pendingScrollId, setPendingScrollId] = useState<string | null>(null);
 
-  const loadedSnippets = useAppSelector((state) => state.snippet.loadedSnippets);
+  const loadedSnippets = useAppSelector(
+    (state) => state.snippet.loadedSnippets,
+  );
 
   const [triggerGetSnippets] = useLazyGetSnippetsQuery();
 
@@ -33,7 +38,7 @@ export const useSideNav = () => {
     isFetching,
     isInsertingWorkspace,
     hasMore,
-    workspacesOpen
+    workspacesOpen,
   } = useSideNavData();
 
   const {
@@ -64,7 +69,7 @@ export const useSideNav = () => {
         }
       }
     },
-    [loadedSnippets, triggerGetSnippets, dispatch, setLoadingWorkspaceId]
+    [loadedSnippets, triggerGetSnippets, dispatch, setLoadingWorkspaceId],
   );
 
   useSideNavEffects({
@@ -97,7 +102,7 @@ export const useSideNav = () => {
         router.push(path);
       }
     },
-    [router, dispatch]
+    [router, dispatch],
   );
 
   const isActive = useCallback(
@@ -110,7 +115,7 @@ export const useSideNav = () => {
 
       return router.pathname === path || router.asPath === path;
     },
-    [router]
+    [router],
   );
 
   const isOpen = useCallback(
@@ -121,7 +126,9 @@ export const useSideNav = () => {
         return workspacesOpen;
       }
 
-      const workspacesItem = navItemsWithWorkspaces.find((i) => i.label === "Workspaces");
+      const workspacesItem = navItemsWithWorkspaces.find(
+        (i) => i.label === "Workspaces",
+      );
       if (!workspacesItem?.children) return false;
 
       return workspacesItem.children.some((child) => {
@@ -132,7 +139,14 @@ export const useSideNav = () => {
         return openItem === navItem.id || isActive(navItem.path);
       });
     },
-    [workspacesOpen, navItemsWithWorkspaces, loadedSnippets, openItem, isActive, transformWorkspace]
+    [
+      workspacesOpen,
+      navItemsWithWorkspaces,
+      loadedSnippets,
+      openItem,
+      isActive,
+      transformWorkspace,
+    ],
   );
 
   const { handleUpdatePinnedStatus } = useSideNavMutations({

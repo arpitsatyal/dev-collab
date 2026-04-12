@@ -52,7 +52,7 @@ export const useSideNavEffects = ({
         behavior: "smooth",
       });
     },
-    [workspaceItems, listRef]
+    [workspaceItems, listRef],
   );
 
   const handleScrollToItem = useCallback(
@@ -64,7 +64,7 @@ export const useSideNavEffects = ({
       dispatch(setWorkspacesOpen(true));
       scrollItemIntoView(id);
     },
-    [workspaceItems, listRef, setOpenItem, scrollItemIntoView, dispatch]
+    [workspaceItems, listRef, setOpenItem, scrollItemIntoView, dispatch],
   );
 
   useEffect(() => {

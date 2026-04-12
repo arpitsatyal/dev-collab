@@ -18,7 +18,8 @@ const ChatMessage = ({
   isUser,
   image,
   createdAt,
-  lastMessageRef }: ChatMessageProps) => {
+  lastMessageRef,
+}: ChatMessageProps) => {
   return (
     <div
       ref={lastMessageRef}

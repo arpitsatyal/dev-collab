@@ -1,6 +1,11 @@
 import React, { useMemo } from "react";
 import { useRouter } from "next/router";
-import { IconFolder, IconSubtask, IconFileText, IconMessage } from "@tabler/icons-react";
+import {
+  IconFolder,
+  IconSubtask,
+  IconFileText,
+  IconMessage,
+} from "@tabler/icons-react";
 import { useAppDispatch } from "../../../store/hooks";
 import { setWorkspacesOpen } from "../../../store/slices/workspaceSlice";
 import { useWorkspaceCacheUpdater } from "../../../hooks/useWorkspaceCacheUpdater";
@@ -12,13 +17,17 @@ import { TypedItems } from "../../../types";
 import FileIcon from "../../shared/FileIcon";
 
 export const RecentSearchGroup = () => {
-  const { query, workspaces, snippets, matchedResults, recentSearchOrder, recentItems } =
-    useSpotlightSearchContext();
+  const {
+    query,
+    workspaces,
+    snippets,
+    matchedResults,
+    recentSearchOrder,
+    recentItems,
+  } = useSpotlightSearchContext();
   const router = useRouter();
   const dispatch = useAppDispatch();
   const updateQueryData = useWorkspaceCacheUpdater();
-
-
 
   const items = useMemo(() => {
     const hasOtherResults =
@@ -43,7 +52,7 @@ export const RecentSearchGroup = () => {
     });
 
     const filteredResults = filterByQuery(sortedResults, query, true, (item) =>
-      getDisplayTitle(item)
+      getDisplayTitle(item),
     );
 
     return filteredResults.map((item) => {
@@ -54,7 +63,11 @@ export const RecentSearchGroup = () => {
         groupLabel: "Recently Searched",
       };
 
-      const navigateWithWorkspace = (wId: string, path: string, wData?: any) => {
+      const navigateWithWorkspace = (
+        wId: string,
+        path: string,
+        wData?: any,
+      ) => {
         const isLoaded = workspaces?.find((w) => w.id === wId);
         if (!isLoaded && wData) {
           updateQueryData(wId, wData);
@@ -69,7 +82,8 @@ export const RecentSearchGroup = () => {
             ...baseItem,
             description: item.description ?? "-",
             icon: <IconFolder size={24} stroke={1.5} />,
-            onClick: () => navigateWithWorkspace(item.id, `/workspaces/${item.id}`, item),
+            onClick: () =>
+              navigateWithWorkspace(item.id, `/workspaces/${item.id}`, item),
           } as DataItem;
 
         case "snippet":
@@ -77,9 +91,14 @@ export const RecentSearchGroup = () => {
             ...baseItem,
             icon: <FileIcon snippet={item} />,
             onClick: () =>
-              navigateWithWorkspace(item.workspaceId, `/workspaces/${item.workspaceId}/snippets/${item.id}`, item.workspace),
+              navigateWithWorkspace(
+                item.workspaceId,
+                `/workspaces/${item.workspaceId}/snippets/${item.id}`,
+                item.workspace,
+              ),
             meta: {
-              workspaceTitle: workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
+              workspaceTitle:
+                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
             },
           } as DataItem;
 
@@ -89,9 +108,14 @@ export const RecentSearchGroup = () => {
             description: item.description ?? "-",
             icon: <IconSubtask size={24} stroke={1.5} />,
             onClick: () =>
-              navigateWithWorkspace(item.workspaceId, `/workspaces/${item.workspaceId}/work-items`, item.workspace),
+              navigateWithWorkspace(
+                item.workspaceId,
+                `/workspaces/${item.workspaceId}/work-items`,
+                item.workspace,
+              ),
             meta: {
-              workspaceTitle: workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
+              workspaceTitle:
+                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
             },
           } as DataItem;
 
@@ -101,9 +125,14 @@ export const RecentSearchGroup = () => {
             description: "-",
             icon: <IconFileText size={24} stroke={1.5} />,
             onClick: () =>
-              navigateWithWorkspace(item.workspaceId, `/workspaces/${item.workspaceId}/docs/${item.id}`, item.workspace),
+              navigateWithWorkspace(
+                item.workspaceId,
+                `/workspaces/${item.workspaceId}/docs/${item.id}`,
+                item.workspace,
+              ),
             meta: {
-              workspaceTitle: workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
+              workspaceTitle:
+                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
             },
           } as DataItem;
 
@@ -122,7 +151,7 @@ export const RecentSearchGroup = () => {
             ...baseItem,
             id: "unknown",
             icon: <IconFolder />,
-            onClick: () => { },
+            onClick: () => {},
           } as DataItem;
       }
     });

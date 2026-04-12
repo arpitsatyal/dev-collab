@@ -67,9 +67,9 @@ const useAutoSave = ({
         {
           leading: false,
           trailing: true,
-        }
+        },
       ),
-    [saveFn]
+    [saveFn],
   );
 
   useEffect(() => {

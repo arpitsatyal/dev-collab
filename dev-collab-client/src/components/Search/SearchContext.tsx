@@ -30,7 +30,7 @@ export const useSpotlightSearchContext = () => {
   const context = useContext(SearchContext);
   if (context === undefined) {
     throw new Error(
-      "useSpotlightSearchContext must be used within a SpotlightSearchProvider"
+      "useSpotlightSearchContext must be used within a SpotlightSearchProvider",
     );
   }
   return context;

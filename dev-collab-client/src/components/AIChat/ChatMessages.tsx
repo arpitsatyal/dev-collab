@@ -1,19 +1,13 @@
-import {
-  Box,
-  ScrollArea,
-  Group,
-  Skeleton,
-  Text,
-  Stack } from "@mantine/core";
-import {
-  useGetChatQuery } from "../../store/api/chatApi";
+import { Box, ScrollArea, Group, Skeleton, Text, Stack } from "@mantine/core";
+import { useGetChatQuery } from "../../store/api/chatApi";
 import {
   Dispatch,
   FormEvent,
   SetStateAction,
   useEffect,
   useState,
-  useRef } from "react";
+  useRef,
+} from "react";
 import styles from "./AIChat.module.css";
 import BaseLoader from "../shared/base/BaseLoader";
 import { useSession } from "../providers/AuthProvider";
@@ -46,13 +40,16 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     isLoading: isChatLoading,
     isFetching: isChatFetching,
     isError: isChatError,
-    error: chatError } = useGetChatQuery(chatId, {
-    skip: !chatId });
+    error: chatError,
+  } = useGetChatQuery(chatId, {
+    skip: !chatId,
+  });
 
   const { sendMessage, isLoading } = useAIMessageMutations({
     chatId,
     setMessages,
-    setInput });
+    setInput,
+  });
 
   useEffect(() => {
     if (chatData?.messages) {
@@ -62,7 +59,8 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     }
   }, [chatData, chatId]);
 
-  const isInitialLoading = Boolean(chatId) && (isChatLoading || (isChatFetching && !chatData));
+  const isInitialLoading =
+    Boolean(chatId) && (isChatLoading || (isChatFetching && !chatData));
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -73,7 +71,8 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
     if (lastMessageRef.current) {
       lastMessageRef.current.scrollIntoView({
         behavior: "smooth",
-        block: "center" });
+        block: "center",
+      });
     }
   }, [messages]);
 
@@ -124,7 +123,11 @@ const ChatMessages = ({ chatId, input, setInput }: MessageProps) => {
               isUser={message.isUser}
               image={image}
               createdAt={message.createdAt}
-              lastMessageRef={index === messages.length - 1 ? (lastMessageRef as any) : undefined}
+              lastMessageRef={
+                index === messages.length - 1
+                  ? (lastMessageRef as any)
+                  : undefined
+              }
             />
           ))}
 

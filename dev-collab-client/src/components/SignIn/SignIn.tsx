@@ -1,5 +1,5 @@
 import BaseButton from "../shared/base/BaseButton";
-import {  Card, Container, Stack, Text, Title } from "@mantine/core";
+import { Card, Container, Stack, Text, Title } from "@mantine/core";
 import React from "react";
 import { IconBrandGoogle, IconGitBranch } from "@tabler/icons-react";
 import DevCollabIcon from "../shared/DevCollabIcon";
@@ -17,7 +17,8 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
         height: "100vh",
         display: "flex",
         alignItems: "center",
-        justifyContent: "center" }}
+        justifyContent: "center",
+      }}
       p="md"
     >
       <Card
@@ -33,7 +34,8 @@ const SignIn = ({ handleGithubSignIn, handleGoogleSignIn }: SignInProps) => {
             Welcome to Dev-Collab
           </Title>
           <Text size="md" ta="center" className="secondary">
-            Sign in to collaborate, share, and build amazing workspaces together.
+            Sign in to collaborate, share, and build amazing workspaces
+            together.
           </Text>
           <Stack w="100%" gap="md">
             <BaseButton

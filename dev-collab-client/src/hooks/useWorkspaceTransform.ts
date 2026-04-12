@@ -10,7 +10,7 @@ const useWorkspaceTransform = () => {
   return useCallback(
     (workspace: WorkspaceWithPin, loadedSnippets: Record<string, any>) => {
       const cacheKey = `${workspace.id}-${JSON.stringify(
-        loadedSnippets[workspace.id] ?? []
+        loadedSnippets[workspace.id] ?? [],
       )}`;
       if (cache.current.has(cacheKey)) {
         return cache.current.get(cacheKey)!;
@@ -28,7 +28,7 @@ const useWorkspaceTransform = () => {
       cache.current.set(cacheKey, transformed);
       return transformed;
     },
-    []
+    [],
   );
 };
 export default useWorkspaceTransform;

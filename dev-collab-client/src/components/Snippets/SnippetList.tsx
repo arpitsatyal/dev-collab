@@ -7,9 +7,9 @@ import {
   Menu,
   Modal,
   TextInput,
-  
   Group,
-  Box } from "@mantine/core";
+  Box,
+} from "@mantine/core";
 import { IconPlus, IconDotsVertical } from "@tabler/icons-react";
 import { Snippet, SnippetsCreateData } from "../../types";
 import { useAppDispatch } from "../../store/hooks";
@@ -36,7 +36,11 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
   const [newSnippetTitle, setNewSnippetTitle] = useState("");
   const [nameError, setNameError] = useState("");
   const [detectedLanguage, setDetectedLanguage] = useState<string | null>(null);
-  const { handleCreateSnippet, handleEditSnippet, isLoading: isMutating } = useSnippetMutations();
+  const {
+    handleCreateSnippet,
+    handleEditSnippet,
+    isLoading: isMutating,
+  } = useSnippetMutations();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   useEffect(() => {
@@ -57,7 +61,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
   const openModal = (
     mode: "rename" | "create",
     snippet?: Snippet,
-    event?: React.MouseEvent
+    event?: React.MouseEvent,
   ) => {
     if (event) {
       event.stopPropagation(); // Prevent NavLink's onClick from firing
@@ -65,7 +69,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
     setModalMode(mode);
     setSelectedSnippet(snippet || null);
     setNewSnippetTitle(
-      snippet ? `${snippet.title}.${snippet.extension ?? ""}` : ""
+      snippet ? `${snippet.title}.${snippet.extension ?? ""}` : "",
     );
     setNameError("");
     setDetectedLanguage(snippet ? snippet.language : null);
@@ -73,7 +77,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
   };
 
   const handleChangeSnippetName = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const value = event.currentTarget.value;
     setNewSnippetTitle(value);
@@ -122,11 +126,16 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
         extractSnippetDetails(newSnippetTitle);
 
       if (modalMode === "rename" && selectedSnippet) {
-        await handleEditSnippet(selectedSnippet.workspaceId, selectedSnippet.id, {
-          ...selectedSnippet,
-          title,
-          language,
-          extension });
+        await handleEditSnippet(
+          selectedSnippet.workspaceId,
+          selectedSnippet.id,
+          {
+            ...selectedSnippet,
+            title,
+            language,
+            extension,
+          },
+        );
       } else if (modalMode === "create") {
         const workspaceId = router.query.workspaceId as string;
 
@@ -135,7 +144,8 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
           content: "",
           language,
           workspaceId,
-          extension };
+          extension,
+        };
 
         const data = await handleCreateSnippet(workspaceId, snippet);
         router.push(`/workspaces/${workspaceId}/snippets/${data.id}`);
@@ -176,7 +186,8 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
                   style={{
                     overflow: "hidden",
                     textOverflow: "ellipsis",
-                    whiteSpace: "nowrap" }}
+                    whiteSpace: "nowrap",
+                  }}
                   title={`${snippet.title}.${snippet.extension ?? ""}`}
                 >
                   {`${snippet.title}.${snippet.extension ?? ""}`}
@@ -214,7 +225,7 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
               onClick={() =>
                 handleSnippetClick(
                   snippet.id,
-                  `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`
+                  `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
                 )
               }
             />
@@ -239,7 +250,9 @@ const SnippetList = ({ snippets, isVisible }: SnippetListProps) => {
           error={nameError}
           styles={{
             label: {
-              paddingBottom: 10 } }}
+              paddingBottom: 10,
+            },
+          }}
         />
         <Text fz="sm" c="dimmed" mt="xs">
           Detected language: {detectedLanguage || ""}

@@ -1,5 +1,5 @@
 import BaseActionIcon from "../shared/base/BaseActionIcon";
-import {  Box, NavLink, Text } from "@mantine/core";
+import { Box, NavLink, Text } from "@mantine/core";
 import { IconBrandPagekit, IconPin, IconSubtask } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import BaseLoader from "../shared/base/BaseLoader";
@@ -18,7 +18,8 @@ interface WorkspaceNavItemProps {
 const WorkspaceNavItem = ({
   style,
   workspace,
-  child }: WorkspaceNavItemProps) => {
+  child,
+}: WorkspaceNavItemProps) => {
   const router = useRouter();
   const {
     isActive,
@@ -27,11 +28,12 @@ const WorkspaceNavItem = ({
     setOpenItem,
     handleUpdatePinnedStatus,
     loadedSnippets,
-    itemRefs } = useSideNavContext();
+    itemRefs,
+  } = useSideNavContext();
 
   const isExpanded = openItem === child.id;
   const isLoading = loadingWorkspaceId === child.id;
-  
+
   const onToggle = (id: string) => {
     setOpenItem((prev) => (prev === id ? null : id));
   };
@@ -48,7 +50,8 @@ const WorkspaceNavItem = ({
             style={{
               overflow: "hidden",
               textOverflow: "ellipsis",
-              whiteSpace: "nowrap" }}
+              whiteSpace: "nowrap",
+            }}
           >
             {child.label}
           </Text>
@@ -75,12 +78,14 @@ const WorkspaceNavItem = ({
                   handleUpdatePinnedStatus(workspace);
                 }}
                 style={(theme) => ({
-                    color: workspace.isPinned
-                      ? theme.colors.yellow[5]
-                      : theme.colors.gray[5],
-                    "&:hover": {
-                      color: theme.colors.yellow[7] },
-                    padding: 5 })}
+                  color: workspace.isPinned
+                    ? theme.colors.yellow[5]
+                    : theme.colors.gray[5],
+                  "&:hover": {
+                    color: theme.colors.yellow[7],
+                  },
+                  padding: 5,
+                })}
               >
                 <IconPin size={16} />
               </BaseActionIcon>
@@ -99,8 +104,8 @@ const WorkspaceNavItem = ({
                 active={router.pathname.includes("docs")}
                 leftSection={<IconBrandPagekit size={16} />}
                 onClick={(e) => {
-                    e.stopPropagation();
-                    router.push(`/workspaces/${child.id}/docs`);
+                  e.stopPropagation();
+                  router.push(`/workspaces/${child.id}/docs`);
                 }}
               />
               <SnippetList

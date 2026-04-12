@@ -9,7 +9,8 @@ interface SideNavNestedContentProps {
 }
 
 const SideNavNestedContent = ({ item }: SideNavNestedContentProps) => {
-  const { workspaceItems, isLoading, isInsertingWorkspace } = useSideNavContext();
+  const { workspaceItems, isLoading, isInsertingWorkspace } =
+    useSideNavContext();
 
   return (
     <Box pr="xs">

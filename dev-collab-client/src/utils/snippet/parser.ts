@@ -1,5 +1,5 @@
 export const parseFilename = (
-  filename: string
+  filename: string,
 ): { title: string; extension: string } | null => {
   const trimmed = filename.trim();
   const match = trimmed.match(/^([a-zA-Z0-9._-]+)\.([a-zA-Z0-9]+)$/);

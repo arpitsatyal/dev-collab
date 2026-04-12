@@ -5,7 +5,10 @@ import { useLazyGetSnippetsQuery } from "../store/api/snippetApi";
 import { useSuggestSnippetFilenameMutation } from "../store/api/aiApi";
 import { useAppSelector } from "../store/hooks";
 import { getExtensionFromLanguage } from "../utils/snippet/languageMapper";
-import { inferFallbackBaseName, buildUniqueFilename } from "../utils/snippet/naming";
+import {
+  inferFallbackBaseName,
+  buildUniqueFilename,
+} from "../utils/snippet/naming";
 import { parseFilename } from "../utils/snippet/parser";
 import { useSession } from "../components/providers/AuthProvider";
 import { useSnippetMutations } from "./mutations/useSnippetMutations";
@@ -22,8 +25,10 @@ export const useSnippetExport = ({
   workspaceId,
 }: SnippetExportOptions) => {
   const session = useSession();
-  const [triggerGetSnippets, { data: fetchedWorkspaceSnippets = [] }] = useLazyGetSnippetsQuery();
-  const [suggestSnippetFilename, { isLoading: isSuggestingFileName }] = useSuggestSnippetFilenameMutation();
+  const [triggerGetSnippets, { data: fetchedWorkspaceSnippets = [] }] =
+    useLazyGetSnippetsQuery();
+  const [suggestSnippetFilename, { isLoading: isSuggestingFileName }] =
+    useSuggestSnippetFilenameMutation();
 
   const [opened, setOpened] = useState(false);
   const [fileName, setFileName] = useState("");
@@ -33,7 +38,7 @@ export const useSnippetExport = ({
   const { confirmExport, isCreatingSnippet } = useSnippetMutations();
 
   const loadedWorkspaceSnippets = useAppSelector((state) =>
-    workspaceId ? state.snippet.loadedSnippets[workspaceId] || [] : []
+    workspaceId ? state.snippet.loadedSnippets[workspaceId] || [] : [],
   );
 
   useEffect(() => {
@@ -43,19 +48,21 @@ export const useSnippetExport = ({
 
   const normalizedLanguage = useMemo(
     () => (language || "plaintext").toLowerCase(),
-    [language]
+    [language],
   );
 
   const existingFileNames = useMemo(() => {
     const uniqueById = new Map<string, Snippet>();
-    [...loadedWorkspaceSnippets, ...fetchedWorkspaceSnippets].forEach((snippet) => {
-      uniqueById.set(snippet.id, snippet);
-    });
+    [...loadedWorkspaceSnippets, ...fetchedWorkspaceSnippets].forEach(
+      (snippet) => {
+        uniqueById.set(snippet.id, snippet);
+      },
+    );
 
     return new Set(
-      [...uniqueById.values()].map(
-        (snippet) => `${snippet.title}.${snippet.extension || "txt"}`.toLowerCase()
-      )
+      [...uniqueById.values()].map((snippet) =>
+        `${snippet.title}.${snippet.extension || "txt"}`.toLowerCase(),
+      ),
     );
   }, [loadedWorkspaceSnippets, fetchedWorkspaceSnippets]);
 
@@ -73,7 +80,7 @@ export const useSnippetExport = ({
 
       return "";
     },
-    [existingFileNames]
+    [existingFileNames],
   );
 
   const openPrompt = async () => {
@@ -117,7 +124,7 @@ export const useSnippetExport = ({
       const fallbackFileName = buildUniqueFilename(
         fallbackBaseName,
         extension,
-        existingFileNames
+        existingFileNames,
       );
       setFileName(fallbackFileName);
       setFileNameError(validateFileName(fallbackFileName));
@@ -153,7 +160,15 @@ export const useSnippetExport = ({
     } catch (error) {
       // Error handled in mutation hook (toasted)
     }
-  }, [code, workspaceId, fileName, normalizedLanguage, session.data?.user?.id, validateFileName, confirmExport]);
+  }, [
+    code,
+    workspaceId,
+    fileName,
+    normalizedLanguage,
+    session.data?.user?.id,
+    validateFileName,
+    confirmExport,
+  ]);
 
   return {
     opened,

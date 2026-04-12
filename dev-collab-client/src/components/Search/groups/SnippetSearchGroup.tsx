@@ -18,7 +18,7 @@ export const SnippetSearchGroup = () => {
   const updateQueryData = useWorkspaceCacheUpdater();
 
   const snippets = Object.values(
-    useAppSelector((state) => state.snippet.loadedSnippets)
+    useAppSelector((state) => state.snippet.loadedSnippets),
   ).flat();
 
   const items = useMemo(() => {
@@ -26,37 +26,43 @@ export const SnippetSearchGroup = () => {
     const apiSnippets =
       !isSearchLoading && matchedResults?.length > 0
         ? (matchedResults.filter(
-          (apiResult: TypedItems) =>
-            apiResult.type === "snippet" &&
-            !localSnippets.some((local) => local.id === apiResult.id)
-        ) as (Snippet & { workspace?: WorkspaceWithPin })[])
+            (apiResult: TypedItems) =>
+              apiResult.type === "snippet" &&
+              !localSnippets.some((local) => local.id === apiResult.id),
+          ) as (Snippet & { workspace?: WorkspaceWithPin })[])
         : [];
 
     const combined = [...localSnippets, ...apiSnippets];
 
-    return combined.map((snippet) => ({
-      id: snippet.id,
-      title: getDisplayTitle({ ...snippet, type: "snippet" } as TypedItems),
-      icon: <FileIcon snippet={snippet} />,
-      onClick: () => {
-        const isWorkspaceLoaded = workspaces?.find(
-          (loaded) => loaded.id === snippet.workspaceId
-        );
-        const workspace = (snippet as any).workspace;
-        if (!isWorkspaceLoaded && workspace) {
-          updateQueryData(snippet.workspaceId, workspace);
-        }
-        dispatch(setWorkspacesOpen(true));
-        addRecentItems([{ ...snippet, type: "snippet" } as TypedItems]);
-        router.push(`/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`);
-      },
-      groupLabel: "Snippets",
-      meta: {
-        workspaceTitle:
-          workspaces?.find((workspace) => workspace.id === snippet.workspaceId)
-            ?.title ?? "",
-      },
-    } as DataItem));
+    return combined.map(
+      (snippet) =>
+        ({
+          id: snippet.id,
+          title: getDisplayTitle({ ...snippet, type: "snippet" } as TypedItems),
+          icon: <FileIcon snippet={snippet} />,
+          onClick: () => {
+            const isWorkspaceLoaded = workspaces?.find(
+              (loaded) => loaded.id === snippet.workspaceId,
+            );
+            const workspace = (snippet as any).workspace;
+            if (!isWorkspaceLoaded && workspace) {
+              updateQueryData(snippet.workspaceId, workspace);
+            }
+            dispatch(setWorkspacesOpen(true));
+            addRecentItems([{ ...snippet, type: "snippet" } as TypedItems]);
+            router.push(
+              `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
+            );
+          },
+          groupLabel: "Snippets",
+          meta: {
+            workspaceTitle:
+              workspaces?.find(
+                (workspace) => workspace.id === snippet.workspaceId,
+              )?.title ?? "",
+          },
+        }) as DataItem,
+    );
   }, [
     query,
     snippets,
