@@ -55,7 +55,7 @@ app.post("/sync", async function (req, res) {
         ...item.doc,
         type: item.type,
       }));
-      await index.addDocuments(documents);
+      await index.addDocuments(documents, { primaryKey: "id" });
       return res.status(200).json({ msg: `✅ ${documents.length} docs indexed (batch)` });
     }
 
@@ -64,7 +64,7 @@ app.post("/sync", async function (req, res) {
       return res.status(404).json({ msg: "doc or batch not found!" });
     }
     const document = { ...doc, type: type };
-    await index.addDocuments([document]);
+    await index.addDocuments([document], { primaryKey: "id" });
 
     return res.status(200).json({ msg: `✅ doc ${doc.id} indexed` });
   } catch (err) {

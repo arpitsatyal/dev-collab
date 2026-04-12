@@ -24,10 +24,10 @@
       "Type": "String",
       "Default": "functiondevcollabsearchlayerArn"
     },
-    "meilisearchServer": {
+    "meilisearchApiKey": {
       "Type": "String"
     },
-    "meilisearchApiKey": {
+    "meilisearchServer": {
       "Type": "String"
     }
   },
@@ -84,11 +84,11 @@
             "REGION": {
               "Ref": "AWS::Region"
             },
-            "MEILISEARCH_SERVER": {
-              "Ref": "meilisearchServer"
-            },
             "MEILISEARCH_API_KEY": {
               "Ref": "meilisearchApiKey"
+            },
+            "MEILISEARCH_SERVER": {
+              "Ref": "meilisearchServer"
             }
           }
         },
