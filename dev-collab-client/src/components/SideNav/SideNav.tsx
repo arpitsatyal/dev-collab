@@ -1,19 +1,15 @@
-import { AppShell, Box, Text } from "@mantine/core";
+import { AppShell } from "@mantine/core";
 import classes from "./SideNav.module.css";
-import Loading from "../Loader/Loader";
 import SideNavFooter from "./SideNavFooter";
 import NavItem from "./NavItem";
-import WorkspacesList from "./WorkspacesList";
 import { useSideNav } from "../../hooks/useSideNav";
 import { SideNavProvider } from "./SideNavContext";
+import SideNavNestedContent from "./SideNavNestedContent";
 
 const SideNav = () => {
   const sideNavData = useSideNav();
   const {
     navItemsWithWorkspaces,
-    workspaceItems,
-    isLoading,
-    isInsertingWorkspace,
     isActive,
     isOpen,
     handleNavClick,
@@ -30,21 +26,7 @@ const SideNav = () => {
             opened={isOpen(item)}
             onClick={() => handleNavClick(item.path, item.handler, item.label)}
           >
-            {item.label === "Workspaces" && (
-              <Box pr="xs">
-                {isLoading ? (
-                  <Loading />
-                ) : isInsertingWorkspace ? (
-                  <Loading loaderHeight="20vh" />
-                ) : workspaceItems.length === 0 ? (
-                  <Text size="xs" c="dimmed" ta="center" py="sm" fs="italic">
-                    No workspaces added yet
-                  </Text>
-                ) : (
-                  <WorkspacesList />
-                )}
-              </Box>
-            )}
+            {item.children !== undefined && <SideNavNestedContent item={item} />}
           </NavItem>
         ))}
       </AppShell.Section>

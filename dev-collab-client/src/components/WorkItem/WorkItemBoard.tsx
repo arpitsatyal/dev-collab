@@ -5,15 +5,22 @@ import Loading from "../Loader/Loader";
 import WorkItemColumn from "./WorkItemColumn";
 import BoardEmptyState from "./BoardEmptyState";
 import { useWorkItemBoard } from "../../hooks/useWorkItemBoard";
+import { WorkItemStatus } from "../../types";
+
+const statusToTitle = (status: string) => {
+  return status
+    .toLowerCase()
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
 const WorkItemBoard = () => {
   const {
     workspaceId,
     isLoading,
     data,
-    todoWorkItems,
-    inProgressWorkItems,
-    doneWorkItems,
+    workItemsByStatus,
     handleDropWorkItem,
     dndBackend,
   } = useWorkItemBoard();
@@ -27,21 +34,14 @@ const WorkItemBoard = () => {
   return (
     <DndProvider backend={dndBackend}>
       <Grid gutter="lg">
-        <WorkItemColumn
-          title="To Do"
-          workItems={todoWorkItems}
-          onDropWorkItem={handleDropWorkItem}
-        />
-        <WorkItemColumn
-          title="In Progress"
-          workItems={inProgressWorkItems}
-          onDropWorkItem={handleDropWorkItem}
-        />
-        <WorkItemColumn
-          title="Done"
-          workItems={doneWorkItems}
-          onDropWorkItem={handleDropWorkItem}
-        />
+        {Object.values(WorkItemStatus).map((status) => (
+          <WorkItemColumn
+            key={status}
+            title={statusToTitle(status)}
+            workItems={workItemsByStatus[status]}
+            onDropWorkItem={(item) => handleDropWorkItem(item, status)}
+          />
+        ))}
       </Grid>
     </DndProvider>
   );

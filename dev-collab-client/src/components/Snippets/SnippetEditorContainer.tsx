@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Loading from "../Loader/Loader";
-import { RoomProvider } from "@liveblocks/react";
+import { ClientSideSuspense, RoomProvider } from "@liveblocks/react";
 import { useAppSelector } from "../../store/hooks";
 import { Snippet } from "../../types";
 import { EditSnippetForm } from "./EditSnippetForm";
@@ -38,7 +38,9 @@ const SnippetEditorContainer = () => {
         cursor: null,
       }}
     >
-      <EditSnippetForm snippet={snippet} />
+      <ClientSideSuspense fallback={<Loading />}>
+        <EditSnippetForm snippet={snippet} />
+      </ClientSideSuspense>
     </RoomProvider>
   );
 };

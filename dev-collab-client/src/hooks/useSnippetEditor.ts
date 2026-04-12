@@ -10,7 +10,7 @@ export const useSnippetEditor = (snippet: Snippet, session: any) => {
   const room = useRoom();
   const [saveStatus, setSaveStatus] = useState<SaveStatus>("idle");
   const { handleEditSnippet, isLoading } = useSnippetMutations();
-  
+
   // 1. Synchronization state
   const rawLanguage = useStorage((root) => root.language);
   const language = typeof rawLanguage === "string" ? rawLanguage : snippet.language;
@@ -22,8 +22,10 @@ export const useSnippetEditor = (snippet: Snippet, session: any) => {
   }, []);
 
   useEffect(() => {
-    updateLanguage(snippet.language);
-  }, [snippet.language, updateLanguage]);
+    if (room.getStorageStatus() === "synchronized") {
+      updateLanguage(snippet.language);
+    }
+  }, [snippet.language, updateLanguage, room]);
 
   // 3. Save Orchestration
   const handleAutoSave = useCallback(

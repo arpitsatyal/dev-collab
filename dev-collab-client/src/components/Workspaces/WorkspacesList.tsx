@@ -2,10 +2,10 @@ import { Box } from "@mantine/core";
 import { VariableSizeList } from "react-window";
 import InfiniteLoader from "react-window-infinite-loader";
 import Loading from "../Loader/Loader";
-import WorkspaceNavItem from "./WorkspaceNavItem";
+import WorkspaceNavItem from "../SideNav/WorkspaceNavItem";
 import { WorkspaceWithPin } from "../../types";
-import { useSideNavContext } from "./SideNavContext";
-import classes from "./SideNav.module.css";
+import { useSideNavContext } from "../SideNav/SideNavContext";
+import classes from "../SideNav/SideNav.module.css";
 
 const WorkspacesList = () => {
   const {

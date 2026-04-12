@@ -2,93 +2,29 @@ import { AppShell, Box, Burger, Button, Flex } from "@mantine/core";
 import { useDisclosure, useMediaQuery } from "@mantine/hooks";
 import SideNav from "../SideNav/SideNav";
 import SpotlightSearch from "../Search/SpotlightSearch";
-import { useRouter } from "next/router";
 import ThemeToggle from "../Theme/ThemeToggle";
-import { ReactNode, useEffect, useRef, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
 import ResizeHandle from "./ResizeHandler";
 import Loading from "../Loader/Loader";
-import { useAppDispatch, useAppSelector } from "../../store/hooks";
-import { setWorkspacesOpen } from "../../store/slices/workspaceSlice";
-import {
-  useGetWorkspaceByIdQuery,
-  useGetWorkspacesQuery,
-} from "../../store/api/workspaceApi";
-import { skipToken } from "@reduxjs/toolkit/query";
-import { useWorkspaceCacheUpdater } from "../../hooks/useWorkspaceCacheUpdater";
 import { IconMenu2 } from "@tabler/icons-react";
 import AIChat from "../AIChat/AIChat";
 import DevCollabIcon from "../shared/DevCollabIcon";
-import { isValidParam } from "../../utils/navigation/validators";
+import { useAppOrchestration } from "../../hooks/useAppOrchestration";
 
 export default function Layout({ children }: { children: ReactNode }) {
-  const router = useRouter();
+  const { isNavigating, isWorkspacesLoading, router } = useAppOrchestration();
   const [opened, { toggle }] = useDisclosure();
   const isSmallScreen = useMediaQuery("(max-width: 768px)");
 
   const navbarRef = useRef(null);
   const [navWidth, setNavWidth] = useState(400);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const dispatch = useAppDispatch();
-  const { pageSize, skip } = useAppSelector((state) => state.workspace);
-  const { data, isLoading: isWorkspacesLoading } = useGetWorkspacesQuery({
-    skip,
-    limit: pageSize,
-  });
-  const updateQueryData = useWorkspaceCacheUpdater();
-
-  const loadedWorkspaces = data?.items;
-  const workspaceId = router.query.workspaceId;
-  const isWorkspaceReady = isValidParam(workspaceId);
-
-  const isWorkspaceLoaded = loadedWorkspaces?.find(
-    (loaded) => loaded.id === workspaceId
-  );
-
-  const { data: workspaceData } = useGetWorkspaceByIdQuery(
-    isWorkspaceReady && !isWorkspaceLoaded ? (workspaceId as string) : skipToken
-  );
-
   const [isSideNavCollapsed, setIsSideNavCollapsed] = useState(false);
+
   const isDocsRoute = router.pathname.startsWith("/workspaces/[workspaceId]/docs");
 
   const handleToggleSideNav = () => {
     setIsSideNavCollapsed(!isSideNavCollapsed);
   };
-
-  // Handle router events for loading state
-  useEffect(() => {
-    const handleRouteChangeStart = () => setIsNavigating(true);
-    const handleRouteChangeComplete = () => setIsNavigating(false);
-    const handleRouteChangeError = () => setIsNavigating(false);
-
-    router.events.on("routeChangeStart", handleRouteChangeStart);
-    router.events.on("routeChangeComplete", handleRouteChangeComplete);
-    router.events.on("routeChangeError", handleRouteChangeError);
-
-    return () => {
-      router.events.off("routeChangeStart", handleRouteChangeStart);
-      router.events.off("routeChangeComplete", handleRouteChangeComplete);
-      router.events.off("routeChangeError", handleRouteChangeError);
-    };
-  }, [router]);
-
-  useEffect(() => {
-    if (isWorkspaceReady && workspaceId) {
-      dispatch(setWorkspacesOpen(true));
-
-      if (!isWorkspaceLoaded && workspaceData) {
-        updateQueryData(workspaceId as string, workspaceData);
-      }
-    }
-  }, [
-    workspaceId,
-    isWorkspaceReady,
-    workspaceData,
-    isWorkspaceLoaded,
-    router,
-    dispatch,
-    updateQueryData,
-  ]);
 
   return (
     <AppShell

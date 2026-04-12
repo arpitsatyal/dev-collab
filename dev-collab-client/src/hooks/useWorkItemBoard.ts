@@ -21,18 +21,21 @@ export const useWorkItemBoard = () => {
     setLocalWorkItems,
   });
 
-  const todoWorkItems = useMemo(
-    () => localWorkItems.filter((workItem) => workItem.status === WorkItemStatus.TODO),
-    [localWorkItems]
-  );
-  const inProgressWorkItems = useMemo(
-    () => localWorkItems.filter((workItem) => workItem.status === WorkItemStatus.IN_PROGRESS),
-    [localWorkItems]
-  );
-  const doneWorkItems = useMemo(
-    () => localWorkItems.filter((workItem) => workItem.status === WorkItemStatus.DONE),
-    [localWorkItems]
-  );
+  const workItemsByStatus = useMemo(() => {
+    const groups: Record<WorkItemStatus, WorkItem[]> = {
+      [WorkItemStatus.TODO]: [],
+      [WorkItemStatus.IN_PROGRESS]: [],
+      [WorkItemStatus.DONE]: [],
+    };
+    
+    localWorkItems.forEach((item) => {
+      if (groups[item.status]) {
+        groups[item.status].push(item);
+      }
+    });
+
+    return groups;
+  }, [localWorkItems]);
 
   useEffect(() => {
     setLocalWorkItems(data ?? []);
@@ -44,9 +47,7 @@ export const useWorkItemBoard = () => {
     workspaceId,
     isLoading,
     data,
-    todoWorkItems,
-    inProgressWorkItems,
-    doneWorkItems,
+    workItemsByStatus,
     handleDropWorkItem,
     dndBackend,
   };

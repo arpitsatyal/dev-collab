@@ -14,10 +14,8 @@ import { useRouter } from "next/router";
 import { WorkspaceCreateData } from "../../types";
 import { useWorkspaceMutations } from "../../hooks/mutations/useWorkspaceMutations";
 
-interface CreateWorkspaceFormProps {}
-
-const CreateWorkspaceForm = ({}: CreateWorkspaceFormProps) => {
-  const router = useRouter(); 
+const CreateWorkspaceForm = () => {
+  const router = useRouter();
   const { isLoading, handleCreateWorkspace } = useWorkspaceMutations();
 
   const form = useForm<WorkspaceCreateData>({
