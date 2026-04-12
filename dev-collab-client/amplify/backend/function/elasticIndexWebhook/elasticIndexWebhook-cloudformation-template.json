@@ -29,6 +29,9 @@
     },
     "meilisearchServer": {
       "Type": "String"
+    },
+    "meilisearchApiKey": {
+      "Type": "String"
     }
   },
   "Conditions": {
@@ -89,6 +92,9 @@
             },
             "MEILISEARCH_SERVER": {
               "Ref": "meilisearchServer"
+            },
+            "MEILISEARCH_API_KEY": {
+              "Ref": "meilisearchApiKey"
             }
           }
         },

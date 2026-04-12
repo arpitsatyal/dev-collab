@@ -16,6 +16,10 @@
     {
       "cloudFormationParameterName": "meilisearchServer",
       "environmentVariableName": "MEILISEARCH_SERVER"
+    },
+    {
+      "cloudFormationParameterName": "meilisearchApiKey",
+      "environmentVariableName": "MEILISEARCH_API_KEY"
     }
   ]
 }

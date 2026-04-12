@@ -180,6 +180,14 @@
         }
       ]
     },
+    "AMPLIFY_function_elasticIndexWebhook_meilisearchApiKey": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "elasticIndexWebhook"
+        }
+      ]
+    },
     "AMPLIFY_function_elasticIndexWebhook_meilisearchServer": {
       "usedBy": [
         {
@@ -205,6 +213,14 @@
       ]
     },
     "AMPLIFY_function_search_deploymentBucketName": {
+      "usedBy": [
+        {
+          "category": "function",
+          "resourceName": "search"
+        }
+      ]
+    },
+    "AMPLIFY_function_search_meilisearchApiKey": {
       "usedBy": [
         {
           "category": "function",

@@ -43,6 +43,7 @@ app.use((req, res, next) => {
 
 const client = new Meilisearch({
   host: process.env.MEILISEARCH_SERVER,
+  apiKey: process.env.MEILISEARCH_API_KEY,
 });
 
 const index = client.index("dev-collab");
