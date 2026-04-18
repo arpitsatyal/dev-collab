@@ -51,6 +51,7 @@ import { SearchModule } from './modules/search/search.module';
     },
   ],
 })
+
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');

@@ -9,4 +9,5 @@ import { SnippetRepository } from './repositories/snippet.repository';
   providers: [SnippetsService, SnippetRepository],
   controllers: [SnippetsController],
 })
-export class SnippetsModule {}
+
+export class SnippetsModule { }

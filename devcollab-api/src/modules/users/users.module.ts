@@ -8,4 +8,5 @@ import { UserRepository } from './repositories/user.repository';
   controllers: [UsersController],
   exports: [UsersService, UserRepository],
 })
-export class UsersModule {}
+
+export class UsersModule { }

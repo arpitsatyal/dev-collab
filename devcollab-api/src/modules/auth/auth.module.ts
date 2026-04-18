@@ -11,4 +11,5 @@ import { UsersModule } from '../users/users.module';
   providers: [SessionSerializer, GoogleStrategy, GithubStrategy],
   controllers: [AuthController],
 })
-export class AuthModule {}
+
+export class AuthModule { }

@@ -4,6 +4,7 @@ import {
   SourceCodePort,
   GitRepoDetails,
   RepoTreeFile,
+  SourceCodeFile,
 } from '../ports/source-code.port';
 
 @Injectable()
@@ -74,5 +75,27 @@ export class GithubClient implements SourceCodePort {
     if (Array.isArray(contentData) || contentData.type !== 'file') return null;
 
     return Buffer.from(contentData.content, 'base64').toString('utf-8');
+  }
+
+  async fetchFiles(
+    details: GitRepoDetails,
+    paths: string[],
+  ): Promise<SourceCodeFile[]> {
+    const fetchResults = await Promise.all(
+      paths.map(async (path): Promise<SourceCodeFile | null> => {
+        try {
+          const content = await this.fetchFileContent(details, path);
+          if (!content) return null;
+          const ext = path.split('.').pop()?.toLowerCase();
+          const fileName = path.split('/').pop() || '';
+          return { path, fileName, ext, content };
+        } catch (e) {
+          console.error(`Failed to fetch ${path}:`, e);
+          return null;
+        }
+      }),
+    );
+
+    return fetchResults.filter((r): r is SourceCodeFile => r !== null);
   }
 }

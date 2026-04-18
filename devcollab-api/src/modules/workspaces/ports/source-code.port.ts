@@ -11,6 +11,13 @@ export interface RepoTreeFile {
   url: string;
 }
 
+export interface SourceCodeFile {
+  path: string;
+  fileName: string;
+  ext?: string;
+  content: string;
+}
+
 export abstract class SourceCodePort {
   abstract getRepoDetails(url: string): Promise<GitRepoDetails>;
   abstract getRepoTree(details: GitRepoDetails): Promise<RepoTreeFile[]>;
@@ -18,4 +25,9 @@ export abstract class SourceCodePort {
     details: GitRepoDetails,
     path: string,
   ): Promise<string | null>;
+
+  abstract fetchFiles(
+    details: GitRepoDetails,
+    paths: string[],
+  ): Promise<SourceCodeFile[]>;
 }

@@ -10,4 +10,5 @@ import { DocRepository } from './repositories/doc.repository';
   controllers: [DocsController],
   exports: [DocsService, DocRepository],
 })
-export class DocsModule {}
+
+export class DocsModule { }

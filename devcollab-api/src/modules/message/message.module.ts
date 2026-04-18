@@ -6,4 +6,5 @@ import { MessageRepository } from './repositories/message.repository';
   providers: [MessageService, MessageRepository],
   exports: [MessageService],
 })
-export class MessageModule {}
+
+export class MessageModule { }

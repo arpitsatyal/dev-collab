@@ -12,4 +12,5 @@ import { WorkItemRepository } from './repositories/work-item.repository';
   providers: [WorkItemsService, WorkItemRepository],
   exports: [WorkItemsService],
 })
-export class WorkItemsModule {}
+
+export class WorkItemsModule { }

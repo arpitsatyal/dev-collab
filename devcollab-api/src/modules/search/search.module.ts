@@ -4,4 +4,5 @@ import { SearchController } from './search.controller';
 @Module({
   controllers: [SearchController],
 })
-export class SearchModule {}
+
+export class SearchModule { }

@@ -13,4 +13,5 @@ import { LlmGateway } from '../ports/llm.port';
   ],
   exports: [LlmGateway],
 })
-export class LlmModule {}
+
+export class LlmModule { }

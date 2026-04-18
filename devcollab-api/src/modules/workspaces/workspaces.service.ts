@@ -5,11 +5,10 @@ import {
   TogglePinDto,
 } from './dto/workspaces.dto';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
-import { randomUUID } from 'crypto';
 import { WorkspaceRepository } from './infrastructure/workspace.repository';
 import { WorkspaceImportRepository } from './infrastructure/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
-import { SNIPPET_EXTENSIONS } from './utils/constants';
+import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
 
 @Injectable()
 export class WorkspacesService {
@@ -92,61 +91,16 @@ export class WorkspacesService {
       ownerId: user.id,
     });
 
-    const fetchResults = await Promise.all(
-      selectedFiles.map(async (path) => {
-        try {
-          const content = await this.sourceCodeClient.fetchFileContent(
-            repoDetails,
-            path,
-          );
-          if (!content) return null;
-          const ext = path.split('.').pop()?.toLowerCase();
-          const fileName = path.split('/').pop() || '';
-          return { path, fileName, ext, content };
-        } catch (e) {
-          console.error(`Failed to fetch ${path}:`, e);
-          return null;
-        }
-      }),
+    const fetchResults = await this.sourceCodeClient.fetchFiles(
+      repoDetails,
+      selectedFiles,
     );
 
-    const snippetsData: {
-      title: string;
-      language: string;
-      extension: string;
-      content: string;
-      workspaceId: string;
-      authorId: string;
-    }[] = [];
-
-    const docsData: {
-      label: string;
-      workspaceId: string;
-      roomId: string;
-      content: unknown;
-    }[] = [];
-
-    for (const result of fetchResults) {
-      if (!result) continue;
-
-      if (result.ext === 'md') {
-        docsData.push({
-          label: result.fileName,
-          workspaceId: workspace.id,
-          roomId: randomUUID(),
-          content: { type: 'doc', content: result.content },
-        });
-      } else if (SNIPPET_EXTENSIONS.includes(result.ext || '')) {
-        snippetsData.push({
-          title: result.fileName.replace(`.${result.ext}`, ''),
-          language: result.ext || 'plaintext',
-          extension: result.ext || '',
-          content: JSON.stringify(result.content),
-          workspaceId: workspace.id,
-          authorId: user.id,
-        });
-      }
-    }
+    const { snippetsData, docsData } = WorkspaceFileProcessor.processFiles(
+      fetchResults,
+      workspace.id,
+      user.id,
+    );
 
     await this.importRepo.createSnippets(snippetsData);
     await this.importRepo.createDocs(docsData);
