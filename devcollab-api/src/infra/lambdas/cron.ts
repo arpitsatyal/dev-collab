@@ -1,7 +1,7 @@
 import { Resource } from "sst";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
-import dayjs from "dayjs";
+const dayjs = require('dayjs');
 import { workItems as workItemsTable, users as usersTable } from "../../common/drizzle/schema";
 import { and, gte, lte, isNotNull } from "drizzle-orm";
 import { sendQueueMessage } from "../../common/shared/sqs.helper";

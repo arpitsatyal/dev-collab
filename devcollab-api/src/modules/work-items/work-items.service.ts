@@ -4,7 +4,7 @@ import {
   WorkItemCreateDto,
   WorkItemUpdateStatusDto,
 } from './dto/work-items.dto';
-import dayjs from 'dayjs';
+import * as dayjs from 'dayjs';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
 import { WorkItemStatus } from 'src/common/drizzle/schema';
@@ -19,7 +19,7 @@ export class WorkItemsService {
     private readonly syncPort: SyncEventPort,
     private readonly workItemRepo: WorkItemRepository,
     private readonly drizzle: DrizzleService,
-  ) {}
+  ) { }
 
   async getWorkItems(workspaceId: string) {
     return this.workItemRepo.findByWorkspaceId(workspaceId);

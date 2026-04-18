@@ -48,7 +48,7 @@
     "drizzle-orm": "^0.45.1",
     "express-session": "^1.18.1",
     "langchain": "^0.3.30",
-    "meilisearch": "^0.57.0",
+    "meilisearch": "^0.38.0",
     "passport": "^0.7.0",
     "passport-github": "^1.1.0",
     "passport-google-oauth20": "^2.0.0",

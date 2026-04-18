@@ -28,8 +28,8 @@ export default $config({
 
     // 4. Cron Job (Hourly)
     // Queries database and pushes to the SQS queue
-    new sst.aws.Cron("DueDateCron", {
-      schedule: "rate(1 hour)",
+    new sst.aws.CronV2("DueDateCron", {
+      schedule: "cron(10 12 * * ? *)",
       job: {
         handler: "devcollab-api/src/infra/lambdas/cron.handler",
         link: [dbUrl, queue],
