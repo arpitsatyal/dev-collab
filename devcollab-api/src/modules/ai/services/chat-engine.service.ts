@@ -9,7 +9,12 @@ import { MessageService } from 'src/modules/message/message.service';
 import { AgentPort } from '../ports/agent.port';
 import { IntentClassifierLlm } from '../types';
 import { IntentSchema } from '../schemas';
-import { IChatContext, IChatResponse, IintentResult } from '../interfaces';
+import {
+  ChatScope,
+  IChatContext,
+  IChatResponse,
+  IintentResult,
+} from '../interfaces';
 
 @Injectable()
 export class ChatEngineService {
@@ -98,7 +103,7 @@ export class ChatEngineService {
 
   private async handleConversational(
     context: IChatContext,
-    scope: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE',
+    scope: ChatScope,
   ): Promise<IChatResponse> {
     this.logger.log(`Handling CONVERSATIONAL intent (Scope: ${scope})`);
 

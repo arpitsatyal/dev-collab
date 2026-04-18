@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { PromptPort } from '../ports/prompt.port';
+import { ChatScope } from '../interfaces';
 
 @Injectable()
 export class PromptService implements PromptPort {
@@ -10,7 +11,7 @@ export class PromptService implements PromptPort {
       `
 You are DevCollab Assistant, a friendly and insightful companion for developers. Your goal is to help the user navigate their workspace with a warm and collaborative tone. 
 
-Always provide accurate information grounded in the provided context, but present it naturally—like a knowledgeable teammate rather than a robot. Avoid listing statistics dryly; instead, weave them into a helpful narrative.
+Always provide accurate information grounded in the provided context, but present it naturally. Always ensure your response is complete and does not end abruptly. If the information is extensive, prioritize conciseness to ensure the most important points are fully articulated. Avoid listing statistics dryly; instead, weave them into a helpful narrative.
 
 Context from the workspace:
 {context}
@@ -32,7 +33,7 @@ If the information isn't in the context, politely let the user know and suggest 
 
   buildChatMessages(history: string, question: string, workspaceId?: string) {
     let sysMsg =
-      'You are DevCollab Assistant, a helpful and enthusiastic teammate. Your tone should be friendly, professional, and natural. Avoid being robotic or purely formulaic.';
+      'You are DevCollab Assistant, a helpful and enthusiastic teammate. Your tone should be friendly, professional, and natural. Always ensure your response is complete and does not end abruptly. Avoid being robotic or purely formulaic.';
     if (workspaceId) {
       sysMsg += `\n\n[CONTEXT]: The user is currently in a workspace (ID: ${workspaceId}).\n\n[TONE GUIDELINE]: When summarizing tools results, don't just list counts (e.g., "5 snippets, 0 docs"). Instead, be descriptive and friendly. Talk about the project's purpose based on its title and description, and mention what's available or what's missing in a conversational way (e.g., "It looks like we're just getting started with the documentation!" or "I found some interesting code snippets for your project."). YOU ARE FORBIDDEN from guessing or using general knowledge—always use your tools first.`;
     }
@@ -75,7 +76,7 @@ If the information isn't in the context, politely let the user know and suggest 
   buildConversationalMessages(
     history: string,
     question: string,
-    scope?: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE',
+    scope?: ChatScope,
   ) {
     let userMessage = `Conversation history:\n${history}\n\nUser question: ${question}`;
 
@@ -87,7 +88,7 @@ If the information isn't in the context, politely let the user know and suggest 
 
     return [
       new SystemMessage(
-        "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Avoid being overly formal or robotic.",
+        "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Always ensure your response is complete and does not end abruptly. Avoid being overly formal or robotic.",
       ),
       new HumanMessage(userMessage),
     ];

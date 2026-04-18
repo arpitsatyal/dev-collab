@@ -21,9 +21,11 @@ export interface IChatResponse extends IAiResult {
   };
 }
 
+export type ChatScope = 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE';
+
 export interface IintentResult {
   intent: string;
-  scope: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE';
+  scope: ChatScope;
 }
 
 export interface AiFilters {
