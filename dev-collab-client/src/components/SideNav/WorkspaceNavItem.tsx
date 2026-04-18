@@ -29,6 +29,7 @@ const WorkspaceNavItem = ({
     handleUpdatePinnedStatus,
     loadedSnippets,
     itemRefs,
+    handleNavClick,
   } = useSideNavContext();
 
   const isExpanded = openItem === child.id;
@@ -64,6 +65,7 @@ const WorkspaceNavItem = ({
         leftSection={<child.icon size={16} stroke={1.5} />}
         onClick={() => {
           onToggle(child.id);
+          handleNavClick(child.path);
         }}
       >
         <Box>

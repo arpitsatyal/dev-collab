@@ -1,6 +1,7 @@
 export interface IChatContext {
   chatId: string;
   question: string;
+  history: string;
   filters?: Record<string, any>;
   inWorkspace: boolean;
   workspaceId?: string;
@@ -22,7 +23,7 @@ export interface IChatResponse extends IAiResult {
 
 export interface IintentResult {
   intent: string;
-  scope: 'APP_SPECIFIC' | 'OUT_OF_SCOPE';
+  scope: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE';
 }
 
 export interface AiFilters {

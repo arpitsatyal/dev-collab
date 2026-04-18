@@ -45,35 +45,49 @@ If the information isn't in the context, politely let the user know and suggest 
     ];
   }
 
-  buildIntentClassificationPrompt(question: string, inWorkspace?: boolean) {
+  buildIntentClassificationPrompt(
+    question: string,
+    history: string,
+    inWorkspace?: boolean,
+  ) {
     let sysMsg =
-      'Classify the user intent. Decide if the user asks about DevCollab workspace data (WORKSPACE_QUERY) or is just casual chat or platform help (CONVERSATIONAL).\n\n' +
-      'Determine scope: APP_SPECIFIC if it refers to app data (snippets, work items, tasks, docs, search/find requests) OR platform help/onboarding (e.g., "how do I get started?", "what can you do?", "how to create a workspace?"). OUT_OF_SCOPE otherwise (e.g., general knowledge, creative writing, unrelated hobbies).\n\n' +
-      'Return JSON with fields: intent, scope, confidence (0-1).';
+      'Classify the user intent based on the current question and conversation history.\n\n' +
+      'INTENT:\n' +
+      '- WORKSPACE_QUERY: Asking about data, searching, or performing actions in the workspace.\n' +
+      '- CONVERSATIONAL: Casual chat, platform help, or domain-related questions.\n\n' +
+      'SCOPE:\n' +
+      '- APP_SPECIFIC: Refers to DevCollab data (snippets, docs, work items) or platform features/onboarding.\n' +
+      '- DOMAIN_KNOWLEDGE: Questions about technical terms, platforms, or concepts mentioned in the current workspace context or recent history (e.g., "lastfm" if the workspace is about a Last.fm tool).\n' +
+      '- OUT_OF_SCOPE: Completely unrelated topics (e.g., jokes, general history, hobbies).\n\n' +
+      'Return JSON with fields: intent, scope, confidence (0-1). Use the history to resolve ambiguities (like "it", "this", or "that").';
 
     if (inWorkspace) {
       sysMsg +=
-        '\n\nNOTE: The user is currently inside a workspace. Ambiguous references like "this", "it", "here", or "this page" MUST be classified as WORKSPACE_QUERY and APP_SPECIFIC because they refer to the active workspace.';
-    } else {
-      sysMsg +=
-        '\n\nNOTE: The user is NOT in a specific workspace. However, if they ask to "find", "search", "show me", or "lookup" snippets, docs, or work items, this is a GLOBAL system search (WORKSPACE_QUERY and APP_SPECIFIC). Only general knowledge, creative writing, or unrelated off-topic questions are CONVERSATIONAL and OUT_OF_SCOPE.';
+        '\n\nNOTE: The user is currently inside a workspace. If they ask about a term or platform identified as the workspace focus in the history, classify it as DOMAIN_KNOWLEDGE.';
     }
-    return [new SystemMessage(sysMsg), new HumanMessage(question)];
+
+    return [
+      new SystemMessage(sysMsg),
+      new HumanMessage(`History:\n${history}\n\nCurrent Question: ${question}`),
+    ];
   }
 
   buildConversationalMessages(
     history: string,
     question: string,
-    isOutOfScope?: boolean,
+    scope?: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE',
   ) {
     let userMessage = `Conversation history:\n${history}\n\nUser question: ${question}`;
-    if (isOutOfScope) {
-      userMessage += `\n\n[CRITICAL DIRECTIVE]: This query is OUT OF SCOPE. Politely and warmly explain that you're a specialized DevCollab workspace assistant and can't assist with this specific request. Suggest how you *could* help within the context of their workspace instead. DO NOT write stories, poems, or answer general knowledge questions. Stay focused but friendly.`;
+
+    if (scope === 'OUT_OF_SCOPE') {
+      userMessage += `\n\n[CRITICAL DIRECTIVE]: This query is OUT OF SCOPE. Politely and warmly explain that you're a specialized DevCollab workspace assistant and can't assist with this specific request. Suggest how you *could* help within the context of their workspace instead. Stay focused but friendly.`;
+    } else if (scope === 'DOMAIN_KNOWLEDGE') {
+      userMessage += `\n\n[DIRECTIVE]: This query is about a technical term, platform, or concept relevant to the workspace. Provide a brief, professional explanation based on your general knowledge to help the user understand the context of their project. Keep it concise.`;
     }
 
     return [
       new SystemMessage(
-        "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. If a user asks for something unrelated to their work or the platform, warmly remind them of your focus and suggest how you can help them with their project instead. Avoid being overly formal or robotic.",
+        "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Avoid being overly formal or robotic.",
       ),
       new HumanMessage(userMessage),
     ];

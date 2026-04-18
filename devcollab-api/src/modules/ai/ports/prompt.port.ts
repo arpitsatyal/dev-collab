@@ -13,11 +13,12 @@ export abstract class PromptPort {
   ): BaseMessage[];
   abstract buildIntentClassificationPrompt(
     question: string,
+    history: string,
     inWorkspace?: boolean,
   ): BaseMessage[];
   abstract buildConversationalMessages(
     history: string,
     question: string,
-    isOutOfScope?: boolean,
+    scope?: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE',
   ): BaseMessage[];
 }

@@ -33,7 +33,8 @@ export class ChatEngineService {
     question: string,
     filters?: Record<string, any>,
   ): Promise<IChatResponse> {
-    const context = this.createChatContext(chatId, question, filters);
+    const history = await this.getFormattedHistory(chatId, 10);
+    const context = this.createChatContext(chatId, question, history, filters);
 
     const { intent, scope } = await this.classifyIntent(context);
 
@@ -47,6 +48,7 @@ export class ChatEngineService {
   private createChatContext(
     chatId: string,
     question: string,
+    history: string,
     filters?: Record<string, any>,
   ): IChatContext {
     const workspaceId = filters?.workspaceId
@@ -55,6 +57,7 @@ export class ChatEngineService {
     return {
       chatId,
       question,
+      history,
       filters,
       inWorkspace: !!workspaceId,
       workspaceId,
@@ -69,6 +72,7 @@ export class ChatEngineService {
 
     const intentMessages = this.promptService.buildIntentClassificationPrompt(
       context.question,
+      context.history,
       context.inWorkspace,
     );
 
@@ -94,15 +98,14 @@ export class ChatEngineService {
 
   private async handleConversational(
     context: IChatContext,
-    scope: 'APP_SPECIFIC' | 'OUT_OF_SCOPE',
+    scope: 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE',
   ): Promise<IChatResponse> {
     this.logger.log(`Handling CONVERSATIONAL intent (Scope: ${scope})`);
 
-    const history = await this.getFormattedHistory(context.chatId, 10);
     const messages = this.promptService.buildConversationalMessages(
-      history,
+      context.history,
       context.question,
-      scope === 'OUT_OF_SCOPE',
+      scope,
     );
 
     const conversationalLlm = await this.llmGateway.getSpeedyLLM();
@@ -124,12 +127,14 @@ export class ChatEngineService {
       return this.getAIResponseWithTools(
         context.chatId,
         context.question,
+        context.history,
         context.workspaceId,
       );
     }
     return this.getAIResponseWithSearch(
       context.chatId,
       context.question,
+      context.history,
       context.filters,
     );
   }
@@ -147,12 +152,12 @@ export class ChatEngineService {
   private async getAIResponseWithTools(
     chatId: string,
     question: string,
+    history: string,
     workspaceId: string,
   ): Promise<IChatResponse> {
     this.logger.log(
       `LangGraph: Processing with tools for workspace ${workspaceId}`,
     );
-    const history = await this.getFormattedHistory(chatId, 10);
     const messages: BaseMessage[] = this.promptService.buildChatMessages(
       history,
       question,
@@ -177,6 +182,7 @@ export class ChatEngineService {
   private async getAIResponseWithSearch(
     chatId: string,
     question: string,
+    history: string,
     filters?: Record<string, any>,
   ): Promise<IChatResponse> {
     this.logger.log('HybridSearch: Processing global query');
@@ -200,7 +206,6 @@ export class ChatEngineService {
       })
       .join('\n\n');
 
-    const history = await this.getFormattedHistory(chatId, 10);
     const fullPrompt = await this.promptService.constructPrompt(
       context,
       history,
