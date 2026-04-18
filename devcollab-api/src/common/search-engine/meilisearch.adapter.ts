@@ -14,12 +14,12 @@ export class MeiliSearchAdapter extends SearchEnginePort implements OnModuleInit
   }
 
   onModuleInit() {
-    const host = this.configService.get<string>('MEILISEARCH_SERVER');
+    const host = this.configService.get<string>('MEILISEARCH_HOST');
     const apiKey = this.configService.get<string>('MEILISEARCH_API_KEY');
     const indexName = this.configService.get<string>('MEILISEARCH_INDEX');
 
     if (!host) {
-      this.logger.warn('MEILISEARCH_SERVER is not defined. Search engine features will be disabled.');
+      this.logger.warn('MEILISEARCH_HOST is not defined. Search engine features will be disabled.');
       return;
     }
 
@@ -30,6 +30,7 @@ export class MeiliSearchAdapter extends SearchEnginePort implements OnModuleInit
       return;
     }
     this.index = this.client.index(indexName);
+
     this.logger.log(`Initialized MeiliSearch adapter for index: ${indexName}`);
   }
 

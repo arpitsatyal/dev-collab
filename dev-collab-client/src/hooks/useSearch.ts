@@ -1,40 +1,16 @@
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import apiClient from "../lib/apiClient";
 import { debounce, isEqual } from "lodash";
-import { IDBPDatabase } from "idb";
-import { initDB } from "../lib/browser/indexedDB";
 import { normalizeQuery } from "../utils/navigation/normalizeQuery";
 import { TypedItems } from "../types";
-import { levenshtein } from "../utils/ai/levenshtein";
-
-const MAX_CACHE_SIZE = 50;
-const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
-const FUZZY_MATCH_THRESHOLD = 2;
-
-interface CacheEntry {
-  query: string;
-  results: TypedItems[];
-  timestamp: number;
-}
+import {
+  saveEntry,
+  getAllEntries,
+  trimStore,
+} from "../lib/browser/indexedDB";
 
 const searchCache = new Map<string, TypedItems[]>();
-
-const findClosestCacheMatch = (term: string): TypedItems[] | null => {
-  let bestMatch: string | null = null;
-  let bestDistance = Infinity;
-
-  if (term.length < 3) return null;
-  for (const key of searchCache.keys()) {
-    const distance = levenshtein(normalizeQuery(term), key);
-    if (distance < bestDistance && distance <= FUZZY_MATCH_THRESHOLD) {
-      bestDistance = distance;
-      bestMatch = key;
-    }
-  }
-
-  return bestMatch ? (searchCache.get(bestMatch) ?? null) : null;
-};
 
 export const useSearch = (term: string) => {
   const [loading, setLoading] = useState(false);
@@ -44,41 +20,16 @@ export const useSearch = (term: string) => {
   const [resultsKey, setResultsKey] = useState(0);
   const [error, setError] = useState<string | null>(null);
 
-  const dbRef = useRef<IDBPDatabase | null>(null);
-
   // Save to IndexedDB
   const saveToDB = async (query: string, results: TypedItems[]) => {
-    if (!dbRef.current) return;
-
     try {
-      const tx = dbRef.current.transaction("searchCache", "readwrite");
-      const store = tx.objectStore("searchCache");
       const normalizedQuery = normalizeQuery(query);
-
-      await store.put({
+      await saveEntry("searchCache", {
         query: normalizedQuery,
         results,
         timestamp: Date.now(),
       });
-
-      // Ensure cache size limit
-      const allKeys = await store.getAllKeys();
-      if (allKeys.length > MAX_CACHE_SIZE) {
-        const allEntries: CacheEntry[] = await store.getAll();
-        const sortedEntries = allEntries.sort(
-          (a, b) => a.timestamp - b.timestamp,
-        );
-        const excess = sortedEntries.slice(
-          0,
-          allEntries.length - MAX_CACHE_SIZE,
-        );
-        for (const entry of excess) {
-          await store.delete(entry.query);
-          searchCache.delete(entry.query);
-        }
-      }
-
-      await tx.done;
+      await trimStore("searchCache", 50);
     } catch (error) {
       console.error("Failed to save to IndexedDB:", error);
     }
@@ -152,65 +103,24 @@ export const useSearch = (term: string) => {
   useEffect(() => {
     const init = async () => {
       try {
-        const db = await initDB();
-        dbRef.current = db;
-
-        // Load cache from IndexedDB
-        const tx = db.transaction("searchCache", "readonly");
-        const store = tx.objectStore("searchCache");
-        const allEntries: CacheEntry[] = await store.getAll();
+        const allEntries: any[] = await getAllEntries("searchCache");
         const now = Date.now();
+        const CACHE_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
         // Filter out expired entries and populate searchCache
-        const validEntries = allEntries.filter(
-          (entry) => now - entry.timestamp < CACHE_EXPIRY_MS,
-        );
-        validEntries.forEach((entry) => {
-          searchCache.set(entry.query, entry.results);
+        allEntries.forEach((entry) => {
+          if (now - entry.timestamp < CACHE_EXPIRY_MS) {
+            searchCache.set(entry.query, entry.results);
+          }
         });
 
-        // Clean up expired entries
-        if (allEntries.length !== validEntries.length) {
-          const txClean = db.transaction("searchCache", "readwrite");
-          const storeClean = txClean.objectStore("searchCache");
-          for (const entry of allEntries) {
-            if (now - entry.timestamp >= CACHE_EXPIRY_MS) {
-              await storeClean.delete(entry.query);
-            }
-          }
-          await txClean.done;
-        }
-
-        // Trim cache if over size limit
-        if (validEntries.length > MAX_CACHE_SIZE) {
-          const sortedEntries = validEntries.sort(
-            (a, b) => a.timestamp - b.timestamp,
-          );
-          const excess = sortedEntries.slice(
-            0,
-            validEntries.length - MAX_CACHE_SIZE,
-          );
-          const txTrim = db.transaction("searchCache", "readwrite");
-          const storeTrim = txTrim.objectStore("searchCache");
-          for (const entry of excess) {
-            await storeTrim.delete(entry.query);
-            searchCache.delete(entry.query);
-          }
-          await txTrim.done;
-        }
+        await trimStore("searchCache", 50);
       } catch (error) {
         console.error("Failed to initialize IndexedDB:", error);
       }
     };
 
     init();
-
-    return () => {
-      if (dbRef.current) {
-        dbRef.current.close();
-        dbRef.current = null;
-      }
-    };
   }, []);
 
   useEffect(() => {

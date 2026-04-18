@@ -1,5 +1,4 @@
 import BaseButton from "../shared/base/BaseButton";
-
 import React, { useState, useMemo, useCallback } from "react";
 import { IconSearch, IconClearAll } from "@tabler/icons-react";
 import {
@@ -123,8 +122,21 @@ const SpotlightSearch = ({
     ],
   );
 
-  const showClearAll = recentItems.length > 0 && query.length === 0;
-  const loading = isWorkspacesLoading || isSearchLoading;
+  const isEmptyQuery = query.length === 0;
+  const showClearAll = recentItems.length > 0 && isEmptyQuery;
+  const isLoading = isWorkspacesLoading || isSearchLoading;
+  const isSearching = !isEmptyQuery && (isLoading || isTyping);
+
+  const hasResults =
+    matchedResults.length > 0 ||
+    (loadedWorkspaces?.some((w) =>
+      w.title.toLowerCase().includes(query.toLowerCase()),
+    ) ??
+      false) ||
+    snippets.some((s) => s.title.toLowerCase().includes(query.toLowerCase()));
+
+  const showEmptyState =
+    !searchError && !isLoading && !isTyping && !isEmptyQuery && !hasResults;
 
   const strokeColor =
     computedColorScheme === "dark"
@@ -180,7 +192,27 @@ const SpotlightSearch = ({
             <RecentSearchGroup />
           </Box>
 
-          {query.length > 0 && loading && <BaseLoader loaderHeight="5vh" />}
+          {isEmptyQuery && (
+            <Box p="xl">
+              <Text ta="center" size="sm" opacity={0.5}>
+                Search for any Workspaces, Snippets, Docs or WorkItems!
+              </Text>
+            </Box>
+          )}
+
+          {isSearching && (
+            <Box p="xl">
+              <BaseLoader loaderHeight="5vh" />
+              <Text ta="center" size="sm" mt="sm" opacity={0.5}>
+                Searching...
+              </Text>
+            </Box>
+          )}
+
+          {showEmptyState && (
+            <Spotlight.Empty>Nothing found...</Spotlight.Empty>
+          )}
+
 
           {searchError && (
             <Spotlight.Empty>
@@ -192,15 +224,6 @@ const SpotlightSearch = ({
             </Spotlight.Empty>
           )}
 
-          {!searchError && (
-            <Spotlight.Empty>
-              {query.length === 0
-                ? "Search for any Workspaces, Snippets or WorkItems!"
-                : isTyping
-                  ? "Searching..."
-                  : "Nothing found..."}
-            </Spotlight.Empty>
-          )}
         </Spotlight.ActionsList>
       </Spotlight.Root>
     </SpotlightSearchProvider>
