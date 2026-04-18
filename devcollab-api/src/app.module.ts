@@ -19,6 +19,8 @@ import { SyncEventModule } from './common/sync-events/sync-event.module';
 import { DrizzleModule } from './common/drizzle/drizzle.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { SessionAuthGuard } from './common/guards/auth.guard';
+import { SearchEngineModule } from './common/search-engine/search-engine.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { SessionAuthGuard } from './common/guards/auth.guard';
     VectorStoreModule,
     SyncEventModule,
     DrizzleModule,
+    SearchEngineModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef, useMemo } from "react";
 import axios from "axios";
+import apiClient from "../lib/apiClient";
 import { debounce, isEqual } from "lodash";
 import { IDBPDatabase } from "idb";
 import { initDB } from "../lib/browser/indexedDB";
@@ -104,12 +105,10 @@ export const useSearch = (term: string) => {
           setRingLoader(true);
         }
 
-        const encodedQuery = encodeURIComponent(trimmedQuery);
-        const { data } = await axios.post(
-          `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/search?query=${encodedQuery}`,
-          {},
-          { signal: controller.signal },
-        );
+        const { data } = await apiClient.get("/search", {
+          params: { query: trimmedQuery },
+          signal: controller.signal,
+        });
 
         const cachedData = searchCache.get(normalizedQuery);
         if (data.length && !isEqual(data, cachedData)) {
@@ -126,8 +125,8 @@ export const useSearch = (term: string) => {
           console.error("Failed to fetch search results:", err);
           setError(
             err.response?.data?.message ||
-              err.message ||
-              "Failed to fetch search results",
+            err.message ||
+            "Failed to fetch search results",
           );
         }
       } finally {

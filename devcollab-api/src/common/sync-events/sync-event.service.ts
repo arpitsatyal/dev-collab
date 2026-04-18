@@ -1,28 +1,27 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Client } from '@upstash/qstash';
 import { SyncEventPort, EventType } from './ports/sync-event.port';
-import axios from 'axios';
 import { DrizzleService } from '../drizzle/drizzle.service';
 import { ConfigService } from '@nestjs/config';
 import { workspaces } from '../drizzle/schema';
 import { eq } from 'drizzle-orm';
+import { SearchEnginePort } from '../search-engine/ports/search-engine.port';
 
 @Injectable()
 export class SyncEventService implements SyncEventPort {
   private readonly logger = new Logger(SyncEventService.name);
   private readonly client: Client;
   private readonly appUrl: string;
-  private readonly meiliUrl: string | undefined;
 
   constructor(
     private readonly drizzle: DrizzleService,
     private readonly configService: ConfigService,
+    private readonly searchEngine: SearchEnginePort,
   ) {
     this.client = new Client({
       token: this.configService.getOrThrow<string>('QSTASH_TOKEN'),
     });
     this.appUrl = this.configService.getOrThrow<string>('APP_URL');
-    this.meiliUrl = this.configService.get<string>('MEILISEARCH_SYNC_URL');
   }
 
   async publishSyncEvent(
@@ -32,7 +31,7 @@ export class SyncEventService implements SyncEventPort {
   ) {
     const webhookUrl = `${this.appUrl}/api/webhooks/vector-sync`;
 
-    // 1. Pinecone — queued via QStash (awaited, reliable delivery with retries)
+    // 1. Pinecone — queued via QStash
     let messageId: string | undefined;
     try {
       const result = await this.client.publishJSON({
@@ -50,8 +49,8 @@ export class SyncEventService implements SyncEventPort {
       );
     }
 
-    // 2. MeiliSearch — fire-and-forget via private method
-    if (action === 'upsert' && this.meiliUrl) {
+    // 2. MeiliSearch — Direct Sync
+    if (action === 'upsert') {
       void this.syncMeiliSearch(type, data);
     }
 
@@ -68,8 +67,7 @@ export class SyncEventService implements SyncEventPort {
         if (workspace) syncDoc.workspace = workspace;
       }
 
-      await axios.post(this.meiliUrl as string, { doc: syncDoc, type });
-      this.logger.log(`[MeiliSearch] Synced ${type} ${data.id}`);
+      await this.searchEngine.syncDocument(syncDoc, type);
     } catch (err: any) {
       this.logger.warn(
         `[MeiliSearch] Failed to sync ${type}: ${data.id} -> ${err?.message || err}`,
