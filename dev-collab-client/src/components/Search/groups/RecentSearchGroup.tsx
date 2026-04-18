@@ -13,7 +13,6 @@ import CollapsibleActionsGroup from "../CollapsibleActionsGroup";
 import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { filterByQuery, getDisplayTitle } from "../../../utils/search";
-import { TypedItems } from "../../../types";
 import FileIcon from "../../shared/FileIcon";
 
 export const RecentSearchGroup = () => {
@@ -151,7 +150,7 @@ export const RecentSearchGroup = () => {
             ...baseItem,
             id: "unknown",
             icon: <IconFolder />,
-            onClick: () => {},
+            onClick: () => { },
           } as DataItem;
       }
     });

@@ -5,8 +5,6 @@ import {
   GetServerSidePropsResult,
 } from "next";
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
-
 export function withoutAuth<P extends Record<string, any>>(
   handler: (
     context: GetServerSidePropsContext,

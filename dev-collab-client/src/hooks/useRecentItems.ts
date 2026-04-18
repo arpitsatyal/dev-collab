@@ -9,7 +9,6 @@ import {
 import { uniq } from "lodash";
 
 const MAX_SEARCH_ORDER = 20;
-const ORDER_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
 
 interface RecentOrderEntry {
   userId: string;

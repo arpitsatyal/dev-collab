@@ -1,12 +1,12 @@
 import React, { createContext, useContext } from "react";
-import { TypedItems, WorkspaceWithPin } from "../../types";
+import { Snippet, TypedItems, WorkspaceWithPin } from "../../types";
 
 export interface SearchContextValue {
   query: string;
   matchedResults: TypedItems[];
   isSearchLoading: boolean;
   workspaces?: WorkspaceWithPin[];
-  snippets: any[];
+  snippets: Snippet[];
   recentSearchOrder: string[];
   recentItems: TypedItems[];
   addRecentItems: (items: TypedItems[]) => void;
