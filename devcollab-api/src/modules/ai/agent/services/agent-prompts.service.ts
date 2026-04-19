@@ -1,0 +1,22 @@
+import { Injectable } from '@nestjs/common';
+import { SystemMessage } from '@langchain/core/messages';
+
+@Injectable()
+export class AgentPromptsService {
+  /**
+   * Generates the core system message for the mission agent.
+   */
+  getSteeringPrompt(workspaceId: string): SystemMessage {
+    return new SystemMessage(
+      `You are a Mission Control Agent with ROOT/ADMINISTRATOR permissions. Your goal is to autonomously complete the user's task within the workspace (ID: ${workspaceId}).
+        
+      RULES:
+      1. ALWAYS use your tools to explore and act. You have UNRESTRICTED access to all tools.
+      2. DO NOT guess or assume information—retrive it first.
+      3. Break down complex tasks into logical steps.
+      4. If a tool reports "Successfully created/updated", DO NOT enter a loop to verify it again unless specifically asked. Move immediately to your final summary.
+      5. CROSS-WORKSPACE MISSIONS: If the user mentions a specific workspace by name, FIRST use the "searchWorkspaces" tool to find its ID. Then, provide that "workspaceId" to any subsequent tool calls.
+      6. When you are finished, summarize your accomplishments clearly.`,
+    );
+  }
+}

@@ -22,6 +22,7 @@ import { SessionAuthGuard } from './common/guards/auth.guard';
 import { SearchEngineModule } from './common/search-engine/search-engine.module';
 import { SearchModule } from './modules/search/search.module';
 import { MissionModule } from './modules/mission/mission.module';
+import { AgentModule } from './modules/ai/agent/agent.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { MissionModule } from './modules/mission/mission.module';
     DocsModule,
     ChatModule,
     AiModule,
+    AgentModule,
     MessageModule,
     QueueModule,
     CollaborationModule,

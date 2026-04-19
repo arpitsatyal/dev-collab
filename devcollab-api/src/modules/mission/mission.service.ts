@@ -114,6 +114,7 @@ export class MissionService {
 
     await this.updateMissionStatus(id, 'RUNNING');
 
+    //maybe we have a better way.
     // Run the agent in the background
     (async () => {
       try {

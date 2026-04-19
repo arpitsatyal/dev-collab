@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { PromptPort } from '../ports/prompt.port';
@@ -22,6 +22,7 @@ export class ChatEngineService {
 
   constructor(
     private readonly llmGateway: LlmGateway,
+    @Inject(forwardRef(() => AgentPort))
     private readonly langGraphService: AgentPort,
     private readonly promptService: PromptPort,
     private readonly retrievalService: RetrievalPort,

@@ -11,7 +11,6 @@ import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
 import { DocRepository } from '../docs/repositories/doc.repository';
 import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
-import { LangGraphService } from './services/lang-graph.service';
 import { LlmModule } from './llms/llm.module';
 import { VectorStoreModule } from 'src/common/vector-store/vector-store.module';
 import { AiConfig } from './ai.config';
@@ -19,11 +18,11 @@ import { GenerationPort } from './ports/generation.port';
 import { PromptPort } from './ports/prompt.port';
 import { ToolRegistry } from './ports/tool.port';
 import { RetrievalPort } from './ports/retrieval.port';
-import { AgentPort } from './ports/agent.port';
 import { GenerationService } from './services/generation.service';
 import { PromptService } from './services/prompt.service';
 import { RetrievalService } from './services/retrieval.service';
 import { ToolService } from './services/tool.service';
+import { AgentModule } from './agent/agent.module';
 
 @Module({
   imports: [
@@ -33,8 +32,16 @@ import { ToolService } from './services/tool.service';
     VectorStoreModule,
     WorkspacesModule,
     forwardRef(() => MissionModule),
+    forwardRef(() => AgentModule),
   ],
-  exports: [AgentPort],
+  exports: [
+    AiConfig,
+    LlmModule,
+    GenerationPort,
+    PromptPort,
+    RetrievalPort,
+    ToolRegistry
+  ],
   providers: [
     AiConfig,
     AiService,
@@ -44,7 +51,6 @@ import { ToolService } from './services/tool.service';
     { provide: PromptPort, useClass: PromptService },
     { provide: RetrievalPort, useClass: RetrievalService },
     { provide: ToolRegistry, useClass: ToolService },
-    { provide: AgentPort, useClass: LangGraphService },
     SnippetRepository,
     DocRepository,
     WorkItemRepository,
