@@ -14,7 +14,7 @@ export class ToolService implements ToolRegistry {
     private readonly docRepo: DocRepository,
     private readonly workItemRepo: WorkItemRepository,
     private readonly workspacesService: WorkspacesService,
-  ) {}
+  ) { }
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -25,10 +25,27 @@ export class ToolService implements ToolRegistry {
     }
   }
 
-  private async handleGetSnippets(
-    { titleFilter }: { titleFilter?: string },
-    workspaceId: string,
+  private async handleSearchWorkspaces(
+    { query }: { query?: string },
   ): Promise<string> {
+    const workspaces = await this.workspacesService.getAllWorkspaces(0, 50);
+    const filtered = query 
+      ? workspaces.filter(w => w.title.toLowerCase().includes(query.toLowerCase()))
+      : workspaces;
+    
+    if (filtered.length === 0) {
+      return `No workspaces found matching "${query}".`;
+    }
+
+    const result = filtered.map(w => ({ id: w.id, title: w.title }));
+    return `Found ${filtered.length} workspace(s):\n${JSON.stringify(result)}`;
+  }
+
+  private async handleGetSnippets(
+    { titleFilter, workspaceId: overrideId }: { titleFilter?: string, workspaceId?: string },
+    defaultId: string,
+  ): Promise<string> {
+    const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch snippets.';
 
     const snippets = titleFilter
@@ -50,9 +67,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleGetDocs(
-    { labelFilter }: { labelFilter?: string },
-    workspaceId: string,
+    { labelFilter, workspaceId: overrideId }: { labelFilter?: string, workspaceId?: string },
+    defaultId: string,
   ): Promise<string> {
+    const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch docs.';
 
     const docs = labelFilter
@@ -73,9 +91,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleGetWorkItems(
-    { titleFilter }: { titleFilter?: string },
-    workspaceId: string,
+    { titleFilter, workspaceId: overrideId }: { titleFilter?: string, workspaceId?: string },
+    defaultId: string,
   ): Promise<string> {
+    const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch work items.';
 
     const workItems = titleFilter
@@ -97,9 +116,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleSemanticSearch(
-    { query }: { query: string },
-    workspaceId: string,
+    { query, workspaceId: overrideId }: { query: string, workspaceId?: string },
+    defaultId: string,
   ): Promise<string> {
+    const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
     const snippets = await this.snippetRepo.findManyBySearch(
@@ -168,18 +188,110 @@ export class ToolService implements ToolRegistry {
     return summary + '\nFull metadata (top 5 each): ' + JSON.stringify(items);
   }
 
+  private async handleCreateSnippet(
+    args: { title: string; language: string; content: string; workspaceId?: string },
+    defaultId: string,
+  ): Promise<string> {
+    const workspaceId = args.workspaceId || defaultId;
+    try {
+      console.log(`[ToolService] Attempting to create snippet in workspace: ${workspaceId}`);
+      const snippet = await this.snippetRepo.create({
+        title: args.title,
+        language: args.language,
+        content: args.content,
+        workspaceId,
+      });
+      console.log(`[ToolService] Snippet created successfully: ${snippet.id}`);
+      return `Successfully created snippet: ${snippet.title} (ID: ${snippet.id})`;
+    } catch (error) {
+      console.error(`[ToolService] Error creating snippet:`, error);
+      return `Error: Failed to create snippet. Technical details: ${error.message}`;
+    }
+  }
+
+  private async handleCreateWorkItem(
+    args: { title: string; description?: string; status?: string; workspaceId?: string },
+    defaultId: string,
+  ): Promise<string> {
+    const workspaceId = args.workspaceId || defaultId;
+    const workItem = await this.workItemRepo.create({
+      title: args.title,
+      description: args.description,
+      status: (args.status as any) || 'TODO',
+      workspaceId,
+    });
+    return `Successfully created work item: ${workItem.title} (ID: ${workItem.id})`;
+  }
+
+  private async handleUpdateWorkItem(
+    args: { id: string; title?: string; description?: string; status?: string },
+  ): Promise<string> {
+    const workItem = await this.workItemRepo.update(args.id, {
+      ...args,
+      status: args.status as any,
+    });
+    return `Successfully updated work item: ${workItem.title}`;
+  }
+
+  private async handleCreateDoc(
+    args: { label: string; content?: any; workspaceId?: string },
+    defaultId: string,
+  ): Promise<string> {
+    const workspaceId = args.workspaceId || defaultId;
+    const doc = await this.docRepo.create({
+      label: args.label,
+      content: args.content,
+      workspaceId,
+      roomId: '', // TODO: Generate a unique room ID
+    });
+    return `Successfully created documentation: ${doc.label} (ID: ${doc.id})`;
+  }
+
+  private async handleCreateWorkspace(
+    args: { title: string; description?: string },
+    currentWorkspaceId: string,
+  ): Promise<string> {
+    try {
+      const currentWorkspace =
+        await this.workspacesService.getWorkspace(currentWorkspaceId);
+      const ownerId = currentWorkspace.ownerId;
+
+      const newWorkspace = await this.workspacesService.addNewWorkspace(
+        {
+          title: args.title,
+          description: args.description,
+        },
+        { id: ownerId },
+      );
+
+      return `Successfully created new workspace: ${newWorkspace.title} (ID: ${newWorkspace.id})`;
+    } catch (error) {
+      return `Error: Failed to create workspace. Technical details: ${error.message}`;
+    }
+  }
+
   getToolsForWorkspace(workspaceId: string) {
+    const searchWorkspacesTool = new DynamicStructuredTool({
+      name: 'searchWorkspaces',
+      description: 'Search for workspaces by name/title to find their IDs.',
+      schema: z.object({
+        query: z.string().optional().describe('Part of the workspace name to look for.'),
+      }),
+      func: (args) => this.handleSearchWorkspaces(args),
+    } as any);
+
     const snippetsTool = new DynamicStructuredTool({
       name: 'getSnippets',
       description:
-        'Fetch ALL code snippets in the workspace. Optionally filter by title keywords.',
+        'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
       schema: z.object({
         titleFilter: z
           .string()
           .optional()
           .describe(
-            'Keyword to filter snippets by title (e.g., "auth" or "utils"). Leave blank to fetch all.',
+            'Keyword to filter snippets by title (e.g., "auth" or "utils").',
           ),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
       }),
       func: (args) => this.handleGetSnippets(args, workspaceId),
     } as any);
@@ -187,14 +299,15 @@ export class ToolService implements ToolRegistry {
     const docsTool = new DynamicStructuredTool({
       name: 'getDocs',
       description:
-        'Fetch ALL documentation records in the workspace. Optionally filter by label.',
+        'Fetch ALL documentation records in a workspace. Optionally filter by label.',
       schema: z.object({
         labelFilter: z
           .string()
           .optional()
           .describe(
-            'Label to filter docs (e.g., "manual" or "design-doc"). Leave blank to fetch all documents.',
+            'Label to filter docs (e.g., "manual" or "design-doc").',
           ),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
       }),
       func: (args) => this.handleGetDocs(args, workspaceId),
     } as any);
@@ -202,14 +315,15 @@ export class ToolService implements ToolRegistry {
     const existingWorkItemsTool = new DynamicStructuredTool({
       name: 'getWorkItems',
       description:
-        'Fetch ALL work items (tasks/tickets) inside the current workspace. Optionally filter by title.',
+        'Fetch ALL work items inside a workspace. Optionally filter by title.',
       schema: z.object({
         titleFilter: z
           .string()
           .optional()
           .describe(
-            'Search keyword to filter work item titles. Leave blank to fetch all work items in the workspace.',
+            'Search keyword to filter work item titles.',
           ),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
       }),
       func: (args) => this.handleGetWorkItems(args, workspaceId),
     } as any);
@@ -217,16 +331,17 @@ export class ToolService implements ToolRegistry {
     const semanticSearchTool = new DynamicStructuredTool({
       name: 'semanticSearch',
       description:
-        'Perform a broad semantic search across snippets, docs, and work items simultaneously.',
+        'Perform a broad semantic search across snippets, docs, and work items.',
       schema: z.object({
         searchQuery: z
           .string()
           .describe(
-            'The natural language search query or concept to look for (e.g. "how do we handle errors?").',
+            'The natural language search query.',
           ),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
       }),
       func: (args) =>
-        this.handleSemanticSearch({ query: args.searchQuery }, workspaceId),
+        this.handleSemanticSearch({ query: args.searchQuery, workspaceId: args.workspaceId }, workspaceId),
     } as any);
 
     const overviewTool = new DynamicStructuredTool({
@@ -237,12 +352,75 @@ export class ToolService implements ToolRegistry {
       func: () => this.handleGetWorkspaceOverview(workspaceId),
     } as any);
 
+    const createSnippetTool = new DynamicStructuredTool({
+      name: 'createSnippet',
+      description: 'Create a new code snippet.',
+      schema: z.object({
+        title: z.string().describe('Title of the snippet'),
+        language: z.string().describe('Programming language'),
+        content: z.string().describe('Code content'),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
+      }),
+      func: (args) => this.handleCreateSnippet(args, workspaceId),
+    } as any);
+
+    const createWorkItemTool = new DynamicStructuredTool({
+      name: 'createWorkItem',
+      description: 'Create a new task or work item.',
+      schema: z.object({
+        title: z.string().describe('Task title'),
+        description: z.string().optional().describe('Task detail'),
+        status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).optional(),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
+      }),
+      func: (args) => this.handleCreateWorkItem(args, workspaceId),
+    } as any);
+
+    const updateWorkItemTool = new DynamicStructuredTool({
+      name: 'updateWorkItem',
+      description: 'Update an existing work item status, title, or description.',
+      schema: z.object({
+        id: z.string().describe('The ID of the work item to update'),
+        title: z.string().optional(),
+        description: z.string().optional(),
+        status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).optional(),
+      }),
+      func: (args) => this.handleUpdateWorkItem(args),
+    } as any);
+
+    const createDocTool = new DynamicStructuredTool({
+      name: 'createDoc',
+      description: 'Create a new documentation document.',
+      schema: z.object({
+        label: z.string().describe('Label or title of the doc'),
+        content: z.any().optional(),
+        workspaceId: z.string().optional().describe('Target workspace ID. Omit to use current.'),
+      }),
+      func: (args) => this.handleCreateDoc(args, workspaceId),
+    } as any);
+
+    const createWorkspaceTool = new DynamicStructuredTool({
+      name: 'createWorkspace',
+      description: 'Create a new blank workspace.',
+      schema: z.object({
+        title: z.string().describe('Title of the new workspace'),
+        description: z.string().optional().describe('Optional description'),
+      }),
+      func: (args) => this.handleCreateWorkspace(args, workspaceId),
+    } as any);
+
     const list: DynamicStructuredTool[] = [
+      searchWorkspacesTool,
       snippetsTool,
       docsTool,
       existingWorkItemsTool,
       semanticSearchTool,
       overviewTool,
+      createSnippetTool,
+      createWorkItemTool,
+      updateWorkItemTool,
+      createDocTool,
+      createWorkspaceTool,
     ];
 
     return { list };

@@ -9,6 +9,7 @@ import {
   IconGauge,
   IconPencil,
   IconPlayCard,
+  IconTarget,
 } from "@tabler/icons-react";
 
 export interface NavItemProps {

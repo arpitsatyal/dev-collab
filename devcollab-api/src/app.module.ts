@@ -21,6 +21,7 @@ import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { SessionAuthGuard } from './common/guards/auth.guard';
 import { SearchEngineModule } from './common/search-engine/search-engine.module';
 import { SearchModule } from './modules/search/search.module';
+import { MissionModule } from './modules/mission/mission.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { SearchModule } from './modules/search/search.module';
     DrizzleModule,
     SearchEngineModule,
     SearchModule,
+    MissionModule,
   ],
   controllers: [AppController],
   providers: [

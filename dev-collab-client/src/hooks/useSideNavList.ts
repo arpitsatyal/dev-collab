@@ -31,6 +31,7 @@ export const useSideNavList = (
           loadedSnippets[(item as WorkspaceWithPin).id]?.length || 0;
         const baseHeight = 40;
         const workItemHeight = 40;
+        const missionHeight = 40;
         const createSnippetHeight = 40;
         const snippetHeight = 40;
         const docsHeight = 40;
@@ -41,6 +42,7 @@ export const useSideNavList = (
           workItemHeight +
           createSnippetHeight +
           docsHeight +
+          missionHeight +
           snippetCount * snippetHeight
         );
       }

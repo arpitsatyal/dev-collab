@@ -4,6 +4,8 @@ import { AiController } from './controllers/ai.controller';
 import { ChatEngineService } from './services/chat-engine.service';
 import { SuggestionService } from './services/suggestion.service';
 import { MessageModule } from '../message/message.module';
+import { MissionModule } from '../mission/mission.module';
+import { forwardRef } from '@nestjs/common';
 import { WorkItemsModule } from '../work-items/work-items.module';
 import { WorkspacesModule } from '../workspaces/workspaces.module';
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
@@ -30,7 +32,9 @@ import { ToolService } from './services/tool.service';
     LlmModule,
     VectorStoreModule,
     WorkspacesModule,
+    forwardRef(() => MissionModule),
   ],
+  exports: [AgentPort],
   providers: [
     AiConfig,
     AiService,

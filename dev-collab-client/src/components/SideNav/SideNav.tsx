@@ -23,7 +23,7 @@ const SideNav = () => {
             onClick={() => handleNavClick(item.path, item.handler, item.label)}
           >
             {item.children !== undefined && (
-              <SideNavNestedContent item={item} />
+              <SideNavNestedContent />
             )}
           </NavItem>
         ))}

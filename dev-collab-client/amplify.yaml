@@ -9,7 +9,6 @@ applications:
             - NODE_ENV=development npm ci --legacy-peer-deps
         build:
           commands:
-            - env | grep -e NEXTAUTH_URL >> .env.production
             - npm run build
             - npm prune --omit=dev
       artifacts:

@@ -2,13 +2,8 @@ import { Box, Text } from "@mantine/core";
 import BaseLoader from "../shared/base/BaseLoader";
 import WorkspacesList from "../Workspaces/WorkspacesList";
 import { useSideNavContext } from "./SideNavContext";
-import { NavItemProps } from "../../hooks/useSideNavData";
 
-interface SideNavNestedContentProps {
-  item: NavItemProps;
-}
-
-const SideNavNestedContent = ({ item }: SideNavNestedContentProps) => {
+const SideNavNestedContent = () => {
   const { workspaceItems, isLoading, isInsertingWorkspace } =
     useSideNavContext();
 

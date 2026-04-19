@@ -1,6 +1,6 @@
 import BaseActionIcon from "../shared/base/BaseActionIcon";
 import { Box, NavLink, Text } from "@mantine/core";
-import { IconBrandPagekit, IconPin, IconSubtask } from "@tabler/icons-react";
+import { IconBrandPagekit, IconPin, IconSubtask, IconTarget } from "@tabler/icons-react";
 import { useRouter } from "next/router";
 import BaseLoader from "../shared/base/BaseLoader";
 import SnippetList from "../Snippets/SnippetList";
@@ -108,6 +108,15 @@ const WorkspaceNavItem = ({
                 onClick={(e) => {
                   e.stopPropagation();
                   router.push(`/workspaces/${child.id}/docs`);
+                }}
+              />
+              <NavLink
+                label="Missions"
+                active={router.pathname.includes("missions")}
+                leftSection={<IconTarget size={16} />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  router.push(`/workspaces/${child.id}/missions`);
                 }}
               />
               <SnippetList

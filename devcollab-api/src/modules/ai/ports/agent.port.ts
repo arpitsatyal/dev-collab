@@ -5,5 +5,6 @@ export abstract class AgentPort {
   abstract runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
+    missionId?: string,
   ): Promise<IAiResult>;
 }

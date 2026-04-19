@@ -19,22 +19,22 @@ export class LlmFactoryService implements LlmGateway {
   ) {}
 
   async getReasoningLLM(): Promise<BaseChatModel> {
-    if (this.togetherFailed) {
-      return this.groqLlmService.create();
+    if (this.groqFailed) {
+      return this.togetherLlmService.create();
     }
 
-    const primary = this.togetherLlmService.create().withListeners({
+    const primary = this.groqLlmService.create().withListeners({
       onError: (run: any) => {
         this.logger.warn(
-          `Primary Reasoning (Together) failed: ${run.error}. Switching to persistent fallback.`,
+          `Primary Reasoning (Groq) failed: ${run.error}. Switching to persistent fallback.`,
         );
-        this.togetherFailed = true;
+        this.groqFailed = true;
       },
     });
-    const fallback = this.groqLlmService.create().withListeners({
-      onStart: () => this.logger.log('Fallback Reasoning (Groq) triggered!'),
+    const fallback = this.togetherLlmService.create().withListeners({
+      onStart: () => this.logger.log('Fallback Reasoning (Together) triggered!'),
       onError: (run: any) =>
-        this.logger.error(`Fallback Reasoning (Groq) failed: ${run.error}`),
+        this.logger.error(`Fallback Reasoning (Together) failed: ${run.error}`),
     });
 
     return primary.withFallbacks({
@@ -70,30 +70,30 @@ export class LlmFactoryService implements LlmGateway {
     schema: any,
     name: string,
   ): Promise<RunnableLike<any, any>> {
-    if (this.togetherFailed) {
-      const fallback = this.groqLlmService.create();
+    if (this.groqFailed) {
+      const fallback = this.togetherLlmService.create();
       return (fallback as any).withStructuredOutput(schema, { name });
     }
 
-    const primary = this.togetherLlmService.create();
-    const fallback = this.groqLlmService.create();
+    const primary = this.groqLlmService.create();
+    const fallback = this.togetherLlmService.create();
 
     const structuredPrimary = (primary as any)
       .withStructuredOutput(schema, { name })
       .withListeners({
         onError: (run: any) => {
           this.logger.warn(
-            `Primary Structured (Together) failed: ${run.error}. Switching to persistent fallback.`,
+            `Primary Structured (Groq) failed: ${run.error}. Switching to persistent fallback.`,
           );
-          this.togetherFailed = true;
+          this.groqFailed = true;
         },
       });
     const structuredFallback = (fallback as any)
       .withStructuredOutput(schema, { name })
       .withListeners({
-        onStart: () => this.logger.log('Fallback Structured (Groq) triggered!'),
+        onStart: () => this.logger.log('Fallback Structured (Together) triggered!'),
         onError: (run: any) =>
-          this.logger.error(`Fallback Structured (Groq) failed: ${run.error}`),
+          this.logger.error(`Fallback Structured (Together) failed: ${run.error}`),
       });
 
     return structuredPrimary.withFallbacks({
@@ -104,27 +104,27 @@ export class LlmFactoryService implements LlmGateway {
   async getReasoningToolBoundLLM(
     tools: StructuredTool[],
   ): Promise<BaseChatModel> {
-    if (this.togetherFailed) {
-      return this.groqLlmService
+    if (this.groqFailed) {
+      return this.togetherLlmService
         .create()
         .bindTools(tools) as unknown as BaseChatModel;
     }
 
-    const primary = this.togetherLlmService.create();
-    const fallback = this.groqLlmService.create();
+    const primary = this.groqLlmService.create();
+    const fallback = this.togetherLlmService.create();
 
     const boundPrimary = primary.bindTools(tools).withListeners({
       onError: (run: any) => {
         this.logger.warn(
-          `Primary ToolBound (Together) failed: ${run.error}. Switching to persistent fallback.`,
+          `Primary ToolBound (Groq) failed: ${run.error}. Switching to persistent fallback.`,
         );
-        this.togetherFailed = true;
+        this.groqFailed = true;
       },
     });
     const boundFallback = fallback.bindTools(tools).withListeners({
-      onStart: () => this.logger.log('Fallback ToolBound (Groq) triggered!'),
+      onStart: () => this.logger.log('Fallback ToolBound (Together) triggered!'),
       onError: (run: any) =>
-        this.logger.error(`Fallback ToolBound (Groq) failed: ${run.error}`),
+        this.logger.error(`Fallback ToolBound (Together) failed: ${run.error}`),
     });
 
     return boundPrimary.withFallbacks({

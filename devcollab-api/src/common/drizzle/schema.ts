@@ -5,8 +5,10 @@ import {
   timestamp,
   json,
   pgEnum,
+  varchar,
 } from 'drizzle-orm/pg-core';
 import { relations, InferSelectModel, InferInsertModel } from 'drizzle-orm';
+import { index } from 'drizzle-orm/pg-core';
 
 export const providerEnum = pgEnum('Provider', ['GOOGLE', 'GITHUB', 'LOCAL']);
 export const workItemStatusValues = ['TODO', 'IN_PROGRESS', 'DONE'] as const;
@@ -15,6 +17,28 @@ export const workItemStatusEnum = pgEnum(
   workItemStatusValues,
 );
 export type WorkItemStatus = (typeof workItemStatusValues)[number];
+
+export const missionStatusValues = [
+  'PENDING',
+  'RUNNING',
+  'PAUSED',
+  'COMPLETED',
+  'FAILED',
+] as const;
+export const missionStatusEnum = pgEnum('MissionStatus', missionStatusValues);
+export type MissionStatus = (typeof missionStatusValues)[number];
+
+export const missionStepStatusValues = [
+  'PENDING',
+  'RUNNING',
+  'COMPLETED',
+  'FAILED',
+] as const;
+export const missionStepStatusEnum = pgEnum(
+  'MissionStepStatus',
+  missionStepStatusValues,
+);
+export type MissionStepStatus = (typeof missionStepStatusValues)[number];
 
 export const users = pgTable('User', {
   id: text('id').primaryKey(),
@@ -119,6 +143,45 @@ export const workItemsToSnippets = pgTable('WorkItemToSnippet', {
   snippetId: text('snippetId').notNull(),
 });
 
+export const missions = pgTable('Mission', {
+  id: text('id').primaryKey(),
+  goal: text('goal').notNull(),
+  status: missionStatusEnum('status').default('PENDING').notNull(),
+  workspaceId: text('workspaceId').notNull(),
+  logs: text('logs'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+  updatedAt: timestamp('updatedAt').defaultNow().notNull(),
+});
+
+export type Mission = InferSelectModel<typeof missions>;
+export type MissionInsert = InferInsertModel<typeof missions>;
+
+export const missionSteps = pgTable('MissionStep', {
+  id: text('id').primaryKey(),
+  missionId: text('missionId').notNull(),
+  label: text('label').notNull(),
+  status: missionStepStatusEnum('status').default('PENDING').notNull(),
+  logs: text('logs'),
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+export type MissionStep = InferSelectModel<typeof missionSteps>;
+export type MissionStepInsert = InferInsertModel<typeof missionSteps>;
+
+export const sessions = pgTable(
+  'session',
+  {
+    sid: varchar('sid').primaryKey().notNull(),
+    sess: json('sess').notNull(),
+    expire: timestamp('expire', { precision: 6, mode: 'date' }).notNull(),
+  },
+  (table) => {
+    return {
+      expireIdx: index('IDX_session_expire').on(table.expire),
+    };
+  },
+);
+
 // Relations
 export const usersRelations = relations(users, ({ many }) => ({
   workspaces: many(workspaces),
@@ -195,3 +258,18 @@ export const workItemsToSnippetsRelations = relations(
     }),
   }),
 );
+
+export const missionsRelations = relations(missions, ({ one, many }) => ({
+  workspace: one(workspaces, {
+    fields: [missions.workspaceId],
+    references: [workspaces.id],
+  }),
+  steps: many(missionSteps),
+}));
+
+export const missionStepsRelations = relations(missionSteps, ({ one }) => ({
+  mission: one(missions, {
+    fields: [missionSteps.missionId],
+    references: [missions.id],
+  }),
+}));

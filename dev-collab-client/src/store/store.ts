@@ -8,6 +8,7 @@ import { workItemApi } from "./api/workItemApi";
 import { docsApi } from "./api/docsApi";
 import { aiApi } from "./api/aiApi";
 import { chatApi } from "./api/chatApi";
+import { missionApi } from "./api/missionApi";
 
 export const store = configureStore({
   reducer: {
@@ -18,6 +19,7 @@ export const store = configureStore({
     [docsApi.reducerPath]: docsApi.reducer,
     [aiApi.reducerPath]: aiApi.reducer,
     [chatApi.reducerPath]: chatApi.reducer,
+    [missionApi.reducerPath]: missionApi.reducer,
     snippet: snippetReducer,
     [snippetApi.reducerPath]: snippetApi.reducer,
   },
@@ -30,6 +32,7 @@ export const store = configureStore({
       docsApi.middleware,
       aiApi.middleware,
       chatApi.middleware,
+      missionApi.middleware,
     ),
 });
 

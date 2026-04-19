@@ -5,7 +5,7 @@ export interface IWorkspaceState {
   pageSize: number;
   skip: number;
   workspacesOpen: boolean;
-  isInsertingWorkspace: false;
+  isInsertingWorkspace: boolean;
 }
 
 const initialState: IWorkspaceState = {
@@ -52,4 +52,5 @@ export const {
   setWorkspacesOpen,
   setInsertingWorkspace,
 } = workspaceSlice.actions;
+
 export default workspaceSlice.reducer;
