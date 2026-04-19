@@ -1,13 +1,13 @@
-import { Paper, Group, Badge, Text, ScrollArea, Stack } from "@mantine/core";
+import { Paper, Group, Badge, Text, ScrollArea, Stack, Box } from "@mantine/core";
 import { IconTerminal2 } from "@tabler/icons-react";
 import styles from "./MissionTerminal.module.css";
-import { RefObject, useMemo } from "react";
+import { RefObject } from "react";
 
 interface LogEntry {
   message: string;
   type: string;
   timestamp: number;
-  sequence: number;
+  payload?: any;
 }
 
 interface MissionTerminalProps {
@@ -16,10 +16,6 @@ interface MissionTerminalProps {
 }
 
 const MissionTerminal = ({ logs, viewportRef }: MissionTerminalProps) => {
-  const sortedLogs = useMemo(() => {
-    return [...logs].sort((a, b) => a.sequence - b.sequence);
-  }, [logs]);
-
   return (
     <Paper shadow="md" radius="lg" bg="dark.8" className={styles.terminalContainer} flex={1}>
       <Group p="md" bg="dark.6" className={styles.terminalHeader} justify="space-between">
@@ -32,23 +28,40 @@ const MissionTerminal = ({ logs, viewportRef }: MissionTerminalProps) => {
 
       <ScrollArea h="500px" p="md" viewportRef={viewportRef}>
         <Stack gap={6}>
-          {sortedLogs.length === 0 && (
+          {logs.length === 0 && (
             <Text c="dimmed" fz="xs" ff="monospace">Initializing agent logs stream...</Text>
           )}
-          {sortedLogs.map((log, i) => (
-            <Group key={i} gap="sm" wrap="nowrap" align="flex-start">
-              <Text c="dimmed" fz="10px" ff="monospace" mt={2}>
-                [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]
-              </Text>
-              <Text
-                fz="xs"
-                ff="monospace"
-                c={log.type === 'status_change' ? 'cyan.3' : 'gray.3'}
-                style={{ wordBreak: 'break-all', lineHeight: 1.5 }}
-              >
-                {log.message}
-              </Text>
-            </Group>
+          {logs.map((log, i) => (
+            <Stack key={i} gap={2}>
+              <Group gap="sm" wrap="nowrap" align="flex-start">
+                <Text c="dimmed" fz="10px" ff="monospace" mt={2} style={{ opacity: 0.5 }}>
+                  [{new Date(log.timestamp).toLocaleTimeString([], { hour12: false })}]
+                </Text>
+                <Text
+                  fz="xs"
+                  ff="monospace"
+                  c={log.type === 'status_change' ? 'cyan.3' : 'gray.3'}
+                  fw={log.type === 'status_change' ? 600 : 400}
+                  style={{ wordBreak: 'break-all', lineHeight: 1.5 }}
+                >
+                  {log.message}
+                </Text>
+              </Group>
+              {log.payload && (
+                <Box ml={65} mb={4}>
+                  <Text fz="10px" ff="monospace" c="dimmed" component="pre"
+                    style={{
+                      backgroundColor: 'rgba(0,0,0,0.2)',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      margin: 0,
+                      whiteSpace: 'pre-wrap'
+                    }}>
+                    {typeof log.payload === 'string' ? log.payload : JSON.stringify(log.payload, null, 2)}
+                  </Text>
+                </Box>
+              )}
+            </Stack>
           ))}
         </Stack>
       </ScrollArea>

@@ -18,27 +18,16 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
     setLogs(prev => {
       if (prev.length > 0) return prev;
 
-      const history: LogEntry[] = [];
-
-      if (mission.logs) {
-        mission.logs.split('\n').filter(Boolean).forEach(line => {
-          history.push({ message: line, type: 'log', timestamp: new Date(mission.createdAt).getTime() });
-        });
+      if (mission.missionLogs && mission.missionLogs.length > 0) {
+        return mission.missionLogs.map(ml => ({
+          message: ml.stepId ? `[Step] ${ml.message}` : ml.message,
+          type: ml.type,
+          timestamp: new Date(ml.sequence).getTime(),
+          payload: ml.payload
+        }));
       }
 
-      mission.steps?.forEach(step => {
-        if (step.logs) {
-          step.logs.split('\n').filter(Boolean).forEach(line => {
-            history.push({ 
-              message: `[${step.label}] ${line}`, 
-              type: 'log', 
-              timestamp: new Date(mission.createdAt).getTime() 
-            });
-          });
-        }
-      });
-
-      return history.sort((a, b) => a.timestamp - b.timestamp);
+      return [];
     });
   }, [missionId, mission]);
 
@@ -62,7 +51,8 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
         return [...prev, {
           message: logData.message,
           type: logData.type,
-          timestamp: Date.now()
+          timestamp: Date.now(),
+          payload: logData.payload
         }];
       });
 

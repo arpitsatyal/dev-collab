@@ -1,5 +1,6 @@
 import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
 import { MissionRepository, MissionStepRepository } from './repositories/mission.repository';
+import { MissionLogRepository } from './repositories/mission-log.repository';
 import { MissionStatus, MissionStepStatus } from 'src/common/drizzle/schema';
 import { Subject } from 'rxjs';
 import { AgentPort } from '../ai/ports/agent.port';
@@ -11,18 +12,17 @@ export interface MissionLog {
   type: 'log' | 'status_change';
   message: string;
   payload?: any;
-  sequence: number;
 }
 
 @Injectable()
 export class MissionService {
   private readonly logger = new Logger(MissionService.name);
   private readonly logSubject = new Subject<MissionLog>();
-  private readonly missionSequences = new Map<string, number>();
 
   constructor(
     private readonly missionRepo: MissionRepository,
     private readonly stepRepo: MissionStepRepository,
+    private readonly logRepo: MissionLogRepository,
     @Inject(forwardRef(() => AgentPort))
     private readonly agentPort: AgentPort,
   ) { }
@@ -48,18 +48,6 @@ export class MissionService {
     return this.missionRepo.findByWorkspaceId(workspaceId);
   }
 
-  private emitLog(missionId: string, log: Omit<MissionLog, 'missionId' | 'sequence'>) {
-    const currentSeq = this.missionSequences.get(missionId) || 0;
-    const nextSeq = currentSeq + 1;
-    this.missionSequences.set(missionId, nextSeq);
-
-    this.logSubject.next({
-      missionId,
-      sequence: nextSeq,
-      ...log,
-    });
-  }
-
   async addStep(missionId: string, label: string, status: MissionStepStatus = 'PENDING') {
     const step = await this.stepRepo.create({
       missionId,
@@ -67,7 +55,8 @@ export class MissionService {
       status,
     });
 
-    this.emitLog(missionId, {
+    this.logSubject.next({
+      missionId,
       stepId: step.id,
       type: 'status_change',
       message: `Step added: ${label} (${status})`,
@@ -79,40 +68,36 @@ export class MissionService {
   async updateMissionStatus(id: string, status: MissionStatus) {
     const updated = await this.missionRepo.update(id, { status, updatedAt: new Date() });
 
-    this.emitLog(id, {
-      type: 'status_change',
-      message: `Mission status changed to ${status}`,
-    });
+    await this.pushLog(id, `Mission status changed to ${status}`, undefined, 'status_change');
 
     return updated;
   }
 
-  async updateStepStatus(id: string, missionId: string, status: MissionStepStatus, logs?: string) {
-    const updated = await this.stepRepo.update(id, { status, logs });
+  async updateStepStatus(id: string, missionId: string, status: MissionStepStatus) {
+    const updated = await this.stepRepo.update(id, { status });
 
-    this.emitLog(missionId, {
-      stepId: id,
-      type: 'status_change',
-      message: `Step status changed to ${status}`,
-      payload: { logs },
-    });
+    await this.pushLog(missionId, `Step status changed to ${status}`, id, 'status_change');
 
     return updated;
   }
 
-  async pushLog(missionId: string, message: string, stepId?: string) {
-    this.emitLog(missionId, {
+  async pushLog(missionId: string, message: string, stepId?: string, type: 'log' | 'status_change' = 'log', payload?: any) {
+    this.logSubject.next({
+      missionId,
       stepId,
-      type: 'log',
+      type,
       message,
+      payload,
     });
 
     try {
-      if (stepId && stepId.length > 20) { // Basic check for UUID vs random strings
-        await this.stepRepo.appendLog(stepId, message);
-      } else {
-        await this.missionRepo.appendLog(missionId, message);
-      }
+      await this.logRepo.createLog({
+        missionId,
+        message,
+        stepId,
+        type,
+        payload,
+      });
     } catch (error) {
       this.logger.error(`Failed to persist log for mission ${missionId}: ${error.message}`);
     }
@@ -138,7 +123,6 @@ export class MissionService {
 
         await this.addStep(id, 'Finalizing Mission', 'COMPLETED');
         this.logger.log(`Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`);
-        
         await this.updateMissionStatus(id, 'COMPLETED');
         await this.pushLog(id, 'Mission completed successfully!');
       } catch (error) {

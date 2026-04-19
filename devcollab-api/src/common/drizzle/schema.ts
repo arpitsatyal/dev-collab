@@ -148,7 +148,6 @@ export const missions = pgTable('Mission', {
   goal: text('goal').notNull(),
   status: missionStatusEnum('status').default('PENDING').notNull(),
   workspaceId: text('workspaceId').notNull(),
-  logs: text('logs'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
   updatedAt: timestamp('updatedAt').defaultNow().notNull(),
 });
@@ -161,12 +160,25 @@ export const missionSteps = pgTable('MissionStep', {
   missionId: text('missionId').notNull(),
   label: text('label').notNull(),
   status: missionStepStatusEnum('status').default('PENDING').notNull(),
-  logs: text('logs'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 
 export type MissionStep = InferSelectModel<typeof missionSteps>;
 export type MissionStepInsert = InferInsertModel<typeof missionSteps>;
+
+export const missionLogs = pgTable('MissionLog', {
+  id: text('id').primaryKey(),
+  missionId: text('missionId').notNull(),
+  stepId: text('stepId'),
+  type: text('type').notNull().default('log'),
+  message: text('message').notNull(),
+  payload: json('payload'),
+  sequence: timestamp('sequence').defaultNow().notNull(), // Using timestamp as sequence for now, or could use serial.
+  createdAt: timestamp('createdAt').defaultNow().notNull(),
+});
+
+export type MissionLogModel = InferSelectModel<typeof missionLogs>;
+export type MissionLogInsert = InferInsertModel<typeof missionLogs>;
 
 export const sessions = pgTable(
   'session',
@@ -265,11 +277,24 @@ export const missionsRelations = relations(missions, ({ one, many }) => ({
     references: [workspaces.id],
   }),
   steps: many(missionSteps),
+  missionLogs: many(missionLogs),
 }));
 
-export const missionStepsRelations = relations(missionSteps, ({ one }) => ({
+export const missionStepsRelations = relations(missionSteps, ({ one, many }) => ({
   mission: one(missions, {
     fields: [missionSteps.missionId],
     references: [missions.id],
+  }),
+  missionLogs: many(missionLogs),
+}));
+
+export const missionLogsRelations = relations(missionLogs, ({ one }) => ({
+  mission: one(missions, {
+    fields: [missionLogs.missionId],
+    references: [missions.id],
+  }),
+  step: one(missionSteps, {
+    fields: [missionLogs.stepId],
+    references: [missionSteps.id],
   }),
 }));

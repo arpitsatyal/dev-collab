@@ -9,7 +9,18 @@ export interface Mission {
   createdAt: string;
   updatedAt: string;
   steps?: MissionStep[];
-  logs?: string;
+  missionLogs?: MissionLog[];
+}
+
+export interface MissionLog {
+  id: string;
+  missionId: string;
+  stepId?: string;
+  type: string;
+  message: string;
+  payload?: any;
+  sequence: string;
+  createdAt: string;
 }
 
 export interface MissionStep {
@@ -17,7 +28,6 @@ export interface MissionStep {
   missionId: string;
   label: string;
   status: 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED';
-  logs?: string;
 }
 
 export const missionApi = createApi({

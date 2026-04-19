@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, sql } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { missions, missionSteps } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
@@ -15,6 +15,9 @@ export class MissionRepository extends BaseRepository<typeof missions> {
       where: eq(missions.workspaceId, workspaceId),
       with: {
         steps: true,
+        missionLogs: {
+          orderBy: (missionLogs, { asc }) => [asc(missionLogs.sequence)],
+        },
       },
       orderBy: (missions, { desc }) => [desc(missions.createdAt)],
     });
@@ -25,20 +28,13 @@ export class MissionRepository extends BaseRepository<typeof missions> {
       where: eq(missions.id, id),
       with: {
         steps: true,
+        missionLogs: {
+          orderBy: (missionLogs, { asc }) => [asc(missionLogs.sequence)],
+        },
       },
     });
   }
 
-  async appendLog(id: string, log: string) {
-    return this.drizzle.db
-      .update(missions)
-      .set({
-        logs: sql`COALESCE(${missions.logs}, '') || ${log} || '\n'`,
-        updatedAt: new Date(),
-      })
-      .where(eq(missions.id, id))
-      .returning();
-  }
 }
 
 @Injectable()
@@ -54,13 +50,4 @@ export class MissionStepRepository extends BaseRepository<typeof missionSteps> {
     });
   }
 
-  async appendLog(id: string, log: string) {
-    return this.drizzle.db
-      .update(missionSteps)
-      .set({
-        logs: sql`COALESCE(${missionSteps.logs}, '') || ${log} || '\n'`,
-      })
-      .where(eq(missionSteps.id, id))
-      .returning();
-  }
 }
