@@ -8,3 +8,13 @@
 .terminalHeader {
     border-bottom: 1px solid var(--mantine-color-dark-4);
 }
+
+.liveBadge {
+    animation: pulse 2s infinite ease-in-out;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
