@@ -1,0 +1,10 @@
+.terminalContainer {
+    overflow: hidden;
+    border: 1px solid var(--mantine-color-dark-4);
+    display: flex;
+    flex-direction: column;
+}
+
+.terminalHeader {
+    border-bottom: 1px solid var(--mantine-color-dark-4);
+}
