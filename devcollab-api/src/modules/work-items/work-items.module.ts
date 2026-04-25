@@ -4,14 +4,14 @@ import { DueWorkItemsController } from './due-work-items.controller';
 import { WorkItemsService } from './work-items.service';
 import { QueueModule } from 'src/modules/queue/queue.module';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
-import { WorkItemRepository } from './repositories/work-item.repository';
-import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [QueueModule, SyncEventModule, UsersModule],
+  imports: [
+    QueueModule, 
+    SyncEventModule,
+  ],
   controllers: [WorkItemsController, DueWorkItemsController],
-  providers: [WorkItemsService, WorkItemRepository],
-  exports: [WorkItemsService, WorkItemRepository],
+  providers: [WorkItemsService],
+  exports: [WorkItemsService],
 })
-
 export class WorkItemsModule { }

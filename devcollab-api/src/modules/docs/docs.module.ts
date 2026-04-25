@@ -2,13 +2,11 @@ import { Module } from '@nestjs/common';
 import { DocsService } from './docs.service';
 import { DocsController } from './docs.controller';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
-import { DocRepository } from './repositories/doc.repository';
 
 @Module({
   imports: [SyncEventModule],
-  providers: [DocsService, DocRepository],
+  providers: [DocsService],
   controllers: [DocsController],
-  exports: [DocsService, DocRepository],
+  exports: [DocsService],
 })
-
 export class DocsModule { }

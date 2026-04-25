@@ -18,6 +18,7 @@ import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { VectorStoreModule } from './common/vector-store/vector-store.module';
 import { SyncEventModule } from './common/sync-events/sync-event.module';
 import { DrizzleModule } from './common/drizzle/drizzle.module';
+import { RepositoryModule } from './common/drizzle/repository.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
 import { SessionAuthGuard } from './common/guards/auth.guard';
 import { SearchEngineModule } from './common/search-engine/search-engine.module';
@@ -29,6 +30,8 @@ import { AgentModule } from './modules/ai/agent/agent.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
+    DrizzleModule,
+    RepositoryModule, // Global Repositories
     AuthModule,
     WorkspacesModule,
     UsersModule,
@@ -44,7 +47,6 @@ import { AgentModule } from './modules/ai/agent/agent.module';
     WebhooksModule,
     VectorStoreModule,
     SyncEventModule,
-    DrizzleModule,
     SearchEngineModule,
     SearchModule,
     MissionModule,

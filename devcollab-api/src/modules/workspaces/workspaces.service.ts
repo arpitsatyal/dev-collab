@@ -9,9 +9,10 @@ import { WorkspaceRepository } from './infrastructure/workspace.repository';
 import { WorkspaceImportRepository } from './infrastructure/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
+import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
 
 @Injectable()
-export class WorkspacesService {
+export class WorkspacesService implements WorkspaceActionsPort {
   constructor(
     private syncPort: SyncEventPort,
     private readonly workspaceRepo: WorkspaceRepository,
@@ -48,6 +49,13 @@ export class WorkspacesService {
 
     await this.syncPort.publishSyncEvent('workspace', workspace);
     return workspace;
+  }
+
+  /**
+   * Fulfillment for WorkspaceActionsPort
+   */
+  async createWorkspace(data: { title: string; description?: string }, user: { id: string }) {
+    return this.addNewWorkspace(data, user);
   }
 
   async togglePinWorkspace(

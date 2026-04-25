@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MissionRepository, MissionStepRepository } from './repositories/mission.repository';
 import { MissionLogRepository } from './repositories/mission-log.repository';
 import { MissionStatus, MissionStepStatus } from 'src/common/drizzle/schema';
-import { Subject } from 'rxjs';
+import { Subject, concatMap, from } from 'rxjs';
 import { AgentPort } from '../ai/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
 import { OnEvent } from '@nestjs/event-emitter';
@@ -20,41 +20,67 @@ export interface MissionLog {
 export class MissionService {
   private readonly logger = new Logger(MissionService.name);
   private readonly logSubject = new Subject<MissionLog>();
+  
+  // The magic for the Persistence Tax: A sequential background queue
+  private readonly eventQueue = new Subject<AgentActionEvent>();
 
   constructor(
     private readonly missionRepo: MissionRepository,
     private readonly stepRepo: MissionStepRepository,
     private readonly logRepo: MissionLogRepository,
     private readonly agentPort: AgentPort,
-  ) { }
+  ) { 
+    // Initialize the background processor
+    this.eventQueue.pipe(
+      // concatMap ensures every event is processed one-by-one IN ORDER
+      concatMap(event => from(this.processAgentAction(event)))
+    ).subscribe({
+      error: (err) => this.logger.error(`Error in background mission event processing: ${err.message}`)
+    });
+  }
 
   @OnEvent(AgentEvents.ACTION)
-  async handleAgentAction(event: AgentActionEvent) {
+  handleAgentAction(event: AgentActionEvent) {
+    // FIRE AND FORGET: The AI continues immediately.
+    // The event is added to our sequential background queue.
+    this.eventQueue.next(event);
+  }
+
+  /**
+   * Internal processor for the queue. 
+   * This is where the actual DB writes happen.
+   */
+  private async processAgentAction(event: AgentActionEvent) {
     const { missionId, type, label, payload, callId } = event;
 
-    switch (type) {
-      case 'REASONING_START':
-        await this.pushLog(missionId, label);
-        break;
-      case 'TOOL_START': {
-        const step = await this.addStep(missionId, label, 'RUNNING', { callId });
-        await this.pushLog(
-          missionId,
-          `Agent executing ${payload?.tool || 'tool'}`,
-          step.id,
-        );
-        break;
-      }
-      case 'TOOL_END': {
-        const mission = await this.getMission(missionId);
-        const runningStep = mission?.steps?.find(
-          (s) => (s.payload as any)?.callId === callId,
-        );
-        if (runningStep) {
-          await this.updateStepStatus(runningStep.id, missionId, 'COMPLETED');
+    try {
+      switch (type) {
+        case 'REASONING_START':
+          await this.pushLog(missionId, label);
+          break;
+        case 'TOOL_START': {
+          const step = await this.addStep(missionId, label, 'RUNNING', { callId });
+          await this.pushLog(
+            missionId,
+            `Agent executing ${payload?.tool || 'tool'}`,
+            step.id,
+          );
+          break;
         }
-        break;
+        case 'TOOL_END': {
+          const mission = await this.getMission(missionId);
+          // Find by callId for precision
+          const runningStep = mission?.steps?.find(
+            (s) => (s.payload as any)?.callId === callId,
+          );
+          if (runningStep) {
+            await this.updateStepStatus(runningStep.id, missionId, 'COMPLETED');
+          }
+          break;
+        }
       }
+    } catch (error) {
+      this.logger.error(`Failed to process agent action ${type} for mission ${missionId}: ${error.message}`);
     }
   }
 
@@ -63,20 +89,19 @@ export class MissionService {
   }
 
   async createMission(workspaceId: string, goal: string) {
-    const mission = await this.missionRepo.create({
+    return await this.missionRepo.create({
       workspaceId,
       goal,
       status: 'PENDING',
     });
-    return mission;
   }
 
   async getMission(id: string) {
-    return this.missionRepo.findById(id);
+    return await this.missionRepo.findById(id);
   }
 
   async getWorkspaceMissions(workspaceId: string) {
-    return this.missionRepo.findByWorkspaceId(workspaceId);
+    return await this.missionRepo.findByWorkspaceId(workspaceId);
   }
 
   async addStep(
@@ -104,17 +129,13 @@ export class MissionService {
 
   async updateMissionStatus(id: string, status: MissionStatus) {
     const updated = await this.missionRepo.update(id, { status, updatedAt: new Date() });
-
     await this.pushLog(id, `Mission status changed to ${status}`, undefined, 'status_change');
-
     return updated;
   }
 
   async updateStepStatus(id: string, missionId: string, status: MissionStepStatus) {
     const updated = await this.stepRepo.update(id, { status });
-
     await this.pushLog(missionId, `Step status changed to ${status}`, id, 'status_change');
-
     return updated;
   }
 
@@ -146,8 +167,6 @@ export class MissionService {
 
     await this.updateMissionStatus(id, 'RUNNING');
 
-    //maybe we have a better way.
-    // Run the agent in the background
     (async () => {
       try {
         await this.pushLog(id, `Launching autonomous agent for goal: ${mission.goal}`);

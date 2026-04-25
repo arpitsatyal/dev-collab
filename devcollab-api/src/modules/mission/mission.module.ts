@@ -1,6 +1,4 @@
 import { MissionController } from './mission.controller';
-import { MissionRepository, MissionStepRepository } from './repositories/mission.repository';
-import { MissionLogRepository } from './repositories/mission-log.repository';
 import { Module } from '@nestjs/common';
 import { AgentModule } from '../ai/agent/agent.module';
 import { MissionService } from './mission.service';
@@ -10,8 +8,7 @@ import { MissionService } from './mission.service';
     AgentModule,
   ],
   controllers: [MissionController],
-  providers: [MissionService, MissionRepository, MissionStepRepository, MissionLogRepository],
-  exports: [MissionService, MissionRepository, MissionStepRepository, MissionLogRepository],
+  providers: [MissionService],
+  exports: [MissionService],
 })
-
 export class MissionModule { }

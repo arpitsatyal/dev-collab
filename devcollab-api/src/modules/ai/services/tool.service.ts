@@ -5,7 +5,9 @@ import { ToolRegistry } from '../ports/tool.port';
 import { SnippetRepository } from 'src/modules/snippets/repositories/snippet.repository';
 import { DocRepository } from 'src/modules/docs/repositories/doc.repository';
 import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
-import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
+import { WorkspaceRepository } from 'src/modules/workspaces/infrastructure/workspace.repository';
+import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
+import { v4 as uuid } from 'uuid';
 
 @Injectable()
 export class ToolService implements ToolRegistry {
@@ -13,7 +15,8 @@ export class ToolService implements ToolRegistry {
     private readonly snippetRepo: SnippetRepository,
     private readonly docRepo: DocRepository,
     private readonly workItemRepo: WorkItemRepository,
-    private readonly workspacesService: WorkspacesService,
+    private readonly workspaceRepo: WorkspaceRepository,
+    private readonly workspaceActions: WorkspaceActionsPort,
   ) { }
 
   private safeParseContent(content: unknown): string {
@@ -28,7 +31,7 @@ export class ToolService implements ToolRegistry {
   private async handleSearchWorkspaces(
     { query }: { query?: string },
   ): Promise<string> {
-    const workspaces = await this.workspacesService.getAllWorkspaces(0, 50);
+    const workspaces = await this.workspaceRepo.findPaginated(0, 50);
     const filtered = query 
       ? workspaces.filter(w => w.title.toLowerCase().includes(query.toLowerCase()))
       : workspaces;
@@ -74,7 +77,7 @@ export class ToolService implements ToolRegistry {
     if (!workspaceId) return 'Workspace ID is required to fetch docs.';
 
     const docs = labelFilter
-      ? await this.docRepo.findManyByLabel(workspaceId, labelFilter, 20)
+      ? await this.docRepo.findManyBySearch(workspaceId, labelFilter, 20)
       : await this.docRepo.findByWorkspaceId(workspaceId, 100);
 
     if (docs.length === 0) {
@@ -122,17 +125,11 @@ export class ToolService implements ToolRegistry {
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
-    const snippets = await this.snippetRepo.findManyBySearch(
-      workspaceId,
-      query,
-      3,
-    );
-    const workItems = await this.workItemRepo.findManyBySearch(
-      workspaceId,
-      query,
-      3,
-    );
-    const docs = await this.docRepo.findManyByLabel(workspaceId, query, 3);
+    const [snippets, workItems, docs] = await Promise.all([
+      this.snippetRepo.findManyBySearch(workspaceId, query, 3),
+      this.workItemRepo.findManyBySearch(workspaceId, query, 3),
+      this.docRepo.findManyBySearch(workspaceId, query, 3),
+    ]);
 
     if (snippets.length === 0 && workItems.length === 0 && docs.length === 0) {
       return 'No relevant content found for that query.';
@@ -147,11 +144,13 @@ export class ToolService implements ToolRegistry {
     if (!workspaceId) return 'Workspace ID is required to fetch overview.';
 
     const [workspace, snippets, workItems, docs] = await Promise.all([
-      this.workspacesService.getWorkspace(workspaceId),
+      this.workspaceRepo.findById(workspaceId),
       this.snippetRepo.findByWorkspaceId(workspaceId, 5),
       this.workItemRepo.findByWorkspaceId(workspaceId, 5),
       this.docRepo.findByWorkspaceId(workspaceId, 5),
     ]);
+
+    if (!workspace) return 'Workspace not found.';
 
     const items = {
       snippets: snippets.map((s: any) => ({
@@ -194,17 +193,14 @@ export class ToolService implements ToolRegistry {
   ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
     try {
-      console.log(`[ToolService] Attempting to create snippet in workspace: ${workspaceId}`);
       const snippet = await this.snippetRepo.create({
         title: args.title,
         language: args.language,
         content: args.content,
         workspaceId,
       });
-      console.log(`[ToolService] Snippet created successfully: ${snippet.id}`);
       return `Successfully created snippet: ${snippet.title} (ID: ${snippet.id})`;
     } catch (error) {
-      console.error(`[ToolService] Error creating snippet:`, error);
       return `Error: Failed to create snippet. Technical details: ${error.message}`;
     }
   }
@@ -242,9 +238,18 @@ export class ToolService implements ToolRegistry {
       label: args.label,
       content: args.content,
       workspaceId,
-      roomId: '', // TODO: Generate a unique room ID
+      roomId: uuid(),
     });
     return `Successfully created documentation: ${doc.label} (ID: ${doc.id})`;
+  }
+
+  private async handleUpdateDoc(
+    args: { id: string; content: any },
+  ): Promise<string> {
+    const doc = await this.docRepo.update(args.id, {
+      content: args.content,
+    });
+    return `Successfully updated documentation: ${doc.label}`;
   }
 
   private async handleCreateWorkspace(
@@ -253,10 +258,12 @@ export class ToolService implements ToolRegistry {
   ): Promise<string> {
     try {
       const currentWorkspace =
-        await this.workspacesService.getWorkspace(currentWorkspaceId);
+        await this.workspaceRepo.findById(currentWorkspaceId);
+      if (!currentWorkspace) return 'Current workspace context not found.';
+      
       const ownerId = currentWorkspace.ownerId;
 
-      const newWorkspace = await this.workspacesService.addNewWorkspace(
+      const newWorkspace = await this.workspaceActions.createWorkspace(
         {
           title: args.title,
           description: args.description,
@@ -409,6 +416,16 @@ export class ToolService implements ToolRegistry {
       func: (args) => this.handleCreateWorkspace(args, workspaceId),
     } as any);
 
+    const updateDocTool = new DynamicStructuredTool({
+      name: 'updateDoc',
+      description: 'Update the content of an existing documentation document.',
+      schema: z.object({
+        id: z.string().describe('The ID of the document to update'),
+        content: z.any().describe('The new content for the document'),
+      }),
+      func: (args) => this.handleUpdateDoc(args),
+    } as any);
+
     const list: DynamicStructuredTool[] = [
       searchWorkspacesTool,
       snippetsTool,
@@ -420,6 +437,7 @@ export class ToolService implements ToolRegistry {
       createWorkItemTool,
       updateWorkItemTool,
       createDocTool,
+      updateDocTool,
       createWorkspaceTool,
     ];
 
