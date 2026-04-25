@@ -7,6 +7,7 @@ import { AgentPort } from '../ai/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
 import { OnEvent } from '@nestjs/event-emitter';
 import { AgentEvents, AgentActionEvent } from '../ai/agent/agent.events';
+import { QueuePort, QueueType } from '../queue/ports/queue.port';
 
 export interface MissionLog {
   missionId: string;
@@ -20,7 +21,7 @@ export interface MissionLog {
 export class MissionService {
   private readonly logger = new Logger(MissionService.name);
   private readonly logSubject = new Subject<MissionLog>();
-  
+
   // The magic for the Persistence Tax: A sequential background queue
   private readonly eventQueue = new Subject<AgentActionEvent>();
 
@@ -29,7 +30,8 @@ export class MissionService {
     private readonly stepRepo: MissionStepRepository,
     private readonly logRepo: MissionLogRepository,
     private readonly agentPort: AgentPort,
-  ) { 
+    private readonly queuePort: QueuePort,
+  ) {
     // Initialize the background processor
     this.eventQueue.pipe(
       // concatMap ensures every event is processed one-by-one IN ORDER
@@ -166,26 +168,39 @@ export class MissionService {
     if (!mission) throw new Error('Mission not found');
 
     await this.updateMissionStatus(id, 'RUNNING');
+    await this.pushLog(id, 'Mission queued for execution...');
 
-    (async () => {
-      try {
-        await this.pushLog(id, `Launching autonomous agent for goal: ${mission.goal}`);
+    // Dispatch to SQS for background processing
+    await this.queuePort.sendMessage(
+      { type: 'RUN_MISSION', missionId: id },
+      QueueType.MISSION
+    );
+  }
 
-        const result = await this.agentPort.runAgentGraph(
-          [new HumanMessage(mission.goal)],
-          mission.workspaceId,
-          id,
-        );
+  /**
+   * Actual logic executed by the background worker
+   */
+  async executeMission(id: string) {
+    const mission = await this.getMission(id);
+    if (!mission) return;
 
-        await this.addStep(id, 'Finalizing Mission', 'COMPLETED');
-        this.logger.log(`Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`);
-        await this.updateMissionStatus(id, 'COMPLETED');
-        await this.pushLog(id, 'Mission completed successfully!');
-      } catch (error) {
-        this.logger.error(`Mission ${id} failed:`, error);
-        await this.updateMissionStatus(id, 'FAILED');
-        await this.pushLog(id, `Mission failed: ${error.message}`);
-      }
-    })();
+    try {
+      await this.pushLog(id, `Launching autonomous agent for goal: ${mission.goal}`);
+
+      const result = await this.agentPort.runAgentGraph(
+        [new HumanMessage(mission.goal)],
+        mission.workspaceId,
+        id,
+      );
+
+      await this.addStep(id, 'Finalizing Mission', 'COMPLETED');
+      this.logger.log(`Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`);
+      await this.updateMissionStatus(id, 'COMPLETED');
+      await this.pushLog(id, 'Mission completed successfully!');
+    } catch (error) {
+      this.logger.error(`Mission ${id} failed:`, error);
+      await this.updateMissionStatus(id, 'FAILED');
+      await this.pushLog(id, `Mission failed: ${error.message}`);
+    }
   }
 }
