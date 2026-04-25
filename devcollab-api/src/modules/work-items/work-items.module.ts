@@ -5,9 +5,10 @@ import { WorkItemsService } from './work-items.service';
 import { QueueModule } from 'src/modules/queue/queue.module';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
 import { WorkItemRepository } from './repositories/work-item.repository';
+import { UsersModule } from '../users/users.module';
 
 @Module({
-  imports: [QueueModule, SyncEventModule],
+  imports: [QueueModule, SyncEventModule, UsersModule],
   controllers: [WorkItemsController, DueWorkItemsController],
   providers: [WorkItemsService, WorkItemRepository],
   exports: [WorkItemsService, WorkItemRepository],

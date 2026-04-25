@@ -1,27 +1,20 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import { workspaces, workItems } from 'src/common/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { WorkspaceRepository } from '../../workspaces/infrastructure/workspace.repository';
+import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
 import { LlmGateway } from '../ports/llm.port';
 import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
 
 @Injectable()
 export class SuggestionService {
   constructor(
-    private readonly drizzle: DrizzleService,
+    private readonly workspaceRepo: WorkspaceRepository,
+    private readonly workItemRepo: WorkItemRepository,
     private readonly llmFactory: LlmGateway,
   ) { }
 
   private async getWorkspaceWithContext(workspaceId: string) {
-    const workspace = await this.drizzle.db.query.workspaces.findFirst({
-      where: eq(workspaces.id, workspaceId),
-      with: {
-        snippets: { limit: 5 },
-        docs: { limit: 5 },
-        workItems: { limit: 5 },
-      },
-    });
+    const workspace = await this.workspaceRepo.findByIdWithContext(workspaceId);
 
     if (!workspace) {
       throw new NotFoundException('Workspace not found');
@@ -52,13 +45,13 @@ Workspace title: ${workspace.title}
 Workspace description: ${workspace.description || 'No description'}
 
 Existing work items:
-${workspace.workItems.map((w: Record<string, any>) => `- ${w.title} [${w.status}]`).join('\n') || 'None'}
+${workspace.workItems.map((w: any) => `- ${w.title} [${w.status}]`).join('\n') || 'None'}
 
 Recent snippets:
-${workspace.snippets.map((s: Record<string, any>) => `- ${s.title} (${s.language})`).join('\n') || 'None'}
+${workspace.snippets.map((s: any) => `- ${s.title} (${s.language})`).join('\n') || 'None'}
 
 Docs:
-${workspace.docs.map((d: Record<string, any>) => `- ${d.label}`).join('\n') || 'None'}
+${workspace.docs.map((d: any) => `- ${d.label}`).join('\n') || 'None'}
 
 Return 3 concrete work items with a short rationale. Respond in JSON array with fields:
 - title: Concise title
@@ -76,10 +69,7 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
   async suggestSnippetFilenameForCode(params: SuggestSnippetFilenameDto) {
     const { code, language, workspaceId } = params;
 
-    const workspace = await this.drizzle.db.query.workspaces.findFirst({
-      where: eq(workspaces.id, workspaceId),
-      columns: { title: true, description: true },
-    });
+    const workspace = await this.workspaceRepo.findById(workspaceId);
 
     const llm = await this.llmFactory.getSpeedyLLM();
     const prompt = `
@@ -98,18 +88,7 @@ Respond with a single filename (no extension) using kebab-case. Keep it under 40
   }
 
   async generateImplementationPlan(workItemId: string) {
-    const workItem = await this.drizzle.db.query.workItems.findFirst({
-      where: eq(workItems.id, workItemId),
-      with: {
-        workspace: true,
-        snippets: {
-          limit: 5,
-          with: {
-            snippet: true,
-          },
-        },
-      },
-    });
+    const workItem = await this.workItemRepo.findById(workItemId);
 
     if (!workItem) {
       throw new NotFoundException('Work item not found');
@@ -123,7 +102,7 @@ Status: ${workItem.status}
 Description: ${workItem.description || 'No description'}
 Workspace: ${workItem.workspace.title}
 Related snippets:
-${workItem.snippets.map((s: Record<string, any>) => `- ${(s.snippet as any).title} (${(s.snippet as any).language})`).join('\n') || 'None'}
+${workItem.snippets?.map((s: any) => `- ${s.snippet.title} (${s.snippet.language})`).join('\n') || 'None'}
 
 Return a JSON object with:
 - summary: short overview

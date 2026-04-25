@@ -1,14 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { eq, count, inArray } from 'drizzle-orm';
 import { UserRepository } from './repositories/user.repository';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import {
-  workspaces,
-  snippets,
-  docs,
-  users,
-  workItems,
-} from 'src/common/drizzle/schema';
+import { WorkspaceRepository } from '../workspaces/infrastructure/workspace.repository';
+import { SnippetRepository } from '../snippets/repositories/snippet.repository';
+import { DocRepository } from '../docs/repositories/doc.repository';
+import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
+import { users } from 'src/common/drizzle/schema';
 import { InferInsertModel } from 'drizzle-orm';
 
 type CreateUserDTO = Omit<
@@ -20,8 +16,11 @@ type CreateUserDTO = Omit<
 export class UsersService {
   constructor(
     private readonly userRepo: UserRepository,
-    private readonly drizzle: DrizzleService,
-  ) {}
+    private readonly workspaceRepo: WorkspaceRepository,
+    private readonly snippetRepo: SnippetRepository,
+    private readonly docRepo: DocRepository,
+    private readonly workItemRepo: WorkItemRepository,
+  ) { }
 
   async findByEmail(email: string) {
     return this.userRepo.findByEmail(email);
@@ -51,47 +50,14 @@ export class UsersService {
     const user = await this.userRepo.findByEmail(email);
     if (!user) throw new NotFoundException('User not found');
 
-    // Get all workspace IDs owned by this user
-    const userWorkspaces = await this.drizzle.db
-      .select({ id: workspaces.id })
-      .from(workspaces)
-      .where(eq(workspaces.ownerId, user.id));
-
-    const workspaceIds = userWorkspaces.map((w) => w.id);
+    const workspaceIds = await this.workspaceRepo.findIdsByOwnerId(user.id);
 
     const [workspacesCount, snippetsCount, docsCount, workItemsCount] =
       await Promise.all([
-        // Count owned workspaces
-        this.drizzle.db
-          .select({ value: count() })
-          .from(workspaces)
-          .where(eq(workspaces.ownerId, user.id))
-          .then((r) => r[0].value),
-
-        // Count snippets authored
-        this.drizzle.db
-          .select({ value: count() })
-          .from(snippets)
-          .where(eq(snippets.authorId, user.id))
-          .then((r) => r[0].value),
-
-        // Count docs in user's workspaces
-        workspaceIds.length > 0
-          ? this.drizzle.db
-              .select({ value: count() })
-              .from(docs)
-              .where(inArray(docs.workspaceId, workspaceIds))
-              .then((r) => r[0].value)
-          : Promise.resolve(0),
-
-        // Count workItems in user's workspaces
-        workspaceIds.length > 0
-          ? this.drizzle.db
-              .select({ value: count() })
-              .from(workItems)
-              .where(inArray(workItems.workspaceId, workspaceIds))
-              .then((r) => r[0].value)
-          : Promise.resolve(0),
+        this.workspaceRepo.countByOwnerId(user.id),
+        this.snippetRepo.countByAuthorId(user.id),
+        this.docRepo.countByWorkspaceIds(workspaceIds),
+        this.workItemRepo.countByWorkspaceIds(workspaceIds),
       ]);
 
     return {

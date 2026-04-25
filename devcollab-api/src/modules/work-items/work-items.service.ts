@@ -8,9 +8,7 @@ import * as dayjs from 'dayjs';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
 import { WorkItemStatus } from 'src/common/drizzle/schema';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import { users } from 'src/common/drizzle/schema';
-import { eq } from 'drizzle-orm';
+import { UserRepository } from '../users/repositories/user.repository';
 
 @Injectable()
 export class WorkItemsService {
@@ -18,7 +16,7 @@ export class WorkItemsService {
     private readonly queueClient: QueuePort,
     private readonly syncPort: SyncEventPort,
     private readonly workItemRepo: WorkItemRepository,
-    private readonly drizzle: DrizzleService,
+    private readonly userRepo: UserRepository,
   ) { }
 
   async getWorkItems(workspaceId: string) {
@@ -54,9 +52,7 @@ export class WorkItemsService {
 
     // Notify assignee if present
     if (workItem.assignedToId) {
-      const assignee = await this.drizzle.db.query.users.findFirst({
-        where: eq(users.id, workItem.assignedToId),
-      });
+      const assignee = await this.userRepo.findById(workItem.assignedToId);
 
       if (assignee?.email) {
         await this.queueClient.sendMessage({
@@ -83,9 +79,7 @@ export class WorkItemsService {
     });
 
     if (updatedWorkItem.assignedToId) {
-      const assignee = await this.drizzle.db.query.users.findFirst({
-        where: eq(users.id, updatedWorkItem.assignedToId),
-      });
+      const assignee = await this.userRepo.findById(updatedWorkItem.assignedToId);
 
       if (assignee?.email) {
         await this.queueClient.sendMessage({

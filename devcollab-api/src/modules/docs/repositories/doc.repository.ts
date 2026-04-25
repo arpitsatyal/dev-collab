@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, ilike, and } from 'drizzle-orm';
+import { eq, ilike, and, count, inArray, or } from 'drizzle-orm';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { docs } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
@@ -10,38 +10,34 @@ export class DocRepository extends BaseRepository<typeof docs> {
     super(drizzle, docs);
   }
 
-  findUnique(id: string) {
-    return this.drizzle.db.query.docs.findFirst({
+  async findUnique(id: string) {
+    return await this.drizzle.db.query.docs.findFirst({
       where: eq(docs.id, id),
     });
   }
 
-  findByRoomId(roomId: string) {
-    return this.drizzle.db.query.docs.findFirst({
+  async findByRoomId(roomId: string) {
+    return await this.drizzle.db.query.docs.findFirst({
       where: eq(docs.roomId, roomId),
     });
   }
 
-  findByWorkspaceId(workspaceId: string, limit?: number) {
-    const query = this.drizzle.db
-      .select()
-      .from(docs)
-      .where(eq(docs.workspaceId, workspaceId));
-    if (limit) return query.limit(limit);
-    return query;
+  async findByWorkspaceId(workspaceId: string, limit?: number) {
+    return await this.drizzle.db.query.docs.findMany({
+      where: eq(docs.workspaceId, workspaceId),
+      limit,
+    });
   }
 
-  findManyByLabel(workspaceId: string, search: string, limit = 3) {
-    return this.drizzle.db
-      .select()
-      .from(docs)
-      .where(
-        and(
-          eq(docs.workspaceId, workspaceId),
-          ilike(docs.label, `%${search}%`),
-        ),
-      )
-      .limit(limit);
+  async findManyBySearch(workspaceId: string, search: string, limit = 3) {
+    return await this.drizzle.db.query.docs.findMany({
+      where: and(
+        eq(docs.workspaceId, workspaceId),
+        ilike(docs.label, `%${search}%`),
+      ),
+      limit,
+      with: { workspace: true },
+    });
   }
 
   async updateByRoomId(
@@ -58,5 +54,14 @@ export class DocRepository extends BaseRepository<typeof docs> {
       .where(eq(docs.roomId, roomId))
       .returning();
     return row;
+  }
+
+  async countByWorkspaceIds(workspaceIds: string[]) {
+    if (workspaceIds.length === 0) return 0;
+    const res = await this.drizzle.db
+      .select({ value: count() })
+      .from(docs)
+      .where(inArray(docs.workspaceId, workspaceIds));
+    return res[0].value;
   }
 }

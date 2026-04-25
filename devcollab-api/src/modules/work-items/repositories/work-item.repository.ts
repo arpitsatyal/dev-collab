@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, and, gte, lte, ilike, or } from 'drizzle-orm';
+import { eq, and, gte, lte, ilike, or, count, inArray } from 'drizzle-orm';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { workItems, workItemsToSnippets } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
@@ -14,23 +14,24 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
   }
 
   async findByWorkspaceId(workspaceId: string, limit?: number) {
-    const query = this.drizzle.db.query.workItems.findMany({
+    return await this.drizzle.db.query.workItems.findMany({
       where: eq(workItems.workspaceId, workspaceId),
       with: {
         assignedTo: true,
         author: true,
+        workspace: true,
       },
       limit,
     });
-    return query;
   }
 
   async findById(id: string) {
-    return this.drizzle.db.query.workItems.findFirst({
+    return await this.drizzle.db.query.workItems.findFirst({
       where: eq(workItems.id, id),
       with: {
         assignedTo: true,
         author: true,
+        workspace: true,
         snippets: {
           with: {
             snippet: true,
@@ -41,7 +42,7 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
   }
 
   async findDueSoon(startDate: Date, endDate: Date) {
-    return this.drizzle.db.query.workItems.findMany({
+    return await this.drizzle.db.query.workItems.findMany({
       where: and(
         gte(workItems.dueDate, startDate),
         lte(workItems.dueDate, endDate),
@@ -53,7 +54,7 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
   }
 
   async findManyBySearch(workspaceId: string, query: string, limit = 3) {
-    return this.drizzle.db.query.workItems.findMany({
+    return await this.drizzle.db.query.workItems.findMany({
       where: and(
         eq(workItems.workspaceId, workspaceId),
         or(
@@ -61,6 +62,9 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
           ilike(workItems.description, `%${query}%`),
         ),
       ),
+      with: {
+        workspace: true,
+      },
       limit,
     });
   }
@@ -150,5 +154,22 @@ export class WorkItemRepository extends BaseRepository<typeof workItems> {
         .returning();
       return deleted;
     });
+  }
+
+  async countByWorkspaceIds(workspaceIds: string[]) {
+    if (workspaceIds.length === 0) return 0;
+    const res = await this.drizzle.db
+      .select({ value: count() })
+      .from(workItems)
+      .where(inArray(workItems.workspaceId, workspaceIds));
+    return res[0].value;
+  }
+
+  async countByAuthorId(authorId: string) {
+    const res = await this.drizzle.db
+      .select({ value: count() })
+      .from(workItems)
+      .where(eq(workItems.authorId, authorId));
+    return res[0].value;
   }
 }

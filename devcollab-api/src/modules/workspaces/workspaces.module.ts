@@ -16,6 +16,6 @@ import { SourceCodePort } from './ports/source-code.port';
     { provide: SourceCodePort, useClass: GithubClient },
   ],
   controllers: [WorkspacesController],
-  exports: [WorkspacesService],
+  exports: [WorkspacesService, WorkspaceRepository],
 })
 export class WorkspacesModule {}

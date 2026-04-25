@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq, and, sql } from 'drizzle-orm';
+import { eq, and, sql, count, or, ilike } from 'drizzle-orm';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { workspaces, userPinnedWorkspaces } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
@@ -11,15 +11,25 @@ export class WorkspaceRepository extends BaseRepository<typeof workspaces> {
     super(drizzle, workspaces);
   }
 
-  findPaginated(skip = 0, take = 20) {
-    return this.drizzle.db.query.workspaces.findMany({
+  async findPaginated(skip = 0, take = 20) {
+    return await this.drizzle.db.query.workspaces.findMany({
       offset: skip,
       limit: take,
     });
   }
 
-  findManyRaw(userId: string, skip = 0, take = 20) {
-    return this.drizzle.db.execute(
+  async findManyBySearch(query: string, limit = 3) {
+    return await this.drizzle.db.query.workspaces.findMany({
+      where: or(
+        ilike(workspaces.title, `%${query}%`),
+        ilike(workspaces.description, `%${query}%`),
+      ),
+      limit,
+    });
+  }
+
+  async findManyRaw(userId: string, skip = 0, take = 20) {
+    return await this.drizzle.db.execute(
       sql`
         SELECT w.*,
               (uww."userId" IS NOT NULL) AS "isPinned"
@@ -60,5 +70,32 @@ export class WorkspaceRepository extends BaseRepository<typeof workspaces> {
           eq(userPinnedWorkspaces.workspaceId, workspaceId),
         ),
       );
+  }
+
+  async countByOwnerId(ownerId: string) {
+    const res = await this.drizzle.db
+      .select({ value: count() })
+      .from(workspaces)
+      .where(eq(workspaces.ownerId, ownerId));
+    return res[0].value;
+  }
+
+  async findIdsByOwnerId(ownerId: string) {
+    const res = await this.drizzle.db
+      .select({ id: workspaces.id })
+      .from(workspaces)
+      .where(eq(workspaces.ownerId, ownerId));
+    return res.map((r) => r.id);
+  }
+
+  async findByIdWithContext(id: string, limit = 5) {
+    return await this.drizzle.db.query.workspaces.findFirst({
+      where: eq(workspaces.id, id),
+      with: {
+        snippets: { limit },
+        docs: { limit },
+        workItems: { limit },
+      },
+    });
   }
 }
