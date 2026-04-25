@@ -19,6 +19,7 @@ export const missionSteps = pgTable('MissionStep', {
   missionId: text('missionId').notNull(),
   label: text('label').notNull(),
   status: missionStepStatusEnum('status').default('PENDING').notNull(),
+  payload: json('payload'),
   createdAt: timestamp('createdAt').defaultNow().notNull(),
 });
 

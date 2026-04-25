@@ -50,6 +50,7 @@ export class AgentNodesService {
         missionId,
         type: 'TOOL_START',
         label: `Tool: ${tc.name}`,
+        callId: tc.id,
         payload: { tool: tc.name },
       } as AgentActionEvent);
     }
@@ -69,6 +70,7 @@ export class AgentNodesService {
         missionId,
         type: 'TOOL_END',
         label: `Tool: ${tc.name}`,
+        callId: tc.id,
         payload: { tool: tc.name },
       } as AgentActionEvent);
     }

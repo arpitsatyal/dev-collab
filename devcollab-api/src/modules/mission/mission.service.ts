@@ -30,14 +30,14 @@ export class MissionService {
 
   @OnEvent(AgentEvents.ACTION)
   async handleAgentAction(event: AgentActionEvent) {
-    const { missionId, type, label, payload } = event;
+    const { missionId, type, label, payload, callId } = event;
 
     switch (type) {
       case 'REASONING_START':
         await this.pushLog(missionId, label);
         break;
       case 'TOOL_START': {
-        const step = await this.addStep(missionId, label, 'RUNNING');
+        const step = await this.addStep(missionId, label, 'RUNNING', { callId });
         await this.pushLog(
           missionId,
           `Agent executing ${payload?.tool || 'tool'}`,
@@ -48,7 +48,7 @@ export class MissionService {
       case 'TOOL_END': {
         const mission = await this.getMission(missionId);
         const runningStep = mission?.steps?.find(
-          (s) => s.label === label && s.status === 'RUNNING',
+          (s) => (s.payload as any)?.callId === callId,
         );
         if (runningStep) {
           await this.updateStepStatus(runningStep.id, missionId, 'COMPLETED');
@@ -79,11 +79,17 @@ export class MissionService {
     return this.missionRepo.findByWorkspaceId(workspaceId);
   }
 
-  async addStep(missionId: string, label: string, status: MissionStepStatus = 'PENDING') {
+  async addStep(
+    missionId: string,
+    label: string,
+    status: MissionStepStatus = 'PENDING',
+    payload?: any,
+  ) {
     const step = await this.stepRepo.create({
       missionId,
       label,
       status,
+      payload,
     });
 
     this.logSubject.next({
