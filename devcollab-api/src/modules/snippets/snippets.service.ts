@@ -8,7 +8,7 @@ export class SnippetsService {
   constructor(
     private syncPort: SyncEventPort,
     private readonly snippetRepo: SnippetRepository,
-  ) {}
+  ) { }
 
   async getSnippet(snippetId: string) {
     const snippet = await this.snippetRepo.findUnique(snippetId);

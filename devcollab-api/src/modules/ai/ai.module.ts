@@ -4,58 +4,22 @@ import { AiController } from './controllers/ai.controller';
 import { ChatEngineService } from './services/chat-engine.service';
 import { SuggestionService } from './services/suggestion.service';
 import { MessageModule } from '../message/message.module';
-import { MissionModule } from '../mission/mission.module';
-import { forwardRef } from '@nestjs/common';
-import { WorkItemsModule } from '../work-items/work-items.module';
-import { WorkspacesModule } from '../workspaces/workspaces.module';
-import { SnippetRepository } from '../snippets/repositories/snippet.repository';
-import { DocRepository } from '../docs/repositories/doc.repository';
-import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
-import { LlmModule } from './llms/llm.module';
-import { VectorStoreModule } from 'src/common/vector-store/vector-store.module';
-import { AiConfig } from './ai.config';
-import { GenerationPort } from './ports/generation.port';
-import { PromptPort } from './ports/prompt.port';
-import { ToolRegistry } from './ports/tool.port';
-import { RetrievalPort } from './ports/retrieval.port';
-import { GenerationService } from './services/generation.service';
-import { PromptService } from './services/prompt.service';
-import { RetrievalService } from './services/retrieval.service';
-import { ToolService } from './services/tool.service';
+import { AiCoreModule } from './ai-core.module';
 import { AgentModule } from './agent/agent.module';
+import { WorkItemsModule } from '../work-items/work-items.module';
 
 @Module({
   imports: [
+    AiCoreModule,
+    AgentModule,
     MessageModule,
     WorkItemsModule,
-    LlmModule,
-    VectorStoreModule,
-    WorkspacesModule,
-    forwardRef(() => MissionModule),
-    forwardRef(() => AgentModule),
-  ],
-  exports: [
-    AiConfig,
-    LlmModule,
-    GenerationPort,
-    PromptPort,
-    RetrievalPort,
-    ToolRegistry
   ],
   providers: [
-    AiConfig,
     AiService,
     ChatEngineService,
     SuggestionService,
-    { provide: GenerationPort, useClass: GenerationService },
-    { provide: PromptPort, useClass: PromptService },
-    { provide: RetrievalPort, useClass: RetrievalService },
-    { provide: ToolRegistry, useClass: ToolService },
-    SnippetRepository,
-    DocRepository,
-    WorkItemRepository,
   ],
   controllers: [AiController],
 })
-
 export class AiModule { }

@@ -1,6 +1,5 @@
-import { Module, forwardRef } from '@nestjs/common';
-import { MissionModule } from '../../../modules/mission/mission.module';
-import { AiModule } from '../ai.module';
+import { Module } from '@nestjs/common';
+import { AiCoreModule } from '../ai-core.module';
 import { AgentNodesService } from './services/agent-nodes.service';
 import { AgentPromptsService } from './services/agent-prompts.service';
 import { AgentGraphFactoryService } from './services/agent-graph-factory.service';
@@ -9,8 +8,7 @@ import { AgentPort } from '../ports/agent.port';
 
 @Module({
   imports: [
-    forwardRef(() => MissionModule),
-    forwardRef(() => AiModule),
+    AiCoreModule,
   ],
   providers: [
     AgentNodesService,
@@ -20,4 +18,4 @@ import { AgentPort } from '../ports/agent.port';
   ],
   exports: [AgentPort],
 })
-export class AgentModule {}
+export class AgentModule { }

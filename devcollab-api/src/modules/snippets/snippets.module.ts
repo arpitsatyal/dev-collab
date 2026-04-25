@@ -8,6 +8,7 @@ import { SnippetRepository } from './repositories/snippet.repository';
   imports: [SyncEventModule],
   providers: [SnippetsService, SnippetRepository],
   controllers: [SnippetsController],
+  exports: [SnippetsService, SnippetRepository],
 })
 
 export class SnippetsModule { }

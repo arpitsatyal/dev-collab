@@ -2,13 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
 import { MessagesAnnotation } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { MissionService } from '../../../mission/mission.service';
+import { EventEmitter2 } from '@nestjs/event-emitter';
+import { AgentEvents, AgentActionEvent } from '../agent.events';
 
 @Injectable()
 export class AgentNodesService {
   private readonly logger = new Logger(AgentNodesService.name);
 
-  constructor(private readonly missionService: MissionService) { }
+  constructor(private readonly eventEmitter: EventEmitter2) { }
 
   /**
    * Node: Agent/Model Reasoning
@@ -19,8 +20,11 @@ export class AgentNodesService {
     missionId?: string,
   ): Promise<{ messages: BaseMessage[] }> {
     if (missionId) {
-      //maybe use better event stream
-      await this.missionService.pushLog(missionId, 'AI is reasoning...');
+      this.eventEmitter.emit(AgentEvents.ACTION, {
+        missionId,
+        type: 'REASONING_START',
+        label: 'AI is reasoning...',
+      } as AgentActionEvent);
     }
     const response = await llm.invoke(state.messages);
     return { messages: [response] };
@@ -41,20 +45,13 @@ export class AgentNodesService {
     const lastMsg = state.messages[state.messages.length - 1] as AIMessage;
     const toolCalls = lastMsg.tool_calls || [];
 
-    // Track each tool call as a mission step
-    const stepIds: string[] = [];
     for (const tc of toolCalls) {
-      const step = await this.missionService.addStep(
+      this.eventEmitter.emit(AgentEvents.ACTION, {
         missionId,
-        `Tool: ${tc.name}`,
-        'RUNNING',
-      );
-      await this.missionService.pushLog(
-        missionId,
-        `Agent executing tool: ${tc.name}`,
-        step.id,
-      );
-      stepIds.push(step.id);
+        type: 'TOOL_START',
+        label: `Tool: ${tc.name}`,
+        payload: { tool: tc.name },
+      } as AgentActionEvent);
     }
 
     // Execute all tools in the state
@@ -67,9 +64,13 @@ export class AgentNodesService {
       `Tool Result for ${toolCalls.map((tc) => tc.name).join(', ')}: ${JSON.stringify(result.messages.map((m) => m.content))}`,
     );
 
-    // Mark all related mission steps as complete
-    for (const sid of stepIds) {
-      await this.missionService.updateStepStatus(sid, missionId, 'COMPLETED');
+    for (const tc of toolCalls) {
+      this.eventEmitter.emit(AgentEvents.ACTION, {
+        missionId,
+        type: 'TOOL_END',
+        label: `Tool: ${tc.name}`,
+        payload: { tool: tc.name },
+      } as AgentActionEvent);
     }
 
     return result;

@@ -1,10 +1,12 @@
-import { Injectable, Logger, Inject, forwardRef } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { MissionRepository, MissionStepRepository } from './repositories/mission.repository';
 import { MissionLogRepository } from './repositories/mission-log.repository';
 import { MissionStatus, MissionStepStatus } from 'src/common/drizzle/schema';
 import { Subject } from 'rxjs';
 import { AgentPort } from '../ai/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
+import { OnEvent } from '@nestjs/event-emitter';
+import { AgentEvents, AgentActionEvent } from '../ai/agent/agent.events';
 
 export interface MissionLog {
   missionId: string;
@@ -23,9 +25,38 @@ export class MissionService {
     private readonly missionRepo: MissionRepository,
     private readonly stepRepo: MissionStepRepository,
     private readonly logRepo: MissionLogRepository,
-    @Inject(forwardRef(() => AgentPort))
     private readonly agentPort: AgentPort,
   ) { }
+
+  @OnEvent(AgentEvents.ACTION)
+  async handleAgentAction(event: AgentActionEvent) {
+    const { missionId, type, label, payload } = event;
+
+    switch (type) {
+      case 'REASONING_START':
+        await this.pushLog(missionId, label);
+        break;
+      case 'TOOL_START': {
+        const step = await this.addStep(missionId, label, 'RUNNING');
+        await this.pushLog(
+          missionId,
+          `Agent executing ${payload?.tool || 'tool'}`,
+          step.id,
+        );
+        break;
+      }
+      case 'TOOL_END': {
+        const mission = await this.getMission(missionId);
+        const runningStep = mission?.steps?.find(
+          (s) => s.label === label && s.status === 'RUNNING',
+        );
+        if (runningStep) {
+          await this.updateStepStatus(runningStep.id, missionId, 'COMPLETED');
+        }
+        break;
+      }
+    }
+  }
 
   getLogObservable() {
     return this.logSubject.asObservable();

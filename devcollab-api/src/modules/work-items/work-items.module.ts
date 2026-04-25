@@ -10,7 +10,7 @@ import { WorkItemRepository } from './repositories/work-item.repository';
   imports: [QueueModule, SyncEventModule],
   controllers: [WorkItemsController, DueWorkItemsController],
   providers: [WorkItemsService, WorkItemRepository],
-  exports: [WorkItemsService],
+  exports: [WorkItemsService, WorkItemRepository],
 })
 
 export class WorkItemsModule { }
