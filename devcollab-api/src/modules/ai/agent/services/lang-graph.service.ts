@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { AIMessage, BaseMessage, ToolMessage, SystemMessage } from '@langchain/core/messages';
 import { AiConfig } from '../../ai.config';
 import { LlmGateway } from '../../ports/llm.port';
-import { ToolRegistry } from '../../ports/tool.port';
+import { ToolRegistry } from '../../tools/ports/tools.port';
 import { AgentPort } from '../../ports/agent.port';
 import { IAiResult } from '../../interfaces';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';
@@ -29,7 +29,7 @@ export class LangGraphService implements AgentPort {
     missionId?: string,
   ): Promise<IAiResult> {
     // 1. Prepare Tools and LLM
-    const { list: tools } = this.toolService.getToolsForWorkspace(workspaceId);
+    const tools = await this.toolService.getTools(workspaceId);
     const llmWithTools = await this.llmGateway.getReasoningToolBoundLLM(tools);
 
     // 2. Build the Graph

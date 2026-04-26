@@ -5,12 +5,12 @@ import { AgentPromptsService } from './services/agent-prompts.service';
 import { AgentGraphFactoryService } from './services/agent-graph-factory.service';
 import { LangGraphService } from './services/lang-graph.service';
 import { AgentPort } from '../ports/agent.port';
-import { AiToolsModule } from '../ai-tools.module';
+import { ToolsModule } from '../tools/tools.module';
 
 @Module({
   imports: [
     AiCoreModule,
-    AiToolsModule,
+    ToolsModule,
   ],
   providers: [
     AgentNodesService,

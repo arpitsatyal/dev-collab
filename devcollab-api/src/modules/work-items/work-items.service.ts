@@ -108,4 +108,8 @@ export class WorkItemsService {
 
     return this.workItemRepo.findDueSoon(now.toDate(), thresholdDate.toDate());
   }
+
+  async searchWorkItems(workspaceId: string, query: string, limit?: number) {
+    return this.workItemRepo.findManyBySearch(workspaceId, query, limit);
+  }
 }

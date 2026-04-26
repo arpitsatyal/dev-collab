@@ -53,4 +53,8 @@ export class SnippetsService {
     await this.syncPort.publishSyncEvent('snippet', updated);
     return updated;
   }
+
+  async searchSnippets(workspaceId: string, query: string, limit?: number) {
+    return this.snippetRepo.findManyBySearch(workspaceId, query, limit);
+  }
 }

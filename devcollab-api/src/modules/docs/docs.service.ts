@@ -46,4 +46,8 @@ export class DocsService {
     await this.syncPort.publishSyncEvent('doc', updated);
     return updated;
   }
+
+  async searchDocs(workspaceId: string, query: string, limit?: number) {
+    return this.docRepo.findManyBySearch(workspaceId, query, limit);
+  }
 }
