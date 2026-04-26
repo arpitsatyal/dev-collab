@@ -44,11 +44,19 @@ export class MissionController {
       map((log) => ({ data: log } as MessageEvent)),
     );
 
-    const live$ = this.missionService.getLogObservable().pipe(
-      filter((log) => log.missionId === missionId),
-      map((log) => ({ data: log } as MessageEvent)),
-    );
+    return from(this.missionService.getMission(missionId)).pipe(
+      concatMap((mission) => {
+        if (mission?.status === 'COMPLETED' || mission?.status === 'FAILED') {
+          return history$;
+        }
 
-    return concat(history$, live$);
+        const live$ = this.missionService.getLogObservable().pipe(
+          filter((log) => log.missionId === missionId),
+          map((log) => ({ data: log } as MessageEvent)),
+        );
+
+        return concat(history$, live$);
+      }),
+    );
   }
 }

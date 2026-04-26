@@ -3,11 +3,13 @@ import { MissionStepStatus } from 'src/common/drizzle/schema';
 export type MissionLogType = 'log' | 'status_change' | 'step_created' | 'step_updated';
 
 export interface MissionLog {
+  id: string;
   missionId: string;
   stepId?: string;
   type: MissionLogType;
   message: string;
   payload?: any;
+  sequence: Date;
 }
 
 export interface PushLogOptions {

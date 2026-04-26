@@ -142,6 +142,7 @@ export class MissionService {
       missionId: id,
       message: `Mission status changed to ${status}`,
       type: 'status_change',
+      payload: { status },
     });
     return updated;
   }

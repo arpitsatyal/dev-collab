@@ -3,9 +3,11 @@ import { useAppDispatch } from "../../store/hooks";
 import { Mission, missionApi, MissionStep } from "../../store/api/missionApi";
 
 export interface LogEntry {
+  id: string;
   message: string;
   type: string;
   timestamp: number;
+  payload?: any;
 }
 
 export const useMissionLogs = (missionId: string | undefined, mission: Mission | undefined) => {
@@ -22,6 +24,7 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
 
       if (mission.missionLogs && mission.missionLogs.length > 0) {
         return mission.missionLogs.map(ml => ({
+          id: ml.id,
           message: ml.stepId ? `[Step] ${ml.message}` : ml.message,
           type: ml.type,
           timestamp: new Date(ml.sequence).getTime(),
@@ -49,13 +52,15 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
 
       // 1. Update Logs state
       setLogs((prev) => {
-        const isDuplicate = prev.some(l => l.message === logData.message && Math.abs(l.timestamp - Date.now()) < 5000);
-        if (isDuplicate) return prev;
+        // 1. Check for duplicates by ID (rigid)
+        const isDuplicate = prev.some(l => l.id === logData.id);
+        if (isDuplicate || !logData.id) return prev;
 
         return [...prev, {
+          id: logData.id,
           message: logData.message,
           type: logData.type,
-          timestamp: Date.now(),
+          timestamp: new Date(logData.sequence || Date.now()).getTime(),
           payload: logData.payload
         }];
       });
@@ -79,17 +84,14 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
             }
           })
         );
-      } else if (logData.type === 'status_change') {
+      } else if (logData.type === 'status_change' && logData.payload?.status) {
         // Handle mission-level status changes (e.g., COMPLETED, FAILED)
-        const statusMatch = logData.message.match(/Mission status changed to (\w+)/);
-        if (statusMatch) {
-            const newStatus = statusMatch[1] as Mission['status'];
-            dispatch(
-                missionApi.util.updateQueryData('getMission', missionId, (draft) => {
-                    draft.status = newStatus;
-                })
-            );
-        }
+        const newStatus = logData.payload.status as Mission['status'];
+        dispatch(
+          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
+            draft.status = newStatus;
+          })
+        );
       }
 
       if (viewportRef.current) {
