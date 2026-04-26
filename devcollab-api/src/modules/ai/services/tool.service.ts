@@ -5,9 +5,22 @@ import { ToolRegistry } from '../ports/tool.port';
 import { SnippetRepository } from 'src/modules/snippets/repositories/snippet.repository';
 import { DocRepository } from 'src/modules/docs/repositories/doc.repository';
 import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
-import { WorkspaceRepository } from 'src/modules/workspaces/infrastructure/workspace.repository';
+import { WorkspaceRepository } from 'src/modules/workspaces/adapters/workspace.repository';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
 import { v4 as uuid } from 'uuid';
+import {
+  CreateDocArgs,
+  CreateSnippetArgs,
+  CreateWorkItemArgs,
+  CreateWorkspaceArgs,
+  GetDocsArgs,
+  GetSnippetsArgs,
+  GetWorkItemsArgs,
+  SearchWorkspacesArgs,
+  SemanticSearchArgs,
+  UpdateDocArgs,
+  UpdateWorkItemArgs,
+} from '../types/ai-tools.types';
 
 @Injectable()
 export class ToolService implements ToolRegistry {
@@ -29,13 +42,14 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleSearchWorkspaces(
-    { query }: { query?: string },
+    args: SearchWorkspacesArgs,
   ): Promise<string> {
+    const { query } = args;
     const workspaces = await this.workspaceRepo.findPaginated(0, 50);
-    const filtered = query 
+    const filtered = query
       ? workspaces.filter(w => w.title.toLowerCase().includes(query.toLowerCase()))
       : workspaces;
-    
+
     if (filtered.length === 0) {
       return `No workspaces found matching "${query}".`;
     }
@@ -45,9 +59,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleGetSnippets(
-    { titleFilter, workspaceId: overrideId }: { titleFilter?: string, workspaceId?: string },
+    args: GetSnippetsArgs,
     defaultId: string,
   ): Promise<string> {
+    const { titleFilter, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch snippets.';
 
@@ -70,9 +85,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleGetDocs(
-    { labelFilter, workspaceId: overrideId }: { labelFilter?: string, workspaceId?: string },
+    args: GetDocsArgs,
     defaultId: string,
   ): Promise<string> {
+    const { labelFilter, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch docs.';
 
@@ -94,9 +110,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleGetWorkItems(
-    { titleFilter, workspaceId: overrideId }: { titleFilter?: string, workspaceId?: string },
+    args: GetWorkItemsArgs,
     defaultId: string,
   ): Promise<string> {
+    const { titleFilter, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch work items.';
 
@@ -119,9 +136,10 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleSemanticSearch(
-    { query, workspaceId: overrideId }: { query: string, workspaceId?: string },
+    args: SemanticSearchArgs,
     defaultId: string,
   ): Promise<string> {
+    const { query, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
@@ -188,7 +206,7 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleCreateSnippet(
-    args: { title: string; language: string; content: string; workspaceId?: string },
+    args: CreateSnippetArgs,
     defaultId: string,
   ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
@@ -206,7 +224,7 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleCreateWorkItem(
-    args: { title: string; description?: string; status?: string; workspaceId?: string },
+    args: CreateWorkItemArgs,
     defaultId: string,
   ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
@@ -220,7 +238,7 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleUpdateWorkItem(
-    args: { id: string; title?: string; description?: string; status?: string },
+    args: UpdateWorkItemArgs,
   ): Promise<string> {
     const workItem = await this.workItemRepo.update(args.id, {
       ...args,
@@ -230,7 +248,7 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleCreateDoc(
-    args: { label: string; content?: any; workspaceId?: string },
+    args: CreateDocArgs,
     defaultId: string,
   ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
@@ -244,7 +262,7 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleUpdateDoc(
-    args: { id: string; content: any },
+    args: UpdateDocArgs,
   ): Promise<string> {
     const doc = await this.docRepo.update(args.id, {
       content: args.content,
@@ -253,14 +271,14 @@ export class ToolService implements ToolRegistry {
   }
 
   private async handleCreateWorkspace(
-    args: { title: string; description?: string },
+    args: CreateWorkspaceArgs,
     currentWorkspaceId: string,
   ): Promise<string> {
     try {
       const currentWorkspace =
         await this.workspaceRepo.findById(currentWorkspaceId);
       if (!currentWorkspace) return 'Current workspace context not found.';
-      
+
       const ownerId = currentWorkspace.ownerId;
 
       const newWorkspace = await this.workspaceActions.createWorkspace(

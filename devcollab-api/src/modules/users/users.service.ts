@@ -1,16 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
-import { WorkspaceRepository } from '../workspaces/infrastructure/workspace.repository';
+import { WorkspaceRepository } from '../workspaces/adapters/workspace.repository';
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
 import { DocRepository } from '../docs/repositories/doc.repository';
 import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
-import { users } from 'src/common/drizzle/schema';
-import { InferInsertModel } from 'drizzle-orm';
-
-type CreateUserDTO = Omit<
-  InferInsertModel<typeof users>,
-  'id' | 'createdAt' | 'emailVerified'
->;
+import { CreateUserDTO } from './users.types';
 
 @Injectable()
 export class UsersService {
@@ -36,60 +30,40 @@ export class UsersService {
     return this.userRepo.findMany();
   }
 
-  async searchByName(text: string): Promise<string[]> {
-    const decodedText = decodeURIComponent(text).trim().toLowerCase();
-    const allUsers = await this.userRepo.findMany();
-    return allUsers
-      .filter(
-        (user) => user.name && user.name.toLowerCase().includes(decodedText),
-      )
-      .map((user) => user.id);
+  async createUser(data: CreateUserDTO) {
+    return this.userRepo.create(data);
+  }
+
+  async searchByName(name: string) {
+    return this.userRepo.searchByName(name);
+  }
+
+  async getCollaborationUsers(ids: string[]) {
+    return this.userRepo.findByIds(ids);
   }
 
   async getStatsByEmail(email: string) {
     const user = await this.userRepo.findByEmail(email);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) throw new NotFoundException(`User with email ${email} not found`);
+    return this.getStats(user.id);
+  }
 
-    const workspaceIds = await this.workspaceRepo.findIdsByOwnerId(user.id);
+  async getStats(userId: string) {
+    const ownedWorkspaceIds = await this.workspaceRepo.findIdsByOwnerId(userId);
 
-    const [workspacesCount, snippetsCount, docsCount, workItemsCount] =
-      await Promise.all([
-        this.workspaceRepo.countByOwnerId(user.id),
-        this.snippetRepo.countByAuthorId(user.id),
-        this.docRepo.countByWorkspaceIds(workspaceIds),
-        this.workItemRepo.countByWorkspaceIds(workspaceIds),
-      ]);
+    const [workspaces, snippets, docs, workItems] = await Promise.all([
+      this.workspaceRepo.countByOwnerId(userId),
+      this.snippetRepo.countByAuthorId(userId),
+      this.docRepo.countByWorkspaceIds(ownedWorkspaceIds),
+      this.workItemRepo.countByAuthorId(userId),
+    ]);
 
     return {
-      workspaces: workspacesCount,
-      snippets: snippetsCount,
-      docs: docsCount,
-      workItems: workItemsCount,
+      workspaces,
+      snippets,
+      docs,
+      workItems,
+      totalAssets: snippets + docs + workItems,
     };
-  }
-
-  async getCollaborationUsers(userIds: string[]) {
-    const found = await this.userRepo.findManyByIds(userIds);
-
-    const userMap = new Map(found.map((u) => [u.id, u]));
-    return userIds
-      .map((id) => userMap.get(id))
-      .filter(Boolean)
-      .map((user: any) => ({
-        id: user?.id ?? user?.email,
-        name: user?.name || 'Unknown',
-        email: user?.email || '',
-        avatar: user?.image || '',
-        color: '#0074C2',
-      }));
-  }
-
-  async createUser(createUserDTO: CreateUserDTO) {
-    return this.userRepo.create({
-      email: createUserDTO.email,
-      name: createUserDTO.name,
-      provider: createUserDTO.provider,
-      image: createUserDTO.image,
-    });
   }
 }

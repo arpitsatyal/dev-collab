@@ -5,11 +5,12 @@ import {
   TogglePinDto,
 } from './dto/workspaces.dto';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
-import { WorkspaceRepository } from './infrastructure/workspace.repository';
-import { WorkspaceImportRepository } from './infrastructure/workspace-import.repository';
+import { WorkspaceRepository } from './adapters/workspace.repository';
+import { WorkspaceImportRepository } from './adapters/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
+import { CreateWorkspaceData, GetWorkspacesParams, UserContext } from './workspaces.types';
 
 @Injectable()
 export class WorkspacesService implements WorkspaceActionsPort {
@@ -31,16 +32,12 @@ export class WorkspacesService implements WorkspaceActionsPort {
     return this.workspaceRepo.findPaginated(skip, take);
   }
 
-  async getWorkspaces(params: {
-    skip?: number;
-    take?: number;
-    user: { id: string };
-  }) {
+  async getWorkspaces(params: GetWorkspacesParams) {
     const { skip, take, user } = params;
     return this.workspaceRepo.findManyRaw(user.id, skip, take);
   }
 
-  async addNewWorkspace(dto: CreateWorkspaceDto, user: { id: string }) {
+  async addNewWorkspace(dto: CreateWorkspaceDto, user: UserContext) {
     const workspace = await this.workspaceRepo.create({
       title: dto.title,
       description: dto.description,
@@ -54,13 +51,13 @@ export class WorkspacesService implements WorkspaceActionsPort {
   /**
    * Fulfillment for WorkspaceActionsPort
    */
-  async createWorkspace(data: { title: string; description?: string }, user: { id: string }) {
+  async createWorkspace(data: CreateWorkspaceData, user: UserContext) {
     return this.addNewWorkspace(data, user);
   }
 
   async togglePinWorkspace(
     dto: TogglePinDto,
-    user: { id: string },
+    user: UserContext,
     workspaceId: string,
   ) {
     const { isPinned } = dto;
@@ -87,7 +84,7 @@ export class WorkspacesService implements WorkspaceActionsPort {
   }
 
   async importRepository(
-    params: ImportRepositoryDto & { user: { id: string } },
+    params: ImportRepositoryDto & { user: UserContext },
   ) {
     const { url, selectedFiles, user } = params;
 

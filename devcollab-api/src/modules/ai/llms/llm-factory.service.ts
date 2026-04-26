@@ -72,7 +72,7 @@ export class LlmFactoryService implements LlmGateway {
 
     // Check for specific failure codes: 402 (Payment), 401 (Auth)
     if (statusCode === 402 || statusCode === 401 || errorMessage.includes('Credit limit')) {
-      this.logger.warn(`Provider ${type} has a permanent infrastructure issue. Disabling for this session.`);
+      this.logger.warn(`Provider ${type} has a permanent adapter issue. Disabling for this session.`);
       markFailed();
     }
   }

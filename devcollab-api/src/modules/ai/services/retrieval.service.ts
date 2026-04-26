@@ -8,7 +8,7 @@ import {
   SearchHit,
   SearchDocument,
 } from '../ports/retrieval.port';
-import { WorkspaceRepository } from '../../workspaces/infrastructure/workspace.repository';
+import { WorkspaceRepository } from '../../workspaces/adapters/workspace.repository';
 import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
 import { SnippetRepository } from '../../snippets/repositories/snippet.repository';
 import { DocRepository } from '../../docs/repositories/doc.repository';

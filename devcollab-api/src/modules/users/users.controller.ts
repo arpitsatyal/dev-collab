@@ -1,5 +1,4 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-
 import { UsersService } from './users.service';
 import { CurrentUser } from './user.decorator';
 import {
@@ -10,7 +9,7 @@ import type { User } from '../../common/drizzle/schema';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UsersService) { }
 
   @Get()
   getUsers() {

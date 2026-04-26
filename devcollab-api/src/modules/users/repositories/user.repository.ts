@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, ilike, inArray } from 'drizzle-orm';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { users } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
@@ -12,9 +12,23 @@ export class UserRepository extends BaseRepository<typeof users> {
     super(drizzle, users);
   }
 
-  findByEmail(email: string) {
+  async findByEmail(email: string) {
     return this.drizzle.db.query.users.findFirst({
       where: eq(users.email, email),
+    });
+  }
+
+  async searchByName(name: string) {
+    return this.drizzle.db.query.users.findMany({
+      where: ilike(users.name, `%${name}%`),
+      limit: 10,
+    });
+  }
+
+  async findByIds(ids: string[]) {
+    if (ids.length === 0) return [];
+    return this.drizzle.db.query.users.findMany({
+      where: inArray(users.id, ids),
     });
   }
 }

@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
-import { missions, missionSteps } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
+import { missions } from 'src/common/drizzle/schema';
+import { DrizzleService } from 'src/common/drizzle/drizzle.service';
+import { eq } from 'drizzle-orm';
 
 @Injectable()
 export class MissionRepository extends BaseRepository<typeof missions> {
@@ -34,20 +34,4 @@ export class MissionRepository extends BaseRepository<typeof missions> {
       },
     });
   }
-
-}
-
-@Injectable()
-export class MissionStepRepository extends BaseRepository<typeof missionSteps> {
-  constructor(drizzle: DrizzleService) {
-    super(drizzle, missionSteps);
-  }
-
-  async findByMissionId(missionId: string) {
-    return this.drizzle.db.query.missionSteps.findMany({
-      where: eq(missionSteps.missionId, missionId),
-      orderBy: (missionSteps, { asc }) => [asc(missionSteps.createdAt)],
-    });
-  }
-
 }

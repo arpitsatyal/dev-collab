@@ -18,7 +18,10 @@ export class MissionController {
   async createMission(
     @Body() body: { workspaceId: string; goal: string },
   ) {
-    const mission = await this.missionService.createMission(body.workspaceId, body.goal);
+    const mission = await this.missionService.createMission({
+      workspaceId: body.workspaceId,
+      goal: body.goal,
+    });
     // Start mission in background
     void this.missionService.runMission(mission.id);
     return mission;

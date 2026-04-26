@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { WorkspacesService } from './workspaces.service';
 import { WorkspacesController } from './workspaces.controller';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
-import { GithubClient } from './infrastructure/github.client';
+import { GithubClient } from './adapters/github.client';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
 
