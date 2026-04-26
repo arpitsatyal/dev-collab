@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { Mission } from "../../store/api/missionApi";
+import { useAppDispatch } from "../../store/hooks";
+import { Mission, missionApi, MissionStep } from "../../store/api/missionApi";
 
 export interface LogEntry {
   message: string;
@@ -10,6 +11,7 @@ export interface LogEntry {
 export const useMissionLogs = (missionId: string | undefined, mission: Mission | undefined) => {
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const dispatch = useAppDispatch();
 
   // Initialize logs from DB
   useEffect(() => {
@@ -44,6 +46,8 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
 
     eventSource.onmessage = (event) => {
       const logData = JSON.parse(event.data);
+
+      // 1. Update Logs state
       setLogs((prev) => {
         const isDuplicate = prev.some(l => l.message === logData.message && Math.abs(l.timestamp - Date.now()) < 5000);
         if (isDuplicate) return prev;
@@ -55,6 +59,38 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
           payload: logData.payload
         }];
       });
+
+      // 2. Update Mission Cache (Steps & Status)
+      if (logData.type === 'step_created' && logData.payload) {
+        dispatch(
+          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
+            if (!draft.steps) draft.steps = [];
+            if (!draft.steps.some(s => s.id === logData.payload.id)) {
+                draft.steps.push(logData.payload as MissionStep);
+            }
+          })
+        );
+      } else if (logData.type === 'step_updated' && logData.payload) {
+        dispatch(
+          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
+            const stepIndex = draft.steps?.findIndex(s => s.id === logData.payload.id);
+            if (stepIndex !== undefined && stepIndex !== -1 && draft.steps) {
+              draft.steps[stepIndex] = logData.payload as MissionStep;
+            }
+          })
+        );
+      } else if (logData.type === 'status_change') {
+        // Handle mission-level status changes (e.g., COMPLETED, FAILED)
+        const statusMatch = logData.message.match(/Mission status changed to (\w+)/);
+        if (statusMatch) {
+            const newStatus = statusMatch[1] as Mission['status'];
+            dispatch(
+                missionApi.util.updateQueryData('getMission', missionId, (draft) => {
+                    draft.status = newStatus;
+                })
+            );
+        }
+      }
 
       if (viewportRef.current) {
         viewportRef.current.scrollTo({ top: viewportRef.current.scrollHeight, behavior: 'smooth' });

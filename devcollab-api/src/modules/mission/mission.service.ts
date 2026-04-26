@@ -21,8 +21,6 @@ import {
 export class MissionService {
   private readonly logger = new Logger(MissionService.name);
   private readonly logSubject = new Subject<MissionLog>();
-
-  // The magic for the Persistence Tax: A sequential background queue
   private readonly eventQueue = new Subject<AgentActionEvent>();
 
   constructor(
@@ -59,16 +57,17 @@ export class MissionService {
           await this.pushLog({ missionId, message: label });
           break;
         case 'TOOL_START': {
-          const step = await this.addStep({
+          const mission = await this.getMission(missionId);
+          const alreadyExists = mission?.steps?.some(
+            (s) => (s.payload as any)?.callId === callId,
+          );
+          if (alreadyExists) return;
+
+          await this.addStep({
             missionId,
-            label,
+            label: `Executing ${payload?.tool || 'tool'}`,
             status: 'RUNNING',
             payload: { callId },
-          });
-          await this.pushLog({
-            missionId,
-            message: `Agent executing ${payload?.tool || 'tool'}`,
-            stepId: step.id,
           });
           break;
         }
@@ -113,6 +112,10 @@ export class MissionService {
     return await this.missionRepo.findByWorkspaceId(workspaceId);
   }
 
+  async getMissionLogs(missionId: string) {
+    return await this.logRepo.findByMissionId(missionId);
+  }
+
   async addStep(options: AddStepOptions) {
     const { missionId, label, status = 'PENDING', payload } = options;
     const step = await this.stepRepo.create({
@@ -120,6 +123,14 @@ export class MissionService {
       label,
       status,
       payload,
+    });
+
+    await this.pushLog({
+      missionId,
+      message: `New step added: ${label}`,
+      stepId: step.id,
+      type: 'step_created',
+      payload: step, // Send the full step object for the HUD
     });
 
     return step;
@@ -142,7 +153,8 @@ export class MissionService {
       missionId,
       message: `Step status changed to ${status}`,
       stepId: id,
-      type: 'status_change',
+      type: 'step_updated',
+      payload: updated,
     });
     return updated;
   }
@@ -151,13 +163,16 @@ export class MissionService {
     const { missionId, message, stepId, type = 'log', payload } = options;
 
     try {
-      await this.logRepo.createLog({
+      const [log] = await this.logRepo.createLog({
         missionId,
         message,
         stepId,
         type,
         payload,
       });
+
+      // Emit to real-time stream
+      this.logSubject.next(log as MissionLog);
     } catch (error) {
       this.logger.error(`Failed to persist log for mission ${missionId}: ${error.message}`);
     }
@@ -173,19 +188,21 @@ export class MissionService {
       message: 'Mission queued for execution...',
     });
 
-    // Dispatch to SQS for background processing
     await this.queuePort.sendMessage(
       { type: 'RUN_MISSION', missionId: id },
       QueueType.MISSION
     );
   }
 
-  /**
-   * Actual logic executed by the background worker
-   */
   async executeMission(id: string) {
     const mission = await this.getMission(id);
     if (!mission) return;
+
+    // Concurrency Guard: Don't run if already finished or if we have a race condition
+    if (mission.status === 'COMPLETED' || mission.status === 'FAILED') {
+      this.logger.warn(`Mission ${id} is already in ${mission.status} state. Skipping execution.`);
+      return;
+    }
 
     try {
       await this.pushLog({
