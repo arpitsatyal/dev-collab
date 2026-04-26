@@ -1,5 +1,4 @@
 import { Controller, Get, Post, Patch, Body, Param } from '@nestjs/common';
-
 import { SnippetsService } from './snippets.service';
 import { SnippetsCreateDto, SnippetsUpdateDto } from './dto/snippets.dto';
 import { CurrentUser } from '../users/user.decorator';

@@ -77,30 +77,44 @@ export class LlmFactoryService implements LlmGateway {
     }
   }
 
-  async getReasoningLLM(): Promise<BaseChatModel> {
+  private async withProviderLogic<T>(
+    factory: (llm: GroqLlmService | TogetherLlmService, type: LlmProvider) => T,
+    fallbackLabel: string,
+  ): Promise<T> {
     const ctx = this.getProviderContext();
 
     if (ctx.primaryFailed && ctx.secondaryFailed) {
       this.logger.error('CRITICAL: All LLM providers have failed.');
-      return ctx.primary.create();
+      return factory(ctx.primary, ctx.primaryType);
     }
 
-    if (ctx.primaryFailed) return ctx.secondary.create();
+    if (ctx.primaryFailed) {
+      return factory(ctx.secondary, ctx.secondaryType);
+    }
 
-    const p = ctx.primary.create().withListeners({
-      onError: (error) => this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
+    const primaryModel = factory(ctx.primary, ctx.primaryType);
+    const p = (primaryModel as any).withListeners({
+      onError: (error: any) => this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
     });
 
-    if (ctx.secondaryFailed) return p as unknown as BaseChatModel;
+    if (ctx.secondaryFailed) return p;
 
-    const s = ctx.secondary.create().withListeners({
-      onStart: () => this.logger.log(`Fallback triggered: Switching to ${ctx.secondaryType}`),
-      onError: (error) => this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
+    const secondaryModel = factory(ctx.secondary, ctx.secondaryType);
+    const s = (secondaryModel as any).withListeners({
+      onStart: () => this.logger.log(`Fallback ${fallbackLabel} triggered: Switching to ${ctx.secondaryType}`),
+      onError: (error: any) => this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
     });
 
     return p.withFallbacks({
       fallbacks: [s],
-    }) as unknown as BaseChatModel;
+    });
+  }
+
+  async getReasoningLLM(): Promise<BaseChatModel> {
+    return this.withProviderLogic(
+      (llm) => llm.create(),
+      'Reasoning',
+    ) as unknown as BaseChatModel;
   }
 
   async getSpeedyLLM(): Promise<BaseChatModel> {
@@ -111,50 +125,18 @@ export class LlmFactoryService implements LlmGateway {
     schema: any,
     name: string,
   ): Promise<RunnableLike<any, any>> {
-    const ctx = this.getProviderContext();
-
-    if (ctx.primaryFailed) {
-      return (ctx.secondary.create() as any).withStructuredOutput(schema, { name });
-    }
-
-    const p = (ctx.primary.create() as any).withStructuredOutput(schema, { name }).withListeners({
-      onError: (error) => this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
-    });
-
-    if (ctx.secondaryFailed) return p;
-
-    const s = (ctx.secondary.create() as any).withStructuredOutput(schema, { name }).withListeners({
-      onStart: () => this.logger.log(`Fallback Structured triggered: Switching to ${ctx.secondaryType}`),
-      onError: (error) => this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
-    });
-
-    return p.withFallbacks({
-      fallbacks: [s],
-    });
+    return this.withProviderLogic(
+      (llm) => (llm.create() as any).withStructuredOutput(schema, { name }),
+      'Structured',
+    );
   }
 
   async getReasoningToolBoundLLM(
     tools: StructuredTool[],
   ): Promise<BaseChatModel> {
-    const ctx = this.getProviderContext();
-
-    if (ctx.primaryFailed) {
-      return ctx.secondary.create().bindTools(tools) as unknown as BaseChatModel;
-    }
-
-    const p = ctx.primary.create().bindTools(tools).withListeners({
-      onError: (error) => this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
-    });
-
-    if (ctx.secondaryFailed) return p as unknown as BaseChatModel;
-
-    const s = ctx.secondary.create().bindTools(tools).withListeners({
-      onStart: () => this.logger.log(`Fallback ToolBound triggered: Switching to ${ctx.secondaryType}`),
-      onError: (error) => this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
-    });
-
-    return p.withFallbacks({
-      fallbacks: [s],
-    }) as unknown as BaseChatModel;
+    return this.withProviderLogic(
+      (llm) => llm.create().bindTools(tools),
+      'ToolBound',
+    ) as unknown as BaseChatModel;
   }
 }

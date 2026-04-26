@@ -24,4 +24,5 @@ import { WorkItemsModule } from '../work-items/work-items.module';
   ],
   controllers: [AiController],
 })
+
 export class AiModule { }

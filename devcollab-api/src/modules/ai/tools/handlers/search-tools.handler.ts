@@ -12,7 +12,7 @@ export class SearchToolsHandler {
     private readonly snippetsService: SnippetsService,
     private readonly workItemsService: WorkItemsService,
     private readonly docsService: DocsService,
-  ) {}
+  ) { }
 
   async handleSemanticSearch(args: SemanticSearchArgs, defaultId: string): Promise<string> {
     const { query, workspaceId: overrideId } = args;
@@ -39,7 +39,7 @@ export class SearchToolsHandler {
         description: 'Perform a broad semantic search across snippets, docs, and work items.',
         schema: z.object({
           searchQuery: z.string().describe('The natural language search query.'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) =>
           this.handleSemanticSearch({ query: args.searchQuery, workspaceId: args.workspaceId }, workspaceId),

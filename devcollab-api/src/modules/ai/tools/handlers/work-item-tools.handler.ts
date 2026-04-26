@@ -7,7 +7,7 @@ import { CreateWorkItemArgs, GetWorkItemsArgs, UpdateWorkItemArgs } from '../typ
 
 @Injectable()
 export class WorkItemToolsHandler {
-  constructor(private readonly workItemsService: WorkItemsService) {}
+  constructor(private readonly workItemsService: WorkItemsService) { }
 
   async handleGetWorkItems(args: GetWorkItemsArgs, defaultId: string): Promise<string> {
     const { titleFilter, workspaceId: overrideId } = args;
@@ -74,8 +74,8 @@ export class WorkItemToolsHandler {
         name: 'get_work_items',
         description: 'Fetch ALL work items inside a workspace. Optionally filter by title.',
         schema: z.object({
-          titleFilter: z.string().optional().describe('Search keyword to filter work item titles.'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          titleFilter: z.string().nullable().optional().describe('Search keyword to filter work item titles.'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleGetWorkItems(args, workspaceId),
       }),
@@ -84,12 +84,12 @@ export class WorkItemToolsHandler {
         description: 'Create a new task or work item.',
         schema: z.object({
           title: z.string().describe('Task title'),
-          description: z.string().optional().describe('Task detail'),
-          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).optional(),
-          dueDate: z.string().optional().describe('Due date as string'),
-          assignedToId: z.string().optional().describe('User ID to assign to'),
-          snippetIds: z.array(z.string()).optional().describe('Snippet IDs to link'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          description: z.string().nullable().optional().describe('Task detail'),
+          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).nullable().optional(),
+          dueDate: z.string().nullable().optional().describe('Due date as string'),
+          assignedToId: z.string().nullable().optional().describe('User ID to assign to'),
+          snippetIds: z.array(z.string()).nullable().optional().describe('Snippet IDs to link'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleCreateWorkItem(args, workspaceId, authorId),
       }),
@@ -98,7 +98,7 @@ export class WorkItemToolsHandler {
         description: 'Update an existing work item status.',
         schema: z.object({
           id: z.string().describe('The ID of the work item to update'),
-          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).optional(),
+          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).nullable().optional(),
         }),
         func: (args) => this.handleUpdateWorkItem(args),
       }),

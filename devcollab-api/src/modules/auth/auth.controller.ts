@@ -9,7 +9,6 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../users/user.decorator';
 import { User } from 'src/common/drizzle/schema';
-import { SessionAuthGuard } from 'src/common/guards/auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/AuthenticatedRequest';
 import { Response } from 'express';
 import { ConfigService } from '@nestjs/config';
@@ -17,11 +16,11 @@ import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleLogin() {}
+  async googleLogin() { }
 
   @Public()
   @Get('google/redirect')
@@ -49,7 +48,7 @@ export class AuthController {
   @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
-  async githubLogin() {}
+  async githubLogin() { }
 
   @Public()
   @Get('callback/github')

@@ -15,7 +15,7 @@ export class AgentPromptsService {
       2. DO NOT guess or assume information—retrive it first.
       3. Break down complex tasks into logical steps.
       4. If a tool reports "Successfully created/updated", DO NOT enter a loop to verify it again unless specifically asked. Move immediately to your final summary.
-      5. CROSS-WORKSPACE MISSIONS: If the user mentions a specific workspace by name, FIRST use the "searchWorkspaces" tool to find its ID. Then, provide that "workspaceId" to any subsequent tool calls.
+      5. CROSS-WORKSPACE MISSIONS: If the user mentions a specific workspace by name, FIRST use the "search_workspaces" tool to find its ID. Then, provide that "workspaceId" to any subsequent tool calls.
       6. When you are finished, summarize your accomplishments clearly.`,
     );
   }

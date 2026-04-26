@@ -6,7 +6,7 @@ import { CreateSnippetArgs, GetSnippetsArgs } from '../types/tools.types';
 
 @Injectable()
 export class SnippetToolsHandler {
-  constructor(private readonly snippetsService: SnippetsService) {}
+  constructor(private readonly snippetsService: SnippetsService) { }
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -64,8 +64,8 @@ export class SnippetToolsHandler {
         name: 'get_snippets',
         description: 'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
         schema: z.object({
-          titleFilter: z.string().optional().describe('Keyword to filter snippets by title.'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          titleFilter: z.string().nullable().optional().describe('Keyword to filter snippets by title.'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleGetSnippets(args, workspaceId),
       }),
@@ -76,8 +76,8 @@ export class SnippetToolsHandler {
           title: z.string().describe('Title of the snippet'),
           language: z.string().describe('Programming language'),
           content: z.string().describe('Code content'),
-          extension: z.string().optional().describe('File extension (e.g., ".ts")'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          extension: z.string().nullable().optional().describe('File extension (e.g., ".ts")'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleCreateSnippet(args, workspaceId, authorId),
       }),

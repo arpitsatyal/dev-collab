@@ -6,7 +6,7 @@ import { CreateDocArgs, GetDocsArgs, UpdateDocArgs } from '../types/tools.types'
 
 @Injectable()
 export class DocToolsHandler {
-  constructor(private readonly docsService: DocsService) {}
+  constructor(private readonly docsService: DocsService) { }
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -69,8 +69,8 @@ export class DocToolsHandler {
         name: 'get_docs',
         description: 'Fetch ALL documentation records in a workspace. Optionally filter by label.',
         schema: z.object({
-          labelFilter: z.string().optional().describe('Label to filter docs.'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          labelFilter: z.string().nullable().optional().describe('Label to filter docs.'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleGetDocs(args, workspaceId),
       }),
@@ -79,8 +79,8 @@ export class DocToolsHandler {
         description: 'Create a new documentation document.',
         schema: z.object({
           label: z.string().describe('Label or title of the doc'),
-          content: z.string().optional().describe('The content of the document (string or markdown).'),
-          workspaceId: z.string().optional().describe('Target workspace ID.'),
+          content: z.string().nullable().optional().describe('The content of the document (string or markdown).'),
+          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
         }),
         func: (args) => this.handleCreateDoc(args, workspaceId),
       }),

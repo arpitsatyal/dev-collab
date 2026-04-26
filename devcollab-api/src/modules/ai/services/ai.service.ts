@@ -4,7 +4,6 @@ import { SuggestionService } from './suggestion.service';
 import { MessageService } from 'src/modules/message/message.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import {
-  AiFilters,
   AnalyzeWorkItemRequest,
   GetAiResponseRequest,
   SuggestSnippetFilenameRequest,
