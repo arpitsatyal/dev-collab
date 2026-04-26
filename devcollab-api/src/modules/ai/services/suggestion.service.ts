@@ -3,7 +3,11 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { WorkspaceRepository } from '../../workspaces/adapters/workspace.repository';
 import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
 import { LlmGateway } from '../ports/llm.port';
-import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
+import {
+  AnalyzeWorkItemRequest,
+  SuggestSnippetFilenameRequest,
+  SuggestWorkItemsRequest,
+} from '../types/ai.types';
 
 @Injectable()
 export class SuggestionService {
@@ -35,7 +39,8 @@ export class SuggestionService {
     }
   }
 
-  async suggestWorkItems(workspaceId: string) {
+  async suggestWorkItems(request: SuggestWorkItemsRequest) {
+    const { workspaceId } = request;
     const workspace = await this.getWorkspaceWithContext(workspaceId);
     const llm = await this.llmFactory.getReasoningLLM();
 
@@ -66,8 +71,8 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
     return this.parseJsonResponse<any[]>(output, []);
   }
 
-  async suggestSnippetFilenameForCode(params: SuggestSnippetFilenameDto) {
-    const { code, language, workspaceId } = params;
+  async suggestSnippetFilenameForCode(request: SuggestSnippetFilenameRequest) {
+    const { code, language, workspaceId } = request;
 
     const workspace = await this.workspaceRepo.findById(workspaceId);
 
@@ -87,7 +92,8 @@ Respond with a single filename (no extension) using kebab-case. Keep it under 40
     return name.replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
   }
 
-  async generateImplementationPlan(workItemId: string) {
+  async generateImplementationPlan(request: AnalyzeWorkItemRequest) {
+    const { workItemId } = request;
     const workItem = await this.workItemRepo.findById(workItemId);
 
     if (!workItem) {

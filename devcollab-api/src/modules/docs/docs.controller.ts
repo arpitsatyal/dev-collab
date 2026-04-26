@@ -22,11 +22,17 @@ export class DocsController {
     @Param('workspaceId') workspaceId: string,
     @Body() dto: DocCreateDto,
   ) {
-    return this.docsService.createDoc(workspaceId, dto);
+    return this.docsService.createDoc({
+      workspaceId,
+      ...dto,
+    });
   }
 
   @Patch(':docId')
   updateDoc(@Param('docId') docId: string, @Body() dto: DocUpdateDto) {
-    return this.docsService.updateDoc(docId, dto);
+    return this.docsService.updateDoc({
+      id: docId,
+      ...dto,
+    });
   }
 }

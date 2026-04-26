@@ -4,7 +4,7 @@ import { WorkspaceRepository } from '../workspaces/adapters/workspace.repository
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
 import { DocRepository } from '../docs/repositories/doc.repository';
 import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
-import { CreateUserDTO } from './users.types';
+import { CreateUserRequest } from './users.types';
 
 @Injectable()
 export class UsersService {
@@ -30,8 +30,8 @@ export class UsersService {
     return this.userRepo.findMany();
   }
 
-  async createUser(data: CreateUserDTO) {
-    return this.userRepo.create(data);
+  async createUser(request: CreateUserRequest) {
+    return this.userRepo.create(request);
   }
 
   async searchByName(name: string) {

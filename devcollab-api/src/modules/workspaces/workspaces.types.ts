@@ -1,16 +1,29 @@
-export interface GetWorkspacesParams {
+export interface GetWorkspacesRequest {
   skip?: number;
   take?: number;
   user: { id: string };
 }
 
-export interface CreateWorkspaceData {
-  title: string;
-  description?: string;
-}
-
 export interface UserContext {
   id: string;
+}
+
+export interface CreateWorkspaceRequest {
+  title: string;
+  description?: string;
+  user: UserContext;
+}
+
+export interface TogglePinRequest {
+  isPinned: boolean;
+  user: UserContext;
+  workspaceId: string;
+}
+
+export interface ImportRepositoryRequest {
+  url: string;
+  selectedFiles: string[];
+  user: UserContext;
 }
 
 export interface SnippetImportData {

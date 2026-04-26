@@ -52,7 +52,6 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
 
       // 1. Update Logs state
       setLogs((prev) => {
-        // 1. Check for duplicates by ID (rigid)
         const isDuplicate = prev.some(l => l.id === logData.id);
         if (isDuplicate || !logData.id) return prev;
 
@@ -66,33 +65,33 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
       });
 
       // 2. Update Mission Cache (Steps & Status)
-      if (logData.type === 'step_created' && logData.payload) {
-        dispatch(
-          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
-            if (!draft.steps) draft.steps = [];
-            if (!draft.steps.some(s => s.id === logData.payload.id)) {
+      dispatch(
+        missionApi.util.updateQueryData('getMission', missionId, (draft) => {
+          switch (logData.type) {
+            case 'step_created':
+              if (!logData.payload) break;
+              if (!draft.steps) draft.steps = [];
+              if (!draft.steps.some((s) => s.id === logData.payload.id)) {
                 draft.steps.push(logData.payload as MissionStep);
-            }
-          })
-        );
-      } else if (logData.type === 'step_updated' && logData.payload) {
-        dispatch(
-          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
-            const stepIndex = draft.steps?.findIndex(s => s.id === logData.payload.id);
-            if (stepIndex !== undefined && stepIndex !== -1 && draft.steps) {
-              draft.steps[stepIndex] = logData.payload as MissionStep;
-            }
-          })
-        );
-      } else if (logData.type === 'status_change' && logData.payload?.status) {
-        // Handle mission-level status changes (e.g., COMPLETED, FAILED)
-        const newStatus = logData.payload.status as Mission['status'];
-        dispatch(
-          missionApi.util.updateQueryData('getMission', missionId, (draft) => {
-            draft.status = newStatus;
-          })
-        );
-      }
+              }
+              break;
+
+            case 'step_updated':
+              if (!logData.payload) break;
+              const stepIndex = draft.steps?.findIndex((s) => s.id === logData.payload.id);
+              if (stepIndex !== undefined && stepIndex !== -1 && draft.steps) {
+                draft.steps[stepIndex] = logData.payload as MissionStep;
+              }
+              break;
+
+            case 'status_change':
+              if (logData.payload?.status) {
+                draft.status = logData.payload.status as Mission['status'];
+              }
+              break;
+          }
+        })
+      );
 
       if (viewportRef.current) {
         viewportRef.current.scrollTo({ top: viewportRef.current.scrollHeight, behavior: 'smooth' });

@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { SnippetsCreateDto, SnippetsUpdateDto } from './dto/snippets.dto';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { SnippetRepository } from './repositories/snippet.repository';
+import { CreateSnippetRequest, UpdateSnippetRequest } from './snippets.types';
 
 @Injectable()
 export class SnippetsService {
@@ -21,16 +21,13 @@ export class SnippetsService {
     return this.snippetRepo.findByWorkspaceId(workspaceId);
   }
 
-  async createSnippet(
-    workspaceId: string,
-    authorId: string,
-    dto: SnippetsCreateDto,
-  ) {
+  async createSnippet(request: CreateSnippetRequest) {
+    const { workspaceId, authorId, title, language, content, extension } = request;
     const snippet = await this.snippetRepo.create({
-      title: dto.title,
-      language: dto.language,
-      content: dto.content,
-      extension: dto.extension,
+      title,
+      language,
+      content,
+      extension,
       authorId,
       workspaceId,
     });
@@ -39,10 +36,10 @@ export class SnippetsService {
     return snippet;
   }
 
-  async updateSnippet(snippetId: string, dto: SnippetsUpdateDto) {
-    const { title, language, content, extension, lastEditedById } = dto;
+  async updateSnippet(request: UpdateSnippetRequest) {
+    const { id, title, language, content, extension, lastEditedById } = request;
 
-    const updated = await this.snippetRepo.update(snippetId, {
+    const updated = await this.snippetRepo.update(id, {
       ...(title && { title }),
       ...(language && { language }),
       ...(content && { content }),

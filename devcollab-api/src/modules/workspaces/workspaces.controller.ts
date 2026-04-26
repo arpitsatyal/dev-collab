@@ -63,7 +63,11 @@ export class WorkspacesController {
 
   @Post()
   addNewWorkspace(@Body() body: CreateWorkspaceDto, @CurrentUser() user: User) {
-    return this.workspacesService.addNewWorkspace(body, user);
+    return this.workspacesService.addNewWorkspace({
+      title: body.title,
+      description: body.description,
+      user,
+    });
   }
 
   @Patch(':id')
@@ -72,6 +76,10 @@ export class WorkspacesController {
     @Body() body: TogglePinDto,
     @CurrentUser() user: User,
   ) {
-    return this.workspacesService.togglePinWorkspace(body, user, id);
+    return this.workspacesService.togglePinWorkspace({
+      isPinned: body.isPinned,
+      user,
+      workspaceId: id,
+    });
   }
 }

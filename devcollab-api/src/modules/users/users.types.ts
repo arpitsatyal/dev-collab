@@ -1,7 +1,7 @@
-import { users } from 'src/common/drizzle/schema';
-import { InferInsertModel } from 'drizzle-orm';
-
-export type CreateUserDTO = Omit<
-  InferInsertModel<typeof users>,
-  'id' | 'createdAt' | 'emailVerified'
->;
+export interface CreateUserRequest {
+  email: string;
+  name?: string;
+  image?: string;
+  externalId?: string;
+  provider: 'GOOGLE' | 'GITHUB' | 'LOCAL';
+}

@@ -10,11 +10,11 @@ import { OnEvent } from '@nestjs/event-emitter';
 import { AgentEvents, AgentActionEvent } from '../ai/agent/agent.events';
 import { QueuePort, QueueType } from '../queue/ports/queue.port';
 import {
-  AddStepOptions,
-  CreateMissionOptions,
+  AddStepRequest,
+  CreateMissionRequest,
   MissionLog,
-  PushLogOptions,
-  UpdateStepStatusOptions
+  PushLogRequest,
+  UpdateStepStatusRequest
 } from './mission.types';
 
 @Injectable()
@@ -95,8 +95,8 @@ export class MissionService {
     return this.logSubject.asObservable();
   }
 
-  async createMission(options: CreateMissionOptions) {
-    const { workspaceId, goal } = options;
+  async createMission(request: CreateMissionRequest) {
+    const { workspaceId, goal } = request;
     return await this.missionRepo.create({
       workspaceId,
       goal,
@@ -116,8 +116,8 @@ export class MissionService {
     return await this.logRepo.findByMissionId(missionId);
   }
 
-  async addStep(options: AddStepOptions) {
-    const { missionId, label, status = 'PENDING', payload } = options;
+  async addStep(request: AddStepRequest) {
+    const { missionId, label, status = 'PENDING', payload } = request;
     const step = await this.stepRepo.create({
       missionId,
       label,
@@ -147,8 +147,8 @@ export class MissionService {
     return updated;
   }
 
-  async updateStepStatus(options: UpdateStepStatusOptions) {
-    const { id, missionId, status } = options;
+  async updateStepStatus(request: UpdateStepStatusRequest) {
+    const { id, missionId, status } = request;
     const updated = await this.stepRepo.update(id, { status });
     await this.pushLog({
       missionId,
@@ -160,8 +160,8 @@ export class MissionService {
     return updated;
   }
 
-  async pushLog(options: PushLogOptions) {
-    const { missionId, message, stepId, type = 'log', payload } = options;
+  async pushLog(request: PushLogRequest) {
+    const { missionId, message, stepId, type = 'log', payload } = request;
 
     try {
       const [log] = await this.logRepo.createLog({

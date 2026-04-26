@@ -7,7 +7,7 @@ import type { User } from '../../common/drizzle/schema';
 
 @Controller('workspaces/:workspaceId/snippets')
 export class SnippetsController {
-  constructor(private snippetsService: SnippetsService) {}
+  constructor(private snippetsService: SnippetsService) { }
 
   @Get()
   async getSnippets(@Param('workspaceId') workspaceId: string) {
@@ -25,8 +25,11 @@ export class SnippetsController {
     @Body() dto: SnippetsCreateDto,
     @CurrentUser() user: User,
   ) {
-    const userId = user.id;
-    return this.snippetsService.createSnippet(workspaceId, userId, dto);
+    return this.snippetsService.createSnippet({
+      workspaceId,
+      authorId: user.id,
+      ...dto,
+    });
   }
 
   @Patch(':snippetId')
@@ -34,6 +37,9 @@ export class SnippetsController {
     @Param('snippetId') snippetId: string,
     @Body() dto: SnippetsUpdateDto,
   ) {
-    return this.snippetsService.updateSnippet(snippetId, dto);
+    return this.snippetsService.updateSnippet({
+      id: snippetId,
+      ...dto,
+    });
   }
 }

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { WorkItemStatus } from 'src/common/drizzle/schema';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { ToolRegistry } from '../ports/tool.port';
@@ -231,8 +232,11 @@ export class ToolService implements ToolRegistry {
     const workItem = await this.workItemRepo.create({
       title: args.title,
       description: args.description,
-      status: (args.status as any) || 'TODO',
+      status: (args.status as WorkItemStatus) || 'TODO',
       workspaceId,
+      assignedToId: args.assignedToId,
+      dueDate: args.dueDate ? new Date(args.dueDate) : undefined,
+      snippetIds: args.snippetIds,
     });
     return `Successfully created work item: ${workItem.title} (ID: ${workItem.id})`;
   }
@@ -240,9 +244,11 @@ export class ToolService implements ToolRegistry {
   private async handleUpdateWorkItem(
     args: UpdateWorkItemArgs,
   ): Promise<string> {
-    const workItem = await this.workItemRepo.update(args.id, {
-      ...args,
-      status: args.status as any,
+    const { id, status, dueDate, ...rest } = args;
+    const workItem = await this.workItemRepo.update(id, {
+      ...rest,
+      ...(status && { status: status as WorkItemStatus }),
+      ...(dueDate && { dueDate: new Date(dueDate) }),
     });
     return `Successfully updated work item: ${workItem.title}`;
   }

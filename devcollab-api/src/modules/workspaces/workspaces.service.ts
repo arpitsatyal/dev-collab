@@ -1,16 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import {
-  CreateWorkspaceDto,
-  ImportRepositoryDto,
-  TogglePinDto,
-} from './dto/workspaces.dto';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkspaceRepository } from './adapters/workspace.repository';
 import { WorkspaceImportRepository } from './adapters/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
-import { CreateWorkspaceData, GetWorkspacesParams, UserContext } from './workspaces.types';
+import {
+  CreateWorkspaceRequest,
+  GetWorkspacesRequest,
+  ImportRepositoryRequest,
+  TogglePinRequest,
+  UserContext,
+} from './workspaces.types';
 
 @Injectable()
 export class WorkspacesService implements WorkspaceActionsPort {
@@ -19,7 +20,7 @@ export class WorkspacesService implements WorkspaceActionsPort {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly importRepo: WorkspaceImportRepository,
     private readonly sourceCodeClient: SourceCodePort,
-  ) {}
+  ) { }
 
   async getWorkspace(id: string) {
     const workspace = await this.workspaceRepo.findById(id);
@@ -32,15 +33,16 @@ export class WorkspacesService implements WorkspaceActionsPort {
     return this.workspaceRepo.findPaginated(skip, take);
   }
 
-  async getWorkspaces(params: GetWorkspacesParams) {
-    const { skip, take, user } = params;
+  async getWorkspaces(request: GetWorkspacesRequest) {
+    const { skip, take, user } = request;
     return this.workspaceRepo.findManyRaw(user.id, skip, take);
   }
 
-  async addNewWorkspace(dto: CreateWorkspaceDto, user: UserContext) {
+  async addNewWorkspace(request: CreateWorkspaceRequest) {
+    const { title, description, user } = request;
     const workspace = await this.workspaceRepo.create({
-      title: dto.title,
-      description: dto.description,
+      title,
+      description,
       ownerId: user.id,
     });
 
@@ -48,19 +50,12 @@ export class WorkspacesService implements WorkspaceActionsPort {
     return workspace;
   }
 
-  /**
-   * Fulfillment for WorkspaceActionsPort
-   */
-  async createWorkspace(data: CreateWorkspaceData, user: UserContext) {
-    return this.addNewWorkspace(data, user);
+  async createWorkspace(data: { title: string; description?: string }, user: UserContext) {
+    return this.addNewWorkspace({ ...data, user });
   }
 
-  async togglePinWorkspace(
-    dto: TogglePinDto,
-    user: UserContext,
-    workspaceId: string,
-  ) {
-    const { isPinned } = dto;
+  async togglePinWorkspace(request: TogglePinRequest) {
+    const { isPinned, user, workspaceId } = request;
 
     if (isPinned) {
       await this.workspaceRepo.upsertPin(user.id, workspaceId);
@@ -83,10 +78,8 @@ export class WorkspacesService implements WorkspaceActionsPort {
     };
   }
 
-  async importRepository(
-    params: ImportRepositoryDto & { user: UserContext },
-  ) {
-    const { url, selectedFiles, user } = params;
+  async importRepository(request: ImportRepositoryRequest) {
+    const { url, selectedFiles, user } = request;
 
     const repoDetails = await this.sourceCodeClient.getRepoDetails(url);
 

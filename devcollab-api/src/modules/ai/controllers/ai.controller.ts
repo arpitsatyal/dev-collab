@@ -22,23 +22,31 @@ export class AiController {
     @Query('workspaceId', SanitizeIdPipe) workspaceId?: string,
   ) {
     const filters = workspaceId ? { workspaceId } : undefined;
-    return this.aiService.ask(body.chatId, body.question, filters);
+    return this.aiService.ask({
+      chatId: body.chatId,
+      question: body.question,
+      filters,
+    });
   }
 
   @Post('analyze-work-item')
   analyze(@Query('workItemId', SanitizeIdPipe) workItemId: string) {
     if (!workItemId) throw new BadRequestException('Work item ID is required');
-    return this.aiService.analyzeWorkItem(workItemId);
+    return this.aiService.analyzeWorkItem({ workItemId });
   }
 
   @Post('suggest-snippet-filename')
   suggestSnippetFilename(@Body() body: SuggestSnippetFilenameDto) {
-    return this.aiService.suggestSnippetFilename(body);
+    return this.aiService.suggestSnippetFilename({
+      workspaceId: body.workspaceId,
+      code: body.code,
+      language: body.language,
+    });
   }
 
   @Get('suggest-work-items')
   suggestWorkItems(@Query('workspaceId', SanitizeIdPipe) workspaceId?: string) {
     if (!workspaceId) throw new BadRequestException('Workspace ID is required');
-    return this.aiService.suggestWorkItems(workspaceId);
+    return this.aiService.suggestWorkItems({ workspaceId });
   }
 }

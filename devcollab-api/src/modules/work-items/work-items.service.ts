@@ -1,14 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { QueuePort } from 'src/modules/queue/ports/queue.port';
-import {
-  WorkItemCreateDto,
-  WorkItemUpdateStatusDto,
-} from './dto/work-items.dto';
 import * as dayjs from 'dayjs';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
 import { WorkItemStatus } from 'src/common/drizzle/schema';
 import { UserRepository } from '../users/repositories/user.repository';
+import { CreateWorkItemRequest, UpdateWorkItemStatusRequest } from './work-items.types';
 
 @Injectable()
 export class WorkItemsService {
@@ -34,20 +31,27 @@ export class WorkItemsService {
     return this.workItemRepo.update(id, data);
   }
 
-  async createWorkItem(
-    workspaceId: string,
-    authorId: string,
-    dto: WorkItemCreateDto,
-  ) {
-    const workItem = await this.workItemRepo.create({
-      title: dto.title,
-      description: dto.description,
-      dueDate: dto.dueDate ? new Date(dto.dueDate) : undefined,
-      status: (dto.status as WorkItemStatus) ?? 'TODO',
+  async createWorkItem(request: CreateWorkItemRequest) {
+    const {
       workspaceId,
-      assignedToId: dto.assignedToId,
       authorId,
-      snippetIds: dto.snippetIds,
+      title,
+      description,
+      dueDate,
+      status,
+      assignedToId,
+      snippetIds,
+    } = request;
+
+    const workItem = await this.workItemRepo.create({
+      title,
+      description,
+      dueDate: dueDate ? new Date(dueDate) : undefined,
+      status: (status as WorkItemStatus) ?? 'TODO',
+      workspaceId,
+      assignedToId,
+      authorId,
+      snippetIds,
     });
 
     // Notify assignee if present
@@ -73,9 +77,10 @@ export class WorkItemsService {
     return workItem;
   }
 
-  async updateStatus(workItemId: string, dto: WorkItemUpdateStatusDto) {
-    const updatedWorkItem = await this.workItemRepo.update(workItemId, {
-      status: dto.status,
+  async updateStatus(request: UpdateWorkItemStatusRequest) {
+    const { id, status } = request;
+    const updatedWorkItem = await this.workItemRepo.update(id, {
+      status: status as WorkItemStatus,
     });
 
     if (updatedWorkItem.assignedToId) {

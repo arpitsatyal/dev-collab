@@ -46,12 +46,11 @@ export class WorkItemsController {
     @Body() body: WorkItemCreateDto,
     @CurrentUser() user: User,
   ) {
-    const authorId = user.id;
-    return this.workItemsService.createWorkItem(
-      query.workspaceId,
-      authorId,
-      body,
-    );
+    return this.workItemsService.createWorkItem({
+      workspaceId: query.workspaceId,
+      authorId: user.id,
+      ...body,
+    });
   }
 
   @Patch(':workItemId/status')
@@ -59,6 +58,9 @@ export class WorkItemsController {
     @Param('workItemId') workItemId: string,
     @Body() body: WorkItemUpdateStatusDto,
   ) {
-    return this.workItemsService.updateStatus(workItemId, body);
+    return this.workItemsService.updateStatus({
+      id: workItemId,
+      status: body.status,
+    });
   }
 }

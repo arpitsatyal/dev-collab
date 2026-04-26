@@ -1,3 +1,8 @@
+import { CreateDocRequest, UpdateDocRequest } from 'src/modules/docs/docs.types';
+import { CreateSnippetRequest } from 'src/modules/snippets/snippets.types';
+import { CreateWorkItemRequest } from 'src/modules/work-items/work-items.types';
+import { CreateWorkspaceRequest } from 'src/modules/workspaces/workspaces.types';
+
 export interface SearchWorkspacesArgs {
   query?: string;
 }
@@ -22,39 +27,25 @@ export interface SemanticSearchArgs {
   workspaceId?: string;
 }
 
-export interface CreateSnippetArgs {
-  title: string;
-  language: string;
-  content: string;
+export interface CreateSnippetArgs
+  extends Omit<CreateSnippetRequest, 'authorId' | 'workspaceId'> {
   workspaceId?: string;
 }
 
-export interface CreateWorkItemArgs {
-  title: string;
-  description?: string;
-  status?: string;
+export interface CreateWorkItemArgs
+  extends Omit<CreateWorkItemRequest, 'authorId' | 'workspaceId'> {
   workspaceId?: string;
 }
 
-export interface UpdateWorkItemArgs {
+export interface UpdateWorkItemArgs
+  extends Partial<Omit<CreateWorkItemRequest, 'authorId' | 'workspaceId'>> {
   id: string;
-  title?: string;
-  description?: string;
-  status?: string;
 }
 
-export interface CreateDocArgs {
-  label: string;
-  content?: any;
+export interface CreateDocArgs extends Omit<CreateDocRequest, 'workspaceId'> {
   workspaceId?: string;
 }
 
-export interface UpdateDocArgs {
-  id: string;
-  content: any;
-}
+export interface UpdateDocArgs extends UpdateDocRequest {}
 
-export interface CreateWorkspaceArgs {
-  title: string;
-  description?: string;
-}
+export interface CreateWorkspaceArgs extends Omit<CreateWorkspaceRequest, 'user'> {}
