@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { AIMessage } from '@langchain/core/messages';
 import {
   MessagesAnnotation,
   StateGraph,
@@ -7,33 +6,31 @@ import {
 } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentNodesService } from './agent-nodes.service';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { StructuredTool } from '@langchain/core/tools';
+import { AgentStateUtils } from '../utils/agent-state.utils';
+import { AgentRunnableConfig, AgentState } from '../interfaces/agent.interfaces';
 
 @Injectable()
 export class AgentGraphFactoryService {
-  constructor(private readonly nodesService: AgentNodesService) {}
+  constructor(private readonly nodesService: AgentNodesService) { }
 
-  /**
-   * Constructs and compiles a standard reasoning-tool graph.
-   */
-  createGraph(llm: any, tools: any[]) {
+  createGraph(llm: BaseChatModel, tools: StructuredTool[]) {
     const toolNode = new ToolNode(tools);
     const checkpointer = new MemorySaver();
 
     const graph = new StateGraph(MessagesAnnotation)
-      .addNode('agent', (state, config) =>
+      .addNode('agent', (state, config: AgentRunnableConfig) =>
         this.nodesService.callModel(state, llm, config),
       )
-      .addNode('tools', (state, config) =>
+      .addNode('tools', (state, config: AgentRunnableConfig) =>
         this.nodesService.callTools(state, toolNode, config),
       )
       .addEdge('__start__', 'agent')
       .addConditionalEdges(
         'agent',
-        (state: typeof MessagesAnnotation.State) => {
-          const lastMessage = state.messages[
-            state.messages.length - 1
-          ] as AIMessage;
-          return lastMessage.tool_calls?.length ? 'tools' : '__end__';
+        (state: AgentState) => {
+          return AgentStateUtils.hasToolCalls(state.messages) ? 'tools' : '__end__';
         },
       )
       .addEdge('tools', 'agent')

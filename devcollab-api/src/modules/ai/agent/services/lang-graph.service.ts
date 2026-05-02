@@ -1,17 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
-  AIMessage,
   BaseMessage,
   ToolMessage,
-  SystemMessage,
 } from '@langchain/core/messages';
 import { AiConfig } from '../../ai.config';
 import { LlmGateway } from '../../ports/llm.port';
 import { ToolRegistry } from '../../tools/ports/tools.port';
 import { AgentPort } from '../../ports/agent.port';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';
-import { AgentPromptsService } from './agent-prompts.service';
 import { IAiResult } from '../../interfaces';
+import { AgentConfigurable } from '../interfaces/agent.interfaces';
+import { AgentStateUtils } from '../utils/agent-state.utils';
 
 @Injectable()
 export class LangGraphService implements AgentPort {
@@ -22,7 +21,7 @@ export class LangGraphService implements AgentPort {
     private readonly toolService: ToolRegistry,
     private readonly config: AiConfig,
     private readonly graphFactory: AgentGraphFactoryService,
-  ) {}
+  ) { }
 
   /**
    * Orchestrates the agentic mission execution.
@@ -32,7 +31,7 @@ export class LangGraphService implements AgentPort {
     workspaceId: string,
     options?: {
       threadId?: string;
-      configurable?: Record<string, any>;
+      configurable?: AgentConfigurable;
     },
   ): Promise<IAiResult> {
     // 1. Prepare Tools and LLM
@@ -64,8 +63,10 @@ export class LangGraphService implements AgentPort {
    * Maps the final LangGraph state to the standard IAiResult format.
    */
   private mapFinalStateToResult(finalState: any): IAiResult {
-    const calledTools = finalState.messages
-      .filter((m: BaseMessage) => m instanceof ToolMessage)
+    const messages = finalState.messages as BaseMessage[];
+
+    const calledTools = messages
+      .filter((m) => m instanceof ToolMessage)
       .map((m: ToolMessage) => m.name)
       .filter(Boolean) as string[];
 
@@ -75,18 +76,8 @@ export class LangGraphService implements AgentPort {
       this.logger.log(`Response: Tool Sequence [${calledTools.join(' -> ')}]`);
     }
 
-    const lastAIMessage = [...finalState.messages]
-      .reverse()
-      .find((m: BaseMessage) => m instanceof AIMessage) as
-      | AIMessage
-      | undefined;
-
-    const answer =
-      typeof lastAIMessage?.content === 'string'
-        ? lastAIMessage.content
-        : JSON.stringify(
-            lastAIMessage?.content ?? 'Unable to generate a response.',
-          );
+    const lastAIMessage = AgentStateUtils.getLastAIMessage(messages);
+    const answer = AgentStateUtils.getContent(lastAIMessage);
 
     return { answer, calledTools };
   }

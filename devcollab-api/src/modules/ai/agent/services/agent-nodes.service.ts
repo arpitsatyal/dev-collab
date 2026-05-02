@@ -1,30 +1,34 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
-import { MessagesAnnotation } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgentEvents } from '../enums/agent-events.enum';
-import { AgentActionEvent } from '../interfaces/agent.interfaces';
+import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult, AgentState } from '../interfaces/agent.interfaces';
+import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { AgentStateUtils } from '../utils/agent-state.utils';
 
 @Injectable()
 export class AgentNodesService {
   private readonly logger = new Logger(AgentNodesService.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) {}
+  constructor(private readonly eventEmitter: EventEmitter2) { }
 
   /**
    * Node: Agent/Model Reasoning
    */
   async callModel(
-    state: typeof MessagesAnnotation.State,
-    llm: any,
-    config: any,
-  ): Promise<{ messages: BaseMessage[] }> {
-    this.eventEmitter.emit(AgentEvents.ACTION, {
-      metadata: config.configurable,
-      type: 'REASONING_START',
-      label: 'AI is reasoning...',
-    } as AgentActionEvent);
+    state: AgentState,
+    llm: BaseChatModel,
+    config: AgentRunnableConfig,
+  ): Promise<AgentNodeResult> {
+
+    this.eventEmitter.emit(
+      AgentEvents.ACTION,
+      new AgentActionEvent(
+        config.configurable || {},
+        'REASONING_START',
+        'AI is reasoning...',
+      ),
+    );
 
     const response = await llm.invoke(state.messages);
     return { messages: [response] };
@@ -34,27 +38,28 @@ export class AgentNodesService {
    * Node: Mission-Aware Tool Execution
    */
   async callTools(
-    state: typeof MessagesAnnotation.State,
+    state: AgentState,
     toolNode: ToolNode,
-    config: any,
-  ): Promise<{ messages: BaseMessage[] }> {
-    const lastMsg = state.messages[state.messages.length - 1] as AIMessage;
-    const toolCalls = lastMsg.tool_calls || [];
+    config: AgentRunnableConfig,
+  ): Promise<AgentNodeResult> {
+    const lastMsg = AgentStateUtils.getLastAIMessage(state.messages);
+    const toolCalls = lastMsg?.tool_calls || [];
 
     for (const tc of toolCalls) {
-      this.eventEmitter.emit(AgentEvents.ACTION, {
-        metadata: config.configurable,
-        type: 'TOOL_START',
-        label: `Tool: ${tc.name}`,
-        callId: tc.id,
-        payload: { tool: tc.name },
-      } as AgentActionEvent);
+      this.eventEmitter.emit(
+        AgentEvents.ACTION,
+        new AgentActionEvent(
+          config.configurable || {},
+          'TOOL_START',
+          `Tool: ${tc.name}`,
+          tc.id,
+          { tool: tc.name },
+        ),
+      );
     }
 
     // Execute all tools in the state
-    const result = (await toolNode.invoke(state)) as {
-      messages: ToolMessage[];
-    };
+    const result = (await toolNode.invoke(state)) as AgentNodeResult;
 
     // Log the raw result for debugging
     this.logger.log(
@@ -62,13 +67,16 @@ export class AgentNodesService {
     );
 
     for (const tc of toolCalls) {
-      this.eventEmitter.emit(AgentEvents.ACTION, {
-        metadata: config.configurable,
-        type: 'TOOL_END',
-        label: `Tool: ${tc.name}`,
-        callId: tc.id,
-        payload: { tool: tc.name },
-      } as AgentActionEvent);
+      this.eventEmitter.emit(
+        AgentEvents.ACTION,
+        new AgentActionEvent(
+          config.configurable || {},
+          'TOOL_END',
+          `Tool: ${tc.name}`,
+          tc.id,
+          { tool: tc.name },
+        ),
+      );
     }
 
     return result;

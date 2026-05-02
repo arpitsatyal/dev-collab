@@ -1,0 +1,66 @@
+import { AIMessage, BaseMessage } from '@langchain/core/messages';
+
+/**
+ * Static utility for safely selecting data from the Agent Message State.
+ * This encapsulates the "manual array indexing" logic to ensure
+ * type safety and consistency across all nodes and edges.
+ */
+export class AgentStateUtils {
+  /**
+   * Returns the absolute last message in the sequence.
+   */
+  static getLastMessage(messages: BaseMessage[]): BaseMessage | undefined {
+    if (!messages.length) return undefined;
+    return messages[messages.length - 1];
+  }
+
+  /**
+   * Safely returns the last message ONLY if it is an AI Message.
+   * Returns undefined if the last message is a Human or Tool message.
+   */
+  static getLastAIMessage(messages: BaseMessage[]): AIMessage | undefined {
+    const last = this.getLastMessage(messages);
+    return last instanceof AIMessage ? last : undefined;
+  }
+
+  /**
+   * Checks if the agent has requested any tool executions.
+   */
+  static hasToolCalls(messages: BaseMessage[]): boolean {
+    const last = this.getLastAIMessage(messages);
+    return !!(last?.tool_calls && last.tool_calls.length > 0);
+  }
+
+  /**
+   * Returns the names of all tools requested in the last step.
+   */
+  static getToolNames(messages: BaseMessage[]): string[] {
+    const last = this.getLastAIMessage(messages);
+    return last?.tool_calls?.map((tc) => tc.name) || [];
+  }
+
+  /**
+   * Safely extracts a string representation of the message content.
+   * Handles multi-modal arrays and potential undefined states.
+   */
+  static getContent(message?: BaseMessage): string {
+    if (!message) return 'No response generated.';
+
+    const content = message.content;
+
+    // Standard string content
+    if (typeof content === 'string') {
+      return content || 'Empty response.';
+    }
+
+    // Multi-part content (common in vision or structured models)
+    if (Array.isArray(content)) {
+      return content
+        .map((part) => (typeof part === 'string' ? part : JSON.stringify(part)))
+        .join('\n');
+    }
+
+    // Fallback for complex objects
+    return JSON.stringify(content);
+  }
+}
