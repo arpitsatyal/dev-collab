@@ -1,19 +1,22 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/global-exception-filter';
-import * as session from 'express-session';
-import * as passport from 'passport';
+import session from 'express-session';
+import passport from 'passport';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import { ValidationPipe } from '@nestjs/common';
-import * as express from 'express';
-import * as cookieParser from 'cookie-parser';
-import * as pgSession from 'connect-pg-simple';
+import express from 'express';
+import cookieParser from 'cookie-parser';
+import connectPgSimple from 'connect-pg-simple';
 import { Pool } from 'pg';
 
-const PgStore = pgSession(session);
+const PgStore = connectPgSimple(session);
 
 async function bootstrap() {
+  const port = Number(process.env.PORT) || 3000;
+  console.log(`Starting Nest (${process.env.NODE_ENV ?? 'development'}) on port ${port}...`);
+
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.use(express.json());
@@ -68,7 +71,7 @@ async function bootstrap() {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.setGlobalPrefix('api');
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(port);
 }
 
 bootstrap();

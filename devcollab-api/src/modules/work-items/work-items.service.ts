@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { QueuePort } from 'src/modules/queue/ports/queue.port';
-import * as dayjs from 'dayjs';
+import dayjs from 'dayjs';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
 import { WorkItemStatus } from 'src/common/drizzle/schema';

@@ -1,5 +1,5 @@
 import { Injectable, NestMiddleware } from '@nestjs/common';
-import * as express from 'express';
+import express from 'express';
 
 @Injectable()
 export class RawBodyMiddleware implements NestMiddleware {
