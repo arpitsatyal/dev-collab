@@ -29,14 +29,13 @@ async function bootstrap() {
     connectionString: process.env.DATABASE_URL,
   });
 
-  // Required to ensure secure cookies work behind reverse proxies (Render, Heroku, Railway)
   app.set('trust proxy', 1);
 
   app.use(
     session({
       store: new PgStore({
         pool,
-        createTableIfMissing: true, // Automatically creates the "session" table
+        createTableIfMissing: true,
       }),
       secret: process.env.SESSION_SECRET || 'your-session-secret',
       resave: true, // Help with memory store stability

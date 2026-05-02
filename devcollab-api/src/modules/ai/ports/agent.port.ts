@@ -5,6 +5,9 @@ export abstract class AgentPort {
   abstract runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
-    missionId?: string,
+    options?: {
+      threadId?: string;
+      configurable?: Record<string, any>;
+    },
   ): Promise<IAiResult>;
 }

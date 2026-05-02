@@ -18,15 +18,14 @@ export class AgentNodesService {
   async callModel(
     state: typeof MessagesAnnotation.State,
     llm: any,
-    missionId?: string,
+    config: any,
   ): Promise<{ messages: BaseMessage[] }> {
-    if (missionId) {
-      this.eventEmitter.emit(AgentEvents.ACTION, {
-        missionId,
-        type: 'REASONING_START',
-        label: 'AI is reasoning...',
-      } as AgentActionEvent);
-    }
+    this.eventEmitter.emit(AgentEvents.ACTION, {
+      metadata: config.configurable,
+      type: 'REASONING_START',
+      label: 'AI is reasoning...',
+    } as AgentActionEvent);
+
     const response = await llm.invoke(state.messages);
     return { messages: [response] };
   }
@@ -37,18 +36,14 @@ export class AgentNodesService {
   async callTools(
     state: typeof MessagesAnnotation.State,
     toolNode: ToolNode,
-    missionId?: string,
+    config: any,
   ): Promise<{ messages: BaseMessage[] }> {
-    if (!missionId) {
-      return toolNode.invoke(state) as any;
-    }
-
     const lastMsg = state.messages[state.messages.length - 1] as AIMessage;
     const toolCalls = lastMsg.tool_calls || [];
 
     for (const tc of toolCalls) {
       this.eventEmitter.emit(AgentEvents.ACTION, {
-        missionId,
+        metadata: config.configurable,
         type: 'TOOL_START',
         label: `Tool: ${tc.name}`,
         callId: tc.id,
@@ -68,7 +63,7 @@ export class AgentNodesService {
 
     for (const tc of toolCalls) {
       this.eventEmitter.emit(AgentEvents.ACTION, {
-        missionId,
+        metadata: config.configurable,
         type: 'TOOL_END',
         label: `Tool: ${tc.name}`,
         callId: tc.id,

@@ -22,7 +22,6 @@ export class LangGraphService implements AgentPort {
     private readonly toolService: ToolRegistry,
     private readonly config: AiConfig,
     private readonly graphFactory: AgentGraphFactoryService,
-    private readonly promptsService: AgentPromptsService,
   ) {}
 
   /**
@@ -31,29 +30,29 @@ export class LangGraphService implements AgentPort {
   async runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
-    missionId?: string,
+    options?: {
+      threadId?: string;
+      configurable?: Record<string, any>;
+    },
   ): Promise<IAiResult> {
     // 1. Prepare Tools and LLM
     const tools = await this.toolService.getTools(workspaceId);
     const llmWithTools = await this.llmGateway.getReasoningToolBoundLLM(tools);
 
     // 2. Build the Graph
-    const app = this.graphFactory.createGraph(llmWithTools, tools, missionId);
+    const app = this.graphFactory.createGraph(llmWithTools, tools);
 
-    // 3. Prepare Initial State (with steering prompts)
-    let initialMessages = messages;
-    if (missionId && !messages.some((m) => m instanceof SystemMessage)) {
-      const steeringPrompt = this.promptsService.getSteeringPrompt(workspaceId);
-      initialMessages = [steeringPrompt, ...messages];
-    }
-
-    // 4. Invoke the Graph
-    const thread_id = missionId || workspaceId;
+    // 3. Invoke the Graph
+    const thread_id = options?.threadId || workspaceId;
     const finalState = await app.invoke(
-      { messages: initialMessages },
+      { messages },
       {
         recursionLimit: this.config.maxIterations,
-        configurable: { workspaceId, thread_id },
+        configurable: {
+          workspaceId,
+          thread_id,
+          ...options?.configurable,
+        },
       },
     );
 

@@ -87,7 +87,10 @@ describe('ChatEngineService', () => {
       });
       mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
 
-      const result = await service.getAIResponse('chat-1', 'Hi!');
+      const result = await service.getAIResponse({
+        chatId: 'chat-1',
+        question: 'Hi!',
+      });
 
       expect(result.answer).toBe('Hello there!');
       expect(mockLlmGateway.getSpeedyLLM).toHaveBeenCalled();
@@ -109,10 +112,10 @@ describe('ChatEngineService', () => {
       });
       mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
 
-      const result = await service.getAIResponse(
-        'chat-1',
-        'How do I cook pasta?',
-      );
+      const result = await service.getAIResponse({
+        chatId: 'chat-1',
+        question: 'How do I cook pasta?',
+      });
 
       expect(result.answer).toBe(dynamicRefusal);
       expect(mockAgentPort.runAgentGraph).not.toHaveBeenCalled();
@@ -134,11 +137,11 @@ describe('ChatEngineService', () => {
         calledTools: ['getSnippetsTool'],
       });
 
-      const result = await service.getAIResponse(
-        'chat-1',
-        'What are the tasks?',
-        { workspaceId: 'ws-1' },
-      );
+      const result = await service.getAIResponse({
+        chatId: 'chat-1',
+        question: 'What are the tasks?',
+        filters: { workspaceId: 'ws-1' },
+      });
 
       expect(result.answer).toBe('Here are your workspace details.');
       expect(mockAgentPort.runAgentGraph).toHaveBeenCalledWith(
@@ -169,7 +172,10 @@ describe('ChatEngineService', () => {
         sources: ['doc'],
       });
 
-      const result = await service.getAIResponse('chat-1', 'Search globally');
+      const result = await service.getAIResponse({
+        chatId: 'chat-1',
+        question: 'Search globally',
+      });
 
       expect(result.answer).toBe('Generated global answer.');
       expect(mockRetrievalPort.performHybridSearch).toHaveBeenCalled();

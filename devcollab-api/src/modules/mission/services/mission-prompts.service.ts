@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SystemMessage } from '@langchain/core/messages';
 
 @Injectable()
-export class AgentPromptsService {
+export class MissionPromptsService {
   /**
    * Generates the core system message for the mission agent.
    */
@@ -12,7 +12,7 @@ export class AgentPromptsService {
         
       RULES:
       1. ALWAYS use your tools to explore and act. You have UNRESTRICTED access to all tools.
-      2. DO NOT guess or assume information—retrive it first.
+      2. DO NOT guess or assume information—retrieve it first.
       3. Break down complex tasks into logical steps.
       4. If a tool reports "Successfully created/updated", DO NOT enter a loop to verify it again unless specifically asked. Move immediately to your final summary.
       5. CROSS-WORKSPACE MISSIONS: If the user mentions a specific workspace by name, FIRST use the "search_workspaces" tool to find its ID. Then, provide that "workspaceId" to any subsequent tool calls.

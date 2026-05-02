@@ -15,16 +15,16 @@ export class AgentGraphFactoryService {
   /**
    * Constructs and compiles a standard reasoning-tool graph.
    */
-  createGraph(llm: any, tools: any[], missionId?: string) {
+  createGraph(llm: any, tools: any[]) {
     const toolNode = new ToolNode(tools);
     const checkpointer = new MemorySaver();
 
     const graph = new StateGraph(MessagesAnnotation)
-      .addNode('agent', (state) =>
-        this.nodesService.callModel(state, llm, missionId),
+      .addNode('agent', (state, config) =>
+        this.nodesService.callModel(state, llm, config),
       )
-      .addNode('tools', (state) =>
-        this.nodesService.callTools(state, toolNode, missionId),
+      .addNode('tools', (state, config) =>
+        this.nodesService.callTools(state, toolNode, config),
       )
       .addEdge('__start__', 'agent')
       .addConditionalEdges(

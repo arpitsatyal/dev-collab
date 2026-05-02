@@ -3,5 +3,5 @@ export interface ValidateSocialUserRequest {
   name: string;
   provider: 'GOOGLE' | 'GITHUB';
   providerId: string;
-  avatarUrl?: string;
+  image?: string;
 }

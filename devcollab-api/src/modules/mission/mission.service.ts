@@ -18,6 +18,7 @@ import type {
   PushLogRequest,
   UpdateStepStatusRequest,
 } from './interfaces/mission.interfaces';
+import { MissionPromptsService } from './services/mission-prompts.service';
 
 @Injectable()
 export class MissionService {
@@ -30,6 +31,7 @@ export class MissionService {
     private readonly stepRepo: MissionStepRepository,
     private readonly logRepo: MissionLogRepository,
     private readonly agentPort: AgentPort,
+    private readonly prompts: MissionPromptsService,
     private readonly queuePort: QueuePort,
   ) {
     // Initialize the background processor
@@ -56,7 +58,10 @@ export class MissionService {
    * This is where the actual DB writes happen.
    */
   private async processAgentAction(event: AgentActionEvent) {
-    const { missionId, type, label, payload, callId } = event;
+    const { metadata, type, label, payload, callId } = event;
+    const missionId = metadata?.missionId;
+
+    if (!missionId) return;
 
     try {
       switch (type) {
@@ -227,10 +232,15 @@ export class MissionService {
         message: `Launching autonomous agent for goal: ${mission.goal}`,
       });
 
+      const steeringPrompt = this.prompts.getSteeringPrompt(mission.workspaceId);
+
       const result = await this.agentPort.runAgentGraph(
-        [new HumanMessage(mission.goal)],
+        [steeringPrompt, new HumanMessage(mission.goal)],
         mission.workspaceId,
-        id,
+        {
+          threadId: id,
+          configurable: { missionId: id },
+        },
       );
 
       await this.addStep({

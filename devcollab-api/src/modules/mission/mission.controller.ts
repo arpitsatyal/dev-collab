@@ -12,7 +12,7 @@ import { Observable, map, filter, concat, from, concatMap } from 'rxjs';
 
 @Controller('missions')
 export class MissionController {
-  constructor(private readonly missionService: MissionService) {}
+  constructor(private readonly missionService: MissionService) { }
 
   @Post()
   async createMission(@Body() body: { workspaceId: string; goal: string }) {
@@ -40,7 +40,7 @@ export class MissionController {
     @Param('missionId') missionId: string,
   ): Observable<MessageEvent> {
     const history$ = from(this.missionService.getMissionLogs(missionId)).pipe(
-      concatMap((logs: any[]) => from(logs)), // Flatten the array into individual events
+      concatMap((logs: any[]) => from(logs)),
       map((log) => ({ data: log }) as MessageEvent),
     );
 

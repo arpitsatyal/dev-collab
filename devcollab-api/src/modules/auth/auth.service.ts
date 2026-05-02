@@ -14,7 +14,7 @@ export class AuthService implements AuthPort {
   ) { }
 
   async validateSocialUser(profileData: ValidateSocialUserRequest) {
-    const { email, name, provider, providerId, avatarUrl } = profileData;
+    const { email, name, provider, providerId, image } = profileData;
 
     let user = await this.usersService.findByEmail(email);
 
@@ -24,7 +24,7 @@ export class AuthService implements AuthPort {
         name,
         provider,
         providerId,
-        avatarUrl,
+        image,
       });
     }
 
