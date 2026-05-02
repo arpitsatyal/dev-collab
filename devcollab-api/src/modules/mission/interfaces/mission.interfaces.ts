@@ -1,7 +1,4 @@
-import {
-  MissionStatus,
-  MissionStepStatus,
-} from 'src/common/drizzle/schema/enums';
+import { MissionStepStatus } from 'src/common/drizzle/schema/enums';
 
 export interface CreateMissionRequest {
   workspaceId: string;

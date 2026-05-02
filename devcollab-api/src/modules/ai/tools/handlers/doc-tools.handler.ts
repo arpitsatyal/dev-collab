@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
 import { DocsService } from 'src/modules/docs/docs.service';
+import {
+  createDocSchema,
+  getDocsSchema,
+  updateDocSchema,
+} from '../schema/doc-tools.schema';
 import type {
   CreateDocArgs,
   GetDocsArgs,
@@ -10,7 +14,7 @@ import type {
 
 @Injectable()
 export class DocToolsHandler {
-  constructor(private readonly docsService: DocsService) {}
+  constructor(private readonly docsService: DocsService) { }
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -71,53 +75,37 @@ export class DocToolsHandler {
   }
 
   getTools(workspaceId: string): DynamicStructuredTool[] {
-    return [
-      new DynamicStructuredTool({
+    const tools: DynamicStructuredTool[] = [];
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'get_docs',
         description:
           'Fetch ALL documentation records in a workspace. Optionally filter by label.',
-        schema: z.object({
-          labelFilter: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Label to filter docs.'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleGetDocs(args, workspaceId),
+        schema: getDocsSchema as any,
+        func: (args: GetDocsArgs) => this.handleGetDocs(args, workspaceId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'create_doc',
         description: 'Create a new documentation document.',
-        schema: z.object({
-          label: z.string().describe('Label or title of the doc'),
-          content: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('The content of the document (string or markdown).'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleCreateDoc(args, workspaceId),
+        schema: createDocSchema as any,
+        func: (args: CreateDocArgs) => this.handleCreateDoc(args, workspaceId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'update_doc',
         description:
           'Update the content of an existing documentation document.',
-        schema: z.object({
-          id: z.string().describe('The ID of the document to update'),
-          content: z.string().describe('The new content for the document'),
-        }),
-        func: (args) => this.handleUpdateDoc(args),
+        schema: updateDocSchema as any,
+        func: (args: UpdateDocArgs) => this.handleUpdateDoc(args),
       }),
-    ];
+    );
+
+    return tools;
   }
 }

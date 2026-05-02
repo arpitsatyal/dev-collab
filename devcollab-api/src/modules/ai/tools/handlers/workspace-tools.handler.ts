@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
 import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
+import {
+  createWorkspaceSchema,
+  getWorkspaceOverviewSchema,
+  searchWorkspacesSchema,
+} from '../schema/workspace-tools.schema';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { DocsService } from 'src/modules/docs/docs.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
@@ -99,40 +103,39 @@ export class WorkspaceToolsHandler {
   }
 
   getTools(workspaceId: string): DynamicStructuredTool[] {
-    return [
-      new DynamicStructuredTool({
+    const tools: DynamicStructuredTool[] = [];
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'search_workspaces',
         description: 'Search for workspaces by name/title to find their IDs.',
-        schema: z.object({
-          query: z
-            .string()
-            .optional()
-            .describe('Part of the workspace name to look for.'),
-        }),
-        func: (args) => this.handleSearchWorkspaces(args),
+        schema: searchWorkspacesSchema as any,
+        func: (args: SearchWorkspacesArgs) =>
+          this.handleSearchWorkspaces(args),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'get_workspace_overview',
         description:
           'Fetch a high-level overview of everything in the workspace.',
-        schema: z.object({
-          workspaceId: z
-            .string()
-            .optional()
-            .describe('Optional workspace ID to override current context.'),
-        }),
-        func: (args) =>
+        schema: getWorkspaceOverviewSchema as any,
+        func: (args: { workspaceId?: string }) =>
           this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'create_workspace',
         description: 'Create a new blank workspace.',
-        schema: z.object({
-          title: z.string().describe('Title of the new workspace'),
-          description: z.string().optional().describe('Optional description'),
-        }),
-        func: (args) => this.handleCreateWorkspace(args, workspaceId),
+        schema: createWorkspaceSchema as any,
+        func: (args: CreateWorkspaceArgs) =>
+          this.handleCreateWorkspace(args, workspaceId),
       }),
-    ];
+    );
+
+    return tools;
   }
 }

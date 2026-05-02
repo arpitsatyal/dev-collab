@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
+import { semanticSearchSchema } from '../schema/search-tools.schema';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { DocsService } from 'src/modules/docs/docs.service';
 import type { SemanticSearchArgs } from '../../interfaces/ai-tools.interfaces';
@@ -36,27 +36,28 @@ export class SearchToolsHandler {
   }
 
   getTools(workspaceId: string): DynamicStructuredTool[] {
-    return [
-      new DynamicStructuredTool({
+    const tools: DynamicStructuredTool[] = [];
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'semantic_search',
         description:
           'Perform a broad semantic search across snippets, docs, and work items.',
-        schema: z.object({
-          searchQuery: z
-            .string()
-            .describe('The natural language search query.'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) =>
+        schema: semanticSearchSchema as any,
+        func: (args: {
+          searchQuery: string;
+          workspaceId?: string | null;
+        }) =>
           this.handleSemanticSearch(
-            { query: args.searchQuery, workspaceId: args.workspaceId },
+            {
+              query: args.searchQuery,
+              workspaceId: args.workspaceId ?? undefined,
+            },
             workspaceId,
           ),
       }),
-    ];
+    );
+
+    return tools;
   }
 }

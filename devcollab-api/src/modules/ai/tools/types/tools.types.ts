@@ -3,9 +3,7 @@ import {
   UpdateDocRequest,
 } from 'src/modules/docs/docs.types';
 import { CreateSnippetRequest } from 'src/modules/snippets/snippets.types';
-import {
-  CreateWorkItemRequest,
-} from 'src/modules/work-items/work-items.types';
+import { CreateWorkItemRequest } from 'src/modules/work-items/work-items.types';
 import { CreateWorkspaceRequest } from 'src/modules/workspaces/workspaces.types';
 
 export interface SearchWorkspacesArgs {

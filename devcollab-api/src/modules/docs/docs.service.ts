@@ -26,11 +26,12 @@ export class DocsService {
 
   async createDoc(request: CreateDocRequest) {
     const { workspaceId, label, content } = request;
+    const normalizedContent = this.normalizeContent(content);
     const doc = await this.docRepo.create({
       label,
       workspaceId,
       roomId: `docs_${uuidv4()}`,
-      ...(content && { content }),
+      ...(normalizedContent !== undefined && { content: normalizedContent }),
     });
 
     await this.syncPort.publishSyncEvent('doc', doc);
@@ -39,9 +40,10 @@ export class DocsService {
 
   async updateDoc(request: UpdateDocRequest) {
     const { id, content } = request;
+    const normalizedContent = this.normalizeContent(content);
     const updated = await this.docRepo.update(id, {
       updatedAt: new Date(),
-      ...(content && { content }),
+      ...(normalizedContent !== undefined && { content: normalizedContent }),
     });
 
     if (!updated) throw new NotFoundException('Doc not found');
@@ -52,5 +54,21 @@ export class DocsService {
 
   async searchDocs(workspaceId: string, query: string, limit?: number) {
     return this.docRepo.findManyBySearch(workspaceId, query, limit);
+  }
+
+  private normalizeContent(content: unknown): string | undefined {
+    if (content === undefined || content === null) return undefined;
+    if (typeof content === 'string') return content;
+
+    if (typeof content === 'object') {
+      const maybeDoc = content as { content?: unknown };
+      if (typeof maybeDoc.content === 'string') return maybeDoc.content;
+    }
+
+    try {
+      return JSON.stringify(content);
+    } catch {
+      return String(content);
+    }
   }
 }

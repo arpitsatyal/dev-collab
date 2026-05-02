@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
+import {
+  createSnippetSchema,
+  getSnippetsSchema,
+} from '../schema/snippet-tools.schema';
 import type {
   CreateSnippetArgs,
   GetSnippetsArgs,
@@ -69,45 +72,29 @@ export class SnippetToolsHandler {
   }
 
   getTools(workspaceId: string, authorId: string): DynamicStructuredTool[] {
-    return [
-      new DynamicStructuredTool({
+    const tools: DynamicStructuredTool[] = [];
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'get_snippets',
         description:
           'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
-        schema: z.object({
-          titleFilter: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Keyword to filter snippets by title.'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleGetSnippets(args, workspaceId),
+        schema: getSnippetsSchema as any,
+        func: (args: GetSnippetsArgs) =>
+          this.handleGetSnippets(args, workspaceId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'create_snippet',
         description: 'Create a new code snippet.',
-        schema: z.object({
-          title: z.string().describe('Title of the snippet'),
-          language: z.string().describe('Programming language'),
-          content: z.string().describe('Code content'),
-          extension: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('File extension (e.g., ".ts")'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleCreateSnippet(args, workspaceId, authorId),
+        schema: createSnippetSchema as any,
+        func: (args: CreateSnippetArgs) =>
+          this.handleCreateSnippet(args, workspaceId, authorId),
       }),
-    ];
+    );
+
+    return tools;
   }
 }

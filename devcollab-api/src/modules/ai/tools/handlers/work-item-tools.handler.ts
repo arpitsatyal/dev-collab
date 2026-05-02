@@ -1,7 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
-import { z } from 'zod';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
+import {
+  createWorkItemSchema,
+  getWorkItemsSchema,
+  updateWorkItemSchema,
+} from '../schema/work-item-tools.schema';
 import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
 import type {
   CreateWorkItemArgs,
@@ -84,64 +88,38 @@ export class WorkItemToolsHandler {
   }
 
   getTools(workspaceId: string, authorId: string): DynamicStructuredTool[] {
-    return [
-      new DynamicStructuredTool({
+    const tools: DynamicStructuredTool[] = [];
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'get_work_items',
         description:
           'Fetch ALL work items inside a workspace. Optionally filter by title.',
-        schema: z.object({
-          titleFilter: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Search keyword to filter work item titles.'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleGetWorkItems(args, workspaceId),
+        schema: getWorkItemsSchema as any,
+        func: (args: GetWorkItemsArgs) =>
+          this.handleGetWorkItems(args, workspaceId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'create_work_item',
         description: 'Create a new task or work item.',
-        schema: z.object({
-          title: z.string().describe('Task title'),
-          description: z.string().nullable().optional().describe('Task detail'),
-          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).nullable().optional(),
-          dueDate: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Due date as string'),
-          assignedToId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('User ID to assign to'),
-          snippetIds: z
-            .array(z.string())
-            .nullable()
-            .optional()
-            .describe('Snippet IDs to link'),
-          workspaceId: z
-            .string()
-            .nullable()
-            .optional()
-            .describe('Target workspace ID.'),
-        }),
-        func: (args) => this.handleCreateWorkItem(args, workspaceId, authorId),
+        schema: createWorkItemSchema as any,
+        func: (args: CreateWorkItemArgs) =>
+          this.handleCreateWorkItem(args, workspaceId, authorId),
       }),
-      new DynamicStructuredTool({
+    );
+
+    tools.push(
+      new DynamicStructuredTool<any>({
         name: 'update_work_item',
         description: 'Update an existing work item status.',
-        schema: z.object({
-          id: z.string().describe('The ID of the work item to update'),
-          status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).nullable().optional(),
-        }),
-        func: (args) => this.handleUpdateWorkItem(args),
+        schema: updateWorkItemSchema as any,
+        func: (args: UpdateWorkItemArgs) => this.handleUpdateWorkItem(args),
       }),
-    ];
+    );
+
+    return tools;
   }
 }
