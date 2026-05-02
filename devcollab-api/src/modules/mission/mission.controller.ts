@@ -7,12 +7,16 @@ import {
   Sse,
   MessageEvent,
 } from '@nestjs/common';
-import { MissionService } from './mission.service';
+import { MissionService } from './services/mission.service';
+import { MissionRunnerService } from './services/mission-runner.service';
 import { Observable, map, filter, concat, from, concatMap } from 'rxjs';
 
 @Controller('missions')
 export class MissionController {
-  constructor(private readonly missionService: MissionService) { }
+  constructor(
+    private readonly missionService: MissionService,
+    private readonly missionRunner: MissionRunnerService,
+  ) { }
 
   @Post()
   async createMission(@Body() body: { workspaceId: string; goal: string }) {
@@ -21,7 +25,7 @@ export class MissionController {
       goal: body.goal,
     });
     // Start mission in background
-    void this.missionService.runMission(mission.id);
+    void this.missionRunner.runMission(mission.id);
     return mission;
   }
 

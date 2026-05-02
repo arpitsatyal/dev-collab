@@ -10,7 +10,7 @@ import {
   DeleteMessageCommand,
 } from '@aws-sdk/client-sqs';
 import { ConfigService } from '@nestjs/config';
-import { MissionService } from './mission.service';
+import { MissionRunnerService } from './services/mission-runner.service';
 
 @Injectable()
 export class MissionConsumer implements OnModuleInit, OnModuleDestroy {
@@ -21,7 +21,7 @@ export class MissionConsumer implements OnModuleInit, OnModuleDestroy {
 
   constructor(
     private readonly configService: ConfigService,
-    private readonly missionService: MissionService,
+    private readonly missionRunner: MissionRunnerService,
   ) {
     this.queueUrl = this.configService.getOrThrow<string>('MISSION_QUEUE_URL');
   }
@@ -67,7 +67,7 @@ export class MissionConsumer implements OnModuleInit, OnModuleDestroy {
 
       if (body.type === 'RUN_MISSION') {
         this.logger.log(`Worker picked up mission: ${body.missionId}`);
-        await this.missionService.executeMission(body.missionId);
+        await this.missionRunner.executeMission(body.missionId);
       }
 
       // Delete message after processing
