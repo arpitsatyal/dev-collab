@@ -9,7 +9,7 @@ import { ToolRegistry } from '../../tools/ports/tools.port';
 import { AgentPort } from '../../ports/agent.port';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';
 import { IAiResult } from '../../interfaces';
-import { AgentConfigurable } from '../interfaces/agent.interfaces';
+import { AgentRunOptions } from '../interfaces/agent.interfaces';
 import { AgentStateUtils } from '../utils/agent-state.utils';
 
 @Injectable()
@@ -29,10 +29,7 @@ export class LangGraphService implements AgentPort {
   async runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
-    options?: {
-      threadId?: string;
-      configurable?: AgentConfigurable;
-    },
+    options?: AgentRunOptions,
   ): Promise<IAiResult> {
     // 1. Prepare Tools and LLM
     const tools = await this.toolService.getTools(workspaceId);
@@ -42,14 +39,13 @@ export class LangGraphService implements AgentPort {
     const app = this.graphFactory.createGraph(llmWithTools, tools);
 
     // 3. Invoke the Graph
-    const thread_id = options?.threadId || workspaceId;
     const finalState = await app.invoke(
       { messages },
       {
         recursionLimit: this.config.maxIterations,
         configurable: {
           workspaceId,
-          thread_id,
+          thread_id: options?.threadId, // LangGraph checkpointing key
           ...options?.configurable,
         },
       },

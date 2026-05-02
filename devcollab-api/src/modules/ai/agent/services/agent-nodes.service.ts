@@ -45,20 +45,10 @@ export class AgentNodesService {
     const lastMsg = AgentStateUtils.getLastAIMessage(state.messages);
     const toolCalls = lastMsg?.tool_calls || [];
 
-    for (const tc of toolCalls) {
-      this.eventEmitter.emit(
-        AgentEvents.ACTION,
-        new AgentActionEvent(
-          config.configurable || {},
-          'TOOL_START',
-          `Tool: ${tc.name}`,
-          tc.id,
-          { tool: tc.name },
-        ),
-      );
-    }
+    // 1. Emit START events
+    this.emitToolEvents('TOOL_START', toolCalls, config);
 
-    // Execute all tools in the state
+    // 2. Execute all tools in the state
     const result = (await toolNode.invoke(state)) as AgentNodeResult;
 
     // Log the raw result for debugging
@@ -66,19 +56,31 @@ export class AgentNodesService {
       `Tool Result for ${toolCalls.map((tc) => tc.name).join(', ')}: ${JSON.stringify(result.messages.map((m) => m.content))}`,
     );
 
+    // 3. Emit END events
+    this.emitToolEvents('TOOL_END', toolCalls, config);
+
+    return result;
+  }
+
+  /**
+   * Reusable helper to emit events for a batch of tool calls.
+   */
+  private emitToolEvents(
+    type: 'TOOL_START' | 'TOOL_END',
+    toolCalls: any[],
+    config: AgentRunnableConfig,
+  ) {
     for (const tc of toolCalls) {
       this.eventEmitter.emit(
         AgentEvents.ACTION,
         new AgentActionEvent(
           config.configurable || {},
-          'TOOL_END',
+          type,
           `Tool: ${tc.name}`,
           tc.id,
           { tool: tc.name },
         ),
       );
     }
-
-    return result;
   }
 }

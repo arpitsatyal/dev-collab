@@ -14,6 +14,11 @@ export interface AgentRunnableConfig extends RunnableConfig {
   configurable?: AgentConfigurable;
 }
 
+export interface AgentRunOptions {
+  threadId: string;
+  configurable?: AgentConfigurable;
+}
+
 export interface AgentNodeResult {
   messages: BaseMessage[];
 }
