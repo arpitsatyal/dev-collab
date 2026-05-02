@@ -3,9 +3,9 @@ import { QueuePort } from 'src/modules/queue/ports/queue.port';
 import dayjs from 'dayjs';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
-import { WorkItemStatus } from 'src/common/drizzle/schema';
+import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
 import { UserRepository } from '../users/repositories/user.repository';
-import { CreateWorkItemRequest, UpdateWorkItemStatusRequest } from './work-items.types';
+import type { CreateWorkItemRequest, UpdateWorkItemStatusRequest } from './interfaces/work-items.interfaces';
 
 @Injectable()
 export class WorkItemsService {

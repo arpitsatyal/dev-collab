@@ -1,4 +1,4 @@
-import { IAiResult } from '../interfaces';
+import type { IAiResult } from '../interfaces/ai.interfaces';
 import { BaseMessage } from '@langchain/core/messages';
 
 export abstract class AgentPort {

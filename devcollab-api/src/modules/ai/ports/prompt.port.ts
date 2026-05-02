@@ -1,5 +1,5 @@
 import { BaseMessage } from '@langchain/core/messages';
-import { ChatScope } from '../interfaces';
+import type { ChatScope } from '../types/ai.types';
 
 export abstract class PromptPort {
   abstract constructPrompt(

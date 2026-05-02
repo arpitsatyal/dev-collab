@@ -3,11 +3,11 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { WorkspaceRepository } from '../../workspaces/adapters/workspace.repository';
 import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
 import { LlmGateway } from '../ports/llm.port';
-import {
+import type {
   AnalyzeWorkItemRequest,
   SuggestSnippetFilenameRequest,
   SuggestWorkItemsRequest,
-} from '../types/ai.types';
+} from '../interfaces/ai.interfaces';
 
 @Injectable()
 export class SuggestionService {

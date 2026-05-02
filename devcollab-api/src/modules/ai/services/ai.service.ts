@@ -3,12 +3,7 @@ import { ChatEngineService } from './chat-engine.service';
 import { SuggestionService } from './suggestion.service';
 import { MessageService } from 'src/modules/message/message.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import {
-  AnalyzeWorkItemRequest,
-  GetAiResponseRequest,
-  SuggestSnippetFilenameRequest,
-  SuggestWorkItemsRequest,
-} from '../types/ai.types';
+import { AnalyzeWorkItemRequest, GetAiResponseRequest, SuggestSnippetFilenameRequest, SuggestWorkItemsRequest } from '../interfaces/ai.interfaces';
 
 @Injectable()
 export class AiService {

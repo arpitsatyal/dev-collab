@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
-import { CreateSnippetArgs, GetSnippetsArgs } from '../types/tools.types';
+import type { CreateSnippetArgs, GetSnippetsArgs } from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class SnippetToolsHandler {

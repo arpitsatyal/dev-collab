@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { DocsService } from 'src/modules/docs/docs.service';
-import { CreateDocArgs, GetDocsArgs, UpdateDocArgs } from '../types/tools.types';
+import type { CreateDocArgs, GetDocsArgs, UpdateDocArgs } from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class DocToolsHandler {

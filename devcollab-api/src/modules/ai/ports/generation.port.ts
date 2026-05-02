@@ -1,6 +1,6 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { SearchHit } from './retrieval.port';
-import { IAiResult } from '../interfaces';
+import type { IAiResult } from '../interfaces/ai.interfaces';
 
 export abstract class GenerationPort {
   abstract generateAnswer(

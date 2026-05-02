@@ -5,7 +5,7 @@ import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { DocsService } from 'src/modules/docs/docs.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import { CreateWorkspaceArgs, SearchWorkspacesArgs } from '../types/tools.types';
+import type { CreateWorkspaceArgs, SearchWorkspacesArgs } from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class WorkspaceToolsHandler {

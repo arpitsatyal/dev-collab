@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { DocRepository } from './repositories/doc.repository';
-import { CreateDocRequest, UpdateDocRequest } from './docs.types';
+import type { CreateDocRequest, UpdateDocRequest } from './interfaces/docs.interfaces';
 
 @Injectable()
 export class DocsService {

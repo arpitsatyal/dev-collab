@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import { WorkItemStatus } from 'src/common/drizzle/schema';
-import { CreateWorkItemArgs, GetWorkItemsArgs, UpdateWorkItemArgs } from '../types/tools.types';
+import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
+import type { CreateWorkItemArgs, GetWorkItemsArgs, UpdateWorkItemArgs } from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class WorkItemToolsHandler {

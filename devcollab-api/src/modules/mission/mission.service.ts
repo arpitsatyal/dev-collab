@@ -2,20 +2,21 @@ import { Injectable, Logger } from '@nestjs/common';
 import { MissionRepository } from './repositories/mission.repository';
 import { MissionStepRepository } from './repositories/mission-step.repository';
 import { MissionLogRepository } from './repositories/mission-log.repository';
-import { MissionStatus } from 'src/common/drizzle/schema';
+import { MissionStatus } from 'src/common/drizzle/schema/enums';
 import { Subject, concatMap, from } from 'rxjs';
 import { AgentPort } from '../ai/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
 import { OnEvent } from '@nestjs/event-emitter';
-import { AgentEvents, AgentActionEvent } from '../ai/agent/agent.events';
+import type { AgentActionEvent } from '../ai/agent/agent.events';
+import { AgentEvents } from '../ai/agent/agent.events';
 import { QueuePort, QueueType } from '../queue/ports/queue.port';
-import {
+import type {
   AddStepRequest,
   CreateMissionRequest,
   MissionLog,
   PushLogRequest,
-  UpdateStepStatusRequest
-} from './mission.types';
+  UpdateStepStatusRequest,
+} from './interfaces/mission.interfaces';
 
 @Injectable()
 export class MissionService {

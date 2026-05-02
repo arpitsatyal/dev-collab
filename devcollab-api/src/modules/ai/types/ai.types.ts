@@ -1,52 +1,12 @@
-import { IChatContext } from '../interfaces';
+import { z } from 'zod';
+import { RunnableLike } from '@langchain/core/runnables';
+import { IntentSchema } from '../schemas';
 
-export interface SuggestSnippetFilenameRequest {
-  workspaceId: string;
-  code: string;
-  language?: string;
-}
+export type IintentResult = z.infer<typeof IntentSchema>;
 
-export interface AiFilters {
-  workspaceId?: string;
-}
+export type ChatScope = 'APP_SPECIFIC' | 'DOMAIN_KNOWLEDGE' | 'OUT_OF_SCOPE';
 
-export interface GetAiResponseRequest {
-  chatId: string;
-  question: string;
-  filters?: AiFilters;
-}
-
-export interface AnalyzeWorkItemRequest {
-  workItemId: string;
-}
-
-export interface SuggestWorkItemsRequest {
-  workspaceId: string;
-}
-
-/**
- * Internal interfaces for ChatEngineService
- */
-
-export interface GetAIResponseWithToolsRequest {
-  chatId: string;
-  question: string;
-  history: string;
-  workspaceId: string;
-}
-
-export interface GetAIResponseWithSearchRequest {
-  chatId: string;
-  question: string;
-  history: string;
-  filters?: Record<string, any>;
-}
-
-export interface HandleConversationalRequest {
-  context: IChatContext;
-  scope: string;
-}
-
-export interface HandleWorkspaceQueryRequest {
-  context: IChatContext;
-}
+export type IntentClassifierLlm = RunnableLike<
+  Record<string, any>,
+  IintentResult
+>;

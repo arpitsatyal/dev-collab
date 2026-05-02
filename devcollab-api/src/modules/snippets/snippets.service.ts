@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { SnippetRepository } from './repositories/snippet.repository';
-import { CreateSnippetRequest, UpdateSnippetRequest } from './snippets.types';
+import type { CreateSnippetRequest, UpdateSnippetRequest } from './interfaces/snippets.interfaces';
 
 @Injectable()
 export class SnippetsService {

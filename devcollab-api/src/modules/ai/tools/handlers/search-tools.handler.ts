@@ -4,7 +4,7 @@ import { z } from 'zod';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { DocsService } from 'src/modules/docs/docs.service';
-import { SemanticSearchArgs } from '../types/tools.types';
+import type { SemanticSearchArgs } from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class SearchToolsHandler {

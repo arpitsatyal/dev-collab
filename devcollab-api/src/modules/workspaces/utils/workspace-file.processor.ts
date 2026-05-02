@@ -1,7 +1,7 @@
 import { randomUUID } from 'crypto';
 import { SourceCodeFile } from '../ports/source-code.port';
 import { SNIPPET_EXTENSIONS } from './constants';
-import { ProcessedFiles } from '../workspaces.types';
+import type { ProcessedFiles } from '../interfaces/workspaces.interfaces';
 
 export class WorkspaceFileProcessor {
   static processFiles(

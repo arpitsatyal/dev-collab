@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
-import { missionSteps } from 'src/common/drizzle/schema';
+import { missionSteps } from 'src/common/drizzle/schema/missions';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { eq } from 'drizzle-orm';
 

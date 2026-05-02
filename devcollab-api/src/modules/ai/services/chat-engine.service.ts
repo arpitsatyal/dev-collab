@@ -7,22 +7,21 @@ import { GenerationPort } from '../ports/generation.port';
 import { LlmGateway } from '../ports/llm.port';
 import { MessageService } from 'src/modules/message/message.service';
 import { AgentPort } from '../ports/agent.port';
-import { IntentClassifierLlm } from '../types';
-import { IntentSchema } from '../schemas';
 import {
-  ChatScope,
   IChatContext,
   IChatResponse,
-  IintentResult,
-} from '../interfaces';
-
-import {
-  GetAIResponseWithSearchRequest,
-  GetAIResponseWithToolsRequest,
+  HandleConversationalParams,
+  HandleWorkspaceQueryParams,
+  GetAIResponseWithToolsParams,
+  GetAIResponseWithSearchParams,
   GetAiResponseRequest,
-  HandleConversationalRequest,
-  HandleWorkspaceQueryRequest,
+} from '../interfaces/ai.interfaces';
+import {
+  ChatScope,
+  IintentResult,
+  IntentClassifierLlm,
 } from '../types/ai.types';
+import { IntentSchema } from '../schemas';
 
 @Injectable()
 export class ChatEngineService {
@@ -107,9 +106,9 @@ export class ChatEngineService {
   }
 
   private async handleConversational(
-    request: HandleConversationalRequest,
+    params: HandleConversationalParams,
   ): Promise<IChatResponse> {
-    const { context, scope } = request;
+    const { context, scope } = params;
     this.logger.log(`Handling CONVERSATIONAL intent (Scope: ${scope})`);
 
     const messages = this.promptService.buildConversationalMessages(
@@ -131,9 +130,9 @@ export class ChatEngineService {
   }
 
   private async handleWorkspaceQuery(
-    request: HandleWorkspaceQueryRequest,
+    params: HandleWorkspaceQueryParams,
   ): Promise<IChatResponse> {
-    const { context } = request;
+    const { context } = params;
     if (context.inWorkspace && context.workspaceId) {
       return this.getAIResponseWithTools({
         chatId: context.chatId,
@@ -161,9 +160,9 @@ export class ChatEngineService {
   }
 
   private async getAIResponseWithTools(
-    request: GetAIResponseWithToolsRequest,
+    params: GetAIResponseWithToolsParams,
   ): Promise<IChatResponse> {
-    const { history, question, workspaceId } = request;
+    const { history, question, workspaceId } = params;
     this.logger.log(
       `LangGraph: Processing with tools for workspace ${workspaceId}`,
     );
@@ -189,9 +188,9 @@ export class ChatEngineService {
   }
 
   private async getAIResponseWithSearch(
-    request: GetAIResponseWithSearchRequest,
+    params: GetAIResponseWithSearchParams,
   ): Promise<IChatResponse> {
-    const { question, history, filters } = request;
+    const { question, history, filters } = params;
     this.logger.log('HybridSearch: Processing global query');
     const queryGenLlm = await this.llmGateway.getReasoningLLM();
 

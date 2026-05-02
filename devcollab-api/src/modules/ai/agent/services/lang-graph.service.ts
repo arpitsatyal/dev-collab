@@ -4,9 +4,9 @@ import { AiConfig } from '../../ai.config';
 import { LlmGateway } from '../../ports/llm.port';
 import { ToolRegistry } from '../../tools/ports/tools.port';
 import { AgentPort } from '../../ports/agent.port';
-import { IAiResult } from '../../interfaces';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';
 import { AgentPromptsService } from './agent-prompts.service';
+import { IAiResult } from '../../interfaces';
 
 @Injectable()
 export class LangGraphService implements AgentPort {

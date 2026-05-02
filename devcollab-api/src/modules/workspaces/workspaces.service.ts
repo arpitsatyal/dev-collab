@@ -5,13 +5,13 @@ import { WorkspaceImportRepository } from './adapters/workspace-import.repositor
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
-import {
+import type {
   CreateWorkspaceRequest,
   GetWorkspacesRequest,
   ImportRepositoryRequest,
   TogglePinRequest,
   UserContext,
-} from './workspaces.types';
+} from './interfaces/workspaces.interfaces';
 
 @Injectable()
 export class WorkspacesService implements WorkspaceActionsPort {
