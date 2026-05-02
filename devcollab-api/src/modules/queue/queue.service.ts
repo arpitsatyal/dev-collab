@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { SQSClient, SendMessageCommand } from '@aws-sdk/client-sqs';
-import { QueuePort, QueueType } from './ports/queue.port';
+import { QueuePort } from './ports/queue.port';
+import { QueueType } from './enums/queue-type.enum';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

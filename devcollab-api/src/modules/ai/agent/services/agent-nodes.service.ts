@@ -3,7 +3,8 @@ import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
 import { MessagesAnnotation } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AgentEvents, AgentActionEvent } from '../agent.events';
+import { AgentEvents } from '../enums/agent-events.enum';
+import { AgentActionEvent } from '../interfaces/agent.interfaces';
 
 @Injectable()
 export class AgentNodesService {

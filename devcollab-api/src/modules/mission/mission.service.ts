@@ -7,9 +7,10 @@ import { Subject, concatMap, from } from 'rxjs';
 import { AgentPort } from '../ai/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
 import { OnEvent } from '@nestjs/event-emitter';
-import type { AgentActionEvent } from '../ai/agent/agent.events';
-import { AgentEvents } from '../ai/agent/agent.events';
-import { QueuePort, QueueType } from '../queue/ports/queue.port';
+import type { AgentActionEvent } from '../ai/agent/interfaces/agent.interfaces';
+import { AgentEvents } from '../ai/agent/enums/agent-events.enum';
+import { QueuePort } from '../queue/ports/queue.port';
+import { QueueType } from '../queue/enums/queue-type.enum';
 import type {
   AddStepRequest,
   CreateMissionRequest,
