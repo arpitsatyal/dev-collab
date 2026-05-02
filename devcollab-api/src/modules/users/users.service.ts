@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { UserRepository } from './repositories/user.repository';
-import { WorkspaceRepository } from '../workspaces/adapters/workspace.repository';
+import { WorkspaceRepository } from '../workspaces/repositories/workspace.repository';
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
 import { DocRepository } from '../docs/repositories/doc.repository';
 import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
@@ -14,7 +14,7 @@ export class UsersService {
     private readonly snippetRepo: SnippetRepository,
     private readonly docRepo: DocRepository,
     private readonly workItemRepo: WorkItemRepository,
-  ) {}
+  ) { }
 
   async findByEmail(email: string) {
     return this.userRepo.findByEmail(email);

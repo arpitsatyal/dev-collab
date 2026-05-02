@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
-import { WorkspaceRepository } from './adapters/workspace.repository';
-import { WorkspaceImportRepository } from './adapters/workspace-import.repository';
+import { WorkspaceRepository } from './repositories/workspace.repository';
+import { WorkspaceImportRepository } from './repositories/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
 import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
@@ -20,7 +20,7 @@ export class WorkspacesService implements WorkspaceActionsPort {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly importRepo: WorkspaceImportRepository,
     private readonly sourceCodeClient: SourceCodePort,
-  ) {}
+  ) { }
 
   async getWorkspace(id: string) {
     const workspace = await this.workspaceRepo.findById(id);

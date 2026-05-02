@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { WorkspacesService } from './workspaces.service';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
-import { WorkspaceRepository } from './adapters/workspace.repository';
-import { WorkspaceImportRepository } from './adapters/workspace-import.repository';
+import { WorkspaceRepository } from './repositories/workspace.repository';
+import { WorkspaceImportRepository } from './repositories/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 
 describe('WorkspacesService', () => {

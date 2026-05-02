@@ -4,8 +4,8 @@ import { UserRepository } from 'src/modules/users/repositories/user.repository';
 import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
 import { SnippetRepository } from 'src/modules/snippets/repositories/snippet.repository';
 import { DocRepository } from 'src/modules/docs/repositories/doc.repository';
-import { WorkspaceRepository } from 'src/modules/workspaces/adapters/workspace.repository';
-import { WorkspaceImportRepository } from 'src/modules/workspaces/adapters/workspace-import.repository';
+import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
+import { WorkspaceImportRepository } from 'src/modules/workspaces/repositories/workspace-import.repository';
 import { MissionRepository } from 'src/modules/mission/repositories/mission.repository';
 import { MissionStepRepository } from 'src/modules/mission/repositories/mission-step.repository';
 import { MissionLogRepository } from 'src/modules/mission/repositories/mission-log.repository';
@@ -32,4 +32,4 @@ const repositories = [
   providers: [...repositories],
   exports: [...repositories],
 })
-export class RepositoryModule {}
+export class RepositoryModule { }

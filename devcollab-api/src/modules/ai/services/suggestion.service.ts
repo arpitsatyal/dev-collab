@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { WorkspaceRepository } from '../../workspaces/adapters/workspace.repository';
+import { WorkspaceRepository } from '../../workspaces/repositories/workspace.repository';
 import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
 import { LlmGateway } from '../ports/llm.port';
 import type {
@@ -15,7 +15,7 @@ export class SuggestionService {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly workItemRepo: WorkItemRepository,
     private readonly llmFactory: LlmGateway,
-  ) {}
+  ) { }
 
   private async getWorkspaceWithContext(workspaceId: string) {
     const workspace = await this.workspaceRepo.findByIdWithContext(workspaceId);
