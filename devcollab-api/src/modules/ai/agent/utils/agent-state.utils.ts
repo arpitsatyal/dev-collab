@@ -1,4 +1,4 @@
-import { AIMessage, BaseMessage } from '@langchain/core/messages';
+import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
 
 /**
  * Static utility for safely selecting data from the Agent Message State.
@@ -35,8 +35,26 @@ export class AgentStateUtils {
    * Returns the names of all tools requested in the last step.
    */
   static getToolNames(messages: BaseMessage[]): string[] {
+    return this.getLastToolCalls(messages).map((tc) => tc.name);
+  }
+
+  /**
+   * Returns the raw tool_calls array from the last AI message.
+   */
+  static getLastToolCalls(messages: BaseMessage[]): any[] {
     const last = this.getLastAIMessage(messages);
-    return last?.tool_calls?.map((tc) => tc.name) || [];
+    return last?.tool_calls || [];
+  }
+
+  /**
+   * Returns the sequence of names for all tools that have actually 
+   * been executed in the conversation so far.
+   */
+  static getToolSequence(messages: BaseMessage[]): string[] {
+    return messages
+      .filter((m) => m instanceof ToolMessage)
+      .map((m: any) => m.name)
+      .filter(Boolean);
   }
 
   /**

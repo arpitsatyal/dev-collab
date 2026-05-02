@@ -42,8 +42,7 @@ export class AgentNodesService {
     toolNode: ToolNode,
     config: AgentRunnableConfig,
   ): Promise<AgentNodeResult> {
-    const lastMsg = AgentStateUtils.getLastAIMessage(state.messages);
-    const toolCalls = lastMsg?.tool_calls || [];
+    const toolCalls = AgentStateUtils.getLastToolCalls(state.messages);
 
     // 1. Emit START events
     this.emitToolEvents('TOOL_START', toolCalls, config);

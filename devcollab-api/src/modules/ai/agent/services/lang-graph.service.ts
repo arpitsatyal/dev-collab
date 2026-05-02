@@ -1,7 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import {
   BaseMessage,
-  ToolMessage,
 } from '@langchain/core/messages';
 import { AiConfig } from '../../ai.config';
 import { LlmGateway } from '../../ports/llm.port';
@@ -29,7 +28,7 @@ export class LangGraphService implements AgentPort {
   async runAgentGraph(
     messages: BaseMessage[],
     workspaceId: string,
-    options?: AgentRunOptions,
+    options: AgentRunOptions,
   ): Promise<IAiResult> {
     // 1. Prepare Tools and LLM
     const tools = await this.toolService.getTools(workspaceId);
@@ -45,8 +44,8 @@ export class LangGraphService implements AgentPort {
         recursionLimit: this.config.maxIterations,
         configurable: {
           workspaceId,
-          thread_id: options?.threadId, // LangGraph checkpointing key
-          ...options?.configurable,
+          thread_id: options.threadId,
+          ...options.configurable,
         },
       },
     );
@@ -61,10 +60,7 @@ export class LangGraphService implements AgentPort {
   private mapFinalStateToResult(finalState: any): IAiResult {
     const messages = finalState.messages as BaseMessage[];
 
-    const calledTools = messages
-      .filter((m) => m instanceof ToolMessage)
-      .map((m: ToolMessage) => m.name)
-      .filter(Boolean) as string[];
+    const calledTools = AgentStateUtils.getToolSequence(messages);
 
     if (calledTools.length === 0) {
       this.logger.log('Response: Direct LLM (no tools used)');

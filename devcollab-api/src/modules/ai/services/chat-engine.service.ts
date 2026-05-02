@@ -29,12 +29,12 @@ export class ChatEngineService {
 
   constructor(
     private readonly llmGateway: LlmGateway,
-    private readonly langGraphService: AgentPort,
-    private readonly promptService: PromptPort,
-    private readonly retrievalService: RetrievalPort,
-    private readonly generationService: GenerationPort,
+    private readonly agentPort: AgentPort,
+    private readonly promptPort: PromptPort,
+    private readonly retrievalPort: RetrievalPort,
+    private readonly generationPort: GenerationPort,
     private readonly messageService: MessageService,
-  ) {}
+  ) { }
 
   /**
    * Main entry point for AI responses.
@@ -79,7 +79,7 @@ export class ChatEngineService {
       'classify_intent',
     )) as IntentClassifierLlm;
 
-    const intentMessages = this.promptService.buildIntentClassificationPrompt(
+    const intentMessages = this.promptPort.buildIntentClassificationPrompt(
       context.question,
       context.history,
       context.inWorkspace,
@@ -116,7 +116,7 @@ export class ChatEngineService {
     const { context, scope } = params;
     this.logger.log(`Handling CONVERSATIONAL intent (Scope: ${scope})`);
 
-    const messages = this.promptService.buildConversationalMessages(
+    const messages = this.promptPort.buildConversationalMessages(
       context.history,
       context.question,
       scope as ChatScope,
@@ -171,15 +171,16 @@ export class ChatEngineService {
     this.logger.log(
       `LangGraph: Processing with tools for workspace ${workspaceId}`,
     );
-    const messages: BaseMessage[] = this.promptService.buildChatMessages(
+    const messages: BaseMessage[] = this.promptPort.buildChatMessages(
       history,
       question,
       workspaceId,
     );
 
-    const result = await this.langGraphService.runAgentGraph(
+    const result = await this.agentPort.runAgentGraph(
       messages,
       workspaceId,
+      { threadId: params.chatId },
     );
 
     const toolsUsed = result.calledTools ?? [];
@@ -199,11 +200,11 @@ export class ChatEngineService {
     this.logger.log('HybridSearch: Processing global query');
     const queryGenLlm = await this.llmGateway.getReasoningLLM();
 
-    const queries = await this.retrievalService.generateQueryVariations(
+    const queries = await this.retrievalPort.generateQueryVariations(
       question,
       queryGenLlm,
     );
-    const filteredResults = await this.retrievalService.performHybridSearch(
+    const filteredResults = await this.retrievalPort.performHybridSearch(
       queries,
       question,
       filters,
@@ -217,13 +218,13 @@ export class ChatEngineService {
       })
       .join('\n\n');
 
-    const fullPrompt = await this.promptService.constructPrompt(
+    const fullPrompt = await this.promptPort.constructPrompt(
       context,
       history,
       question,
     );
     const answerLlm = await this.llmGateway.getSpeedyLLM();
-    const generated = await this.generationService.generateAnswer(
+    const generated = await this.generationPort.generateAnswer(
       answerLlm,
       fullPrompt,
       context,
