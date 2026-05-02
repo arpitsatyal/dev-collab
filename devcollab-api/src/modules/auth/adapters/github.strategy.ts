@@ -1,6 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { UsersService } from 'src/modules/users/users.service';
+import { AuthPort } from '../ports/auth.port';
 import { Profile } from 'passport';
 import { Strategy } from 'passport-github';
 import { ConfigService } from '@nestjs/config';
@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config';
 @Injectable()
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
-    private userService: UsersService,
+    private authService: AuthPort,
     private configService: ConfigService,
   ) {
     super({
@@ -23,25 +23,21 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
     accessToken: string,
     refreshToken: string,
     profile: Profile,
-    done,
+    done: any,
   ) {
     const email = profile?.emails?.[0]?.value;
 
     if (!email) {
-      throw new NotFoundException('No email found. Exiting...');
+      throw new NotFoundException('No email found in GitHub profile');
     }
 
-    let user = await this.userService.findByEmail(email);
-
-    if (!user) {
-      user = await this.userService.createUser({
-        email,
-        name: profile.displayName ?? profile.username,
-        avatarUrl: profile.photos?.[0]?.value,
-        provider: 'GITHUB',
-        providerId: profile.id,
-      });
-    }
+    const user = await this.authService.validateSocialUser({
+      email,
+      name: profile.displayName ?? profile.username,
+      provider: 'GITHUB',
+      providerId: profile.id,
+      avatarUrl: profile.photos?.[0]?.value,
+    });
 
     done(null, user);
   }

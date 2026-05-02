@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { Pinecone } from '@pinecone-database/pinecone';
 import { PineconeStore } from '@langchain/pinecone';
 import { Document } from '@langchain/core/documents';
-import { PineconeInferenceEmbeddings } from './pinecone-embeddings';
+import { PineconeInferenceEmbeddings } from './pinecone-adapter';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import {
   workspaces,
