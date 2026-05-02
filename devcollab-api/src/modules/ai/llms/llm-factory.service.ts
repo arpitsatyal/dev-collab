@@ -6,22 +6,8 @@ import { GroqLlmService } from './groq-llm.service';
 import { TogetherLlmService } from './together-llm.service';
 import { LlmGateway } from '../ports/llm.port';
 import { ConfigService } from '@nestjs/config';
-
-export enum LlmProvider {
-  GROQ = 'groq',
-  TOGETHER = 'together',
-}
-
-interface ProviderContext {
-  primary: GroqLlmService | TogetherLlmService;
-  secondary: GroqLlmService | TogetherLlmService;
-  primaryType: LlmProvider;
-  secondaryType: LlmProvider;
-  primaryFailed: boolean;
-  secondaryFailed: boolean;
-  markPrimaryFailed: () => void;
-  markSecondaryFailed: () => void;
-}
+import { LlmProvider } from './enums/llm-provider.enum';
+import type { ProviderContext } from './interfaces/provider-context.interface';
 
 @Injectable()
 export class LlmFactoryService implements LlmGateway {

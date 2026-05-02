@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { PromptPort } from '../ports/prompt.port';
-import { ChatScope } from '../interfaces';
+import { ChatScope } from '../types/ai.types';
 
 @Injectable()
 export class PromptService implements PromptPort {

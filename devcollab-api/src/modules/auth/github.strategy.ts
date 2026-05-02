@@ -37,8 +37,9 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       user = await this.userService.createUser({
         email,
         name: profile.displayName ?? profile.username,
-        image: profile.photos?.[0]?.value,
+        avatarUrl: profile.photos?.[0]?.value,
         provider: 'GITHUB',
+        providerId: profile.id,
       });
     }
 
