@@ -9,6 +9,8 @@ import { ConfigService } from '@nestjs/config';
 import { LlmProvider } from './enums/llm-provider.enum';
 import type { ProviderContext } from './interfaces/provider-context.interface';
 
+
+// TODO: ADAPTIFY
 @Injectable()
 export class LlmFactoryService implements LlmGateway {
   private readonly logger = new Logger(LlmFactoryService.name);
@@ -20,7 +22,7 @@ export class LlmFactoryService implements LlmGateway {
     private readonly togetherLlmService: TogetherLlmService,
     private readonly groqLlmService: GroqLlmService,
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   private getProviderContext(): ProviderContext {
     const preferred =

@@ -10,24 +10,10 @@ import {
 
 import { AiService } from '../services/ai.service';
 import { SuggestSnippetFilenameDto } from '../dto/suggest-snippet-filename.dto';
-import { AskDto } from '../dto/ask.dto';
 
 @Controller('ai')
 export class AiController {
-  constructor(private readonly aiService: AiService) {}
-
-  @Post('ask')
-  ask(
-    @Body() body: AskDto,
-    @Query('workspaceId', SanitizeIdPipe) workspaceId?: string,
-  ) {
-    const filters = workspaceId ? { workspaceId } : undefined;
-    return this.aiService.ask({
-      chatId: body.chatId,
-      question: body.question,
-      filters,
-    });
-  }
+  constructor(private readonly aiService: AiService) { }
 
   @Post('analyze-work-item')
   analyze(@Query('workItemId', SanitizeIdPipe) workItemId: string) {

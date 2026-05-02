@@ -1,13 +1,13 @@
-import { Controller, Get, Post, Delete, Param } from '@nestjs/common';
-
-import { ChatService } from './chat.service';
+import { Controller, Get, Post, Delete, Param, Body, Query } from '@nestjs/common';
+import { SanitizeIdPipe } from 'src/common/pipes/sanitize-id.pipe';
+import { ChatService } from './services/chat.service';
 import { CurrentUser } from '../users/user.decorator';
 import { ChatParamsDto } from './dto/chat.dto';
 import type { User } from '../../common/drizzle/schema';
 
 @Controller('chats')
 export class ChatController {
-  constructor(private chatService: ChatService) {}
+  constructor(private chatService: ChatService) { }
 
   @Get()
   getUserChats(@CurrentUser() user: User) {
@@ -24,6 +24,20 @@ export class ChatController {
   createChat(@CurrentUser() user: User) {
     const userId = user.id;
     return this.chatService.createChat(userId);
+  }
+
+  @Post(':chatId/ask')
+  ask(
+    @Param('chatId', SanitizeIdPipe) chatId: string,
+    @Body('question') question: string,
+    @Query('workspaceId', SanitizeIdPipe) workspaceId?: string,
+  ) {
+    const filters = workspaceId ? { workspaceId } : undefined;
+    return this.chatService.ask({
+      chatId,
+      question,
+      filters,
+    });
   }
 
   @Delete(':chatId')

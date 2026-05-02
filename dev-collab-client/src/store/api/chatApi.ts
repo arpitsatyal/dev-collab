@@ -55,9 +55,9 @@ export const chatApi = createApi({
         }
         const queryString = queryParams.toString();
         return {
-          url: `ai/ask${queryString ? `?${queryString}` : ""}`,
+          url: `chats/${chatId}/ask${queryString ? `?${queryString}` : ""}`,
           method: "POST",
-          body: { chatId, question },
+          body: { question },
         };
       },
       invalidatesTags: (result, error, { chatId }) => [
