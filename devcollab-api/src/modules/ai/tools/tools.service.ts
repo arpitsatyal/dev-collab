@@ -19,7 +19,7 @@ export class ToolsService implements ToolRegistry {
     private readonly workItemHandler: WorkItemToolsHandler,
     private readonly workspaceHandler: WorkspaceToolsHandler,
     private readonly searchHandler: SearchToolsHandler,
-  ) { }
+  ) {}
 
   async getTools(workspaceId: string): Promise<DynamicStructuredTool[]> {
     try {
@@ -35,7 +35,9 @@ export class ToolsService implements ToolRegistry {
         ...this.searchHandler.getTools(workspaceId),
       ];
     } catch (error) {
-      this.logger.error(`Failed to initialize tools for workspace ${workspaceId}: ${error.message}`);
+      this.logger.error(
+        `Failed to initialize tools for workspace ${workspaceId}: ${error.message}`,
+      );
       return [];
     }
   }

@@ -88,7 +88,11 @@ export class ChatEngineService {
     try {
       const result = await classifierLlm.invoke(intentMessages);
       if (result.confidence > 0.4) {
-        return { intent: result.intent, scope: result.scope };
+        return {
+          intent: result.intent,
+          scope: result.scope,
+          confidence: result.confidence,
+        };
       }
       this.logger.warn(
         'Intent Classification: Low confidence, defaulting to WORKSPACE_QUERY',
@@ -102,6 +106,7 @@ export class ChatEngineService {
     return {
       intent: 'WORKSPACE_QUERY',
       scope: context.inWorkspace ? 'APP_SPECIFIC' : 'OUT_OF_SCOPE',
+      confidence: 0,
     };
   }
 

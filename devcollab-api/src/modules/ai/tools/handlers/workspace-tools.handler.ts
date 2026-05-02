@@ -5,7 +5,10 @@ import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { DocsService } from 'src/modules/docs/docs.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import type { CreateWorkspaceArgs, SearchWorkspacesArgs } from '../../interfaces/ai-tools.interfaces';
+import type {
+  CreateWorkspaceArgs,
+  SearchWorkspacesArgs,
+} from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class WorkspaceToolsHandler {
@@ -21,8 +24,8 @@ export class WorkspaceToolsHandler {
     const workspaces = await this.workspacesService.getAllWorkspaces(0, 50);
     const filtered = query
       ? workspaces.filter((w) =>
-        w.title.toLowerCase().includes(query.toLowerCase()),
-      )
+          w.title.toLowerCase().includes(query.toLowerCase()),
+        )
       : workspaces;
 
     if (filtered.length === 0) {
@@ -46,29 +49,42 @@ export class WorkspaceToolsHandler {
     if (!workspace) return 'Workspace not found.';
 
     const items = {
-      snippets: snippets.slice(0, 5).map((s: any) => ({ title: s.title, language: s.language })),
-      workItems: workItems.slice(0, 5).map((w: any) => ({ title: w.title, status: w.status })),
+      snippets: snippets
+        .slice(0, 5)
+        .map((s: any) => ({ title: s.title, language: s.language })),
+      workItems: workItems
+        .slice(0, 5)
+        .map((w: any) => ({ title: w.title, status: w.status })),
       docs: docs.slice(0, 5).map((d: any) => ({ label: d.label })),
     };
 
     let summary = `Workspace: ${workspace.title}\n`;
-    if (workspace.description) summary += `Description: ${workspace.description}\n`;
+    if (workspace.description)
+      summary += `Description: ${workspace.description}\n`;
     summary += '\nLatest Items:\n';
 
-    if (snippets.length > 0) summary += `- ${snippets.length} snippets (e.g., ${items.snippets.map((s) => s.title).join(', ')})\n`;
-    if (workItems.length > 0) summary += `- ${workItems.length} work items (e.g., ${items.workItems.map((w) => w.title).join(', ')})\n`;
-    if (docs.length > 0) summary += `- ${docs.length} docs (e.g., ${items.docs.map((d) => d.label).join(', ')})\n`;
+    if (snippets.length > 0)
+      summary += `- ${snippets.length} snippets (e.g., ${items.snippets.map((s) => s.title).join(', ')})\n`;
+    if (workItems.length > 0)
+      summary += `- ${workItems.length} work items (e.g., ${items.workItems.map((w) => w.title).join(', ')})\n`;
+    if (docs.length > 0)
+      summary += `- ${docs.length} docs (e.g., ${items.docs.map((d) => d.label).join(', ')})\n`;
 
     if (snippets.length === 0 && workItems.length === 0 && docs.length === 0) {
-      summary += 'The workspace currently contains no snippets, work items, or documentation.';
+      summary +=
+        'The workspace currently contains no snippets, work items, or documentation.';
     }
 
     return summary + '\nFull metadata (top 5 each): ' + JSON.stringify(items);
   }
 
-  async handleCreateWorkspace(args: CreateWorkspaceArgs, currentWorkspaceId: string): Promise<string> {
+  async handleCreateWorkspace(
+    args: CreateWorkspaceArgs,
+    currentWorkspaceId: string,
+  ): Promise<string> {
     try {
-      const currentWorkspace = await this.workspacesService.getWorkspace(currentWorkspaceId);
+      const currentWorkspace =
+        await this.workspacesService.getWorkspace(currentWorkspaceId);
       if (!currentWorkspace) return 'Current workspace context not found.';
 
       const newWorkspace = await this.workspacesService.createWorkspace(
@@ -88,17 +104,25 @@ export class WorkspaceToolsHandler {
         name: 'search_workspaces',
         description: 'Search for workspaces by name/title to find their IDs.',
         schema: z.object({
-          query: z.string().optional().describe('Part of the workspace name to look for.'),
+          query: z
+            .string()
+            .optional()
+            .describe('Part of the workspace name to look for.'),
         }),
         func: (args) => this.handleSearchWorkspaces(args),
       }),
       new DynamicStructuredTool({
         name: 'get_workspace_overview',
-        description: 'Fetch a high-level overview of everything in the workspace.',
+        description:
+          'Fetch a high-level overview of everything in the workspace.',
         schema: z.object({
-          workspaceId: z.string().optional().describe('Optional workspace ID to override current context.'),
+          workspaceId: z
+            .string()
+            .optional()
+            .describe('Optional workspace ID to override current context.'),
         }),
-        func: (args) => this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
+        func: (args) =>
+          this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
       }),
       new DynamicStructuredTool({
         name: 'create_workspace',

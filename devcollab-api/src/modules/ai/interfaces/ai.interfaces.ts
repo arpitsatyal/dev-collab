@@ -1,4 +1,4 @@
-import { ChatScope, IintentResult } from '../types/ai.types';
+import { ChatScope } from '../types/ai.types';
 
 export interface IChatContext {
   chatId: string;
@@ -6,6 +6,7 @@ export interface IChatContext {
   history: string;
   workspaceId?: string;
   inWorkspace: boolean;
+  filters?: Record<string, unknown>;
 }
 
 export interface IChatResponse {
@@ -13,6 +14,10 @@ export interface IChatResponse {
   sources?: string[];
   context?: string;
   calledTools?: string[];
+  validated?: {
+    isValid: boolean;
+    warning: string | null;
+  };
 }
 
 export interface IAiResult {
@@ -61,6 +66,7 @@ export interface GetAIResponseWithToolsParams {
 }
 
 export interface GetAIResponseWithSearchParams {
+  chatId: string;
   question: string;
   history: string;
   filters?: {

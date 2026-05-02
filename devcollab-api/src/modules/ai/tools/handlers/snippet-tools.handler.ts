@@ -2,11 +2,14 @@ import { Injectable } from '@nestjs/common';
 import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
-import type { CreateSnippetArgs, GetSnippetsArgs } from '../../interfaces/ai-tools.interfaces';
+import type {
+  CreateSnippetArgs,
+  GetSnippetsArgs,
+} from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class SnippetToolsHandler {
-  constructor(private readonly snippetsService: SnippetsService) { }
+  constructor(private readonly snippetsService: SnippetsService) {}
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -17,7 +20,10 @@ export class SnippetToolsHandler {
     }
   }
 
-  async handleGetSnippets(args: GetSnippetsArgs, defaultId: string): Promise<string> {
+  async handleGetSnippets(
+    args: GetSnippetsArgs,
+    defaultId: string,
+  ): Promise<string> {
     const { titleFilter, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch snippets.';
@@ -41,7 +47,11 @@ export class SnippetToolsHandler {
     return `Found exactly ${snippets.length} snippet(s) total in the workspace.\n${JSON.stringify(output)}`;
   }
 
-  async handleCreateSnippet(args: CreateSnippetArgs, defaultId: string, authorId: string): Promise<string> {
+  async handleCreateSnippet(
+    args: CreateSnippetArgs,
+    defaultId: string,
+    authorId: string,
+  ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
     try {
       const snippet = await this.snippetsService.createSnippet({
@@ -62,10 +72,19 @@ export class SnippetToolsHandler {
     return [
       new DynamicStructuredTool({
         name: 'get_snippets',
-        description: 'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
+        description:
+          'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
         schema: z.object({
-          titleFilter: z.string().nullable().optional().describe('Keyword to filter snippets by title.'),
-          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
+          titleFilter: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Keyword to filter snippets by title.'),
+          workspaceId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Target workspace ID.'),
         }),
         func: (args) => this.handleGetSnippets(args, workspaceId),
       }),
@@ -76,8 +95,16 @@ export class SnippetToolsHandler {
           title: z.string().describe('Title of the snippet'),
           language: z.string().describe('Programming language'),
           content: z.string().describe('Code content'),
-          extension: z.string().nullable().optional().describe('File extension (e.g., ".ts")'),
-          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
+          extension: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('File extension (e.g., ".ts")'),
+          workspaceId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Target workspace ID.'),
         }),
         func: (args) => this.handleCreateSnippet(args, workspaceId, authorId),
       }),

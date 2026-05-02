@@ -1,5 +1,14 @@
-import { Injectable, Logger, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { SQSClient, ReceiveMessageCommand, DeleteMessageCommand } from '@aws-sdk/client-sqs';
+import {
+  Injectable,
+  Logger,
+  OnModuleInit,
+  OnModuleDestroy,
+} from '@nestjs/common';
+import {
+  SQSClient,
+  ReceiveMessageCommand,
+  DeleteMessageCommand,
+} from '@aws-sdk/client-sqs';
 import { ConfigService } from '@nestjs/config';
 import { MissionService } from './mission.service';
 
@@ -46,7 +55,7 @@ export class MissionConsumer implements OnModuleInit, OnModuleDestroy {
       } catch (error) {
         if (this.isRunning) {
           this.logger.error(`Error polling SQS: ${error.message}`);
-          await new Promise(resolve => setTimeout(resolve, 5000)); // Backoff
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // Backoff
         }
       }
     }

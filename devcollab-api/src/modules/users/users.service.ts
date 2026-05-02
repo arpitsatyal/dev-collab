@@ -14,7 +14,7 @@ export class UsersService {
     private readonly snippetRepo: SnippetRepository,
     private readonly docRepo: DocRepository,
     private readonly workItemRepo: WorkItemRepository,
-  ) { }
+  ) {}
 
   async findByEmail(email: string) {
     return this.userRepo.findByEmail(email);
@@ -44,7 +44,8 @@ export class UsersService {
 
   async getStatsByEmail(email: string) {
     const user = await this.userRepo.findByEmail(email);
-    if (!user) throw new NotFoundException(`User with email ${email} not found`);
+    if (!user)
+      throw new NotFoundException(`User with email ${email} not found`);
     return this.getStats(user.id);
   }
 

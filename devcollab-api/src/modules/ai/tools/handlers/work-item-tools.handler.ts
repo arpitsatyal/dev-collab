@@ -3,19 +3,30 @@ import { DynamicStructuredTool } from '@langchain/core/tools';
 import { z } from 'zod';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
-import type { CreateWorkItemArgs, GetWorkItemsArgs, UpdateWorkItemArgs } from '../../interfaces/ai-tools.interfaces';
+import type {
+  CreateWorkItemArgs,
+  GetWorkItemsArgs,
+  UpdateWorkItemArgs,
+} from '../../interfaces/ai-tools.interfaces';
 
 @Injectable()
 export class WorkItemToolsHandler {
-  constructor(private readonly workItemsService: WorkItemsService) { }
+  constructor(private readonly workItemsService: WorkItemsService) {}
 
-  async handleGetWorkItems(args: GetWorkItemsArgs, defaultId: string): Promise<string> {
+  async handleGetWorkItems(
+    args: GetWorkItemsArgs,
+    defaultId: string,
+  ): Promise<string> {
     const { titleFilter, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to fetch work items.';
 
     const workItems = titleFilter
-      ? await this.workItemsService.searchWorkItems(workspaceId, titleFilter, 20)
+      ? await this.workItemsService.searchWorkItems(
+          workspaceId,
+          titleFilter,
+          20,
+        )
       : await this.workItemsService.getWorkItems(workspaceId);
 
     if (workItems.length === 0) {
@@ -33,7 +44,11 @@ export class WorkItemToolsHandler {
     return `Found exactly ${workItems.length} work item(s) total in the workspace.\n${JSON.stringify(output)}`;
   }
 
-  async handleCreateWorkItem(args: CreateWorkItemArgs, defaultId: string, authorId: string): Promise<string> {
+  async handleCreateWorkItem(
+    args: CreateWorkItemArgs,
+    defaultId: string,
+    authorId: string,
+  ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
     try {
       const workItem = await this.workItemsService.createWorkItem({
@@ -72,10 +87,19 @@ export class WorkItemToolsHandler {
     return [
       new DynamicStructuredTool({
         name: 'get_work_items',
-        description: 'Fetch ALL work items inside a workspace. Optionally filter by title.',
+        description:
+          'Fetch ALL work items inside a workspace. Optionally filter by title.',
         schema: z.object({
-          titleFilter: z.string().nullable().optional().describe('Search keyword to filter work item titles.'),
-          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
+          titleFilter: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Search keyword to filter work item titles.'),
+          workspaceId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Target workspace ID.'),
         }),
         func: (args) => this.handleGetWorkItems(args, workspaceId),
       }),
@@ -86,10 +110,26 @@ export class WorkItemToolsHandler {
           title: z.string().describe('Task title'),
           description: z.string().nullable().optional().describe('Task detail'),
           status: z.enum(['TODO', 'IN_PROGRESS', 'DONE']).nullable().optional(),
-          dueDate: z.string().nullable().optional().describe('Due date as string'),
-          assignedToId: z.string().nullable().optional().describe('User ID to assign to'),
-          snippetIds: z.array(z.string()).nullable().optional().describe('Snippet IDs to link'),
-          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
+          dueDate: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Due date as string'),
+          assignedToId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('User ID to assign to'),
+          snippetIds: z
+            .array(z.string())
+            .nullable()
+            .optional()
+            .describe('Snippet IDs to link'),
+          workspaceId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Target workspace ID.'),
         }),
         func: (args) => this.handleCreateWorkItem(args, workspaceId, authorId),
       }),

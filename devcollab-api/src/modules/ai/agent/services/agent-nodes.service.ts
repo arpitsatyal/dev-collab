@@ -9,7 +9,7 @@ import { AgentEvents, AgentActionEvent } from '../agent.events';
 export class AgentNodesService {
   private readonly logger = new Logger(AgentNodesService.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) { }
+  constructor(private readonly eventEmitter: EventEmitter2) {}
 
   /**
    * Node: Agent/Model Reasoning

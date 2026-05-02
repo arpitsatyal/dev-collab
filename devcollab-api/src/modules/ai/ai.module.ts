@@ -17,12 +17,7 @@ import { WorkItemsModule } from '../work-items/work-items.module';
     MessageModule,
     WorkItemsModule,
   ],
-  providers: [
-    AiService,
-    ChatEngineService,
-    SuggestionService,
-  ],
+  providers: [AiService, ChatEngineService, SuggestionService],
   controllers: [AiController],
 })
-
-export class AiModule { }
+export class AiModule {}

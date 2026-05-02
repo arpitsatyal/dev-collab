@@ -92,13 +92,16 @@ export const missionsRelations = relations(missions, ({ one, many }) => ({
   missionLogs: many(missionLogs),
 }));
 
-export const missionStepsRelations = relations(missionSteps, ({ one, many }) => ({
-  mission: one(missions, {
-    fields: [missionSteps.missionId],
-    references: [missions.id],
+export const missionStepsRelations = relations(
+  missionSteps,
+  ({ one, many }) => ({
+    mission: one(missions, {
+      fields: [missionSteps.missionId],
+      references: [missions.id],
+    }),
+    missionLogs: many(missionLogs),
   }),
-  missionLogs: many(missionLogs),
-}));
+);
 
 export const missionLogsRelations = relations(missionLogs, ({ one }) => ({
   mission: one(missions, {

@@ -1,5 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AIMessage, BaseMessage, ToolMessage, SystemMessage } from '@langchain/core/messages';
+import {
+  AIMessage,
+  BaseMessage,
+  ToolMessage,
+  SystemMessage,
+} from '@langchain/core/messages';
 import { AiConfig } from '../../ai.config';
 import { LlmGateway } from '../../ports/llm.port';
 import { ToolRegistry } from '../../tools/ports/tools.port';
@@ -18,7 +23,7 @@ export class LangGraphService implements AgentPort {
     private readonly config: AiConfig,
     private readonly graphFactory: AgentGraphFactoryService,
     private readonly promptsService: AgentPromptsService,
-  ) { }
+  ) {}
 
   /**
    * Orchestrates the agentic mission execution.
@@ -81,8 +86,8 @@ export class LangGraphService implements AgentPort {
       typeof lastAIMessage?.content === 'string'
         ? lastAIMessage.content
         : JSON.stringify(
-          lastAIMessage?.content ?? 'Unable to generate a response.',
-        );
+            lastAIMessage?.content ?? 'Unable to generate a response.',
+          );
 
     return { answer, calledTools };
   }

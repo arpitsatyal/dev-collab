@@ -7,7 +7,7 @@ import { CollaborationUserDto } from './dto/collaboration-user.dto';
 
 @Controller('collaboration')
 export class CollaborationController {
-  constructor(private readonly collaborationPort: CollaborationPort) { }
+  constructor(private readonly collaborationPort: CollaborationPort) {}
 
   @Post('auth')
   async authorize(

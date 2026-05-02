@@ -12,12 +12,10 @@ import { Observable, map, filter, concat, from, concatMap } from 'rxjs';
 
 @Controller('missions')
 export class MissionController {
-  constructor(private readonly missionService: MissionService) { }
+  constructor(private readonly missionService: MissionService) {}
 
   @Post()
-  async createMission(
-    @Body() body: { workspaceId: string; goal: string },
-  ) {
+  async createMission(@Body() body: { workspaceId: string; goal: string }) {
     const mission = await this.missionService.createMission({
       workspaceId: body.workspaceId,
       goal: body.goal,
@@ -38,10 +36,12 @@ export class MissionController {
   }
 
   @Sse('stream/:missionId')
-  streamMission(@Param('missionId') missionId: string): Observable<MessageEvent> {
+  streamMission(
+    @Param('missionId') missionId: string,
+  ): Observable<MessageEvent> {
     const history$ = from(this.missionService.getMissionLogs(missionId)).pipe(
       concatMap((logs: any[]) => from(logs)), // Flatten the array into individual events
-      map((log) => ({ data: log } as MessageEvent)),
+      map((log) => ({ data: log }) as MessageEvent),
     );
 
     return from(this.missionService.getMission(missionId)).pipe(
@@ -52,7 +52,7 @@ export class MissionController {
 
         const live$ = this.missionService.getLogObservable().pipe(
           filter((log) => log.missionId === missionId),
-          map((log) => ({ data: log } as MessageEvent)),
+          map((log) => ({ data: log }) as MessageEvent),
         );
 
         return concat(history$, live$);

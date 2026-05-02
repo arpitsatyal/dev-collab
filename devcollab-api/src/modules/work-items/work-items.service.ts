@@ -5,7 +5,10 @@ import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { WorkItemRepository } from './repositories/work-item.repository';
 import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
 import { UserRepository } from '../users/repositories/user.repository';
-import type { CreateWorkItemRequest, UpdateWorkItemStatusRequest } from './interfaces/work-items.interfaces';
+import type {
+  CreateWorkItemRequest,
+  UpdateWorkItemStatusRequest,
+} from './interfaces/work-items.interfaces';
 
 @Injectable()
 export class WorkItemsService {
@@ -14,7 +17,7 @@ export class WorkItemsService {
     private readonly syncPort: SyncEventPort,
     private readonly workItemRepo: WorkItemRepository,
     private readonly userRepo: UserRepository,
-  ) { }
+  ) {}
 
   async getWorkItems(workspaceId: string) {
     return this.workItemRepo.findByWorkspaceId(workspaceId);
@@ -84,7 +87,9 @@ export class WorkItemsService {
     });
 
     if (updatedWorkItem.assignedToId) {
-      const assignee = await this.userRepo.findById(updatedWorkItem.assignedToId);
+      const assignee = await this.userRepo.findById(
+        updatedWorkItem.assignedToId,
+      );
 
       if (assignee?.email) {
         await this.queueClient.sendMessage({

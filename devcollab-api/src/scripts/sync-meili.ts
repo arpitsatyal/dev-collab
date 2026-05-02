@@ -17,7 +17,9 @@ async function bootstrap() {
 
     const meiliUrl = config.get<string>('MEILISEARCH_SYNC_URL');
     if (!meiliUrl) {
-      console.error('❌ MEILISEARCH_SYNC_URL is not defined in the environment.');
+      console.error(
+        '❌ MEILISEARCH_SYNC_URL is not defined in the environment.',
+      );
       process.exit(1);
     }
 
@@ -49,27 +51,32 @@ async function bootstrap() {
     };
 
     const allItems: { doc: any; type: string }[] = [
-      ...workspaces.map(item => ({ doc: item, type: 'workspace' })),
-      ...workItems.map(item => ({ doc: item, type: 'workItem' })),
-      ...snippets.map(item => ({ doc: item, type: 'snippet' })),
-      ...docs.map(item => ({ doc: item, type: 'doc' })),
+      ...workspaces.map((item) => ({ doc: item, type: 'workspace' })),
+      ...workItems.map((item) => ({ doc: item, type: 'workItem' })),
+      ...snippets.map((item) => ({ doc: item, type: 'snippet' })),
+      ...docs.map((item) => ({ doc: item, type: 'doc' })),
     ];
 
     const CONCURRENCY = 5;
     let totalSynced = 0;
 
-    console.log(`🔄 Syncing ${allItems.length} records with concurrency ${CONCURRENCY}...`);
+    console.log(
+      `🔄 Syncing ${allItems.length} records with concurrency ${CONCURRENCY}...`,
+    );
 
     for (let i = 0; i < allItems.length; i += CONCURRENCY) {
       const chunk = allItems.slice(i, i + CONCURRENCY);
-      const results = await Promise.all(chunk.map(item => syncToMeili(item.type, item.doc)));
+      const results = await Promise.all(
+        chunk.map((item) => syncToMeili(item.type, item.doc)),
+      );
       totalSynced += results.filter(Boolean).length;
-      console.log(`  🕒 Progress: ${Math.min(i + CONCURRENCY, allItems.length)}/${allItems.length} records processed...`);
+      console.log(
+        `  🕒 Progress: ${Math.min(i + CONCURRENCY, allItems.length)}/${allItems.length} records processed...`,
+      );
     }
 
     console.log('\n✨ Synchronization Complete!');
     console.log(`📊 Total records synced to MeiliSearch: ${totalSynced}`);
-
   } catch (error) {
     console.error('💥 Synchronization failed:', error);
   } finally {

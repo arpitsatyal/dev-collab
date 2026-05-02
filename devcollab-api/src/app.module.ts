@@ -59,7 +59,6 @@ import { AgentModule } from './modules/ai/agent/agent.module';
     },
   ],
 })
-
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');

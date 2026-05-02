@@ -11,10 +11,7 @@ import { RetrievalService } from './services/retrieval.service';
 
 @Global()
 @Module({
-  imports: [
-    LlmModule,
-    VectorStoreModule,
-  ],
+  imports: [LlmModule, VectorStoreModule],
   providers: [
     AiConfig,
     { provide: GenerationPort, useClass: GenerationService },
@@ -30,4 +27,4 @@ import { RetrievalService } from './services/retrieval.service';
     RetrievalPort,
   ],
 })
-export class AiCoreModule { }
+export class AiCoreModule {}

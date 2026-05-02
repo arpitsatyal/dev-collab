@@ -15,7 +15,7 @@ export class SuggestionService {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly workItemRepo: WorkItemRepository,
     private readonly llmFactory: LlmGateway,
-  ) { }
+  ) {}
 
   private async getWorkspaceWithContext(workspaceId: string) {
     const workspace = await this.workspaceRepo.findByIdWithContext(workspaceId);

@@ -8,5 +8,4 @@ import { CollaborationPort } from './ports/collaboration.port';
   controllers: [CollaborationController],
   exports: [CollaborationPort],
 })
-
-export class CollaborationModule { }
+export class CollaborationModule {}

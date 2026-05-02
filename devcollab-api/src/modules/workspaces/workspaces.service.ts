@@ -20,7 +20,7 @@ export class WorkspacesService implements WorkspaceActionsPort {
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly importRepo: WorkspaceImportRepository,
     private readonly sourceCodeClient: SourceCodePort,
-  ) { }
+  ) {}
 
   async getWorkspace(id: string) {
     const workspace = await this.workspaceRepo.findById(id);
@@ -50,7 +50,10 @@ export class WorkspacesService implements WorkspaceActionsPort {
     return workspace;
   }
 
-  async createWorkspace(data: { title: string; description?: string }, user: UserContext) {
+  async createWorkspace(
+    data: { title: string; description?: string },
+    user: UserContext,
+  ) {
     return this.addNewWorkspace({ ...data, user });
   }
 

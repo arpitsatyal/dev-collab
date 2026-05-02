@@ -8,10 +8,7 @@ import { AgentPort } from '../ports/agent.port';
 import { ToolsModule } from '../tools/tools.module';
 
 @Module({
-  imports: [
-    AiCoreModule,
-    ToolsModule,
-  ],
+  imports: [AiCoreModule, ToolsModule],
   providers: [
     AgentNodesService,
     AgentPromptsService,
@@ -20,4 +17,4 @@ import { ToolsModule } from '../tools/tools.module';
   ],
   exports: [AgentPort],
 })
-export class AgentModule { }
+export class AgentModule {}

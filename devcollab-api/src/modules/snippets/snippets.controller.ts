@@ -6,7 +6,7 @@ import type { User } from '../../common/drizzle/schema';
 
 @Controller('workspaces/:workspaceId/snippets')
 export class SnippetsController {
-  constructor(private snippetsService: SnippetsService) { }
+  constructor(private snippetsService: SnippetsService) {}
 
   @Get()
   async getSnippets(@Param('workspaceId') workspaceId: string) {

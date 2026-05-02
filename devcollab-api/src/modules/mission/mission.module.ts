@@ -6,12 +6,9 @@ import { MissionConsumer } from './mission.consumer';
 import { QueueModule } from '../queue/queue.module';
 
 @Module({
-  imports: [
-    AgentModule,
-    QueueModule,
-  ],
+  imports: [AgentModule, QueueModule],
   controllers: [MissionController],
   providers: [MissionService, MissionConsumer],
   exports: [MissionService],
 })
-export class MissionModule { }
+export class MissionModule {}

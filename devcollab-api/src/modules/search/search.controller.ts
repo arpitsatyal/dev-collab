@@ -3,7 +3,7 @@ import { SearchEnginePort } from '../../common/search-engine/ports/search-engine
 
 @Controller('search')
 export class SearchController {
-  constructor(private readonly searchEngine: SearchEnginePort) { }
+  constructor(private readonly searchEngine: SearchEnginePort) {}
 
   @Get()
   async search(@Query('query') query: string) {

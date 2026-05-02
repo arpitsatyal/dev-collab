@@ -32,12 +32,17 @@ export class MissionService {
     private readonly queuePort: QueuePort,
   ) {
     // Initialize the background processor
-    this.eventQueue.pipe(
-      // concatMap ensures every event is processed one-by-one IN ORDER
-      concatMap(event => from(this.processAgentAction(event)))
-    ).subscribe({
-      error: (err) => this.logger.error(`Error in background mission event processing: ${err.message}`)
-    });
+    this.eventQueue
+      .pipe(
+        // concatMap ensures every event is processed one-by-one IN ORDER
+        concatMap((event) => from(this.processAgentAction(event))),
+      )
+      .subscribe({
+        error: (err) =>
+          this.logger.error(
+            `Error in background mission event processing: ${err.message}`,
+          ),
+      });
   }
 
   @OnEvent(AgentEvents.ACTION)
@@ -46,7 +51,7 @@ export class MissionService {
   }
 
   /**
-   * Internal processor for the queue. 
+   * Internal processor for the queue.
    * This is where the actual DB writes happen.
    */
   private async processAgentAction(event: AgentActionEvent) {
@@ -88,7 +93,9 @@ export class MissionService {
         }
       }
     } catch (error) {
-      this.logger.error(`Failed to process agent action ${type} for mission ${missionId}: ${error.message}`);
+      this.logger.error(
+        `Failed to process agent action ${type} for mission ${missionId}: ${error.message}`,
+      );
     }
   }
 
@@ -138,7 +145,10 @@ export class MissionService {
   }
 
   async updateMissionStatus(id: string, status: MissionStatus) {
-    const updated = await this.missionRepo.update(id, { status, updatedAt: new Date() });
+    const updated = await this.missionRepo.update(id, {
+      status,
+      updatedAt: new Date(),
+    });
     await this.pushLog({
       missionId: id,
       message: `Mission status changed to ${status}`,
@@ -176,7 +186,9 @@ export class MissionService {
       // Emit to real-time stream
       this.logSubject.next(log as MissionLog);
     } catch (error) {
-      this.logger.error(`Failed to persist log for mission ${missionId}: ${error.message}`);
+      this.logger.error(
+        `Failed to persist log for mission ${missionId}: ${error.message}`,
+      );
     }
   }
 
@@ -192,7 +204,7 @@ export class MissionService {
 
     await this.queuePort.sendMessage(
       { type: 'RUN_MISSION', missionId: id },
-      QueueType.MISSION
+      QueueType.MISSION,
     );
   }
 
@@ -202,7 +214,9 @@ export class MissionService {
 
     // Concurrency Guard: Don't run if already finished or if we have a race condition
     if (mission.status === 'COMPLETED' || mission.status === 'FAILED') {
-      this.logger.warn(`Mission ${id} is already in ${mission.status} state. Skipping execution.`);
+      this.logger.warn(
+        `Mission ${id} is already in ${mission.status} state. Skipping execution.`,
+      );
       return;
     }
 
@@ -223,7 +237,9 @@ export class MissionService {
         label: 'Finalizing Mission',
         status: 'COMPLETED',
       });
-      this.logger.log(`Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`);
+      this.logger.log(
+        `Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`,
+      );
       await this.updateMissionStatus(id, 'COMPLETED');
       await this.pushLog({
         missionId: id,

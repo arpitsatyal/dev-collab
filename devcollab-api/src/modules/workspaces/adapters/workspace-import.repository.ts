@@ -2,7 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { snippets, docs } from 'src/common/drizzle/schema';
 import { v4 as uuid } from 'uuid';
-import type { DocImportData, SnippetImportData } from '../interfaces/workspaces.interfaces';
+import type {
+  DocImportData,
+  SnippetImportData,
+} from '../interfaces/workspaces.interfaces';
 
 @Injectable()
 export class WorkspaceImportRepository {

@@ -6,12 +6,9 @@ import { QueueModule } from 'src/modules/queue/queue.module';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
 
 @Module({
-  imports: [
-    QueueModule, 
-    SyncEventModule,
-  ],
+  imports: [QueueModule, SyncEventModule],
   controllers: [WorkItemsController, DueWorkItemsController],
   providers: [WorkItemsService],
   exports: [WorkItemsService],
 })
-export class WorkItemsModule { }
+export class WorkItemsModule {}

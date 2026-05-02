@@ -16,11 +16,11 @@ import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
   @Public()
   @Get('google')
   @UseGuards(AuthGuard('google'))
-  async googleLogin() { }
+  async googleLogin() {}
 
   @Public()
   @Get('google/redirect')
@@ -48,7 +48,7 @@ export class AuthController {
   @Public()
   @Get('github')
   @UseGuards(AuthGuard('github'))
-  async githubLogin() { }
+  async githubLogin() {}
 
   @Public()
   @Get('callback/github')

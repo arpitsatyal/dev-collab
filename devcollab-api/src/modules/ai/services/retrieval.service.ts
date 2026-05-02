@@ -24,7 +24,7 @@ export class RetrievalService implements RetrievalPort {
     private readonly snippetRepo: SnippetRepository,
     private readonly docRepo: DocRepository,
     private readonly vectorStorePort: VectorStorePort,
-  ) { }
+  ) {}
 
   async generateQueryVariations(
     query: string,
@@ -61,7 +61,8 @@ export class RetrievalService implements RetrievalPort {
 
     try {
       if (!workspaceId) {
-        const foundWorkspaces = await this.workspaceRepo.findManyBySearch(query);
+        const foundWorkspaces =
+          await this.workspaceRepo.findManyBySearch(query);
 
         results.push(
           ...foundWorkspaces.map((w) => ({

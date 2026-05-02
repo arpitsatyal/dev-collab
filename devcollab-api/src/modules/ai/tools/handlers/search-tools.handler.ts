@@ -12,9 +12,12 @@ export class SearchToolsHandler {
     private readonly snippetsService: SnippetsService,
     private readonly workItemsService: WorkItemsService,
     private readonly docsService: DocsService,
-  ) { }
+  ) {}
 
-  async handleSemanticSearch(args: SemanticSearchArgs, defaultId: string): Promise<string> {
+  async handleSemanticSearch(
+    args: SemanticSearchArgs,
+    defaultId: string,
+  ): Promise<string> {
     const { query, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
@@ -36,13 +39,23 @@ export class SearchToolsHandler {
     return [
       new DynamicStructuredTool({
         name: 'semantic_search',
-        description: 'Perform a broad semantic search across snippets, docs, and work items.',
+        description:
+          'Perform a broad semantic search across snippets, docs, and work items.',
         schema: z.object({
-          searchQuery: z.string().describe('The natural language search query.'),
-          workspaceId: z.string().nullable().optional().describe('Target workspace ID.'),
+          searchQuery: z
+            .string()
+            .describe('The natural language search query.'),
+          workspaceId: z
+            .string()
+            .nullable()
+            .optional()
+            .describe('Target workspace ID.'),
         }),
         func: (args) =>
-          this.handleSemanticSearch({ query: args.searchQuery, workspaceId: args.workspaceId }, workspaceId),
+          this.handleSemanticSearch(
+            { query: args.searchQuery, workspaceId: args.workspaceId },
+            workspaceId,
+          ),
       }),
     ];
   }

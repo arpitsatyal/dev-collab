@@ -8,6 +8,6 @@ export abstract class WorkspaceActionsPort {
     data: { title: string; description?: string },
     user: { id: string },
   ): Promise<any>;
-  
+
   abstract getWorkspace(id: string): Promise<any>;
 }

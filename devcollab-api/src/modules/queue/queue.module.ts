@@ -6,5 +6,4 @@ import { QueuePort } from './ports/queue.port';
   providers: [{ provide: QueuePort, useClass: QueueService }],
   exports: [QueuePort],
 })
-
-export class QueueModule { }
+export class QueueModule {}

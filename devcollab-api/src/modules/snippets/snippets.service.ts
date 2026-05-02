@@ -1,14 +1,17 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SyncEventPort } from 'src/common/sync-events/ports/sync-event.port';
 import { SnippetRepository } from './repositories/snippet.repository';
-import type { CreateSnippetRequest, UpdateSnippetRequest } from './interfaces/snippets.interfaces';
+import type {
+  CreateSnippetRequest,
+  UpdateSnippetRequest,
+} from './interfaces/snippets.interfaces';
 
 @Injectable()
 export class SnippetsService {
   constructor(
     private syncPort: SyncEventPort,
     private readonly snippetRepo: SnippetRepository,
-  ) { }
+  ) {}
 
   async getSnippet(snippetId: string) {
     const snippet = await this.snippetRepo.findUnique(snippetId);
@@ -22,7 +25,8 @@ export class SnippetsService {
   }
 
   async createSnippet(request: CreateSnippetRequest) {
-    const { workspaceId, authorId, title, language, content, extension } = request;
+    const { workspaceId, authorId, title, language, content, extension } =
+      request;
     const snippet = await this.snippetRepo.create({
       title,
       language,

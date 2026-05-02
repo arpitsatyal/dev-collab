@@ -12,12 +12,7 @@ import { WorkspaceToolsHandler } from './handlers/workspace-tools.handler';
 import { SearchToolsHandler } from './handlers/search-tools.handler';
 
 @Module({
-  imports: [
-    SnippetsModule,
-    DocsModule,
-    WorkItemsModule,
-    WorkspacesModule,
-  ],
+  imports: [SnippetsModule, DocsModule, WorkItemsModule, WorkspacesModule],
   providers: [
     SnippetToolsHandler,
     DocToolsHandler,

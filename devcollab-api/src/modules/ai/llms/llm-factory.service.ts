@@ -34,10 +34,12 @@ export class LlmFactoryService implements LlmGateway {
     private readonly togetherLlmService: TogetherLlmService,
     private readonly groqLlmService: GroqLlmService,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private getProviderContext(): ProviderContext {
-    const preferred = this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') || LlmProvider.GROQ;
+    const preferred =
+      this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') ||
+      LlmProvider.GROQ;
 
     if (preferred === LlmProvider.TOGETHER) {
       return {
@@ -64,15 +66,27 @@ export class LlmFactoryService implements LlmGateway {
     };
   }
 
-  private handleLlmError(type: LlmProvider, error: any, markFailed: () => void) {
+  private handleLlmError(
+    type: LlmProvider,
+    error: any,
+    markFailed: () => void,
+  ) {
     const errorMessage = error?.message || String(error);
     const statusCode = (error as any)?.status || (error as any)?.statusCode;
-    
-    this.logger.error(`LLM Provider ${type} failed [Status: ${statusCode || 'unknown'}]: ${errorMessage}`);
+
+    this.logger.error(
+      `LLM Provider ${type} failed [Status: ${statusCode || 'unknown'}]: ${errorMessage}`,
+    );
 
     // Check for specific failure codes: 402 (Payment), 401 (Auth)
-    if (statusCode === 402 || statusCode === 401 || errorMessage.includes('Credit limit')) {
-      this.logger.warn(`Provider ${type} has a permanent adapter issue. Disabling for this session.`);
+    if (
+      statusCode === 402 ||
+      statusCode === 401 ||
+      errorMessage.includes('Credit limit')
+    ) {
+      this.logger.warn(
+        `Provider ${type} has a permanent adapter issue. Disabling for this session.`,
+      );
       markFailed();
     }
   }
@@ -94,15 +108,20 @@ export class LlmFactoryService implements LlmGateway {
 
     const primaryModel = factory(ctx.primary, ctx.primaryType);
     const p = (primaryModel as any).withListeners({
-      onError: (error: any) => this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
+      onError: (error: any) =>
+        this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
     });
 
     if (ctx.secondaryFailed) return p;
 
     const secondaryModel = factory(ctx.secondary, ctx.secondaryType);
     const s = (secondaryModel as any).withListeners({
-      onStart: () => this.logger.log(`Fallback ${fallbackLabel} triggered: Switching to ${ctx.secondaryType}`),
-      onError: (error: any) => this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
+      onStart: () =>
+        this.logger.log(
+          `Fallback ${fallbackLabel} triggered: Switching to ${ctx.secondaryType}`,
+        ),
+      onError: (error: any) =>
+        this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
     });
 
     return p.withFallbacks({

@@ -9,4 +9,4 @@ import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
   controllers: [DocsController],
   exports: [DocsService],
 })
-export class DocsModule { }
+export class DocsModule {}

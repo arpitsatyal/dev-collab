@@ -12,11 +12,15 @@ export class QueueService implements QueuePort {
   constructor(private configService: ConfigService) {
     this.queueUrls = {
       [QueueType.DEFAULT]: this.configService.getOrThrow<string>('QUEUE_URL'),
-      [QueueType.MISSION]: this.configService.getOrThrow<string>('MISSION_QUEUE_URL'),
+      [QueueType.MISSION]:
+        this.configService.getOrThrow<string>('MISSION_QUEUE_URL'),
     };
   }
 
-  async sendMessage(messageBody: object, type: QueueType = QueueType.DEFAULT): Promise<void> {
+  async sendMessage(
+    messageBody: object,
+    type: QueueType = QueueType.DEFAULT,
+  ): Promise<void> {
     const targetUrl = this.queueUrls[type];
 
     try {
@@ -26,7 +30,7 @@ export class QueueService implements QueuePort {
           MessageBody: JSON.stringify(messageBody),
         }),
       );
-      
+
       this.logger.log(`Message sent to ${type} queue`);
     } catch (error) {
       this.logger.warn(`SQS sendMessage to ${type} failed: ${error.message}`);

@@ -15,7 +15,9 @@ const PgStore = connectPgSimple(session);
 
 async function bootstrap() {
   const port = Number(process.env.PORT) || 3000;
-  console.log(`Starting Nest (${process.env.NODE_ENV ?? 'development'}) on port ${port}...`);
+  console.log(
+    `Starting Nest (${process.env.NODE_ENV ?? 'development'}) on port ${port}...`,
+  );
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 

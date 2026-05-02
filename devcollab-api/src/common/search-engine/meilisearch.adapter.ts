@@ -4,7 +4,10 @@ import { Meilisearch, Index } from 'meilisearch';
 import { SearchEnginePort } from './ports/search-engine.port';
 
 @Injectable()
-export class MeiliSearchAdapter extends SearchEnginePort implements OnModuleInit {
+export class MeiliSearchAdapter
+  extends SearchEnginePort
+  implements OnModuleInit
+{
   private readonly logger = new Logger(MeiliSearchAdapter.name);
   private client: Meilisearch;
   private index: Index;
@@ -19,14 +22,18 @@ export class MeiliSearchAdapter extends SearchEnginePort implements OnModuleInit
     const indexName = this.configService.get<string>('MEILISEARCH_INDEX');
 
     if (!host) {
-      this.logger.warn('MEILISEARCH_HOST is not defined. Search engine features will be disabled.');
+      this.logger.warn(
+        'MEILISEARCH_HOST is not defined. Search engine features will be disabled.',
+      );
       return;
     }
 
     this.client = new Meilisearch({ host, apiKey });
 
     if (!indexName) {
-      this.logger.warn('MEILISEARCH_INDEX is not defined. Search engine features will be disabled.');
+      this.logger.warn(
+        'MEILISEARCH_INDEX is not defined. Search engine features will be disabled.',
+      );
       return;
     }
     this.index = this.client.index(indexName);
@@ -57,7 +64,9 @@ export class MeiliSearchAdapter extends SearchEnginePort implements OnModuleInit
       await this.index.addDocuments([document], { primaryKey: 'id' });
       this.logger.log(`[MeiliSearch] Synced ${type} [${doc.id}]`);
     } catch (error) {
-      this.logger.error(`[MeiliSearch] Failed to sync ${type} [${doc.id}]: ${error.message}`);
+      this.logger.error(
+        `[MeiliSearch] Failed to sync ${type} [${doc.id}]: ${error.message}`,
+      );
       throw error;
     }
   }

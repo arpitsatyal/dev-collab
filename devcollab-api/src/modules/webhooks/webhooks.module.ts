@@ -25,7 +25,6 @@ import { CollaborationModule } from '../collaboration/collaboration.module';
   controllers: [VectorSyncController, CollaborationWebhookController],
   providers: [CollaborationWebhookService],
 })
-
 export class WebhooksModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(RawBodyMiddleware).forRoutes({

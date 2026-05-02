@@ -3,7 +3,12 @@ import { ChatEngineService } from './chat-engine.service';
 import { SuggestionService } from './suggestion.service';
 import { MessageService } from 'src/modules/message/message.service';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import { AnalyzeWorkItemRequest, GetAiResponseRequest, SuggestSnippetFilenameRequest, SuggestWorkItemsRequest } from '../interfaces/ai.interfaces';
+import {
+  AnalyzeWorkItemRequest,
+  GetAiResponseRequest,
+  SuggestSnippetFilenameRequest,
+  SuggestWorkItemsRequest,
+} from '../interfaces/ai.interfaces';
 
 @Injectable()
 export class AiService {
@@ -12,7 +17,7 @@ export class AiService {
     private readonly suggestionService: SuggestionService,
     private readonly messageService: MessageService,
     private readonly workItemsService: WorkItemsService,
-  ) { }
+  ) {}
 
   async ask(request: GetAiResponseRequest) {
     const { chatId, question, filters } = request;

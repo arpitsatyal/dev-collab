@@ -9,7 +9,7 @@ import type { User } from '../../common/drizzle/schema';
 
 @Controller('users')
 export class UsersController {
-  constructor(private usersService: UsersService) { }
+  constructor(private usersService: UsersService) {}
 
   @Get()
   getUsers() {

@@ -1,4 +1,11 @@
-import { pgTable, text, timestamp, varchar, json, index } from 'drizzle-orm/pg-core';
+import {
+  pgTable,
+  text,
+  timestamp,
+  varchar,
+  json,
+  index,
+} from 'drizzle-orm/pg-core';
 import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 import { providerEnum } from './enums';
 

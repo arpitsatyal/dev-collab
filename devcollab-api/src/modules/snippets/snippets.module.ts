@@ -9,5 +9,4 @@ import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
   controllers: [SnippetsController],
   exports: [SnippetsService],
 })
-
-export class SnippetsModule { }
+export class SnippetsModule {}

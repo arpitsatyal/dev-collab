@@ -32,4 +32,4 @@ const repositories = [
   providers: [...repositories],
   exports: [...repositories],
 })
-export class RepositoryModule { }
+export class RepositoryModule {}
