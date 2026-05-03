@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   constructor(
     private authService: AuthPort,
-    private configService: ConfigService,
+    configService: ConfigService,
   ) {
     super({
       clientID: configService.getOrThrow<string>('GITHUB_CLIENT_ID'),
@@ -20,10 +20,9 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
   }
 
   async validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: Profile,
-    done: any,
   ) {
     const email = profile?.emails?.[0]?.value;
 
@@ -31,14 +30,12 @@ export class GithubStrategy extends PassportStrategy(Strategy, 'github') {
       throw new NotFoundException('No email found in GitHub profile');
     }
 
-    const user = await this.authService.validateSocialUser({
+    return await this.authService.validateSocialUser({
       email,
       name: profile.displayName ?? profile.username,
       provider: 'GITHUB',
       providerId: profile.id,
       image: profile.photos?.[0]?.value,
     });
-
-    done(null, user);
   }
 }

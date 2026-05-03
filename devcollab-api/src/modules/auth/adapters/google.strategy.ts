@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy } from 'passport-google-oauth20';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { AuthPort } from '../ports/auth.port';
 import { Profile } from 'passport';
@@ -9,7 +9,7 @@ import { ConfigService } from '@nestjs/config';
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   constructor(
     private authService: AuthPort,
-    private configService: ConfigService,
+    configService: ConfigService,
   ) {
     super({
       clientID: configService.getOrThrow<string>('GOOGLE_CLIENT_ID'),
@@ -20,10 +20,9 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   async validate(
-    accessToken: string,
-    refreshToken: string,
+    _accessToken: string,
+    _refreshToken: string,
     profile: Profile,
-    done: VerifyCallback,
   ): Promise<any> {
     const { emails, displayName, photos } = profile || {};
     const email = emails?.[0]?.value;
@@ -32,7 +31,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       throw new NotFoundException('No email found in Google profile');
     }
 
-    const user = await this.authService.validateSocialUser({
+    return await this.authService.validateSocialUser({
       email,
       name: displayName,
       provider: 'GOOGLE',
@@ -40,6 +39,5 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
       image: photos?.[0]?.value ?? profile['_json']?.picture,
     });
 
-    done(null, user);
   }
 }

@@ -3,7 +3,6 @@ import { AiService } from './services/ai.service';
 import { MessageService } from '../message/message.service';
 import { WorkItemsService } from '../work-items/work-items.service';
 import { SuggestionService } from './services/suggestion.service';
-import { ChatEngineService } from './services/chat-engine.service';
 
 describe('AiService', () => {
   let service: AiService;
@@ -12,12 +11,6 @@ describe('AiService', () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AiService,
-        {
-          provide: ChatEngineService,
-          useValue: {
-            getAIResponse: jest.fn().mockResolvedValue({ answer: 'ok' }),
-          },
-        },
         {
           provide: SuggestionService,
           useValue: {
