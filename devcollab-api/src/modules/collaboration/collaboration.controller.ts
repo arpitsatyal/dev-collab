@@ -1,13 +1,13 @@
 import { Controller, Post, Body, Res } from '@nestjs/common';
 
-import { CollaborationPort } from './ports/collaboration.port';
+import { CollaborationService } from './collaboration.service';
 import { Response } from 'express';
 import { CurrentUser } from '../users/user.decorator';
 import { CollaborationUserDto } from './dto/collaboration-user.dto';
 
 @Controller('collaboration')
 export class CollaborationController {
-  constructor(private readonly collaborationPort: CollaborationPort) {}
+  constructor(private readonly collaborationService: CollaborationService) {}
 
   @Post('auth')
   async authorize(
@@ -15,7 +15,7 @@ export class CollaborationController {
     @Body('room') room: string,
     @Res() res: Response,
   ) {
-    const { body, status } = await this.collaborationPort.authorizeRoom(
+    const { body, status } = await this.collaborationService.authorizeRoom(
       user,
       room,
     );

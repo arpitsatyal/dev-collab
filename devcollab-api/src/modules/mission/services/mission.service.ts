@@ -22,10 +22,8 @@ export class MissionService {
   }
 
   async createMission(request: CreateMissionRequest) {
-    const { workspaceId, goal } = request;
     return await this.missionRepo.create({
-      workspaceId,
-      goal,
+      ...request,
       status: 'PENDING',
     });
   }
@@ -43,17 +41,16 @@ export class MissionService {
   }
 
   async addStep(request: AddStepRequest) {
-    const { missionId, label, status = 'PENDING', payload } = request;
+    const { status = 'PENDING', ...data } = request;
+
     const step = await this.stepRepo.create({
-      missionId,
-      label,
+      ...data,
       status,
-      payload,
     });
 
     await this.pushLog({
-      missionId,
-      message: `New step added: ${label}`,
+      missionId: step.missionId,
+      message: `New step added: ${step.label}`,
       stepId: step.id,
       type: 'step_created',
       payload: step,

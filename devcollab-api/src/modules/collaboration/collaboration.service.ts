@@ -1,19 +1,9 @@
-import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
-import { Liveblocks } from '@liveblocks/node';
-import axios from 'axios';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CollaborationPort } from './ports/collaboration.port';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
-export class CollaborationService implements CollaborationPort {
-  private readonly logger = new Logger(CollaborationService.name);
-  private readonly liveblocks: Liveblocks;
-
-  constructor(private configService: ConfigService) {
-    this.liveblocks = new Liveblocks({
-      secret: this.configService.getOrThrow<string>('LIVEBLOCKS_SECRET_KEY'),
-    });
-  }
+export class CollaborationService {
+  constructor(private readonly collaborationPort: CollaborationPort) {}
 
   async authorizeRoom(
     user: { id?: string; email?: string; name?: string; image?: string },
@@ -22,16 +12,6 @@ export class CollaborationService implements CollaborationPort {
     if (!user) {
       throw new UnauthorizedException();
     }
-
-    const userId = user.id || user.email || 'anonymous';
-    const userInfo = {
-      name: user.name || '',
-      email: user.email || '',
-      avatar: user.image || '',
-      color: '#0074C2',
-    };
-
-    const session = this.liveblocks.prepareSession(userId, { userInfo });
 
     const allowedPrefixes = [
       `snippet_`,
@@ -44,35 +24,13 @@ export class CollaborationService implements CollaborationPort {
       typeof room === 'string' &&
       allowedPrefixes.some((prefix) => room.startsWith(prefix));
 
-    if (isAllowedRoom) {
-      session.allow(room, session.FULL_ACCESS);
-    }
+    const permissions = isAllowedRoom ? ['room:write'] : [];
 
-    const { body, status } = await session.authorize();
-
-    return { body: JSON.parse(body), status };
+    return this.collaborationPort.authorizeRoom(user, room, permissions);
   }
 
   async getYdocContent(roomId: string): Promise<string | null> {
-    try {
-      const response = await axios.get(
-        `https://api.liveblocks.io/v2/rooms/${roomId}/ydoc`,
-        {
-          headers: {
-            Authorization: `Bearer ${this.configService.get<string>('LIVEBLOCKS_SECRET_KEY')}`,
-            Accept: 'application/octet-stream',
-          },
-          responseType: 'arraybuffer',
-        },
-      );
-
-      return response.data.toString('utf8');
-    } catch (error) {
-      this.logger.error(
-        `Failed to fetch YDoc for room ${roomId}: ${error?.message || error}`,
-      );
-      return null;
-    }
+    return this.collaborationPort.getYdocContent(roomId);
   }
 
   async getComment(params: {
@@ -80,11 +38,6 @@ export class CollaborationService implements CollaborationPort {
     threadId: string;
     commentId: string;
   }): Promise<any> {
-    try {
-      return await this.liveblocks.getComment(params);
-    } catch (error) {
-      this.logger.error(`Failed to fetch comment: ${error?.message || error}`);
-      return null;
-    }
+    return this.collaborationPort.getComment(params);
   }
 }
