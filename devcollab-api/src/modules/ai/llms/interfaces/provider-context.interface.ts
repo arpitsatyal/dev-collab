@@ -1,10 +1,9 @@
-import type { GroqLlmService } from '../groq-llm.service';
-import type { TogetherLlmService } from '../together-llm.service';
+import { LlmProviderPort } from '../ports/llm-provider.port';
 import type { LlmProvider } from '../enums/llm-provider.enum';
 
 export interface ProviderContext {
-  primary: GroqLlmService | TogetherLlmService;
-  secondary: GroqLlmService | TogetherLlmService;
+  primary: LlmProviderPort;
+  secondary: LlmProviderPort;
   primaryType: LlmProvider;
   secondaryType: LlmProvider;
   primaryFailed: boolean;

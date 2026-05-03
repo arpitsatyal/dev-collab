@@ -1,16 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { RunnableLike } from '@langchain/core/runnables';
 import { StructuredTool } from '@langchain/core/tools';
-import { GroqLlmService } from './groq-llm.service';
-import { TogetherLlmService } from './together-llm.service';
-import { LlmGateway } from '../ports/llm.port';
+import { GroqLlmAdapter } from './adapters/groq-llm.adapter';
+import { TogetherLlmAdapter } from './adapters/together-llm.adapter';
+import { LlmGateway } from './ports/llm.port';
+import { LlmProviderPort } from './ports/llm-provider.port';
 import { ConfigService } from '@nestjs/config';
 import { LlmProvider } from './enums/llm-provider.enum';
+import { LlmTaskType } from './enums/llm-task-type.enum';
+import { LlmModel, StructuredLlm, ToolBoundLlm, LlmRunnable, LlmStructuredSchema } from './interfaces/llm.interfaces';
 import type { ProviderContext } from './interfaces/provider-context.interface';
 
-
-// TODO: ADAPTIFY
 @Injectable()
 export class LlmFactoryService implements LlmGateway {
   private readonly logger = new Logger(LlmFactoryService.name);
@@ -19,38 +18,34 @@ export class LlmFactoryService implements LlmGateway {
   private groqFailed = false;
 
   constructor(
-    private readonly togetherLlmService: TogetherLlmService,
-    private readonly groqLlmService: GroqLlmService,
+    private readonly togetherLlmAdapter: TogetherLlmAdapter,
+    private readonly groqLlmAdapter: GroqLlmAdapter,
     private readonly configService: ConfigService,
   ) { }
 
   private getProviderContext(): ProviderContext {
-    const preferred =
-      this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') ||
-      LlmProvider.GROQ;
+    const primaryType = this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') || LlmProvider.GROQ;
+    const secondaryType = primaryType === LlmProvider.TOGETHER ? LlmProvider.GROQ : LlmProvider.TOGETHER;
 
-    if (preferred === LlmProvider.TOGETHER) {
-      return {
-        primary: this.togetherLlmService,
-        secondary: this.groqLlmService,
-        primaryType: LlmProvider.TOGETHER,
-        secondaryType: LlmProvider.GROQ,
-        primaryFailed: this.togetherFailed,
-        secondaryFailed: this.groqFailed,
-        markPrimaryFailed: () => (this.togetherFailed = true),
-        markSecondaryFailed: () => (this.groqFailed = true),
-      };
-    }
+    const resolve = (type: LlmProvider) => ({
+      adapter: type === LlmProvider.TOGETHER ? this.togetherLlmAdapter : this.groqLlmAdapter,
+      type,
+      failed: type === LlmProvider.TOGETHER ? this.togetherFailed : this.groqFailed,
+      markFailed: () => (type === LlmProvider.TOGETHER ? (this.togetherFailed = true) : (this.groqFailed = true)),
+    });
+
+    const primary = resolve(primaryType);
+    const secondary = resolve(secondaryType);
 
     return {
-      primary: this.groqLlmService,
-      secondary: this.togetherLlmService,
-      primaryType: LlmProvider.GROQ,
-      secondaryType: LlmProvider.TOGETHER,
-      primaryFailed: this.groqFailed,
-      secondaryFailed: this.togetherFailed,
-      markPrimaryFailed: () => (this.groqFailed = true),
-      markSecondaryFailed: () => (this.togetherFailed = true),
+      primary: primary.adapter,
+      secondary: secondary.adapter,
+      primaryType: primary.type,
+      secondaryType: secondary.type,
+      primaryFailed: primary.failed,
+      secondaryFailed: secondary.failed,
+      markPrimaryFailed: primary.markFailed,
+      markSecondaryFailed: secondary.markFailed,
     };
   }
 
@@ -79,10 +74,10 @@ export class LlmFactoryService implements LlmGateway {
     }
   }
 
-  private async withProviderLogic<T>(
-    factory: (llm: GroqLlmService | TogetherLlmService, type: LlmProvider) => T,
-    fallbackLabel: string,
-  ): Promise<T> {
+  private async withProviderLogic(
+    factory: (llm: LlmProviderPort, type: LlmProvider) => LlmRunnable,
+    taskType: LlmTaskType,
+  ): Promise<LlmRunnable> {
     const ctx = this.getProviderContext();
 
     if (ctx.primaryFailed && ctx.secondaryFailed) {
@@ -95,7 +90,7 @@ export class LlmFactoryService implements LlmGateway {
     }
 
     const primaryModel = factory(ctx.primary, ctx.primaryType);
-    const p = (primaryModel as any).withListeners({
+    const p = primaryModel.withListeners({
       onError: (error: any) =>
         this.handleLlmError(ctx.primaryType, error, ctx.markPrimaryFailed),
     });
@@ -103,47 +98,49 @@ export class LlmFactoryService implements LlmGateway {
     if (ctx.secondaryFailed) return p;
 
     const secondaryModel = factory(ctx.secondary, ctx.secondaryType);
-    const s = (secondaryModel as any).withListeners({
+    const s = secondaryModel.withListeners({
       onStart: () =>
         this.logger.log(
-          `Fallback ${fallbackLabel} triggered: Switching to ${ctx.secondaryType}`,
+          `Fallback ${taskType} triggered: Switching to ${ctx.secondaryType}`,
         ),
       onError: (error: any) =>
         this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
     });
-
     return p.withFallbacks({
       fallbacks: [s],
-    });
+    }) as LlmRunnable;
   }
 
-  async getReasoningLLM(): Promise<BaseChatModel> {
-    return this.withProviderLogic(
-      (llm) => llm.create(),
-      'Reasoning',
-    ) as unknown as BaseChatModel;
+  async getReasoningLLM(): Promise<LlmModel> {
+    return (await this.withProviderLogic(
+      (provider) => provider.create(LlmTaskType.REASONING),
+      LlmTaskType.REASONING,
+    )) as LlmModel;
   }
 
-  async getSpeedyLLM(): Promise<BaseChatModel> {
-    return this.getReasoningLLM();
+  async getSpeedyLLM(): Promise<LlmModel> {
+    return (await this.withProviderLogic(
+      (provider) => provider.create(LlmTaskType.SPEEDY),
+      LlmTaskType.SPEEDY,
+    )) as LlmModel;
   }
 
   async getReasoningStructuredLLM(
-    schema: any,
+    schema: LlmStructuredSchema,
     name: string,
-  ): Promise<RunnableLike<any, any>> {
-    return this.withProviderLogic(
-      (llm) => (llm.create() as any).withStructuredOutput(schema, { name }),
-      'Structured',
-    );
+  ): Promise<StructuredLlm> {
+    return (await this.withProviderLogic(
+      (provider) => provider.create(LlmTaskType.STRUCTURED).withStructuredOutput(schema, { name }),
+      LlmTaskType.STRUCTURED,
+    )) as StructuredLlm;
   }
 
   async getReasoningToolBoundLLM(
     tools: StructuredTool[],
-  ): Promise<BaseChatModel> {
-    return this.withProviderLogic(
-      (llm) => llm.create().bindTools(tools),
-      'ToolBound',
-    ) as unknown as BaseChatModel;
+  ): Promise<ToolBoundLlm> {
+    return (await this.withProviderLogic(
+      (provider) => provider.create(LlmTaskType.TOOL_BOUND).bindTools(tools),
+      LlmTaskType.TOOL_BOUND,
+    )) as ToolBoundLlm;
   }
 }

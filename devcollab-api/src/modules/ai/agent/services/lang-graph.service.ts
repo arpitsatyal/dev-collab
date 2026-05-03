@@ -3,7 +3,7 @@ import {
   BaseMessage,
 } from '@langchain/core/messages';
 import { AiConfig } from '../../ai.config';
-import { LlmGateway } from '../../ports/llm.port';
+import { LlmGateway } from '../../llms/ports/llm.port';
 import { ToolRegistry } from '../../tools/ports/tools.port';
 import { AgentPort } from '../../ports/agent.port';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';

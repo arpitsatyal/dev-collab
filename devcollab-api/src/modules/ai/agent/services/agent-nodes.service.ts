@@ -3,7 +3,7 @@ import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgentEvents } from '../enums/agent-events.enum';
 import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult, AgentState } from '../interfaces/agent.interfaces';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { ToolBoundLlm } from '../../llms/interfaces/llm.interfaces';
 import { AgentStateUtils } from '../utils/agent-state.utils';
 
 @Injectable()
@@ -17,7 +17,7 @@ export class AgentNodesService {
    */
   async callModel(
     state: AgentState,
-    llm: BaseChatModel,
+    llm: ToolBoundLlm,
     config: AgentRunnableConfig,
   ): Promise<AgentNodeResult> {
 

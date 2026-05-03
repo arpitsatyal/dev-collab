@@ -6,16 +6,16 @@ import {
 } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentNodesService } from './agent-nodes.service';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StructuredTool } from '@langchain/core/tools';
 import { AgentStateUtils } from '../utils/agent-state.utils';
 import { AgentRunnableConfig, AgentState } from '../interfaces/agent.interfaces';
+import { ToolBoundLlm } from '../../llms/interfaces/llm.interfaces';
 
 @Injectable()
 export class AgentGraphFactoryService {
   constructor(private readonly nodesService: AgentNodesService) { }
 
-  createGraph(llm: BaseChatModel, tools: StructuredTool[]) {
+  createGraph(llm: ToolBoundLlm, tools: StructuredTool[]) {
     const toolNode = new ToolNode(tools);
     const checkpointer = new MemorySaver();
 
