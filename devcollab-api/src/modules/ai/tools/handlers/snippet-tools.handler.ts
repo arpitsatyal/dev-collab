@@ -8,7 +8,7 @@ import {
 import type {
   CreateSnippetArgs,
   GetSnippetsArgs,
-} from '../../interfaces/ai-tools.interfaces';
+} from '../interfaces/tools.interfaces';
 
 @Injectable()
 export class SnippetToolsHandler {

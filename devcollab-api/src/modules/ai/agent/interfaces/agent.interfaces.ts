@@ -1,8 +1,5 @@
 import { BaseMessage } from "@langchain/core/messages";
-import { MessagesAnnotation } from '@langchain/langgraph';
 import { RunnableConfig } from '@langchain/core/runnables';
-
-export type AgentState = typeof MessagesAnnotation.State;
 
 export interface AgentConfigurable extends Record<string, any> {
   missionId?: string;

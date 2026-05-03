@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { IChatContext } from 'src/modules/ai/interfaces';
-import { IintentResult, IntentClassifierLlm } from 'src/modules/ai/types/ai.types';
+import { IintentResult, IntentClassifierLlm } from 'src/modules/ai/interfaces/ai.types';
 import { IntentSchema } from 'src/modules/ai/schemas';
 
 @Injectable()

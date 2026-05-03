@@ -4,8 +4,7 @@ import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { workItems, workItemsToSnippets } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
 import { v4 as uuid } from 'uuid';
-
-export type WorkItemStatus = 'TODO' | 'IN_PROGRESS' | 'DONE';
+import { WorkItemStatus } from '../interfaces/work-items.types';
 
 @Injectable()
 export class WorkItemRepository extends BaseRepository<typeof workItems> {

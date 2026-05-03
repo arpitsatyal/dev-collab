@@ -54,9 +54,9 @@ export interface CreateDocArgs extends Omit<CreateDocRequest, 'workspaceId'> {
   workspaceId?: string;
 }
 
-export interface UpdateDocArgs extends UpdateDocRequest {}
+export interface UpdateDocArgs extends UpdateDocRequest { }
 
 export interface CreateWorkspaceArgs extends Omit<
   CreateWorkspaceRequest,
   'user'
-> {}
+> { }

@@ -1,4 +1,4 @@
-import { LlmModel } from '../interfaces/llm.interfaces';
+import { LlmModel } from '../interfaces/llm.types';
 import { LlmTaskType } from '../enums/llm-task-type.enum';
 
 export abstract class LlmProviderPort {

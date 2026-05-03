@@ -1,10 +1,10 @@
-import {
+import type {
   CreateDocRequest,
   UpdateDocRequest,
-} from 'src/modules/docs/docs.types';
-import { CreateSnippetRequest } from 'src/modules/snippets/snippets.types';
-import { CreateWorkItemRequest } from 'src/modules/work-items/work-items.types';
-import { CreateWorkspaceRequest } from 'src/modules/workspaces/workspaces.types';
+} from 'src/modules/docs/interfaces/docs.interfaces';
+import type { CreateSnippetRequest } from 'src/modules/snippets/interfaces/snippets.interfaces';
+import type { CreateWorkItemRequest } from 'src/modules/work-items/interfaces/work-items.interfaces';
+import type { CreateWorkspaceRequest } from 'src/modules/workspaces/interfaces/workspaces.interfaces';
 
 export interface SearchWorkspacesArgs {
   query?: string;

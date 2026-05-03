@@ -8,8 +8,9 @@ import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentNodesService } from './agent-nodes.service';
 import { StructuredTool } from '@langchain/core/tools';
 import { AgentStateUtils } from '../utils/agent-state.utils';
-import { AgentRunnableConfig, AgentState } from '../interfaces/agent.interfaces';
-import { ToolBoundLlm } from '../../llms/interfaces/llm.interfaces';
+import { AgentRunnableConfig } from '../interfaces/agent.interfaces';
+import { ToolBoundLlm } from '../../llms/interfaces/llm.types';
+import { AgentState } from '../interfaces/agent.types';
 
 @Injectable()
 export class AgentGraphFactoryService {

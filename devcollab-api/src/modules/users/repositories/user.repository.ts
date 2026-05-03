@@ -4,8 +4,6 @@ import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { users } from 'src/common/drizzle/schema';
 import { BaseRepository } from 'src/common/drizzle/base.repository';
 
-export type Provider = 'GOOGLE' | 'GITHUB' | 'LOCAL';
-
 @Injectable()
 export class UserRepository extends BaseRepository<typeof users> {
   constructor(drizzle: DrizzleService) {

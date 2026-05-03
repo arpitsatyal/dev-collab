@@ -4,7 +4,7 @@ import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { semanticSearchSchema } from '../schema/search-tools.schema';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { DocsService } from 'src/modules/docs/docs.service';
-import type { SemanticSearchArgs } from '../../interfaces/ai-tools.interfaces';
+import type { SemanticSearchArgs } from '../interfaces/tools.interfaces';
 
 @Injectable()
 export class SearchToolsHandler {

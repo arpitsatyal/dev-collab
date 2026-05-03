@@ -12,7 +12,7 @@ import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import type {
   CreateWorkspaceArgs,
   SearchWorkspacesArgs,
-} from '../../interfaces/ai-tools.interfaces';
+} from '../interfaces/tools.interfaces';
 
 @Injectable()
 export class WorkspaceToolsHandler {

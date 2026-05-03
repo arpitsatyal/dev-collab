@@ -3,7 +3,7 @@ import { StringOutputParser } from '@langchain/core/output_parsers';
 import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { IChatContext, IChatResponse } from 'src/modules/ai/interfaces';
-import { ChatScope } from 'src/modules/ai/types/ai.types';
+import { ChatScope } from 'src/modules/ai/interfaces/ai.types';
 
 
 @Injectable()

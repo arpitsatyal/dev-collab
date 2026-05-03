@@ -10,7 +10,7 @@ import type {
   CreateDocArgs,
   GetDocsArgs,
   UpdateDocArgs,
-} from '../../interfaces/ai-tools.interfaces';
+} from '../interfaces/tools.interfaces';
 
 @Injectable()
 export class DocToolsHandler {

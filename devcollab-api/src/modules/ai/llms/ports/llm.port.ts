@@ -1,5 +1,5 @@
 import { StructuredTool } from '@langchain/core/tools';
-import { LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema } from '../interfaces/llm.interfaces';
+import { LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema } from '../interfaces/llm.types';
 
 export abstract class LlmGateway {
   abstract getReasoningLLM(): Promise<LlmModel>;

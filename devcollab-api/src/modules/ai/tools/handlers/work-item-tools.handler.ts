@@ -11,7 +11,7 @@ import type {
   CreateWorkItemArgs,
   GetWorkItemsArgs,
   UpdateWorkItemArgs,
-} from '../../interfaces/ai-tools.interfaces';
+} from '../interfaces/tools.interfaces';
 
 @Injectable()
 export class WorkItemToolsHandler {

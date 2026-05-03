@@ -7,7 +7,7 @@ import { LlmProviderPort } from './ports/llm-provider.port';
 import { ConfigService } from '@nestjs/config';
 import { LlmProvider } from './enums/llm-provider.enum';
 import { LlmTaskType } from './enums/llm-task-type.enum';
-import { LlmModel, StructuredLlm, ToolBoundLlm, LlmRunnable, LlmStructuredSchema } from './interfaces/llm.interfaces';
+import { LlmModel, StructuredLlm, ToolBoundLlm, LlmRunnable, LlmStructuredSchema } from './interfaces/llm.types';
 import type { ProviderContext } from './interfaces/provider-context.interface';
 
 @Injectable()
@@ -126,7 +126,7 @@ export class LlmFactoryService implements LlmGateway {
   }
 
   async getReasoningLLM(): Promise<LlmModel> {
-    return this.executeTask(LlmTaskType.REASONING, (p) => p.create(LlmTaskType.REASONING));
+    return this.executeTask(LlmTaskType.REASONING, (p) => p.create());
   }
 
   async getSpeedyLLM(): Promise<LlmModel> {

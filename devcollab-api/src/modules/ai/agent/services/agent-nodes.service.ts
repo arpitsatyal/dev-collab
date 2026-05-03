@@ -2,9 +2,10 @@ import { Injectable, Logger } from '@nestjs/common';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgentEvents } from '../enums/agent-events.enum';
-import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult, AgentState } from '../interfaces/agent.interfaces';
-import { ToolBoundLlm } from '../../llms/interfaces/llm.interfaces';
+import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult } from '../interfaces/agent.interfaces';
+import { ToolBoundLlm } from '../../llms/interfaces/llm.types';
 import { AgentStateUtils } from '../utils/agent-state.utils';
+import { AgentState } from '../interfaces/agent.types';
 
 @Injectable()
 export class AgentNodesService {

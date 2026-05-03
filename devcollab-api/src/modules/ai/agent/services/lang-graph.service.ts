@@ -64,9 +64,8 @@ export class LangGraphService implements AgentPort {
 
     if (calledTools.length === 0) {
       this.logger.log('Response: Direct LLM (no tools used)');
-    } else {
-      this.logger.log(`Response: Tool Sequence [${calledTools.join(' -> ')}]`);
     }
+    this.logger.log(`Response: Tool Sequence [${calledTools.join(' -> ')}]`);
 
     const lastAIMessage = AgentStateUtils.getLastAIMessage(messages);
     const answer = AgentStateUtils.getContent(lastAIMessage);
