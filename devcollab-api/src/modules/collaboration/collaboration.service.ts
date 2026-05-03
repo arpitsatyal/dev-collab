@@ -1,14 +1,15 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { CollaborationPort } from './ports/collaboration.port';
+import {
+  CollabCommentParams,
+  CollabUser,
+} from './interfaces/collaboration.interfaces';
 
 @Injectable()
 export class CollaborationService {
   constructor(private readonly collaborationPort: CollaborationPort) {}
 
-  async authorizeRoom(
-    user: { id?: string; email?: string; name?: string; image?: string },
-    room: string,
-  ) {
+  async authorizeRoom(user: CollabUser, room: string) {
     if (!user) {
       throw new UnauthorizedException();
     }
@@ -33,11 +34,7 @@ export class CollaborationService {
     return this.collaborationPort.getYdocContent(roomId);
   }
 
-  async getComment(params: {
-    roomId: string;
-    threadId: string;
-    commentId: string;
-  }): Promise<any> {
+  async getComment(params: CollabCommentParams): Promise<any> {
     return this.collaborationPort.getComment(params);
   }
 }

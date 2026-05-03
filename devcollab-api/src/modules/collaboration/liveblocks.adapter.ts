@@ -3,6 +3,7 @@ import { Liveblocks } from '@liveblocks/node';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { CollaborationPort } from './ports/collaboration.port';
+import { CollabAuthResponse, CollabCommentParams, CollabUser } from './interfaces/collaboration.interfaces';
 
 @Injectable()
 export class LiveblocksAdapter implements CollaborationPort {
@@ -16,10 +17,10 @@ export class LiveblocksAdapter implements CollaborationPort {
   }
 
   async authorizeRoom(
-    user: { id?: string; email?: string; name?: string; image?: string },
+    user: CollabUser,
     room: string,
     permissions: string[] = [],
-  ): Promise<{ body: any; status: number }> {
+  ): Promise<CollabAuthResponse> {
     const userId = user.id || user.email || 'anonymous';
     const userInfo = {
       name: user.name || '',
@@ -61,11 +62,7 @@ export class LiveblocksAdapter implements CollaborationPort {
     }
   }
 
-  async getComment(params: {
-    roomId: string;
-    threadId: string;
-    commentId: string;
-  }): Promise<any> {
+  async getComment(params: CollabCommentParams): Promise<any> {
     try {
       return await this.liveblocks.getComment(params);
     } catch (error) {

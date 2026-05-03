@@ -1,15 +1,17 @@
+import {
+  CollabAuthResponse,
+  CollabCommentParams,
+  CollabUser,
+} from '../interfaces/collaboration.interfaces';
+
 export abstract class CollaborationPort {
   abstract authorizeRoom(
-    user: { id?: string; email?: string; name?: string; image?: string },
+    user: CollabUser,
     room: string,
     permissions?: string[],
-  ): Promise<{ body: any; status: number }>;
+  ): Promise<CollabAuthResponse>;
 
   abstract getYdocContent(roomId: string): Promise<string | null>;
 
-  abstract getComment(params: {
-    roomId: string;
-    threadId: string;
-    commentId: string;
-  }): Promise<any>;
+  abstract getComment(params: CollabCommentParams): Promise<any>;
 }
