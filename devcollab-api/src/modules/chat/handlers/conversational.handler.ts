@@ -5,7 +5,6 @@ import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { IChatContext, IChatResponse } from 'src/modules/ai/interfaces';
 import { ChatScope } from 'src/modules/ai/interfaces/ai.types';
 
-
 @Injectable()
 export class ChatConversationalHandler {
   private readonly logger = new Logger(ChatConversationalHandler.name);

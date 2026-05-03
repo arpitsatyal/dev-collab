@@ -9,7 +9,7 @@ import { AgentNodesService } from './agent-nodes.service';
 import { StructuredTool } from '@langchain/core/tools';
 import { AgentStateUtils } from '../utils/agent-state.utils';
 import { AgentRunnableConfig } from '../interfaces/agent.interfaces';
-import { ToolBoundLlm } from '../../llms/interfaces/llm.types';
+import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
 import { AgentState } from '../interfaces/agent.types';
 
 @Injectable()

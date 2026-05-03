@@ -5,7 +5,7 @@ import {
   SearchUserQueryDto,
   CollaborationUsersQueryDto,
 } from './dto/users.dto';
-import type { User } from '../../common/drizzle/schema';
+import type { User } from 'src/common/drizzle/schema';
 
 @Controller('users')
 export class UsersController {

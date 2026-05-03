@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { MessageService } from '../../../message/message.service';
-import { IChatContext } from 'src/modules/ai/interfaces';
+import { MessageService } from 'src/modules/message/message.service';
+import { IChatContext } from 'src/modules/chat/interfaces/ai-chat.interface';
 
 @Injectable()
 export class ChatContextService {

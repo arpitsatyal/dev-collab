@@ -2,12 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import {
   BaseMessage,
 } from '@langchain/core/messages';
-import { AiConfig } from '../../ai.config';
-import { LlmGateway } from '../../llms/ports/llm.port';
-import { ToolRegistry } from '../../tools/ports/tools.port';
+import { AiConfig } from 'src/modules/ai/ai.config';
+import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { ToolRegistry } from 'src/modules/ai/tools/ports/tools.port';
 import { AgentPort } from '../ports/agent.port';
 import { AgentGraphFactoryService } from './agent-graph-factory.service';
-import { IAiResult } from '../../interfaces';
+import { IAiResult } from 'src/modules/ai/interfaces';
 import { AgentRunOptions } from '../interfaces/agent.interfaces';
 import { AgentStateUtils } from '../utils/agent-state.utils';
 

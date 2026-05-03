@@ -4,7 +4,9 @@ import {
   IsOptional,
   IsArray,
   ArrayUnique,
+  IsDate,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import {
   WorkItemStatus,
   workItemStatusValues,
@@ -27,8 +29,9 @@ export class WorkItemCreateDto {
   assignedToId?: string;
 
   @IsOptional()
-  @IsString()
-  dueDate?: string;
+  @Type(() => Date)
+  @IsDate()
+  dueDate?: Date;
 
   @IsOptional()
   @IsArray()
@@ -55,8 +58,9 @@ export class WorkItemUpdateDto {
   assignedToId?: string;
 
   @IsOptional()
-  @IsString()
-  dueDate?: string;
+  @Type(() => Date)
+  @IsDate()
+  dueDate?: Date;
 
   @IsOptional()
   @IsArray()

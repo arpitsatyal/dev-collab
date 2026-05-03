@@ -1,5 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';
-import { SearchEnginePort } from '../../common/search-engine/ports/search-engine.port';
+import { SearchEnginePort } from 'src/common/search-engine/ports/search-engine.port';
 
 @Controller('search')
 export class SearchController {

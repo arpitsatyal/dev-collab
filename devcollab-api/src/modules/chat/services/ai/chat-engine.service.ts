@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { IChatResponse, GetAiResponseRequest } from '../../../ai/interfaces/ai.interfaces';
 import { ChatContextService } from './chat-context.service';
 import { ChatIntentService } from './chat-intent.service';
-import { ChatConversationalHandler } from '../../handlers/conversational.handler';
-import { ChatWorkspaceQueryHandler } from '../../handlers/workspace-query.handler';
+import { ChatConversationalHandler } from 'src/modules/chat/handlers/conversational.handler';
+import { ChatWorkspaceQueryHandler } from 'src/modules/chat/handlers/workspace-query.handler';
+import { GetAiResponseRequest } from 'src/modules/ai/interfaces';
+import { IChatResponse } from 'src/modules/chat/interfaces/ai-chat.interface';
 
 @Injectable()
 export class ChatEngineService {

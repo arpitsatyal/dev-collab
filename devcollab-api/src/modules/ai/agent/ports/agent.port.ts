@@ -1,4 +1,4 @@
-import type { IAiResult } from '../../interfaces/ai.interfaces';
+import type { IAiResult } from 'src/modules/ai/interfaces/ai.interfaces';
 import { BaseMessage } from '@langchain/core/messages';
 import { AgentRunOptions } from '../interfaces/agent.interfaces';
 

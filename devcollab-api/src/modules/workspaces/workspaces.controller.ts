@@ -17,7 +17,7 @@ import {
   TogglePinDto,
 } from './dto/workspaces.dto';
 import { CurrentUser } from '../users/user.decorator';
-import type { User } from '../../common/drizzle/schema';
+import type { User } from 'src/common/drizzle/schema';
 
 @Controller('workspaces')
 export class WorkspacesController {

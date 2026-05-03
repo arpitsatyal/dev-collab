@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { StringOutputParser } from '@langchain/core/output_parsers';
-import { WorkspaceRepository } from '../../workspaces/repositories/workspace.repository';
-import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
+import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
+import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
 import { LlmGateway } from '../llms/ports/llm.port';
 import type {
   AnalyzeWorkItemRequest,

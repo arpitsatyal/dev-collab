@@ -1,10 +1,10 @@
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { SearchHit } from './retrieval.port';
 import type { IAiResult } from '../interfaces/ai.interfaces';
+import { LlmModel } from '../llms/interfaces/llm.types';
 
 export abstract class GenerationPort {
   abstract generateAnswer(
-    llm: BaseChatModel,
+    llm: LlmModel,
     prompt: string,
     context: string,
     filteredResults: SearchHit[],

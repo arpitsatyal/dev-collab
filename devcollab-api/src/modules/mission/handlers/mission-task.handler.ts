@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Subject, concatMap, from } from 'rxjs';
-import { AgentEvents } from '../../ai/agent/enums/agent-events.enum';
-import { AgentActionEvent } from '../../ai/agent/interfaces/agent.interfaces';
+import { AgentEvents } from 'src/modules/ai/agent/enums/agent-events.enum';
+import { AgentActionEvent } from 'src/modules/ai/agent/interfaces/agent.interfaces';
 import { MissionService } from '../services/mission.service';
 
 @Injectable()

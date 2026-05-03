@@ -8,10 +8,10 @@ import {
   SearchHit,
   SearchDocument,
 } from '../ports/retrieval.port';
-import { WorkspaceRepository } from '../../workspaces/repositories/workspace.repository';
-import { WorkItemRepository } from '../../work-items/repositories/work-item.repository';
-import { SnippetRepository } from '../../snippets/repositories/snippet.repository';
-import { DocRepository } from '../../docs/repositories/doc.repository';
+import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
+import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
+import { SnippetRepository } from 'src/modules/snippets/repositories/snippet.repository';
+import { DocRepository } from 'src/modules/docs/repositories/doc.repository';
 
 @Injectable()
 export class RetrievalService implements RetrievalPort {

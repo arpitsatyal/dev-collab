@@ -15,17 +15,14 @@ export class ChatService {
   async ask(request: GetAiResponseRequest) {
     const { chatId, question, filters } = request;
 
-    // 1. Persist User Message
     await this.messageService.saveUserMessage(chatId, question);
 
-    // 2. Get AI reasoning and response
     const { answer } = await this.chatEngineService.getAIResponse({
       chatId,
       question,
       filters,
     });
 
-    // 3. Persist AI Message
     await this.messageService.saveAiMessage(chatId, answer);
 
     return { answer };

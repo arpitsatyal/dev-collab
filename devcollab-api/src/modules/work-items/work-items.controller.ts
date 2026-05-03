@@ -18,7 +18,7 @@ import {
   GetDueSoonQueryDto,
 } from './dto/work-items-query.dto';
 import { CurrentUser } from '../users/user.decorator';
-import type { User } from '../../common/drizzle/schema';
+import type { User } from 'src/common/drizzle/schema';
 
 @Controller('work-items')
 export class WorkItemsController {

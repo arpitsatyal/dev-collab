@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AgentPort } from '../../ai/agent/ports/agent.port';
+import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
-import { QueuePort } from '../../queue/ports/queue.port';
-import { QueueType } from '../../queue/enums/queue-type.enum';
+import { QueuePort } from 'src/modules/queue/ports/queue.port';
+import { QueueType } from 'src/modules/queue/enums/queue-type.enum';
 import { MissionPromptsService } from './mission-prompts.service';
 import { MissionService } from './mission.service';
 

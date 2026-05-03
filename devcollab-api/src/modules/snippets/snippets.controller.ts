@@ -2,11 +2,11 @@ import { Controller, Get, Post, Patch, Body, Param } from '@nestjs/common';
 import { SnippetsService } from './snippets.service';
 import { SnippetsCreateDto, SnippetsUpdateDto } from './dto/snippets.dto';
 import { CurrentUser } from '../users/user.decorator';
-import type { User } from '../../common/drizzle/schema';
+import type { User } from 'src/common/drizzle/schema';
 
 @Controller('workspaces/:workspaceId/snippets')
 export class SnippetsController {
-  constructor(private snippetsService: SnippetsService) {}
+  constructor(private snippetsService: SnippetsService) { }
 
   @Get()
   async getSnippets(@Param('workspaceId') workspaceId: string) {

@@ -2,7 +2,7 @@ export interface CreateSnippetRequest {
   title: string;
   content: string;
   language: string;
-  extension: string;
+  extension?: string;
   workspaceId: string;
   authorId: string;
 }
