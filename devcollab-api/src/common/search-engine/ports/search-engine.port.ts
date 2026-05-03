@@ -1,8 +1,10 @@
+import { SearchHit, SearchOptions } from '../interfaces/search.interfaces';
+
 export abstract class SearchEnginePort {
   /**
    * Performs a keyword search across indexed documents.
    */
-  abstract search(query: string): Promise<any[]>;
+  abstract search(query: string, options?: SearchOptions): Promise<SearchHit[]>;
 
   /**
    * Syncs a single document to the search index.
