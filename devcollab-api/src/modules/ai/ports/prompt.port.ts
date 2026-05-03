@@ -1,5 +1,4 @@
-import { BaseMessage } from '@langchain/core/messages';
-import type { ChatScope } from '../interfaces/ai.types';
+import type { ChatScope, LlmMessage } from 'src/modules/ai/interfaces/ai.types';
 
 export abstract class PromptPort {
   abstract constructPrompt(
@@ -11,15 +10,15 @@ export abstract class PromptPort {
     history: string,
     question: string,
     workspaceId?: string,
-  ): BaseMessage[];
+  ): LlmMessage[];
   abstract buildIntentClassificationPrompt(
     question: string,
     history: string,
     inWorkspace?: boolean,
-  ): BaseMessage[];
+  ): LlmMessage[];
   abstract buildConversationalMessages(
     history: string,
     question: string,
     scope?: ChatScope,
-  ): BaseMessage[];
+  ): LlmMessage[];
 }

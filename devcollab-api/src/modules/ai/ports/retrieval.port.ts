@@ -1,4 +1,4 @@
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
+import { LlmModel } from 'src/modules/ai/llms/interfaces/llm.types';
 
 export interface SearchMetadata {
   type?: string;
@@ -20,7 +20,7 @@ export interface SearchHit {
 export abstract class RetrievalPort {
   abstract generateQueryVariations(
     query: string,
-    llm: BaseChatModel,
+    llm: LlmModel,
   ): Promise<string[]>;
   abstract performHybridSearch(
     queries: string[],

@@ -39,10 +39,9 @@ export class WorkspacesService implements WorkspaceActionsPort {
   }
 
   async addNewWorkspace(request: CreateWorkspaceRequest) {
-    const { title, description, user } = request;
+    const { user, ...rest } = request;
     const workspace = await this.workspaceRepo.create({
-      title,
-      description,
+      ...rest,
       ownerId: user.id,
     });
 

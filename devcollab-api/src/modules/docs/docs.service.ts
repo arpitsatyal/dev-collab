@@ -25,13 +25,12 @@ export class DocsService {
   }
 
   async createDoc(request: CreateDocRequest) {
-    const { workspaceId, label, content } = request;
-    const normalizedContent = this.normalizeContent(content);
+    const { content, ...rest } = request;
+
     const doc = await this.docRepo.create({
-      label,
-      workspaceId,
+      ...rest,
       roomId: `docs_${uuidv4()}`,
-      ...(normalizedContent !== undefined && { content: normalizedContent }),
+      content: this.normalizeContent(content),
     });
 
     await this.syncPort.publishSyncEvent('doc', doc);
@@ -39,11 +38,12 @@ export class DocsService {
   }
 
   async updateDoc(request: UpdateDocRequest) {
-    const { id, content } = request;
-    const normalizedContent = this.normalizeContent(content);
+    const { id, content, ...rest } = request;
+
     const updated = await this.docRepo.update(id, {
+      ...rest,
+      content: this.normalizeContent(content),
       updatedAt: new Date(),
-      ...(normalizedContent !== undefined && { content: normalizedContent }),
     });
 
     if (!updated) throw new NotFoundException('Doc not found');

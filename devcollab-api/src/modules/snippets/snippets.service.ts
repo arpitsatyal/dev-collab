@@ -25,30 +25,17 @@ export class SnippetsService {
   }
 
   async createSnippet(request: CreateSnippetRequest) {
-    const { workspaceId, authorId, title, language, content, extension } =
-      request;
-    const snippet = await this.snippetRepo.create({
-      title,
-      language,
-      content,
-      extension,
-      authorId,
-      workspaceId,
-    });
+    const snippet = await this.snippetRepo.create(request);
 
     await this.syncPort.publishSyncEvent('snippet', snippet);
     return snippet;
   }
 
   async updateSnippet(request: UpdateSnippetRequest) {
-    const { id, title, language, content, extension, lastEditedById } = request;
+    const { id, ...data } = request;
 
     const updated = await this.snippetRepo.update(id, {
-      ...(title && { title }),
-      ...(language && { language }),
-      ...(content && { content }),
-      ...(extension && { extension }),
-      ...(lastEditedById && { lastEditedById }),
+      ...data,
       updatedAt: new Date(),
     });
 

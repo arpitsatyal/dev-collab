@@ -35,29 +35,13 @@ export class WorkItemsService {
   }
 
   async createWorkItem(request: CreateWorkItemRequest) {
-    const {
-      workspaceId,
-      authorId,
-      title,
-      description,
-      dueDate,
-      status,
-      assignedToId,
-      snippetIds,
-    } = request;
+    const { status = 'TODO', ...data } = request;
 
     const workItem = await this.workItemRepo.create({
-      title,
-      description,
-      dueDate: dueDate ? new Date(dueDate) : undefined,
-      status: (status as WorkItemStatus) ?? 'TODO',
-      workspaceId,
-      assignedToId,
-      authorId,
-      snippetIds,
+      ...data,
+      status,
     });
 
-    // Notify assignee if present
     if (workItem.assignedToId) {
       const assignee = await this.userRepo.findById(workItem.assignedToId);
 
@@ -78,6 +62,16 @@ export class WorkItemsService {
 
     await this.syncPort.publishSyncEvent('workItem', workItem);
     return workItem;
+  }
+
+  async updateWorkItem(request: any) {
+    const { id, ...data } = request;
+    const updated = await this.workItemRepo.update(id, data);
+
+    if (!updated) throw new NotFoundException('Work item not found');
+
+    await this.syncPort.publishSyncEvent('workItem', updated);
+    return updated;
   }
 
   async updateStatus(request: UpdateWorkItemStatusRequest) {

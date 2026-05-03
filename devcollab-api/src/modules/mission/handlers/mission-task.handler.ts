@@ -29,10 +29,6 @@ export class MissionTaskHandler {
     this.eventQueue.next(event);
   }
 
-  /**
-   * Internal processor for agent events.
-   * Translates generic AI actions into Mission-specific database records.
-   */
   private async processAgentAction(event: AgentActionEvent) {
     const { metadata, type, label, payload, callId } = event;
     const missionId = metadata?.missionId;
