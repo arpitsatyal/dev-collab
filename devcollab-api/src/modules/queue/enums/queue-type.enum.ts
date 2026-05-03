@@ -1,4 +1,4 @@
 export enum QueueType {
   DEFAULT = 'DEFAULT',
-  MISSION = 'MISSION',
+  MISSION = 'MISSION'
 }

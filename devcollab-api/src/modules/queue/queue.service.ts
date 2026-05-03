@@ -15,7 +15,7 @@ export class QueueService implements QueuePort {
   ) {
     this.queueUrls = {
       [QueueType.DEFAULT]: this.configService.getOrThrow<string>('QUEUE_URL'),
-      [QueueType.MISSION]: this.configService.getOrThrow<string>('MISSION_QUEUE_URL'),
+      [QueueType.MISSION]: this.configService.getOrThrow<string>('MISSION_QUEUE_URL')
     };
   }
 
