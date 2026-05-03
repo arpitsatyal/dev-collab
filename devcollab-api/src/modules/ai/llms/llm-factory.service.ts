@@ -111,36 +111,42 @@ export class LlmFactoryService implements LlmGateway {
     }) as LlmRunnable;
   }
 
+  /**
+   * Helper to execute a provider task with resilience and automatic type casting.
+   */
+  private async executeTask<T extends LlmRunnable>(
+    taskType: LlmTaskType,
+    recipe: (provider: LlmProviderPort) => T,
+  ): Promise<T> {
+    const model = await this.withProviderLogic(
+      (provider) => recipe(provider),
+      taskType,
+    );
+    return model as unknown as T;
+  }
+
   async getReasoningLLM(): Promise<LlmModel> {
-    return (await this.withProviderLogic(
-      (provider) => provider.create(LlmTaskType.REASONING),
-      LlmTaskType.REASONING,
-    )) as LlmModel;
+    return this.executeTask(LlmTaskType.REASONING, (p) => p.create(LlmTaskType.REASONING));
   }
 
   async getSpeedyLLM(): Promise<LlmModel> {
-    return (await this.withProviderLogic(
-      (provider) => provider.create(LlmTaskType.SPEEDY),
-      LlmTaskType.SPEEDY,
-    )) as LlmModel;
+    return this.executeTask(LlmTaskType.SPEEDY, (p) => p.create(LlmTaskType.SPEEDY));
   }
 
   async getReasoningStructuredLLM(
     schema: LlmStructuredSchema,
     name: string,
   ): Promise<StructuredLlm> {
-    return (await this.withProviderLogic(
-      (provider) => provider.create(LlmTaskType.STRUCTURED).withStructuredOutput(schema, { name }),
-      LlmTaskType.STRUCTURED,
-    )) as StructuredLlm;
+    return this.executeTask(LlmTaskType.STRUCTURED, (p) =>
+      p.create(LlmTaskType.STRUCTURED).withStructuredOutput(schema, { name }),
+    );
   }
 
   async getReasoningToolBoundLLM(
     tools: StructuredTool[],
   ): Promise<ToolBoundLlm> {
-    return (await this.withProviderLogic(
-      (provider) => provider.create(LlmTaskType.TOOL_BOUND).bindTools(tools),
-      LlmTaskType.TOOL_BOUND,
-    )) as ToolBoundLlm;
+    return this.executeTask(LlmTaskType.TOOL_BOUND, (p) =>
+      p.create(LlmTaskType.TOOL_BOUND).bindTools(tools),
+    );
   }
 }

@@ -4,7 +4,7 @@ import { WorkspacesController } from './workspaces.controller';
 import { SyncEventModule } from 'src/common/sync-events/sync-event.module';
 import { GithubClient } from './adapters/github.client';
 import { SourceCodePort } from './ports/source-code.port';
-import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
+import { WorkspaceActionsPort } from './ports/workspace-actions.port';
 
 @Module({
   imports: [SyncEventModule],
@@ -16,4 +16,4 @@ import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
   controllers: [WorkspacesController],
   exports: [WorkspacesService, WorkspaceActionsPort],
 })
-export class WorkspacesModule {}
+export class WorkspacesModule { }

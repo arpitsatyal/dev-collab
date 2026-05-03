@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AgentPort } from '../../ai/ports/agent.port';
+import { AgentPort } from '../../ai/agent/ports/agent.port';
 import { HumanMessage } from '@langchain/core/messages';
 import { QueuePort } from '../../queue/ports/queue.port';
 import { QueueType } from '../../queue/enums/queue-type.enum';

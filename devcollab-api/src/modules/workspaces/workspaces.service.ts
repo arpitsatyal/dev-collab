@@ -4,7 +4,6 @@ import { WorkspaceRepository } from './repositories/workspace.repository';
 import { WorkspaceImportRepository } from './repositories/workspace-import.repository';
 import { SourceCodePort } from './ports/source-code.port';
 import { WorkspaceFileProcessor } from './utils/workspace-file.processor';
-import { WorkspaceActionsPort } from 'src/common/ports/workspace-actions.port';
 import type {
   CreateWorkspaceRequest,
   GetWorkspacesRequest,
@@ -12,6 +11,7 @@ import type {
   TogglePinRequest,
   UserContext,
 } from './interfaces/workspaces.interfaces';
+import { WorkspaceActionsPort } from './ports/workspace-actions.port';
 
 @Injectable()
 export class WorkspacesService implements WorkspaceActionsPort {

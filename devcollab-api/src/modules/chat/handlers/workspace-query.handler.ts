@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
-import { AgentPort } from 'src/modules/ai/ports/agent.port';
+import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';

@@ -5,7 +5,7 @@ import { RetrievalPort } from '../../../ai/ports/retrieval.port';
 import { GenerationPort } from '../../../ai/ports/generation.port';
 import { LlmGateway } from '../../../ai/llms/ports/llm.port';
 import { MessageService } from 'src/modules/message/message.service';
-import { AgentPort } from '../../../ai/ports/agent.port';
+import { AgentPort } from '../../../ai/agent/ports/agent.port';
 
 describe('ChatEngineService', () => {
   let service: ChatEngineService;
