@@ -9,19 +9,11 @@ export class AuthService implements AuthPort {
     private readonly usersService: UsersService
   ) { }
 
-  async validateSocialUser(profileData: ValidateSocialUserRequest) {
-    const { email, name, provider, providerId, image } = profileData;
+  async validateSocialUser(request: ValidateSocialUserRequest) {
 
-    let user = await this.usersService.findByEmail(email);
-
+    let user = await this.usersService.findByEmail(request.email);
     if (!user) {
-      user = await this.usersService.createUser({
-        email,
-        name,
-        provider,
-        providerId,
-        image,
-      });
+      user = await this.usersService.createUser(request);
     }
 
     return user;
