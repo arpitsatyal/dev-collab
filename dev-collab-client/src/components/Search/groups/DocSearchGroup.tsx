@@ -1,65 +1,38 @@
 import React, { useMemo } from "react";
-import { useRouter } from "next/router";
 import { IconFileText } from "@tabler/icons-react";
-import { useAppDispatch } from "../../../store/hooks";
-import { setWorkspacesOpen } from "../../../store/slices/workspaceSlice";
-import { useWorkspaceCacheUpdater } from "../../../hooks/useWorkspaceCacheUpdater";
 import CollapsibleActionsGroup from "../CollapsibleActionsGroup";
 import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { getDisplayTitle } from "../../../utils/search";
-import { DocWithWorkspace, TypedItems } from "../../../types";
+import { TypedItem, TypedItems } from "../../../types";
+
+import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
 
 export const DocSearchGroup = () => {
-  const { workspaces, matchedResults, isSearchLoading, addRecentItems } =
+  const { workspaces, matchedResults, isSearchLoading } =
     useSpotlightSearchContext();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const updateQueryData = useWorkspaceCacheUpdater();
+  const { handleItemClick } = useSearchItemHandler();
+
+  const mapDocToDataItem = (doc: TypedItem<"doc">): DataItem => ({
+    id: doc.id,
+    title: getDisplayTitle(doc),
+    icon: <IconFileText size={24} stroke={1.5} />,
+    onClick: () =>
+      handleItemClick(doc, `/workspaces/${doc.workspaceId}/docs/${doc.id}`),
+    groupLabel: "Documents",
+    meta: {
+      workspaceTitle:
+        workspaces?.find((w) => w.id === doc.workspaceId)?.title ?? "",
+    },
+  });
 
   const items = useMemo(() => {
-    const apiDocs =
-      !isSearchLoading && matchedResults?.length > 0
-        ? (matchedResults.filter(
-            (apiResult: TypedItems) => apiResult.type === "doc",
-          ) as DocWithWorkspace[])
-        : [];
+    if (isSearchLoading || !matchedResults?.length) return [];
 
-    return apiDocs.map(
-      (doc) =>
-        ({
-          id: doc.id,
-          title: getDisplayTitle({ ...doc, type: "doc" } as TypedItems),
-          icon: <IconFileText size={24} stroke={1.5} />,
-          onClick: () => {
-            const isWorkspaceLoaded = workspaces?.find(
-              (loaded) => loaded.id === doc.workspaceId,
-            );
-            const workspace = doc.workspace;
-            if (!isWorkspaceLoaded && workspace) {
-              updateQueryData(doc.workspaceId, workspace);
-            }
-            dispatch(setWorkspacesOpen(true));
-            addRecentItems([{ ...doc, type: "doc" } as TypedItems]);
-            router.push(`/workspaces/${doc.workspaceId}/docs/${doc.id}`);
-          },
-          groupLabel: "Documents",
-          meta: {
-            workspaceTitle:
-              workspaces?.find((workspace) => workspace.id === doc.workspaceId)
-                ?.title ?? "",
-          },
-        }) as DataItem,
-    );
-  }, [
-    workspaces,
-    matchedResults,
-    isSearchLoading,
-    addRecentItems,
-    dispatch,
-    router,
-    updateQueryData,
-  ]);
+    return matchedResults
+      .filter((res: TypedItems): res is TypedItem<"doc"> => res.type === "doc")
+      .map(mapDocToDataItem);
+  }, [workspaces, matchedResults, isSearchLoading, handleItemClick]);
 
   if (!items.length) return null;
 

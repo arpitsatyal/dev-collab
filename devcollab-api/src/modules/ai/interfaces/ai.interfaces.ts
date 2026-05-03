@@ -1,5 +1,3 @@
-import { ChatScope } from './ai.types';
-
 export interface IAiResult {
   answer: string;
   sources?: string[];
@@ -27,15 +25,6 @@ export interface SuggestSnippetFilenameRequest {
 
 export interface SuggestWorkItemsRequest {
   workspaceId: string;
-}
-
-export interface HandleConversationalParams {
-  context: IChatContext;
-  scope: ChatScope;
-}
-
-export interface HandleWorkspaceQueryParams {
-  context: IChatContext;
 }
 
 export interface GetAIResponseWithToolsParams {

@@ -5,16 +5,6 @@ export interface CreateMissionRequest {
   goal: string;
 }
 
-export interface MissionLog {
-  id: string;
-  missionId: string;
-  stepId?: string;
-  type: string;
-  message: string;
-  payload?: any;
-  sequence: Date;
-}
-
 export interface PushLogRequest {
   missionId: string;
   message: string;
@@ -34,4 +24,14 @@ export interface UpdateStepStatusRequest {
   id: string;
   missionId: string;
   status: MissionStepStatus;
+}
+
+export interface MissionLog {
+  id: string;
+  missionId: string;
+  stepId?: string;
+  type: string;
+  message: string;
+  payload?: any;
+  sequence: Date;
 }

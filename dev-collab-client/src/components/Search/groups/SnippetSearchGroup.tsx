@@ -1,79 +1,58 @@
 import React, { useMemo } from "react";
-import { useRouter } from "next/router";
-import { useAppDispatch, useAppSelector } from "../../../store/hooks";
-import { setWorkspacesOpen } from "../../../store/slices/workspaceSlice";
-import { useWorkspaceCacheUpdater } from "../../../hooks/useWorkspaceCacheUpdater";
+import { useAppSelector } from "../../../store/hooks";
 import CollapsibleActionsGroup from "../CollapsibleActionsGroup";
 import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { filterByQuery, getDisplayTitle } from "../../../utils/search";
-import { Snippet, WorkspaceWithPin, TypedItems } from "../../../types";
+import { TypedItem, TypedItems } from "../../../types";
 import FileIcon from "../../shared/FileIcon";
 
+import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
+
 export const SnippetSearchGroup = () => {
-  const { query, workspaces, matchedResults, isSearchLoading, addRecentItems } =
+  const { query, workspaces, matchedResults, isSearchLoading } =
     useSpotlightSearchContext();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const updateQueryData = useWorkspaceCacheUpdater();
+  const { handleItemClick } = useSearchItemHandler();
 
   const snippets = Object.values(
     useAppSelector((state) => state.snippet.loadedSnippets),
   ).flat();
 
+  const mapSnippetToDataItem = (snippet: TypedItem<"snippet">): DataItem => ({
+    id: snippet.id,
+    title: getDisplayTitle(snippet),
+    icon: <FileIcon snippet={snippet} />,
+    onClick: () =>
+      handleItemClick(
+        snippet,
+        `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
+      ),
+    groupLabel: "Snippets",
+    meta: {
+      workspaceTitle:
+        workspaces?.find((w) => w.id === snippet.workspaceId)?.title ?? "",
+    },
+  });
+
   const items = useMemo(() => {
-    const localSnippets = filterByQuery(snippets, query, false, (s) => s.title);
+    const localTyped: TypedItem<"snippet">[] = filterByQuery(
+      snippets,
+      query,
+      false,
+      (s) => s.title,
+    ).map((s) => ({ ...s, type: "snippet" }));
+
     const apiSnippets =
       !isSearchLoading && matchedResults?.length > 0
-        ? (matchedResults.filter(
-            (apiResult: TypedItems) =>
-              apiResult.type === "snippet" &&
-              !localSnippets.some((local) => local.id === apiResult.id),
-          ) as (Snippet & { workspace?: WorkspaceWithPin })[])
+        ? matchedResults.filter(
+            (res: TypedItems): res is TypedItem<"snippet"> =>
+              res.type === "snippet" &&
+              !localTyped.some((local) => local.id === res.id),
+          )
         : [];
 
-    const combined = [...localSnippets, ...apiSnippets];
-
-    return combined.map(
-      (snippet) =>
-        ({
-          id: snippet.id,
-          title: getDisplayTitle({ ...snippet, type: "snippet" } as TypedItems),
-          icon: <FileIcon snippet={snippet} />,
-          onClick: () => {
-            const isWorkspaceLoaded = workspaces?.find(
-              (loaded) => loaded.id === snippet.workspaceId,
-            );
-            const workspace = (snippet as any).workspace;
-            if (!isWorkspaceLoaded && workspace) {
-              updateQueryData(snippet.workspaceId, workspace);
-            }
-            dispatch(setWorkspacesOpen(true));
-            addRecentItems([{ ...snippet, type: "snippet" } as TypedItems]);
-            router.push(
-              `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
-            );
-          },
-          groupLabel: "Snippets",
-          meta: {
-            workspaceTitle:
-              workspaces?.find(
-                (workspace) => workspace.id === snippet.workspaceId,
-              )?.title ?? "",
-          },
-        }) as DataItem,
-    );
-  }, [
-    query,
-    snippets,
-    workspaces,
-    matchedResults,
-    isSearchLoading,
-    addRecentItems,
-    dispatch,
-    router,
-    updateQueryData,
-  ]);
+    return [...localTyped, ...apiSnippets].map(mapSnippetToDataItem);
+  }, [query, snippets, workspaces, matchedResults, isSearchLoading, handleItemClick]);
 
   if (!items.length) return null;
 

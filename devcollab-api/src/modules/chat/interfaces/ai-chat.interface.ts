@@ -1,3 +1,5 @@
+import { ChatScope } from "src/modules/ai/interfaces";
+
 export interface IChatContext {
   chatId: string;
   question: string;
@@ -16,4 +18,12 @@ export interface IChatResponse {
     isValid: boolean;
     warning: string | null;
   };
+}
+export interface HandleConversationalParams {
+  context: IChatContext;
+  scope: ChatScope;
+}
+
+export interface HandleWorkspaceQueryParams {
+  context: IChatContext;
 }
