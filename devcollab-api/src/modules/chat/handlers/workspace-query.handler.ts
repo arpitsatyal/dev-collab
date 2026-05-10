@@ -58,7 +58,7 @@ export class ChatWorkspaceQueryHandler {
       workspaceId,
     );
 
-    const result = await this.agentPort.runAgentGraph(
+    const result = await this.agentPort.execute(
       messages,
       workspaceId,
       { threadId: params.chatId },

@@ -8,7 +8,7 @@ export class GraphPersistenceService implements OnModuleInit, OnModuleDestroy {
   private pool: Pool;
   private saver: PostgresSaver;
 
-  constructor(private configService: ConfigService) {}
+  constructor(private configService: ConfigService) { }
 
   async onModuleInit() {
     this.pool = new Pool({
@@ -16,7 +16,7 @@ export class GraphPersistenceService implements OnModuleInit, OnModuleDestroy {
     });
 
     this.saver = new PostgresSaver(this.pool);
-    
+
     // Initialize the saver (creates necessary tables if they don't exist)
     await this.saver.setup();
     console.log('PostgresSaver (LangGraph) setup successful.');

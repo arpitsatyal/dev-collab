@@ -8,11 +8,12 @@ import { ChatWorkspaceQueryHandler } from './handlers/workspace-query.handler';
 import { ChatEngineService } from './services/ai/chat-engine.service';
 import { AiCoreModule } from '../ai/ai-core.module';
 import { AgentModule } from '../ai/agent/agent.module';
+import { LangGraphModule } from '../ai/langgraph/langgraph.module';
 import { ToolsModule } from '../ai/tools/tools.module';
 import { MessageModule } from '../message/message.module';
 
 @Module({
-  imports: [AiCoreModule, AgentModule, ToolsModule, MessageModule],
+  imports: [AiCoreModule, AgentModule, LangGraphModule, ToolsModule, MessageModule],
   providers: [
     ChatService,
     ChatContextService,

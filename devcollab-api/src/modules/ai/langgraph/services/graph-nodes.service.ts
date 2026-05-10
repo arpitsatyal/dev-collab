@@ -1,60 +1,45 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
-import { Annotation } from '@langchain/langgraph';
+import { BaseMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AgentEvents } from '../enums/agent-events.enum';
-import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult } from '../interfaces/agent.interfaces';
+import { AgentRunnableConfig, AgentNodeResult } from '../../agent/interfaces/agent.interfaces';
 import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
-import { AgentStateUtils } from '../utils/agent-state.utils';
-
-export const AgentState = Annotation.Root({
-  messages: Annotation<BaseMessage[]>({
-    reducer: (x, y) => x.concat(y),
-    default: () => [],
-  }),
-  iterationCount: Annotation<number>({
-    reducer: (x, y) => y,
-    default: () => 0,
-  }),
-});
+import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
+import { AgentEventsService } from '../../agent/services/agent-events.service';
+import { GraphState } from '../state/graph.state';
 
 @Injectable()
-export class AgentNodesService {
-  private readonly logger = new Logger(AgentNodesService.name);
+export class GraphNodesService {
+  private readonly logger = new Logger(GraphNodesService.name);
 
-  constructor(private readonly eventEmitter: EventEmitter2) { }
+  constructor(private readonly agentEvents: AgentEventsService) { }
 
   /**
    * Node: Agent/Model Reasoning
    */
   async callModel(
-    state: typeof AgentState.State,
+    state: typeof GraphState.State,
     llm: ToolBoundLlm,
     config: AgentRunnableConfig,
   ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
 
-    this.eventEmitter.emit(
-      AgentEvents.ACTION,
-      new AgentActionEvent(
-        config.configurable || {},
-        'REASONING_START',
-        'AI is reasoning...',
-      ),
+    this.agentEvents.emitAction(
+      config.configurable || {},
+      'REASONING_START',
+      'AI is reasoning...',
     );
 
     const response = await llm.invoke(state.messages);
-    return { 
+    return {
       messages: [response],
       iterationCount: (state.iterationCount || 0) + 1
     };
   }
 
   /**
-   * Node: Mission-Aware Tool Execution
+   * Node: Tool Execution
    */
   async callTools(
-    state: typeof AgentState.State,
+    state: typeof GraphState.State,
     toolNode: ToolNode,
     config: AgentRunnableConfig,
   ): Promise<AgentNodeResult> {
@@ -86,15 +71,12 @@ export class AgentNodesService {
     config: AgentRunnableConfig,
   ) {
     for (const tc of toolCalls) {
-      this.eventEmitter.emit(
-        AgentEvents.ACTION,
-        new AgentActionEvent(
-          config.configurable || {},
-          type,
-          `Tool: ${tc.name}`,
-          tc.id,
-          { tool: tc.name },
-        ),
+      this.agentEvents.emitAction(
+        config.configurable || {},
+        type,
+        `Tool: ${tc.name}`,
+        tc.id,
+        { tool: tc.name },
       );
     }
   }

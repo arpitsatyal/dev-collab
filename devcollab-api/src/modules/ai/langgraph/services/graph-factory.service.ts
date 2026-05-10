@@ -1,20 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import {
-  Annotation,
-  StateGraph,
-} from '@langchain/langgraph';
+import { StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { AgentNodesService, AgentState } from './agent-nodes.service';
 import { StructuredTool } from '@langchain/core/tools';
-import { AgentStateUtils } from '../utils/agent-state.utils';
-import { AgentRunnableConfig } from '../interfaces/agent.interfaces';
 import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
+import { GraphNodesService } from './graph-nodes.service';
 import { GraphPersistenceService } from './graph-persistence.service';
+import { GraphState } from '../state/graph.state';
+import { AgentRunnableConfig } from '../../agent/interfaces/agent.interfaces';
+import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
 
 @Injectable()
-export class AgentGraphFactoryService {
+export class GraphFactoryService {
   constructor(
-    private readonly nodesService: AgentNodesService,
+    private readonly nodesService: GraphNodesService,
     private readonly persistenceService: GraphPersistenceService,
   ) { }
 
@@ -28,14 +26,14 @@ export class AgentGraphFactoryService {
       console.log('SUCCESS: Graph compiled with persistent checkpointer.');
     }
 
-    const graph = new StateGraph(AgentState)
+    const graph = new StateGraph(GraphState)
       .addNode('agent', (state, config: AgentRunnableConfig) =>
         this.nodesService.callModel(state, llm, config),
       )
       .addNode('tools', (state, config: AgentRunnableConfig) =>
         this.nodesService.callTools(state, toolNode, config),
       )
-      .addNode('pause', () => ({ })) // Explicit pause node
+      .addNode('pause', () => ({})) // Explicit pause node
       .addEdge('__start__', 'agent')
       .addConditionalEdges(
         'agent',

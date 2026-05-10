@@ -2,7 +2,7 @@ import { BaseMessage } from "@langchain/core/messages";
 import { RunnableConfig } from '@langchain/core/runnables';
 
 export interface AgentConfigurable extends Record<string, any> {
-  missionId?: string;
+  contextId?: string;
   workspaceId?: string;
   thread_id?: string;
 }

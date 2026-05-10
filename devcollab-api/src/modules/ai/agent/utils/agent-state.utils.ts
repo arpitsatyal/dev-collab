@@ -9,7 +9,8 @@ export class AgentStateUtils {
   /**
    * Returns the absolute last message in the sequence.
    */
-  static getLastMessage(messages: BaseMessage[]): BaseMessage | undefined {
+
+  private static getLastMessage(messages: BaseMessage[]): BaseMessage | undefined {
     if (!messages.length) return undefined;
     return messages[messages.length - 1];
   }

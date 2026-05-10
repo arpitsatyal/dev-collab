@@ -68,12 +68,12 @@ export class MissionRunnerService {
         initialMessages = [steeringPrompt, new HumanMessage(mission.goal)];
       }
 
-      const result = await this.agentPort.runAgentGraph(
+      const result = await this.agentPort.execute(
         initialMessages,
         mission.workspaceId,
         {
           threadId: id,
-          configurable: { missionId: id },
+          configurable: { contextId: id },
           autoApprove,
         },
       );
