@@ -4,15 +4,15 @@ import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentRunnableConfig, AgentNodeResult } from '../types/orchestrator.types';
 import { ToolBoundLlm } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
-import { AgentEventsService } from 'src/modules/ai/services/agent-events.service';
-import { AgentActionType } from '../../agent/enums/agent.enums';
+import { EventBusService } from 'src/common/events/event-bus.service';
+import { AgentActionType } from 'src/common/events/agent-events.enums';
 import { GraphState } from '../state/graph.state';
 
 @Injectable()
 export class GraphNodesService {
   private readonly logger = new Logger(GraphNodesService.name);
 
-  constructor(private readonly agentEvents: AgentEventsService) { }
+  constructor(private readonly eventBus: EventBusService) { }
 
   /**
    * Node: Agent/Model Reasoning
@@ -23,7 +23,7 @@ export class GraphNodesService {
     config: AgentRunnableConfig,
   ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
 
-    this.agentEvents.emitAction(
+    this.eventBus.emitAgentAction(
       config.configurable || {},
       AgentActionType.REASONING_START,
       'AI is reasoning...',
@@ -68,7 +68,7 @@ export class GraphNodesService {
     config: AgentRunnableConfig,
   ) {
     for (const tc of toolCalls) {
-      this.agentEvents.emitAction(
+      this.eventBus.emitAgentAction(
         config.configurable || {},
         type,
         `Tool: ${tc.name}`,

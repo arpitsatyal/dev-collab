@@ -1,11 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
-import { IAiMessage } from 'src/modules/ai/types/ai.types';
+import { IAiMessage, IAiResult } from 'src/modules/ai/types/ai.types';
 import { LangChainConversionUtils } from 'src/modules/ai/orchestrator/utils/langchain-conversion.utils';
 import { AiConfig } from 'src/modules/ai/ai.config';
 import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { ToolRegistry } from 'src/modules/ai/tools/ports/tools.port';
-import { IAiResult } from 'src/modules/ai/interfaces';
 import { AgentOrchestrator } from 'src/modules/ai/agent/ports/agent.port';
 import { AgentRunOptions } from 'src/modules/ai/agent/types/agent.types';
 import { OrchestratorStateUtils } from 'src/modules/ai/orchestrator/utils/orchestrator-state.utils';

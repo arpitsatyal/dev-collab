@@ -3,7 +3,7 @@ import { ChatContextService } from './chat-context.service';
 import { ChatIntentService } from './chat-intent.service';
 import { ChatConversationalHandler } from 'src/modules/chat/handlers/conversational.handler';
 import { ChatWorkspaceQueryHandler } from 'src/modules/chat/handlers/workspace-query.handler';
-import { GetAiResponseRequest } from 'src/modules/ai/interfaces';
+import { GetAiResponseRequest } from 'src/modules/ai/types/ai.types';
 import { IChatResponse } from 'src/modules/chat/types/ai-chat.interface';
 
 @Injectable()

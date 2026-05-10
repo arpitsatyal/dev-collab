@@ -1,13 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AgentEvents, AgentActionType } from 'src/modules/ai/agent/enums/agent.enums';
-import { AgentActionEvent, AgentConfigurable } from 'src/modules/ai/agent/types/agent.types';
+import { AgentEvents, AgentActionType } from './agent-events.enums';
+import { AgentActionEvent, AgentConfigurable } from './agent-events.types';
 
 @Injectable()
-export class AgentEventsService {
+export class EventBusService {
   constructor(private readonly eventEmitter: EventEmitter2) { }
 
-  emitAction(
+  /**
+   * Emit an agent-related action event
+   */
+  emitAgentAction(
     metadata: AgentConfigurable,
     type: AgentActionType,
     label: string,
@@ -18,5 +21,12 @@ export class AgentEventsService {
       AgentEvents.ACTION,
       new AgentActionEvent(metadata, type, label, callId, payload),
     );
+  }
+
+  /**
+   * Generic emit for any other event types
+   */
+  emit(event: string, ...values: any[]) {
+    return this.eventEmitter.emit(event, ...values);
   }
 }

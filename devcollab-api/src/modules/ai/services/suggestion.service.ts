@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
 import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
-import { LlmGateway } from '../orchestrator/llm/llm.types';
+import { GenerationPort } from '../ports/generation.port';
 import type {
   AnalyzeWorkItemRequest,
   SuggestSnippetFilenameRequest,
@@ -13,7 +13,7 @@ export class SuggestionService {
   constructor(
     private readonly workspaceRepo: WorkspaceRepository,
     private readonly workItemRepo: WorkItemRepository,
-    private readonly llmFactory: LlmGateway,
+    private readonly generationPort: GenerationPort,
   ) { }
 
   private async getWorkspaceWithContext(workspaceId: string) {
@@ -41,7 +41,6 @@ export class SuggestionService {
   async suggestWorkItems(request: SuggestWorkItemsRequest) {
     const { workspaceId } = request;
     const workspace = await this.getWorkspaceWithContext(workspaceId);
-    const llm = await this.llmFactory.getReasoningLLM();
 
     const prompt = `
 You are an AI assistant helping to propose actionable work items for a software workspace.
@@ -66,7 +65,7 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
 - category: Short area name (e.g., "Frontend", "Backend", "Security")
   `;
 
-    const output = await llm.generateText(prompt);
+    const output = await this.generationPort.generateText(prompt, 'reasoning');
     return this.parseJsonResponse<any[]>(output, []);
   }
 
@@ -74,8 +73,6 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
     const { code, language, workspaceId } = request;
 
     const workspace = await this.workspaceRepo.findById(workspaceId);
-
-    const llm = await this.llmFactory.getSpeedyLLM();
     const prompt = `
 You are generating a concise filename for a code snippet inside workspace "${workspace?.title}".
 Language: ${language || 'unknown'}
@@ -87,7 +84,7 @@ ${code.substring(0, 4000)}
 Respond with a single filename (no extension) using kebab-case. Keep it under 40 characters.
 `;
 
-    const name = await llm.generateText(prompt);
+    const name = await this.generationPort.generateText(prompt, 'speedy');
     return name.replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
   }
 
@@ -98,8 +95,6 @@ Respond with a single filename (no extension) using kebab-case. Keep it under 40
     if (!workItem) {
       throw new NotFoundException('Work item not found');
     }
-
-    const llm = await this.llmFactory.getReasoningLLM();
     const prompt = `
 You are helping break down a work item into a concise implementation plan.
 Work Item: ${workItem.title}
@@ -116,7 +111,7 @@ Return a JSON object with:
 - estimated_effort: string (e.g., "2-3 days")
 `;
 
-    const planText = await llm.generateText(prompt);
+    const planText = await this.generationPort.generateText(prompt, 'reasoning');
     return this.parseJsonResponse<Record<string, any>>(planText, {
       summary: planText,
       steps: [],

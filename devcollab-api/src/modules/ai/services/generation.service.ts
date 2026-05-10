@@ -1,12 +1,14 @@
 import { Injectable } from '@nestjs/common';
-import { LlmModel } from '../orchestrator/llm/llm.types';
-import { GenerationPort } from '../ports/generation.port';
+import { LlmGateway } from '../orchestrator/llm/llm.types';
+import { GenerationPort, GenerationTask } from '../ports/generation.port';
 import { SearchHit } from '../ports/retrieval.port';
-import { IAiResult } from '../interfaces';
+import { IAiResult } from '../types/ai.types';
 
 @Injectable()
 export class GenerationService implements GenerationPort {
-  improveResponseWithCitations(answer: string, filteredResults: SearchHit[]) {
+  constructor(private readonly llmFactory: LlmGateway) { }
+
+  private improveResponseWithCitations(answer: string, filteredResults: SearchHit[]) {
     if (filteredResults.length > 0 && !answer.includes('Source:')) {
       const sources = [
         ...new Set(
@@ -28,11 +30,16 @@ export class GenerationService implements GenerationPort {
   }
 
   async generateAnswer(
-    llm: LlmModel,
     prompt: string,
     context: string,
     filteredResults: SearchHit[],
+    task: GenerationTask = 'reasoning',
   ): Promise<IAiResult> {
+    const llm =
+      task === 'speedy'
+        ? await this.llmFactory.getSpeedyLLM()
+        : await this.llmFactory.getReasoningLLM();
+
     const answer = await llm.generateText(prompt);
 
     const improved = this.improveResponseWithCitations(answer, filteredResults);
@@ -41,5 +48,17 @@ export class GenerationService implements GenerationPort {
     );
 
     return { answer: improved, context, sources };
+  }
+
+  async generateText(
+    input: string | any[],
+    task: GenerationTask = 'reasoning',
+  ): Promise<string> {
+    const llm =
+      task === 'speedy'
+        ? await this.llmFactory.getSpeedyLLM()
+        : await this.llmFactory.getReasoningLLM();
+
+    return llm.generateText(input);
   }
 }

@@ -17,6 +17,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { WebhooksModule } from './modules/webhooks/webhooks.module';
 import { VectorStoreModule } from './common/vector-store/vector-store.module';
 import { SyncEventModule } from './common/sync-events/sync-event.module';
+import { EventsModule } from './common/events/events.module';
 import { DrizzleModule } from './common/drizzle/drizzle.module';
 import { RepositoryModule } from './common/drizzle/repository.module';
 import { LoggerMiddleware } from './common/middlewares/logger.middleware';
@@ -47,6 +48,7 @@ import { AgentModule } from './modules/ai/agent/agent.module';
     WebhooksModule,
     VectorStoreModule,
     SyncEventModule,
+    EventsModule,
     SearchEngineModule,
     SearchModule,
     MissionModule,

@@ -96,13 +96,12 @@ export class ChatWorkspaceQueryHandler {
       .join('\n\n');
 
     const fullPrompt = await this.promptPort.constructPrompt(context, history, question);
-    const answerLlm = await this.llmGateway.getSpeedyLLM();
 
     const generated = await this.generationPort.generateAnswer(
-      answerLlm,
       fullPrompt,
       context,
       filteredResults,
+      'speedy',
     );
 
     return { ...generated, validated: { isValid: true, warning: null } };

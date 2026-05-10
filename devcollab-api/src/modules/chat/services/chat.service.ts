@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { ChatRepository } from '../repositories/chat.repository';
 import { MessageService } from 'src/modules/message/message.service';
 import { ChatEngineService } from './ai/chat-engine.service';
-import { GetAiResponseRequest } from 'src/modules/ai/interfaces';
+import { GetAiResponseRequest } from 'src/modules/ai/types/ai.types';
 
 @Injectable()
 export class ChatService {
