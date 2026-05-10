@@ -1,9 +1,7 @@
 import { Select, SelectProps } from "@mantine/core";
 import React from "react";
 
-interface BaseSelectProps extends SelectProps {
-  // Custom props if needed
-}
+type BaseSelectProps = SelectProps;
 
 const BaseSelect = ({ radius = "md", ...props }: BaseSelectProps) => {
   return (

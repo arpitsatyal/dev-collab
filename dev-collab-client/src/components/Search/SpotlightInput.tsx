@@ -10,7 +10,7 @@ interface SpotlightInputProps {
   isSmallScreen: boolean;
 }
 
-const SpotlightInput: React.FC<SpotlightInputProps> = ({ isSmallScreen }) => {
+const SpotlightInput = ({ isSmallScreen }: SpotlightInputProps) => {
   return (
     <Box>
       {!isSmallScreen ? (

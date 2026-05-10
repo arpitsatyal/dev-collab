@@ -1,9 +1,7 @@
 import { Table, TableProps } from "@mantine/core";
 import React from "react";
 
-interface BaseTableProps extends TableProps {
-  // Custom props if needed
-}
+type BaseTableProps = TableProps;
 
 const BaseTable = ({
   striped = true,

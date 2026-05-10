@@ -5,6 +5,7 @@ import React, {
   useState,
   ReactNode,
 } from "react";
+import { CONFIG } from "../../lib/config";
 import apiClient from "../../lib/apiClient";
 
 // Define types compatible with what the client expects
@@ -27,8 +28,6 @@ interface AuthContextType {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
@@ -80,7 +79,7 @@ export const useAuth = () => {
 export const useSession = useAuth;
 
 export const signIn = (provider?: string) => {
-  window.location.href = `${API_BASE_URL}/api/auth/${provider || "google"}`;
+  window.location.href = `${CONFIG.API_BASE_URL}/api/auth/${provider || "google"}`;
 };
 
 export const signOut = async () => {

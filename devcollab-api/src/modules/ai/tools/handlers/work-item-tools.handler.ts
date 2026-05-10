@@ -91,31 +91,31 @@ export class WorkItemToolsHandler {
     const tools: DynamicStructuredTool[] = [];
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'get_work_items',
         description:
           'Fetch ALL work items inside a workspace. Optionally filter by title.',
-        schema: getWorkItemsSchema as any,
+        schema: getWorkItemsSchema,
         func: (args: GetWorkItemsArgs) =>
           this.handleGetWorkItems(args, workspaceId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'create_work_item',
         description: 'Create a new task or work item.',
-        schema: createWorkItemSchema as any,
+        schema: createWorkItemSchema,
         func: (args: CreateWorkItemArgs) =>
           this.handleCreateWorkItem(args, workspaceId, authorId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'update_work_item',
         description: 'Update an existing work item status.',
-        schema: updateWorkItemSchema as any,
+        schema: updateWorkItemSchema,
         func: (args: UpdateWorkItemArgs) => this.handleUpdateWorkItem(args),
       }),
     );

@@ -75,21 +75,21 @@ export class SnippetToolsHandler {
     const tools: DynamicStructuredTool[] = [];
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'get_snippets',
         description:
           'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
-        schema: getSnippetsSchema as any,
+        schema: getSnippetsSchema,
         func: (args: GetSnippetsArgs) =>
           this.handleGetSnippets(args, workspaceId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'create_snippet',
         description: 'Create a new code snippet.',
-        schema: createSnippetSchema as any,
+        schema: createSnippetSchema,
         func: (args: CreateSnippetArgs) =>
           this.handleCreateSnippet(args, workspaceId, authorId),
       }),

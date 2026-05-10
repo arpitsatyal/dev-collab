@@ -78,30 +78,30 @@ export class DocToolsHandler {
     const tools: DynamicStructuredTool[] = [];
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'get_docs',
         description:
           'Fetch ALL documentation records in a workspace. Optionally filter by label.',
-        schema: getDocsSchema as any,
+        schema: getDocsSchema,
         func: (args: GetDocsArgs) => this.handleGetDocs(args, workspaceId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'create_doc',
         description: 'Create a new documentation document.',
-        schema: createDocSchema as any,
+        schema: createDocSchema,
         func: (args: CreateDocArgs) => this.handleCreateDoc(args, workspaceId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'update_doc',
         description:
           'Update the content of an existing documentation document.',
-        schema: updateDocSchema as any,
+        schema: updateDocSchema,
         func: (args: UpdateDocArgs) => this.handleUpdateDoc(args),
       }),
     );

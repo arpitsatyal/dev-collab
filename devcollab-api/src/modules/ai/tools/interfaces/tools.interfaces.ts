@@ -10,6 +10,10 @@ export interface SearchWorkspacesArgs {
   query?: string;
 }
 
+export interface GetWorkspaceOverviewArgs {
+  workspaceId?: string;
+}
+
 export interface GetSnippetsArgs {
   titleFilter?: string;
   workspaceId?: string;
@@ -26,8 +30,8 @@ export interface GetWorkItemsArgs {
 }
 
 export interface SemanticSearchArgs {
-  query: string;
-  workspaceId?: string;
+  searchQuery: string;
+  workspaceId?: string | null;
 }
 
 export interface CreateSnippetArgs extends Omit<

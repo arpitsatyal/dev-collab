@@ -4,7 +4,6 @@ import CollapsibleActionsGroup from "../CollapsibleActionsGroup";
 import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { TypedItem, TypedItems } from "../../../types";
-
 import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
 
 export const WorkItemSearchGroup = () => {

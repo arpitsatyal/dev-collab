@@ -1,9 +1,7 @@
 import { Modal, ModalProps } from "@mantine/core";
 import React from "react";
 
-interface BaseModalProps extends ModalProps {
-  // Custom props if needed
-}
+type BaseModalProps = ModalProps;
 
 const BaseModal = ({
   centered = true,

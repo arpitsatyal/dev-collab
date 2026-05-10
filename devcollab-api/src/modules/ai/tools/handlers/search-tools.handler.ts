@@ -18,7 +18,7 @@ export class SearchToolsHandler {
     args: SemanticSearchArgs,
     defaultId: string,
   ): Promise<string> {
-    const { query, workspaceId: overrideId } = args;
+    const { searchQuery: query, workspaceId: overrideId } = args;
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
@@ -39,22 +39,13 @@ export class SearchToolsHandler {
     const tools: DynamicStructuredTool[] = [];
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'semantic_search',
         description:
           'Perform a broad semantic search across snippets, docs, and work items.',
-        schema: semanticSearchSchema as any,
-        func: (args: {
-          searchQuery: string;
-          workspaceId?: string | null;
-        }) =>
-          this.handleSemanticSearch(
-            {
-              query: args.searchQuery,
-              workspaceId: args.workspaceId ?? undefined,
-            },
-            workspaceId,
-          ),
+        schema: semanticSearchSchema,
+        func: (args: SemanticSearchArgs) =>
+          this.handleSemanticSearch(args, workspaceId),
       }),
     );
 

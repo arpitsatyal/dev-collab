@@ -5,7 +5,6 @@ import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { getDisplayTitle } from "../../../utils/search";
 import { TypedItem, TypedItems } from "../../../types";
-
 import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
 
 export const ChatSearchGroup = () => {

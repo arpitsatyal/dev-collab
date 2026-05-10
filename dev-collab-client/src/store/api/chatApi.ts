@@ -1,8 +1,7 @@
 import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
-import { Chat, Message } from "../../types";
-
-export type ChatWithMessages = Chat & { messages?: Message[] };
+import { ApiUtils } from "../../utils/api.utils";
+import { Chat, ChatWithMessages } from "../../types";
 
 export const chatApi = createApi({
   reducerPath: "chatApi",
@@ -14,9 +13,9 @@ export const chatApi = createApi({
       providesTags: (result) =>
         result
           ? [
-              ...result.map(({ id }) => ({ type: "Chat" as const, id })),
-              { type: "Chat", id: "LIST" },
-            ]
+            ...result.map(({ id }) => ({ type: "Chat" as const, id })),
+            { type: "Chat", id: "LIST" },
+          ]
           : [{ type: "Chat", id: "LIST" }],
     }),
     getChat: builder.query<ChatWithMessages, string>({
@@ -45,17 +44,9 @@ export const chatApi = createApi({
       { chatId: string; question: string; workspaceId?: string | null }
     >({
       query: ({ chatId, question, workspaceId }) => {
-        const queryParams = new URLSearchParams();
-        if (
-          workspaceId &&
-          workspaceId !== "null" &&
-          workspaceId !== "undefined"
-        ) {
-          queryParams.append("workspaceId", workspaceId);
-        }
-        const queryString = queryParams.toString();
+        const queryString = ApiUtils.buildQueryString({ workspaceId });
         return {
-          url: `chats/${chatId}/ask${queryString ? `?${queryString}` : ""}`,
+          url: `chats/${chatId}/ask${queryString}`,
           method: "POST",
           body: { question },
         };

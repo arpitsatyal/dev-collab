@@ -4,11 +4,10 @@ import {
   FetchArgs,
   FetchBaseQueryError,
 } from "@reduxjs/toolkit/query/react";
-
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+import { CONFIG } from "../../lib/config";
 
 const rawBaseQuery = fetchBaseQuery({
-  baseUrl: `${API_BASE_URL}/api`,
+  baseUrl: `${CONFIG.API_BASE_URL}/api`,
   prepareHeaders: (headers) => {
     return headers;
   },

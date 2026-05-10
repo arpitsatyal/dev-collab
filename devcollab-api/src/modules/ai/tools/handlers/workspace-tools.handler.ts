@@ -12,6 +12,7 @@ import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import type {
   CreateWorkspaceArgs,
   SearchWorkspacesArgs,
+  GetWorkspaceOverviewArgs,
 } from '../interfaces/tools.interfaces';
 
 @Injectable()
@@ -106,31 +107,31 @@ export class WorkspaceToolsHandler {
     const tools: DynamicStructuredTool[] = [];
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'search_workspaces',
         description: 'Search for workspaces by name/title to find their IDs.',
-        schema: searchWorkspacesSchema as any,
+        schema: searchWorkspacesSchema,
         func: (args: SearchWorkspacesArgs) =>
           this.handleSearchWorkspaces(args),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'get_workspace_overview',
         description:
           'Fetch a high-level overview of everything in the workspace.',
-        schema: getWorkspaceOverviewSchema as any,
-        func: (args: { workspaceId?: string }) =>
+        schema: getWorkspaceOverviewSchema,
+        func: (args: GetWorkspaceOverviewArgs) =>
           this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
       }),
     );
 
     tools.push(
-      new DynamicStructuredTool<any>({
+      new DynamicStructuredTool({
         name: 'create_workspace',
         description: 'Create a new blank workspace.',
-        schema: createWorkspaceSchema as any,
+        schema: createWorkspaceSchema,
         func: (args: CreateWorkspaceArgs) =>
           this.handleCreateWorkspace(args, workspaceId),
       }),

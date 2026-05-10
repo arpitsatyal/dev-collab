@@ -1,9 +1,7 @@
 import { Textarea, TextareaProps } from "@mantine/core";
 import React from "react";
 
-interface BaseTextareaProps extends TextareaProps {
-  // Custom props if needed
-}
+type BaseTextareaProps = TextareaProps;
 
 const BaseTextarea = ({
   radius = "md",

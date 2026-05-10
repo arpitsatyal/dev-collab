@@ -1,7 +1,7 @@
 import { Popover, PopoverProps } from "@mantine/core";
 import React from "react";
 
-export interface BasePopoverProps extends PopoverProps {}
+export type BasePopoverProps = PopoverProps;
 
 const BasePopover = (props: BasePopoverProps) => {
   return <Popover {...props} />;

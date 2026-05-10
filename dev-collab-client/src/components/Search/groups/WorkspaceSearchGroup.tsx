@@ -5,7 +5,6 @@ import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { filterByQuery } from "../../../utils/search";
 import { TypedItem, TypedItems } from "../../../types";
-
 import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
 
 export const WorkspaceSearchGroup = () => {
@@ -35,10 +34,10 @@ export const WorkspaceSearchGroup = () => {
     const apiWorkspaces =
       !isSearchLoading && matchedResults?.length > 0
         ? matchedResults.filter(
-            (res: TypedItems): res is TypedItem<"workspace"> =>
-              res.type === "workspace" &&
-              !localTyped.some((local) => local.id === res.id),
-          )
+          (res: TypedItems): res is TypedItem<"workspace"> =>
+            res.type === "workspace" &&
+            !localTyped.some((local) => local.id === res.id),
+        )
         : [];
 
     return [...localTyped, ...apiWorkspaces].map(mapWorkspaceToDataItem);

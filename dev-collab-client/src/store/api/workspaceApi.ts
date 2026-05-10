@@ -2,6 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
 import { uniqBy } from "lodash";
 import { WorkspaceWithPin } from "../../types";
+import { WorkspaceService } from "../../services/workspace.service";
 import { RootState } from "../store";
 
 export const workspaceApi = createApi({
@@ -80,16 +81,7 @@ export const workspaceApi = createApi({
               );
               if (item) {
                 item.isPinned = isPinned;
-
-                draft.items.sort((a: WorkspaceWithPin, b: WorkspaceWithPin) => {
-                  if (a.isPinned !== b.isPinned) {
-                    return a.isPinned ? -1 : 1;
-                  }
-                  return (
-                    new Date(b.createdAt).getTime() -
-                    new Date(a.createdAt).getTime()
-                  );
-                });
+                draft.items = WorkspaceService.sortWorkspaces(draft.items);
               }
             },
           ),

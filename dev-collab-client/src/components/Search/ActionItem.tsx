@@ -19,7 +19,7 @@ interface ActionItemProps {
   item: DataItem;
 }
 
-const ActionItem: React.FC<ActionItemProps> = ({ item }) => (
+const ActionItem = ({ item }: ActionItemProps) => (
   <Spotlight.Action className={classes.noActive}>
     <Group wrap="nowrap" w="100%">
       {item.icon}

@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useAppDispatch } from "../../store/hooks";
-import { Mission, missionApi, MissionStep } from "../../store/api/missionApi";
+import { CONFIG } from "../../lib/config";
+import { missionApi } from "../../store/api/missionApi";
+import { Mission, MissionStep } from "../../types";
 
 export interface LogEntry {
   id: string;
@@ -40,8 +42,7 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
   useEffect(() => {
     if (!missionId) return;
 
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_GATEWAY_URL || 'http://localhost:4000';
-    const endpoint = `${apiUrl}/api/missions/stream/${missionId}`;
+    const endpoint = `${CONFIG.API_BASE_URL}/api/missions/stream/${missionId}`;
 
     const eventSource = new EventSource(endpoint, {
       withCredentials: true
@@ -76,13 +77,14 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
               }
               break;
 
-            case 'step_updated':
+            case 'step_updated': {
               if (!logData.payload) break;
               const stepIndex = draft.steps?.findIndex((s) => s.id === logData.payload.id);
               if (stepIndex !== undefined && stepIndex !== -1 && draft.steps) {
                 draft.steps[stepIndex] = logData.payload as MissionStep;
               }
               break;
+            }
 
             case 'status_change':
               if (logData.payload?.status) {
@@ -105,7 +107,7 @@ export const useMissionLogs = (missionId: string | undefined, mission: Mission |
     return () => {
       eventSource.close();
     };
-  }, [missionId]);
+  }, [missionId, dispatch]);
 
   return { logs, viewportRef };
 };
