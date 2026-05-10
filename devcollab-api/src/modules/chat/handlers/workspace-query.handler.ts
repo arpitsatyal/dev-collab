@@ -6,11 +6,10 @@ import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';
 import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
 import {
-  IChatContext,
-  IChatResponse,
   GetAIResponseWithToolsParams,
   GetAIResponseWithSearchParams
 } from 'src/modules/ai/interfaces';
+import { IChatContext, IChatResponse } from '../interfaces/ai-chat.interface';
 
 @Injectable()
 export class ChatWorkspaceQueryHandler {

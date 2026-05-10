@@ -6,7 +6,7 @@ import { ToolRegistry } from 'src/modules/ai/tools/ports/tools.port';
 import { IAiResult } from 'src/modules/ai/interfaces';
 import { AgentOrchestrator } from '../../agent/ports/agent.port';
 import { AgentRunOptions } from '../../agent/interfaces/agent.interfaces';
-import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
+import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { GraphFactoryService } from '../services/graph-factory.service';
 
 @Injectable()
@@ -75,15 +75,15 @@ export class LangGraphAdapter implements AgentOrchestrator {
 
   private mapFinalStateToResult(finalState: any): IAiResult {
     const messages = finalState.messages as BaseMessage[];
-    const calledTools = AgentStateUtils.getToolSequence(messages);
+    const calledTools = OrchestratorStateUtils.getToolSequence(messages);
 
     if (calledTools.length === 0) {
       this.logger.log('Response: Direct LLM (no tools used)');
     }
     this.logger.log(`Response: Tool Sequence [${calledTools.join(' -> ')}]`);
 
-    const lastAIMessage = AgentStateUtils.getLastAIMessage(messages);
-    const answer = AgentStateUtils.getContent(lastAIMessage);
+    const lastAIMessage = OrchestratorStateUtils.getLastAIMessage(messages);
+    const answer = OrchestratorStateUtils.getContent(lastAIMessage);
 
     return { answer, calledTools };
   }

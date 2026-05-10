@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { AgentRunnableConfig, AgentNodeResult } from '../../agent/interfaces/agent.interfaces';
+import { AgentRunnableConfig, AgentNodeResult } from '../interfaces/orchestrator.interfaces';
 import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
-import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
+import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { AgentEventsService } from '../../agent/services/agent-events.service';
 import { GraphState } from '../state/graph.state';
 
@@ -43,7 +43,7 @@ export class GraphNodesService {
     toolNode: ToolNode,
     config: AgentRunnableConfig,
   ): Promise<AgentNodeResult> {
-    const toolCalls = AgentStateUtils.getLastToolCalls(state.messages);
+    const toolCalls = OrchestratorStateUtils.getLastToolCalls(state.messages);
 
     // 1. Emit START events
     this.emitToolEvents('TOOL_START', toolCalls, config);

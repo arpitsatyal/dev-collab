@@ -5,7 +5,7 @@ import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
  * This encapsulates the "manual array indexing" logic to ensure
  * type safety and consistency across all nodes and edges.
  */
-export class AgentStateUtils {
+export class OrchestratorStateUtils {
   /**
    * Returns the absolute last message in the sequence.
    */

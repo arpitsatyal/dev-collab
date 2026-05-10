@@ -1,6 +1,3 @@
-import { BaseMessage } from "@langchain/core/messages";
-import { RunnableConfig } from '@langchain/core/runnables';
-
 export interface AgentConfigurable extends Record<string, any> {
   contextId?: string;
   missionId?: string;
@@ -8,18 +5,10 @@ export interface AgentConfigurable extends Record<string, any> {
   thread_id?: string;
 }
 
-export interface AgentRunnableConfig extends RunnableConfig {
-  configurable?: AgentConfigurable;
-}
-
 export interface AgentRunOptions {
   threadId: string;
   configurable?: AgentConfigurable;
   autoApprove?: boolean;
-}
-
-export interface AgentNodeResult {
-  messages: BaseMessage[];
 }
 
 export class AgentActionEvent {

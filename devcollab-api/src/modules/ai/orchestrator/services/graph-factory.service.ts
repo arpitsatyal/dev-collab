@@ -6,8 +6,8 @@ import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
 import { GraphNodesService } from './graph-nodes.service';
 import { GraphPersistenceService } from './graph-persistence.service';
 import { GraphState } from '../state/graph.state';
-import { AgentRunnableConfig } from '../../agent/interfaces/agent.interfaces';
-import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
+import { AgentRunnableConfig } from '../interfaces/orchestrator.interfaces';
+import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 
 @Injectable()
 export class GraphFactoryService {
@@ -33,7 +33,7 @@ export class GraphFactoryService {
       .addNode('tools', (state, config: AgentRunnableConfig) =>
         this.nodesService.callTools(state, toolNode, config),
       )
-      .addNode('pause', () => ({})) // Explicit pause node
+      .addNode('pause', () => ({}))
       .addEdge('__start__', 'agent')
       .addConditionalEdges(
         'agent',
@@ -43,7 +43,7 @@ export class GraphFactoryService {
             return 'pause';
           }
 
-          return AgentStateUtils.hasToolCalls(state.messages) ? 'tools' : '__end__';
+          return OrchestratorStateUtils.hasToolCalls(state.messages) ? 'tools' : '__end__';
         },
       )
       .addEdge('tools', 'agent')
