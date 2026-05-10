@@ -1,4 +1,7 @@
-import { Document } from '@langchain/core/documents';
+export interface IVectorDocument {
+  pageContent: string;
+  metadata: Record<string, any>;
+}
 
 export abstract class VectorStorePort {
   abstract syncToVectorStore(
@@ -11,5 +14,5 @@ export abstract class VectorStorePort {
     query: string,
     limit: number,
     filters?: Record<string, any>,
-  ): Promise<[Document, number][]>;
+  ): Promise<[IVectorDocument, number][]>;
 }

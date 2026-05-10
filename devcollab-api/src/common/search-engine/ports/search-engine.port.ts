@@ -1,4 +1,4 @@
-import { SearchHit, SearchOptions } from '../interfaces/search.interfaces';
+import { SearchHit, SearchOptions } from '../types/search.types';
 
 export abstract class SearchEnginePort {
   /**

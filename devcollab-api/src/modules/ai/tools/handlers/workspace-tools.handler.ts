@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { IAiTool } from '../ports/tools.port';
 import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
 import {
   createWorkspaceSchema,
@@ -13,7 +13,7 @@ import type {
   CreateWorkspaceArgs,
   SearchWorkspacesArgs,
   GetWorkspaceOverviewArgs,
-} from '../interfaces/tools.interfaces';
+} from '../types/tools.types';
 
 @Injectable()
 export class WorkspaceToolsHandler {
@@ -103,39 +103,32 @@ export class WorkspaceToolsHandler {
     }
   }
 
-  getTools(workspaceId: string): DynamicStructuredTool[] {
-    const tools: DynamicStructuredTool[] = [];
+  getTools(workspaceId: string): IAiTool[] {
+    const tools: IAiTool[] = [];
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'search_workspaces',
-        description: 'Search for workspaces by name/title to find their IDs.',
-        schema: searchWorkspacesSchema,
-        func: (args: SearchWorkspacesArgs) =>
-          this.handleSearchWorkspaces(args),
-      }),
-    );
+    tools.push({
+      name: 'search_workspaces',
+      description: 'Search for workspaces by name/title to find their IDs.',
+      schema: searchWorkspacesSchema,
+      invoke: (args: SearchWorkspacesArgs) => this.handleSearchWorkspaces(args),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'get_workspace_overview',
-        description:
-          'Fetch a high-level overview of everything in the workspace.',
-        schema: getWorkspaceOverviewSchema,
-        func: (args: GetWorkspaceOverviewArgs) =>
-          this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'get_workspace_overview',
+      description:
+        'Fetch a high-level overview of everything in the workspace.',
+      schema: getWorkspaceOverviewSchema,
+      invoke: (args: GetWorkspaceOverviewArgs) =>
+        this.handleGetWorkspaceOverview(args.workspaceId || workspaceId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'create_workspace',
-        description: 'Create a new blank workspace.',
-        schema: createWorkspaceSchema,
-        func: (args: CreateWorkspaceArgs) =>
-          this.handleCreateWorkspace(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'create_workspace',
+      description: 'Create a new blank workspace.',
+      schema: createWorkspaceSchema,
+      invoke: (args: CreateWorkspaceArgs) =>
+        this.handleCreateWorkspace(args, workspaceId),
+    });
 
     return tools;
   }

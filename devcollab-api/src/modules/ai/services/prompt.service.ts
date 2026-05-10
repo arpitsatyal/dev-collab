@@ -1,37 +1,30 @@
 import { Injectable } from '@nestjs/common';
-import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { ChatPromptTemplate } from '@langchain/core/prompts';
 import { PromptPort } from '../ports/prompt.port';
-import { ChatScope } from '../interfaces/ai.types';
+import { IAiMessage, ChatScope } from '../types/ai.types';
+import { AiMessageRole } from '../enums/ai.enums';
 
 @Injectable()
 export class PromptService implements PromptPort {
   constructPrompt(context: string, history: string, question: string) {
-    return ChatPromptTemplate.fromTemplate(
-      `
+    return `
 You are DevCollab Assistant, a friendly and insightful companion for developers. Your goal is to help the user navigate their workspace with a warm and collaborative tone. 
 
 Always provide accurate information grounded in the provided context, but present it naturally. Always ensure your response is complete and does not end abruptly. If the information is extensive, prioritize conciseness to ensure the most important points are fully articulated. Avoid listing statistics dryly; instead, weave them into a helpful narrative.
 
 Context from the workspace:
-{context}
+${context}
 
 Recent conversation:
-{history}
+${history}
 
 User question:
-{question}
+${question}
 
 If the information isn't in the context, politely let the user know and suggest what they might add to the workspace to help you answer better.
-  `.trim(),
-    ).format({
-      context,
-      history,
-      question,
-    });
+  `.trim();
   }
 
-  buildChatMessages(history: string, question: string, workspaceId?: string) {
+  buildChatMessages(history: string, question: string, workspaceId?: string): IAiMessage[] {
     let sysMsg =
       'You are DevCollab Assistant, a helpful and enthusiastic teammate. Your tone should be friendly, professional, and natural. Always ensure your response is complete and does not end abruptly. Avoid being robotic or purely formulaic.';
     if (workspaceId) {
@@ -39,10 +32,11 @@ If the information isn't in the context, politely let the user know and suggest 
     }
 
     return [
-      new SystemMessage(sysMsg),
-      new HumanMessage(
-        `Conversation history:\n${history}\n\nUser question: ${question}`,
-      ),
+      { role: AiMessageRole.SYSTEM, content: sysMsg },
+      {
+        role: AiMessageRole.USER,
+        content: `Conversation history:\n${history}\n\nUser question: ${question}`,
+      },
     ];
   }
 
@@ -50,7 +44,7 @@ If the information isn't in the context, politely let the user know and suggest 
     question: string,
     history: string,
     inWorkspace?: boolean,
-  ) {
+  ): IAiMessage[] {
     let sysMsg =
       'Classify the user intent based on the current question and conversation history.\n\n' +
       'INTENT:\n' +
@@ -68,8 +62,8 @@ If the information isn't in the context, politely let the user know and suggest 
     }
 
     return [
-      new SystemMessage(sysMsg),
-      new HumanMessage(`History:\n${history}\n\nCurrent Question: ${question}`),
+      { role: AiMessageRole.SYSTEM, content: sysMsg },
+      { role: AiMessageRole.USER, content: `History:\n${history}\n\nCurrent Question: ${question}` },
     ];
   }
 
@@ -77,7 +71,7 @@ If the information isn't in the context, politely let the user know and suggest 
     history: string,
     question: string,
     scope?: ChatScope,
-  ) {
+  ): IAiMessage[] {
     let userMessage = `Conversation history:\n${history}\n\nUser question: ${question}`;
 
     if (scope === 'OUT_OF_SCOPE') {
@@ -87,10 +81,11 @@ If the information isn't in the context, politely let the user know and suggest 
     }
 
     return [
-      new SystemMessage(
-        "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Always ensure your response is complete and does not end abruptly. Avoid being overly formal or robotic.",
-      ),
-      new HumanMessage(userMessage),
+      {
+        role: AiMessageRole.SYSTEM,
+        content: "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Always ensure your response is complete and does not end abruptly. Avoid being overly formal or robotic.",
+      },
+      { role: AiMessageRole.USER, content: userMessage },
     ];
   }
 }

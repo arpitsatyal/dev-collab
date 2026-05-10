@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgentEvents, AgentActionType } from '../enums/agent.enums';
-import { AgentActionEvent, AgentConfigurable } from '../interfaces/agent.interfaces';
+import { AgentActionEvent, AgentConfigurable } from '../types/agent.types';
 
 @Injectable()
 export class AgentEventsService {

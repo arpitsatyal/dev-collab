@@ -2,7 +2,7 @@ import {
   CollabAuthResponse,
   CollabCommentParams,
   CollabUser,
-} from '../interfaces/collaboration.interfaces';
+} from '../types/collaboration.types';
 
 export abstract class CollaborationPort {
   abstract authorizeRoom(

@@ -3,7 +3,7 @@ import { ChatEngineService } from './chat-engine.service';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';
-import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { MessageService } from 'src/modules/message/message.service';
 import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 

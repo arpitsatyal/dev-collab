@@ -1,7 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Pinecone } from '@pinecone-database/pinecone';
-import { PineconeStore } from '@langchain/pinecone';
-import { Document } from '@langchain/core/documents';
 import { PineconeInferenceEmbeddings } from './pinecone-adapter';
 import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import {
@@ -40,13 +38,27 @@ export class VectorStoreService implements VectorStorePort {
     query: string,
     limit: number,
     filters?: Record<string, any>,
-  ): Promise<[Document, number][]> {
+  ): Promise<[any, number][]> {
     const pineconeIndex = this.client.index(this.indexName);
-    const vectorStore = await PineconeStore.fromExistingIndex(this.embeddings, {
-      pineconeIndex,
+    const queryVector = await this.embeddings.embedQuery(query);
+
+    const result = await pineconeIndex.query({
+      vector: queryVector,
+      topK: limit,
+      includeMetadata: true,
+      filter: filters,
     });
 
-    return vectorStore.similaritySearchWithScore(query, limit, filters as any);
+    return (result.matches || []).map((match) => {
+      const { text, ...metadata } = match.metadata || {};
+      return [
+        {
+          pageContent: (text as string) || '',
+          metadata: metadata || {},
+        },
+        match.score || 0,
+      ];
+    }) as [any, number][];
   }
 
   async syncToVectorStore(

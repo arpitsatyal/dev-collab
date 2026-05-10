@@ -3,7 +3,7 @@ import { Liveblocks } from '@liveblocks/node';
 import axios from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { CollaborationPort } from './ports/collaboration.port';
-import { CollabAuthResponse, CollabCommentParams, CollabUser } from './interfaces/collaboration.interfaces';
+import { CollabAuthResponse, CollabCommentParams, CollabUser } from './types/collaboration.types';
 
 @Injectable()
 export class LiveblocksAdapter implements CollaborationPort {

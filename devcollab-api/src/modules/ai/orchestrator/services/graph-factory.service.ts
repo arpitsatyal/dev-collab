@@ -2,11 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { StructuredTool } from '@langchain/core/tools';
-import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
+import { ToolBoundLlm } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { GraphNodesService } from './graph-nodes.service';
 import { GraphPersistenceService } from './graph-persistence.service';
 import { GraphState } from '../state/graph.state';
-import { AgentRunnableConfig } from '../interfaces/orchestrator.interfaces';
+import { AgentRunnableConfig } from '../types/orchestrator.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 
 @Injectable()

@@ -1,13 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { StringOutputParser } from '@langchain/core/output_parsers';
 import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
 import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
-import { LlmGateway } from '../llms/ports/llm.port';
+import { LlmGateway } from '../orchestrator/llm/llm.types';
 import type {
   AnalyzeWorkItemRequest,
   SuggestSnippetFilenameRequest,
   SuggestWorkItemsRequest,
-} from '../interfaces/ai.interfaces';
+} from '../types/ai.types';
 
 @Injectable()
 export class SuggestionService {
@@ -67,7 +66,7 @@ Return 3 concrete work items with a short rationale. Respond in JSON array with 
 - category: Short area name (e.g., "Frontend", "Backend", "Security")
   `;
 
-    const output = await llm.pipe(new StringOutputParser()).invoke(prompt);
+    const output = await llm.generateText(prompt);
     return this.parseJsonResponse<any[]>(output, []);
   }
 
@@ -88,7 +87,7 @@ ${code.substring(0, 4000)}
 Respond with a single filename (no extension) using kebab-case. Keep it under 40 characters.
 `;
 
-    const name = await llm.pipe(new StringOutputParser()).invoke(prompt);
+    const name = await llm.generateText(prompt);
     return name.replace(/[^a-zA-Z0-9-_]/g, '').toLowerCase();
   }
 
@@ -117,7 +116,7 @@ Return a JSON object with:
 - estimated_effort: string (e.g., "2-3 days")
 `;
 
-    const planText = await llm.pipe(new StringOutputParser()).invoke(prompt);
+    const planText = await llm.generateText(prompt);
     return this.parseJsonResponse<Record<string, any>>(planText, {
       summary: planText,
       steps: [],

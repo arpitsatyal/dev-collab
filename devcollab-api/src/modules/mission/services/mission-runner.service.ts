@@ -1,11 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
-import { HumanMessage } from '@langchain/core/messages';
+import { IAiMessage } from 'src/modules/ai/types/ai.types';
 import { QueuePort } from 'src/modules/queue/ports/queue.port';
-import { QueueType } from 'src/modules/queue/enums/queue-type.enum';
+import { QueueType } from 'src/modules/queue/enums/queue.enums';
 import { MissionPromptsService } from './mission-prompts.service';
 import { MissionService } from './mission.service';
 import { MissionStatus, MissionStepStatus } from '../enums/mission.enums';
+import { AiMessageRole } from 'src/modules/ai/enums/ai.enums';
 
 @Injectable()
 export class MissionRunnerService {
@@ -61,12 +62,12 @@ export class MissionRunnerService {
 
       // If we are resuming (messages provided), we pass them directly.
       // If it's a new run, we MUST include the steering prompt.
-      let initialMessages: any[];
+      let initialMessages: IAiMessage[];
       if (messages) {
         initialMessages = messages;
       } else {
         const steeringPrompt = this.prompts.getSteeringPrompt(mission.workspaceId);
-        initialMessages = [steeringPrompt, new HumanMessage(mission.goal)];
+        initialMessages = [steeringPrompt, { role: AiMessageRole.USER, content: mission.goal }];
       }
 
       const result = await this.agentPort.execute(

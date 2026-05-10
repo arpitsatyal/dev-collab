@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { IAiTool } from '../ports/tools.port';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import {
   createWorkItemSchema,
@@ -11,7 +11,7 @@ import type {
   CreateWorkItemArgs,
   GetWorkItemsArgs,
   UpdateWorkItemArgs,
-} from '../interfaces/tools.interfaces';
+} from '../types/tools.types';
 
 @Injectable()
 export class WorkItemToolsHandler {
@@ -87,38 +87,31 @@ export class WorkItemToolsHandler {
     }
   }
 
-  getTools(workspaceId: string, authorId: string): DynamicStructuredTool[] {
-    const tools: DynamicStructuredTool[] = [];
+  getTools(workspaceId: string, authorId: string): IAiTool[] {
+    const tools: IAiTool[] = [];
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'get_work_items',
-        description:
-          'Fetch ALL work items inside a workspace. Optionally filter by title.',
-        schema: getWorkItemsSchema,
-        func: (args: GetWorkItemsArgs) =>
-          this.handleGetWorkItems(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'get_work_items',
+      description:
+        'Fetch ALL work items inside a workspace. Optionally filter by title.',
+      schema: getWorkItemsSchema,
+      invoke: (args: GetWorkItemsArgs) => this.handleGetWorkItems(args, workspaceId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'create_work_item',
-        description: 'Create a new task or work item.',
-        schema: createWorkItemSchema,
-        func: (args: CreateWorkItemArgs) =>
-          this.handleCreateWorkItem(args, workspaceId, authorId),
-      }),
-    );
+    tools.push({
+      name: 'create_work_item',
+      description: 'Create a new task or work item.',
+      schema: createWorkItemSchema,
+      invoke: (args: CreateWorkItemArgs) =>
+        this.handleCreateWorkItem(args, workspaceId, authorId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'update_work_item',
-        description: 'Update an existing work item status.',
-        schema: updateWorkItemSchema,
-        func: (args: UpdateWorkItemArgs) => this.handleUpdateWorkItem(args),
-      }),
-    );
+    tools.push({
+      name: 'update_work_item',
+      description: 'Update an existing work item status.',
+      schema: updateWorkItemSchema,
+      invoke: (args: UpdateWorkItemArgs) => this.handleUpdateWorkItem(args),
+    });
 
     return tools;
   }

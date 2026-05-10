@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { UsersService } from 'src/modules/users/users.service';
 import { AuthPort } from './ports/auth.port';
-import { ValidateSocialUserRequest } from './interfaces/auth.interfaces';
+import { ValidateSocialUserRequest } from './types/auth.types';
 
 @Injectable()
 export class AuthService implements AuthPort {

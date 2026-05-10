@@ -1,4 +1,4 @@
-import { QueueType } from '../enums/queue-type.enum';
+import { QueueType } from '../enums/queue.enums';
 
 export abstract class QueuePort {
   abstract sendMessage(messageBody: object, type?: QueueType): Promise<void>;

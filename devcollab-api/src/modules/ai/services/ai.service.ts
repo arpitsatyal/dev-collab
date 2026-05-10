@@ -5,7 +5,7 @@ import {
   AnalyzeWorkItemRequest,
   SuggestSnippetFilenameRequest,
   SuggestWorkItemsRequest,
-} from '../interfaces/ai.interfaces';
+} from '../types/ai.types';
 
 @Injectable()
 export class AiService {

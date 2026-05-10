@@ -1,15 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BaseMessage } from '@langchain/core/messages';
+import { LlmMessage } from 'src/modules/ai/types/ai.types';
 import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';
-import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import {
   GetAIResponseWithToolsParams,
   GetAIResponseWithSearchParams
 } from 'src/modules/ai/interfaces';
-import { IChatContext, IChatResponse } from '../interfaces/ai-chat.interface';
+import { IChatContext, IChatResponse } from '../types/ai-chat.interface';
 
 @Injectable()
 export class ChatWorkspaceQueryHandler {
@@ -51,7 +51,7 @@ export class ChatWorkspaceQueryHandler {
     const { history, question, workspaceId } = params;
     this.logger.log(`LangGraph: Processing with tools for workspace ${workspaceId}`);
 
-    const messages: BaseMessage[] = this.promptPort.buildChatMessages(
+    const messages: LlmMessage[] = this.promptPort.buildChatMessages(
       history,
       question,
       workspaceId,

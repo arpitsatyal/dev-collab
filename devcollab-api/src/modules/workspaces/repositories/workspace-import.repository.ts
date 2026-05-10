@@ -5,7 +5,7 @@ import { v4 as uuid } from 'uuid';
 import type {
   DocImportData,
   SnippetImportData,
-} from '../interfaces/workspaces.interfaces';
+} from '../types/workspaces.types';
 
 @Injectable()
 export class WorkspaceImportRepository {

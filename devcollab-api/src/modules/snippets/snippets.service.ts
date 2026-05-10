@@ -4,7 +4,7 @@ import { SnippetRepository } from './repositories/snippet.repository';
 import type {
   CreateSnippetRequest,
   UpdateSnippetRequest,
-} from './interfaces/snippets.interfaces';
+} from './types/snippets.types';
 
 @Injectable()
 export class SnippetsService {

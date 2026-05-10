@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Subject, concatMap, from } from 'rxjs';
 import { AgentEvents, AgentActionType } from 'src/modules/ai/agent/enums/agent.enums';
-import { AgentActionEvent } from 'src/modules/ai/agent/interfaces/agent.interfaces';
+import { AgentActionEvent } from 'src/modules/ai/agent/types/agent.types';
 import { MissionService } from '../services/mission.service';
 import { MissionStepStatus } from '../enums/mission.enums';
 

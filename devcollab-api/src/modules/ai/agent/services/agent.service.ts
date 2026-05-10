@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AgentOrchestrator, AgentPort } from '../ports/agent.port';
-import { LlmMessage } from 'src/modules/ai/interfaces/ai.types';
-import { AgentRunOptions } from '../interfaces/agent.interfaces';
+import { LlmMessage } from 'src/modules/ai/types/ai.types';
+import { AgentRunOptions } from '../types/agent.types';
 import { IAiResult } from 'src/modules/ai/interfaces';
 
 @Injectable()

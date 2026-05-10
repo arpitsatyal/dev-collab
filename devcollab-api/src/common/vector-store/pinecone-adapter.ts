@@ -1,18 +1,16 @@
-import { Embeddings, EmbeddingsParams } from '@langchain/core/embeddings';
 import { Pinecone } from '@pinecone-database/pinecone';
 
-export interface PineconeInferenceEmbeddingsParams extends EmbeddingsParams {
+export interface PineconeInferenceEmbeddingsParams {
   apiKey?: string;
   model?: string;
 }
 
-export class PineconeInferenceEmbeddings extends Embeddings {
+export class PineconeInferenceEmbeddings {
   apiKey: string;
   model: string;
   client: Pinecone;
 
   constructor(params?: PineconeInferenceEmbeddingsParams) {
-    super(params ?? {});
     this.apiKey = params?.apiKey || '';
     if (!this.apiKey) throw new Error('Pinecone API key is required');
     this.model = params?.model || 'multilingual-e5-large';

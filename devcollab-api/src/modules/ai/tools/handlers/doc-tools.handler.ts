@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { IAiTool } from '../ports/tools.port';
 import { DocsService } from 'src/modules/docs/docs.service';
 import {
   createDocSchema,
@@ -10,7 +10,7 @@ import type {
   CreateDocArgs,
   GetDocsArgs,
   UpdateDocArgs,
-} from '../interfaces/tools.interfaces';
+} from '../types/tools.types';
 
 @Injectable()
 export class DocToolsHandler {
@@ -74,37 +74,31 @@ export class DocToolsHandler {
     }
   }
 
-  getTools(workspaceId: string): DynamicStructuredTool[] {
-    const tools: DynamicStructuredTool[] = [];
+  getTools(workspaceId: string): IAiTool[] {
+    const tools: IAiTool[] = [];
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'get_docs',
-        description:
-          'Fetch ALL documentation records in a workspace. Optionally filter by label.',
-        schema: getDocsSchema,
-        func: (args: GetDocsArgs) => this.handleGetDocs(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'get_docs',
+      description:
+        'Fetch ALL documentation records in a workspace. Optionally filter by label.',
+      schema: getDocsSchema,
+      invoke: (args: GetDocsArgs) => this.handleGetDocs(args, workspaceId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'create_doc',
-        description: 'Create a new documentation document.',
-        schema: createDocSchema,
-        func: (args: CreateDocArgs) => this.handleCreateDoc(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'create_doc',
+      description: 'Create a new documentation document.',
+      schema: createDocSchema,
+      invoke: (args: CreateDocArgs) => this.handleCreateDoc(args, workspaceId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'update_doc',
-        description:
-          'Update the content of an existing documentation document.',
-        schema: updateDocSchema,
-        func: (args: UpdateDocArgs) => this.handleUpdateDoc(args),
-      }),
-    );
+    tools.push({
+      name: 'update_doc',
+      description:
+        'Update the content of an existing documentation document.',
+      schema: updateDocSchema,
+      invoke: (args: UpdateDocArgs) => this.handleUpdateDoc(args),
+    });
 
     return tools;
   }

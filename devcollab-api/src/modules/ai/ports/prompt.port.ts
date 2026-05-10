@@ -1,4 +1,4 @@
-import type { ChatScope, LlmMessage } from 'src/modules/ai/interfaces/ai.types';
+import type { ChatScope, LlmMessage } from 'src/modules/ai/types/ai.types';
 
 export abstract class PromptPort {
   abstract constructPrompt(

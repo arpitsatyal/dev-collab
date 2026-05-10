@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { IAiTool } from '../ports/tools.port';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import {
   createSnippetSchema,
@@ -8,7 +8,7 @@ import {
 import type {
   CreateSnippetArgs,
   GetSnippetsArgs,
-} from '../interfaces/tools.interfaces';
+} from '../types/tools.types';
 
 @Injectable()
 export class SnippetToolsHandler {
@@ -71,29 +71,24 @@ export class SnippetToolsHandler {
     }
   }
 
-  getTools(workspaceId: string, authorId: string): DynamicStructuredTool[] {
-    const tools: DynamicStructuredTool[] = [];
+  getTools(workspaceId: string, authorId: string): IAiTool[] {
+    const tools: IAiTool[] = [];
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'get_snippets',
-        description:
-          'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
-        schema: getSnippetsSchema,
-        func: (args: GetSnippetsArgs) =>
-          this.handleGetSnippets(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'get_snippets',
+      description:
+        'Fetch ALL code snippets in a workspace. Optionally filter by title keywords.',
+      schema: getSnippetsSchema,
+      invoke: (args: GetSnippetsArgs) => this.handleGetSnippets(args, workspaceId),
+    });
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'create_snippet',
-        description: 'Create a new code snippet.',
-        schema: createSnippetSchema,
-        func: (args: CreateSnippetArgs) =>
-          this.handleCreateSnippet(args, workspaceId, authorId),
-      }),
-    );
+    tools.push({
+      name: 'create_snippet',
+      description: 'Create a new code snippet.',
+      schema: createSnippetSchema,
+      invoke: (args: CreateSnippetArgs) =>
+        this.handleCreateSnippet(args, workspaceId, authorId),
+    });
 
     return tools;
   }

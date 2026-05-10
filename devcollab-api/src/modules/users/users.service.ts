@@ -4,7 +4,7 @@ import { WorkspaceRepository } from '../workspaces/repositories/workspace.reposi
 import { SnippetRepository } from '../snippets/repositories/snippet.repository';
 import { DocRepository } from '../docs/repositories/doc.repository';
 import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
-import type { CreateUserRequest } from './interfaces/users.interfaces';
+import { CreateUserRequest } from './types/user.types';
 
 @Injectable()
 export class UsersService {

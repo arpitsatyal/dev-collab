@@ -1,9 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { StringOutputParser } from '@langchain/core/output_parsers';
-import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
-import { IChatContext, IChatResponse } from '../interfaces/ai-chat.interface';
-import { ChatScope } from 'src/modules/ai/interfaces/ai.types';
+import { IChatContext, IChatResponse } from '../types/ai-chat.interface';
+import { ChatScope } from 'src/modules/ai/types/ai.types';
 
 @Injectable()
 export class ChatConversationalHandler {
@@ -27,9 +26,7 @@ export class ChatConversationalHandler {
     );
 
     const conversationalLlm = await this.llmGateway.getSpeedyLLM();
-    const answer = await conversationalLlm
-      .pipe(new StringOutputParser())
-      .invoke(messages);
+    const answer = await conversationalLlm.generateText(messages);
 
     return {
       answer,

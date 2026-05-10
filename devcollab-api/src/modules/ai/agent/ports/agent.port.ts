@@ -1,6 +1,6 @@
-import type { IAiResult } from 'src/modules/ai/interfaces/ai.interfaces';
-import { LlmMessage } from 'src/modules/ai/interfaces/ai.types';
-import { AgentRunOptions } from '../interfaces/agent.interfaces';
+import type { IAiResult } from 'src/modules/ai/types/ai.types';
+import { LlmMessage } from 'src/modules/ai/types/ai.types';
+import { AgentRunOptions } from '../types/agent.types';
 
 export abstract class AgentPort {
   abstract execute(

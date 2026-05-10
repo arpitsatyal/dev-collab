@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MissionStatus, MissionStepStatus } from '../enums/mission.enums';
 import { Subject } from 'rxjs';
-import { AddStepRequest, CreateMissionRequest, MissionLog, PushLogRequest, UpdateStepStatusRequest } from '../interfaces/mission.interfaces';
+import { AddStepRequest, CreateMissionRequest, MissionLog, PushLogRequest, UpdateStepStatusRequest } from '../types/mission.types';
 import { MissionRepository } from '../repositories/mission.repository';
 import { MissionStepRepository } from '../repositories/mission-step.repository';
 import { MissionLogRepository } from '../repositories/mission-log.repository';

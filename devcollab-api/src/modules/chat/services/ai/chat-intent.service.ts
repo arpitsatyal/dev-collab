@@ -1,9 +1,9 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
-import { IintentResult, IntentClassifierLlm } from 'src/modules/ai/interfaces/ai.types';
+import { IintentResult, IntentClassifierLlm } from 'src/modules/ai/types/ai.types';
 import { IntentSchema } from 'src/modules/ai/schemas';
-import { IChatContext } from '../../interfaces/ai-chat.interface';
+import { IChatContext } from '../../types/ai-chat.interface';
 
 @Injectable()
 export class ChatIntentService {

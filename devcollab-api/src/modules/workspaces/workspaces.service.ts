@@ -10,7 +10,7 @@ import type {
   ImportRepositoryRequest,
   TogglePinRequest,
   UserContext,
-} from './interfaces/workspaces.interfaces';
+} from './types/workspaces.types';
 import { WorkspaceActionsPort } from './ports/workspace-actions.port';
 
 @Injectable()

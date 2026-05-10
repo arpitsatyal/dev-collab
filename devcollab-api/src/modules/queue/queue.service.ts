@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { QueuePort } from './ports/queue.port';
 import { QueueProviderPort } from './ports/queue-provider.port';
-import { QueueType } from './enums/queue-type.enum';
+import { QueueType } from './enums/queue.enums';
 import { ConfigService } from '@nestjs/config';
 
 @Injectable()

@@ -31,7 +31,7 @@ import { AgentModule } from './modules/ai/agent/agent.module';
     ConfigModule.forRoot({ isGlobal: true }),
     EventEmitterModule.forRoot(),
     DrizzleModule,
-    RepositoryModule, // Global Repositories
+    RepositoryModule,
     AuthModule,
     WorkspacesModule,
     UsersModule,

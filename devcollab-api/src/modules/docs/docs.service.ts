@@ -5,7 +5,7 @@ import { DocRepository } from './repositories/doc.repository';
 import type {
   CreateDocRequest,
   UpdateDocRequest,
-} from './interfaces/docs.interfaces';
+} from './types/docs.types';
 
 @Injectable()
 export class DocsService {

@@ -3,7 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { Meilisearch, Index } from 'meilisearch';
 import { SearchEnginePort } from './ports/search-engine.port';
 
-import { SearchHit, SearchOptions } from './interfaces/search.interfaces';
+import { SearchHit, SearchOptions } from './types/search.types';
 
 @Injectable()
 export class MeiliSearchAdapter implements SearchEnginePort, OnModuleInit {

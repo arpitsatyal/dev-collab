@@ -1,13 +1,15 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
+import { IAiMessage } from 'src/modules/ai/types/ai.types';
+import { LangChainConversionUtils } from 'src/modules/ai/orchestrator/utils/langchain-conversion.utils';
 import { AiConfig } from 'src/modules/ai/ai.config';
-import { LlmGateway } from 'src/modules/ai/llms/ports/llm.port';
+import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { ToolRegistry } from 'src/modules/ai/tools/ports/tools.port';
 import { IAiResult } from 'src/modules/ai/interfaces';
-import { AgentOrchestrator } from '../../agent/ports/agent.port';
-import { AgentRunOptions } from '../../agent/interfaces/agent.interfaces';
-import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
-import { GraphFactoryService } from '../services/graph-factory.service';
+import { AgentOrchestrator } from 'src/modules/ai/agent/ports/agent.port';
+import { AgentRunOptions } from 'src/modules/ai/agent/types/agent.types';
+import { OrchestratorStateUtils } from 'src/modules/ai/orchestrator/utils/orchestrator-state.utils';
+import { GraphFactoryService } from 'src/modules/ai/orchestrator/services/graph-factory.service';
 
 @Injectable()
 export class LangGraphAdapter implements AgentOrchestrator {
@@ -24,14 +26,17 @@ export class LangGraphAdapter implements AgentOrchestrator {
    * Orchestrates the agentic execution using LangGraph.
    */
   async run(
-    messages: BaseMessage[],
+    messages: IAiMessage[],
     workspaceId: string,
     options: AgentRunOptions,
   ): Promise<IAiResult> {
+    const lcMessages = LangChainConversionUtils.toLangChainMessages(messages);
     const tools = await this.toolService.getTools(workspaceId);
+    const lcTools = LangChainConversionUtils.toLangChainTools(tools);
+
     const llmWithTools = await this.llmGateway.getReasoningToolBoundLLM(tools);
 
-    const app = this.graphFactory.createGraph(llmWithTools, tools);
+    const app = this.graphFactory.createGraph(llmWithTools, lcTools);
 
     const thread_id = options.threadId || workspaceId;
     const config = {
@@ -43,7 +48,7 @@ export class LangGraphAdapter implements AgentOrchestrator {
       },
     };
 
-    const input = messages.length > 0 ? { messages } : null;
+    const input = lcMessages.length > 0 ? { messages: lcMessages } : null;
     let finalState = await app.invoke(input, config);
 
     let state = await app.getState(config);

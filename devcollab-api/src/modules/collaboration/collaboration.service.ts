@@ -3,7 +3,7 @@ import { CollaborationPort } from './ports/collaboration.port';
 import {
   CollabCommentParams,
   CollabUser,
-} from './interfaces/collaboration.interfaces';
+} from './types/collaboration.types';
 
 @Injectable()
 export class CollaborationService {

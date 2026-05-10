@@ -1,4 +1,4 @@
-import { LlmModel } from 'src/modules/ai/llms/interfaces/llm.types';
+import { LlmModel } from 'src/modules/ai/orchestrator/llm/llm.types';
 
 export interface SearchMetadata {
   type?: string;

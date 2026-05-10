@@ -1,6 +1,6 @@
 import { SearchHit } from './retrieval.port';
-import type { IAiResult } from '../interfaces/ai.interfaces';
-import { LlmModel } from '../llms/interfaces/llm.types';
+import type { IAiResult } from '../types/ai.types';
+import { LlmModel } from '../orchestrator/llm/llm.types';
 
 export abstract class GenerationPort {
   abstract generateAnswer(

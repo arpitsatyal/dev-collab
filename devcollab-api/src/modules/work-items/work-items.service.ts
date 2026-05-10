@@ -8,7 +8,7 @@ import { UserRepository } from '../users/repositories/user.repository';
 import type {
   CreateWorkItemRequest,
   UpdateWorkItemStatusRequest,
-} from './interfaces/work-items.interfaces';
+} from './types/work-items.types';
 
 @Injectable()
 export class WorkItemsService {

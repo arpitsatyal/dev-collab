@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { BaseChatModel } from '@langchain/core/language_models/chat_models';
-import { StringOutputParser } from '@langchain/core/output_parsers';
+import { LlmModel } from '../orchestrator/llm/llm.types';
 import { GenerationPort } from '../ports/generation.port';
 import { SearchHit } from '../ports/retrieval.port';
 import { IAiResult } from '../interfaces';
@@ -29,12 +28,12 @@ export class GenerationService implements GenerationPort {
   }
 
   async generateAnswer(
-    llm: BaseChatModel,
+    llm: LlmModel,
     prompt: string,
     context: string,
     filteredResults: SearchHit[],
   ): Promise<IAiResult> {
-    const answer = await llm.pipe(new StringOutputParser()).invoke(prompt);
+    const answer = await llm.generateText(prompt);
 
     const improved = this.improveResponseWithCitations(answer, filteredResults);
     const sources = filteredResults.map(

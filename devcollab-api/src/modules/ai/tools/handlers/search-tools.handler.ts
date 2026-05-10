@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
+import { IAiTool } from '../ports/tools.port';
 import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { semanticSearchSchema } from '../schema/search-tools.schema';
 import { WorkItemsService } from 'src/modules/work-items/work-items.service';
 import { DocsService } from 'src/modules/docs/docs.service';
-import type { SemanticSearchArgs } from '../interfaces/tools.interfaces';
+import type { SemanticSearchArgs } from '../types/tools.types';
 
 @Injectable()
 export class SearchToolsHandler {
@@ -35,19 +35,17 @@ export class SearchToolsHandler {
     return JSON.stringify({ snippets, workItems, docs });
   }
 
-  getTools(workspaceId: string): DynamicStructuredTool[] {
-    const tools: DynamicStructuredTool[] = [];
+  getTools(workspaceId: string): IAiTool[] {
+    const tools: IAiTool[] = [];
 
-    tools.push(
-      new DynamicStructuredTool({
-        name: 'semantic_search',
-        description:
-          'Perform a broad semantic search across snippets, docs, and work items.',
-        schema: semanticSearchSchema,
-        func: (args: SemanticSearchArgs) =>
-          this.handleSemanticSearch(args, workspaceId),
-      }),
-    );
+    tools.push({
+      name: 'semantic_search',
+      description:
+        'Perform a broad semantic search across snippets, docs, and work items.',
+      schema: semanticSearchSchema,
+      invoke: (args: SemanticSearchArgs) =>
+        this.handleSemanticSearch(args, workspaceId),
+    });
 
     return tools;
   }

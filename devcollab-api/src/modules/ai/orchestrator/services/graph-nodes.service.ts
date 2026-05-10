@@ -1,8 +1,8 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { AgentRunnableConfig, AgentNodeResult } from '../interfaces/orchestrator.interfaces';
-import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
+import { AgentRunnableConfig, AgentNodeResult } from '../types/orchestrator.types';
+import { ToolBoundLlm } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { AgentEventsService } from '../../agent/services/agent-events.service';
 import { AgentActionType } from '../../agent/enums/agent.enums';
@@ -29,7 +29,7 @@ export class GraphNodesService {
       'AI is reasoning...',
     );
 
-    const response = await llm.invoke(state.messages);
+    const response = await llm.invoke(state.messages) as BaseMessage;
     return {
       messages: [response],
       iterationCount: (state.iterationCount || 0) + 1
@@ -46,18 +46,14 @@ export class GraphNodesService {
   ): Promise<AgentNodeResult> {
     const toolCalls = OrchestratorStateUtils.getLastToolCalls(state.messages);
 
-    // 1. Emit START events
     this.emitToolEvents(AgentActionType.TOOL_START, toolCalls, config);
 
-    // 2. Execute all tools in the state
     const result = (await toolNode.invoke(state)) as AgentNodeResult;
 
-    // Log the raw result for debugging
     this.logger.log(
       `Tool Result for ${toolCalls.map((tc) => tc.name).join(', ')}: ${JSON.stringify(result.messages.map((m) => m.content))}`,
     );
 
-    // 3. Emit END events
     this.emitToolEvents(AgentActionType.TOOL_END, toolCalls, config);
 
     return result;

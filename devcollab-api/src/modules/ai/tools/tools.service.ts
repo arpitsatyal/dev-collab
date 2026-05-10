@@ -1,6 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { DynamicStructuredTool } from '@langchain/core/tools';
-import { ToolRegistry } from './ports/tools.port';
+import { ToolRegistry, IAiTool } from './ports/tools.port';
 import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
 import { SnippetToolsHandler } from './handlers/snippet-tools.handler';
 import { DocToolsHandler } from './handlers/doc-tools.handler';
@@ -21,7 +20,7 @@ export class ToolsService implements ToolRegistry {
     private readonly searchHandler: SearchToolsHandler,
   ) {}
 
-  async getTools(workspaceId: string): Promise<DynamicStructuredTool[]> {
+  async getTools(workspaceId: string): Promise<IAiTool[]> {
     try {
       // Fetch workspace owner to use as authorId for creations
       const workspace = await this.workspacesService.getWorkspace(workspaceId);
