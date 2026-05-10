@@ -63,4 +63,12 @@ export class MissionController {
       }),
     );
   }
+
+  @Post(':id/resume')
+  async resumeMission(
+    @Param('id') id: string,
+    @Body() body: { action: 'APPROVE' | 'REJECT'; feedback?: string },
+  ) {
+    return this.missionRunner.resumeMission(id, body.action, body.feedback);
+  }
 }

@@ -6,7 +6,6 @@ import { useSpotlightSearchContext } from "../SearchContext";
 import { filterByQuery, getDisplayTitle } from "../../../utils/search";
 import { TypedItem, TypedItems } from "../../../types";
 import FileIcon from "../../shared/FileIcon";
-
 import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
 
 export const SnippetSearchGroup = () => {
@@ -45,10 +44,10 @@ export const SnippetSearchGroup = () => {
     const apiSnippets =
       !isSearchLoading && matchedResults?.length > 0
         ? matchedResults.filter(
-            (res: TypedItems): res is TypedItem<"snippet"> =>
-              res.type === "snippet" &&
-              !localTyped.some((local) => local.id === res.id),
-          )
+          (res: TypedItems): res is TypedItem<"snippet"> =>
+            res.type === "snippet" &&
+            !localTyped.some((local) => local.id === res.id),
+        )
         : [];
 
     return [...localTyped, ...apiSnippets].map(mapSnippetToDataItem);

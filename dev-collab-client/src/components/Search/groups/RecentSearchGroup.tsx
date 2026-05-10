@@ -1,19 +1,17 @@
 import React, { useMemo } from "react";
-import { useRouter } from "next/router";
 import {
   IconFolder,
   IconSubtask,
   IconFileText,
   IconMessage,
 } from "@tabler/icons-react";
-import { useAppDispatch } from "../../../store/hooks";
-import { setWorkspacesOpen } from "../../../store/slices/workspaceSlice";
-import { useWorkspaceCacheUpdater } from "../../../hooks/useWorkspaceCacheUpdater";
 import CollapsibleActionsGroup from "../CollapsibleActionsGroup";
 import ActionItem, { DataItem } from "../ActionItem";
 import { useSpotlightSearchContext } from "../SearchContext";
 import { filterByQuery, getDisplayTitle } from "../../../utils/search";
 import FileIcon from "../../shared/FileIcon";
+import { useSearchItemHandler } from "../../../hooks/useSearchItemHandler";
+import { TypedItems } from "../../../types";
 
 export const RecentSearchGroup = () => {
   const {
@@ -24,136 +22,75 @@ export const RecentSearchGroup = () => {
     recentSearchOrder,
     recentItems,
   } = useSpotlightSearchContext();
-  const router = useRouter();
-  const dispatch = useAppDispatch();
-  const updateQueryData = useWorkspaceCacheUpdater();
+  const { handleItemClick } = useSearchItemHandler();
 
-  const items = useMemo(() => {
-    const hasOtherResults =
-      filterByQuery(workspaces ?? [], query)?.length > 0 ||
-      filterByQuery(snippets ?? [], query)?.length > 0 ||
-      (matchedResults && matchedResults.length > 0);
-
-    if (hasOtherResults && query.length > 0) {
-      return [];
+  const getTargetPath = (item: TypedItems): string => {
+    switch (item.type) {
+      case "workspace":
+        return `/workspaces/${item.id}`;
+      case "snippet":
+        return `/workspaces/${item.workspaceId}/snippets/${item.id}`;
+      case "workItem":
+        return `/workspaces/${item.workspaceId}/work-items`;
+      case "doc":
+        return `/workspaces/${item.workspaceId}/docs/${item.id}`;
+      case "chat":
+        return `/chats/${item.id}`;
+      default:
+        return "/";
     }
+  };
 
-    const sortedResults = [...recentItems].sort((a, b) => {
-      const aKey = `${a.type}:${a.id}`;
-      const bKey = `${b.type}:${b.id}`;
-      const aIndex = recentSearchOrder?.indexOf(aKey) ?? -1;
-      const bIndex = recentSearchOrder?.indexOf(bKey) ?? -1;
+  const getIcon = (item: TypedItems) => {
+    switch (item.type) {
+      case "workspace":
+        return <IconFolder size={24} stroke={1.5} />;
+      case "snippet":
+        return <FileIcon snippet={item} />;
+      case "workItem":
+        return <IconSubtask size={24} stroke={1.5} />;
+      case "doc":
+        return <IconFileText size={24} stroke={1.5} />;
+      case "chat":
+        return <IconMessage size={24} stroke={1.5} />;
+      default:
+        return <IconFolder />;
+    }
+  };
 
-      if (aIndex === -1 && bIndex === -1) return 0;
-      if (aIndex === -1) return 1;
-      if (bIndex === -1) return -1;
+  const sortRecentItems = (items: TypedItems[]) =>
+    [...items].sort((a, b) => {
+      const aIndex = recentSearchOrder?.indexOf(`${a.type}:${a.id}`) ?? -1;
+      const bIndex = recentSearchOrder?.indexOf(`${b.type}:${b.id}`) ?? -1;
       return aIndex - bIndex;
     });
 
-    const filteredResults = filterByQuery(sortedResults, query, true, (item) =>
-      getDisplayTitle(item),
-    );
+  const mapRecentToDataItem = (item: TypedItems): DataItem => ({
+    id: item.id,
+    title: getDisplayTitle(item),
+    description: (item as any).description ?? "-",
+    groupLabel: "Recently Searched",
+    icon: getIcon(item),
+    onClick: () => handleItemClick(item, getTargetPath(item)),
+    meta: {
+      workspaceTitle: (item as any).workspaceId
+        ? workspaces?.find((w) => w.id === (item as any).workspaceId)?.title ?? ""
+        : "",
+    },
+  });
 
-    return filteredResults.map((item) => {
-      const title = getDisplayTitle(item);
-      const baseItem = {
-        id: item.id,
-        title,
-        groupLabel: "Recently Searched",
-      };
+  const items = useMemo(() => {
+    const hasOtherResults =
+      filterByQuery(workspaces ?? [], query).length > 0 ||
+      filterByQuery(snippets ?? [], query).length > 0 ||
+      (matchedResults?.length ?? 0) > 0;
 
-      const navigateWithWorkspace = (
-        wId: string,
-        path: string,
-        wData?: any,
-      ) => {
-        const isLoaded = workspaces?.find((w) => w.id === wId);
-        if (!isLoaded && wData) {
-          updateQueryData(wId, wData);
-        }
-        dispatch(setWorkspacesOpen(true));
-        router.push(path);
-      };
+    if (hasOtherResults && query.length > 0) return [];
 
-      switch (item.type) {
-        case "workspace":
-          return {
-            ...baseItem,
-            description: item.description ?? "-",
-            icon: <IconFolder size={24} stroke={1.5} />,
-            onClick: () =>
-              navigateWithWorkspace(item.id, `/workspaces/${item.id}`, item),
-          } as DataItem;
+    const sorted = sortRecentItems(recentItems);
 
-        case "snippet":
-          return {
-            ...baseItem,
-            icon: <FileIcon snippet={item} />,
-            onClick: () =>
-              navigateWithWorkspace(
-                item.workspaceId,
-                `/workspaces/${item.workspaceId}/snippets/${item.id}`,
-                item.workspace,
-              ),
-            meta: {
-              workspaceTitle:
-                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
-            },
-          } as DataItem;
-
-        case "workItem":
-          return {
-            ...baseItem,
-            description: item.description ?? "-",
-            icon: <IconSubtask size={24} stroke={1.5} />,
-            onClick: () =>
-              navigateWithWorkspace(
-                item.workspaceId,
-                `/workspaces/${item.workspaceId}/work-items`,
-                item.workspace,
-              ),
-            meta: {
-              workspaceTitle:
-                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
-            },
-          } as DataItem;
-
-        case "doc":
-          return {
-            ...baseItem,
-            description: "-",
-            icon: <IconFileText size={24} stroke={1.5} />,
-            onClick: () =>
-              navigateWithWorkspace(
-                item.workspaceId,
-                `/workspaces/${item.workspaceId}/docs/${item.id}`,
-                item.workspace,
-              ),
-            meta: {
-              workspaceTitle:
-                workspaces?.find((w) => w.id === item.workspaceId)?.title ?? "",
-            },
-          } as DataItem;
-
-        case "chat":
-          return {
-            ...baseItem,
-            icon: <IconMessage size={24} stroke={1.5} />,
-            onClick: () => {
-              dispatch(setWorkspacesOpen(true));
-              router.push(`/chats/${item.id}`);
-            },
-          } as DataItem;
-
-        default:
-          return {
-            ...baseItem,
-            id: "unknown",
-            icon: <IconFolder />,
-            onClick: () => { },
-          } as DataItem;
-      }
-    });
+    return filterByQuery(sorted, query, true, getDisplayTitle)
+      .map(mapRecentToDataItem);
   }, [
     query,
     workspaces,
@@ -161,9 +98,7 @@ export const RecentSearchGroup = () => {
     matchedResults,
     recentItems,
     recentSearchOrder,
-    dispatch,
-    router,
-    updateQueryData,
+    handleItemClick,
   ]);
 
   if (!items.length) return null;

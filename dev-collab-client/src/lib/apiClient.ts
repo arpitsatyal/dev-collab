@@ -32,9 +32,9 @@ apiClient.interceptors.response.use(
 
     // 1. Handle Authentication Failures
     if (status === 401) {
-      // Prevent infinite redirect loops if we're already on the login page
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/login")) {
-        window.location.href = "/login";
+      // Prevent infinite redirect loops if we're already on the landing page
+      if (typeof window !== "undefined" && window.location.pathname !== "/") {
+        window.location.href = "/";
       }
     }
 

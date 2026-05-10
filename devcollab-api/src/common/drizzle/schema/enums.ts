@@ -13,6 +13,7 @@ export const missionStatusValues = [
   'PENDING',
   'RUNNING',
   'PAUSED',
+  'WAITING_FOR_USER',
   'COMPLETED',
   'FAILED',
 ] as const;

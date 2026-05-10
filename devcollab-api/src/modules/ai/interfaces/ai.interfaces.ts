@@ -3,6 +3,7 @@ export interface IAiResult {
   sources?: string[];
   context?: string;
   calledTools?: string[];
+  interrupted?: boolean;
 }
 
 export interface GetAiResponseRequest {

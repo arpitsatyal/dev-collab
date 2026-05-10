@@ -4,7 +4,7 @@ import { baseQuery } from "./baseQuery";
 export interface Mission {
   id: string;
   goal: string;
-  status: 'PENDING' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED';
+  status: 'PENDING' | 'RUNNING' | 'PAUSED' | 'WAITING_FOR_USER' | 'COMPLETED' | 'FAILED';
   workspaceId: string;
   createdAt: string;
   updatedAt: string;
@@ -57,6 +57,14 @@ export const missionApi = createApi({
       }),
       invalidatesTags: [{ type: "Mission", id: "LIST" }],
     }),
+    resumeMission: builder.mutation<Mission, { id: string; action: 'APPROVE' | 'REJECT'; feedback?: string }>({
+      query: ({ id, ...body }) => ({
+        url: `missions/${id}/resume`,
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: (result, error, { id }) => [{ type: "Mission", id }],
+    }),
   }),
 });
 
@@ -64,4 +72,5 @@ export const {
   useGetMissionsQuery,
   useGetMissionQuery,
   useCreateMissionMutation,
+  useResumeMissionMutation,
 } = missionApi;

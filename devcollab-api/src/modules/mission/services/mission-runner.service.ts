@@ -39,7 +39,7 @@ export class MissionRunnerService {
   /**
    * The actual execution logic (usually called by a background worker).
    */
-  async executeMission(id: string) {
+  async executeMission(id: string, messages?: any[]) {
     const mission = await this.missionService.getMission(id);
     if (!mission) return;
 
@@ -53,19 +53,41 @@ export class MissionRunnerService {
     try {
       await this.missionService.pushLog({
         missionId: id,
-        message: `Launching autonomous agent for goal: ${mission.goal}`,
+        message: messages && messages.length > 0
+          ? 'Resuming mission with user feedback...'
+          : `Launching autonomous agent for goal: ${mission.goal}`,
       });
 
-      const steeringPrompt = this.prompts.getSteeringPrompt(mission.workspaceId);
+      // If we are resuming (messages provided), we pass them directly.
+      // If it's a new run, we MUST include the steering prompt.
+      let initialMessages: any[];
+      if (messages) {
+        initialMessages = messages;
+      } else {
+        const steeringPrompt = this.prompts.getSteeringPrompt(mission.workspaceId);
+        initialMessages = [steeringPrompt, new HumanMessage(mission.goal)];
+      }
 
       const result = await this.agentPort.runAgentGraph(
-        [steeringPrompt, new HumanMessage(mission.goal)],
+        initialMessages,
         mission.workspaceId,
         {
           threadId: id,
           configurable: { missionId: id },
         },
       );
+
+      console.log('executeMission result', result);
+
+      if (result.interrupted) {
+        await this.missionService.updateMissionStatus(id, 'WAITING_FOR_USER');
+        await this.missionService.pushLog({
+          missionId: id,
+          message: result.answer,
+          type: 'log',
+        });
+        return;
+      }
 
       await this.missionService.addStep({
         missionId: id,
@@ -88,6 +110,26 @@ export class MissionRunnerService {
         missionId: id,
         message: `Mission failed: ${error.message}`,
       });
+    }
+  }
+
+  async resumeMission(id: string, action: 'APPROVE' | 'REJECT', feedback?: string) {
+    const mission = await this.missionService.getMission(id);
+    if (!mission) throw new Error('Mission not found');
+
+    if (mission.status !== 'WAITING_FOR_USER') {
+      throw new Error('Mission is not waiting for user approval');
+    }
+
+    await this.missionService.updateMissionStatus(id, 'RUNNING');
+
+    if (action === 'APPROVE') {
+      // Resume with empty messages to continue from checkpoint
+      return this.executeMission(id, []);
+    } else {
+      // Resume with feedback as a new HumanMessage
+      const feedbackMessage = new HumanMessage(feedback || 'I reject this plan. Please try a different approach.');
+      return this.executeMission(id, [feedbackMessage]);
     }
   }
 }

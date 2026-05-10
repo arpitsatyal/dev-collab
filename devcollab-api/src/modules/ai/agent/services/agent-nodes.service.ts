@@ -1,11 +1,23 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { AIMessage, BaseMessage, ToolMessage } from '@langchain/core/messages';
+import { Annotation } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { EventEmitter2 } from '@nestjs/event-emitter';
 import { AgentEvents } from '../enums/agent-events.enum';
 import { AgentActionEvent, AgentRunnableConfig, AgentNodeResult } from '../interfaces/agent.interfaces';
 import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
 import { AgentStateUtils } from '../utils/agent-state.utils';
-import { AgentState } from '../interfaces/agent.types';
+
+export const AgentState = Annotation.Root({
+  messages: Annotation<BaseMessage[]>({
+    reducer: (x, y) => x.concat(y),
+    default: () => [],
+  }),
+  iterationCount: Annotation<number>({
+    reducer: (x, y) => y,
+    default: () => 0,
+  }),
+});
 
 @Injectable()
 export class AgentNodesService {
@@ -17,10 +29,10 @@ export class AgentNodesService {
    * Node: Agent/Model Reasoning
    */
   async callModel(
-    state: AgentState,
+    state: typeof AgentState.State,
     llm: ToolBoundLlm,
     config: AgentRunnableConfig,
-  ): Promise<AgentNodeResult> {
+  ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
 
     this.eventEmitter.emit(
       AgentEvents.ACTION,
@@ -32,14 +44,17 @@ export class AgentNodesService {
     );
 
     const response = await llm.invoke(state.messages);
-    return { messages: [response] };
+    return { 
+      messages: [response],
+      iterationCount: (state.iterationCount || 0) + 1
+    };
   }
 
   /**
    * Node: Mission-Aware Tool Execution
    */
   async callTools(
-    state: AgentState,
+    state: typeof AgentState.State,
     toolNode: ToolNode,
     config: AgentRunnableConfig,
   ): Promise<AgentNodeResult> {

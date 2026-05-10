@@ -38,17 +38,40 @@ export class LangGraphService implements AgentPort {
     const app = this.graphFactory.createGraph(llmWithTools, tools);
 
     // 3. Invoke the Graph
-    const finalState = await app.invoke(
-      { messages },
-      {
-        recursionLimit: this.config.maxIterations,
-        configurable: {
-          workspaceId,
-          thread_id: options.threadId,
-          ...options.configurable,
-        },
+    const thread_id = options.threadId || workspaceId;
+    const config = {
+      recursionLimit: this.config.maxIterations,
+      configurable: {
+        workspaceId,
+        thread_id,
+        ...options.configurable,
       },
-    );
+    };
+
+    // If we have messages, we start/update the state. 
+    // If not, we pass null to continue from the last checkpoint (useful for simple approval).
+    const input = messages.length > 0 ? { messages } : null;
+    const finalState = await app.invoke(input, config);
+
+    // 4. Detect Interrupts
+    const state = await app.getState(config);
+    
+    if (state.next && state.next.length > 0) {
+      const isPeriodicPause = state.next.includes('pause');
+      this.logger.log(`Mission ${thread_id} interrupted for ${isPeriodicPause ? 'periodic check-in' : 'human approval'} (Next nodes: ${state.next.join(', ')})`);
+      
+      // We must map the final state to get the actual message from the agent about what tools it plans to use.
+      // This ensures we pass the "I plan to use..." text back to the frontend.
+      const interimResult = this.mapFinalStateToResult(state.values);
+
+      return {
+        answer: isPeriodicPause 
+          ? `I've reached iteration ${state.values.iterationCount}. Just checking in before I continue my reasoning.` 
+          : interimResult.answer, // Use the extracted answer containing the planned tools
+        calledTools: [],
+        interrupted: true,
+      };
+    }
 
     // 5. Parse and Return Results
     return this.mapFinalStateToResult(finalState);
