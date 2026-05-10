@@ -1,3 +1,5 @@
+import { AgentActionType } from '../enums/agent.enums';
+
 export interface AgentConfigurable extends Record<string, any> {
   contextId?: string;
   missionId?: string;
@@ -14,7 +16,7 @@ export interface AgentRunOptions {
 export class AgentActionEvent {
   constructor(
     public readonly metadata: AgentConfigurable,
-    public readonly type: 'TOOL_START' | 'TOOL_END' | 'REASONING_START' | 'REASONING_END',
+    public readonly type: AgentActionType,
     public readonly label: string,
     public readonly callId?: string,
     public readonly payload?: any,

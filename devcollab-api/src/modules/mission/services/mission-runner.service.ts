@@ -5,6 +5,7 @@ import { QueuePort } from 'src/modules/queue/ports/queue.port';
 import { QueueType } from 'src/modules/queue/enums/queue-type.enum';
 import { MissionPromptsService } from './mission-prompts.service';
 import { MissionService } from './mission.service';
+import { MissionStatus, MissionStepStatus } from '../enums/mission.enums';
 
 @Injectable()
 export class MissionRunnerService {
@@ -24,7 +25,7 @@ export class MissionRunnerService {
     const mission = await this.missionService.getMission(id);
     if (!mission) throw new Error('Mission not found');
 
-    await this.missionService.updateMissionStatus(id, 'RUNNING');
+    await this.missionService.updateMissionStatus(id, MissionStatus.RUNNING);
     await this.missionService.pushLog({
       missionId: id,
       message: 'Mission queued for execution...',
@@ -43,7 +44,7 @@ export class MissionRunnerService {
     const mission = await this.missionService.getMission(id);
     if (!mission) return;
 
-    if (mission.status === 'COMPLETED' || mission.status === 'FAILED') {
+    if (mission.status === MissionStatus.COMPLETED || mission.status === MissionStatus.FAILED) {
       this.logger.warn(
         `Mission ${id} is already in ${mission.status} state. Skipping execution.`,
       );
@@ -79,7 +80,7 @@ export class MissionRunnerService {
       );
 
       if (result.interrupted) {
-        await this.missionService.updateMissionStatus(id, 'WAITING_FOR_USER');
+        await this.missionService.updateMissionStatus(id, MissionStatus.WAITING_FOR_USER);
         await this.missionService.pushLog({
           missionId: id,
           message: result.answer,
@@ -91,20 +92,20 @@ export class MissionRunnerService {
       await this.missionService.addStep({
         missionId: id,
         label: 'Finalizing Mission',
-        status: 'COMPLETED',
+        status: MissionStepStatus.COMPLETED,
       });
 
       this.logger.log(
         `Mission ${id} finished. Result: ${result.answer.slice(0, 100)}...`,
       );
-      await this.missionService.updateMissionStatus(id, 'COMPLETED');
+      await this.missionService.updateMissionStatus(id, MissionStatus.COMPLETED);
       await this.missionService.pushLog({
         missionId: id,
         message: 'Mission completed successfully!',
       });
     } catch (error) {
       this.logger.error(`Mission ${id} failed:`, error);
-      await this.missionService.updateMissionStatus(id, 'FAILED');
+      await this.missionService.updateMissionStatus(id, MissionStatus.FAILED);
       await this.missionService.pushLog({
         missionId: id,
         message: `Mission failed: ${error.message}`,
@@ -116,11 +117,11 @@ export class MissionRunnerService {
     const mission = await this.missionService.getMission(id);
     if (!mission) throw new Error('Mission not found');
 
-    if (mission.status !== 'WAITING_FOR_USER') {
+    if (mission.status !== MissionStatus.WAITING_FOR_USER) {
       throw new Error('Mission is not waiting for user approval');
     }
 
-    await this.missionService.updateMissionStatus(id, 'RUNNING');
+    await this.missionService.updateMissionStatus(id, MissionStatus.RUNNING);
 
     if (action === 'APPROVE') {
       // Resume with empty messages to continue from checkpoint, and enable auto-approval
@@ -129,7 +130,7 @@ export class MissionRunnerService {
     } else {
       // Abort the mission
       this.logger.log(`Mission ${id} aborted by user.`);
-      await this.missionService.updateMissionStatus(id, 'FAILED');
+      await this.missionService.updateMissionStatus(id, MissionStatus.FAILED);
       await this.missionService.pushLog({
         missionId: id,
         message: `Mission aborted by user. Feedback: ${feedback || 'None'}`,

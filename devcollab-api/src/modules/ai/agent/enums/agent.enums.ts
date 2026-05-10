@@ -1,0 +1,10 @@
+export enum AgentEvents {
+  ACTION = 'agent.action',
+}
+
+export enum AgentActionType {
+  TOOL_START = 'TOOL_START',
+  TOOL_END = 'TOOL_END',
+  REASONING_START = 'REASONING_START',
+  REASONING_END = 'REASONING_END',
+}

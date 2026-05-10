@@ -55,12 +55,14 @@ export class LangGraphAdapter implements AgentOrchestrator {
       state = await app.getState(config);
     }
 
+    // Interrupted case
     if (state.next && state.next.length > 0) {
       const isPeriodicPause = state.next.includes('pause');
       this.logger.log(`Agent ${thread_id} interrupted for ${isPeriodicPause ? 'periodic check-in' : 'human approval'} (Next nodes: ${state.next.join(', ')})`);
 
       const interimResult = this.mapFinalStateToResult(state.values);
 
+      // 
       return {
         answer: isPeriodicPause
           ? `I've reached iteration ${state.values.iterationCount}. Just checking in before I continue my reasoning.`

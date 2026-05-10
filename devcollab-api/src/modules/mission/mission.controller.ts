@@ -10,6 +10,7 @@ import {
 import { MissionService } from './services/mission.service';
 import { MissionRunnerService } from './services/mission-runner.service';
 import { Observable, map, filter, concat, from, concatMap } from 'rxjs';
+import { MissionStatus } from './enums/mission.enums';
 
 @Controller('missions')
 export class MissionController {
@@ -50,7 +51,7 @@ export class MissionController {
 
     return from(this.missionService.getMission(missionId)).pipe(
       concatMap((mission) => {
-        if (mission?.status === 'COMPLETED' || mission?.status === 'FAILED') {
+        if (mission?.status === MissionStatus.COMPLETED || mission?.status === MissionStatus.FAILED) {
           return history$;
         }
 

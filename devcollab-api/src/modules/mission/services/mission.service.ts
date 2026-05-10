@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { MissionStatus } from 'src/common/drizzle/schema/enums';
+import { MissionStatus, MissionStepStatus } from '../enums/mission.enums';
 import { Subject } from 'rxjs';
 import { AddStepRequest, CreateMissionRequest, MissionLog, PushLogRequest, UpdateStepStatusRequest } from '../interfaces/mission.interfaces';
 import { MissionRepository } from '../repositories/mission.repository';
@@ -24,7 +24,7 @@ export class MissionService {
   async createMission(request: CreateMissionRequest) {
     return await this.missionRepo.create({
       ...request,
-      status: 'PENDING',
+      status: MissionStatus.PENDING,
     });
   }
 
@@ -41,7 +41,7 @@ export class MissionService {
   }
 
   async addStep(request: AddStepRequest) {
-    const { status = 'PENDING', ...data } = request;
+    const { status = MissionStepStatus.PENDING, ...data } = request;
 
     const step = await this.stepRepo.create({
       ...data,

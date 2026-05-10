@@ -69,7 +69,7 @@ export class OrchestratorStateUtils {
 
     // Standard string content
     if (typeof content === 'string') {
-      if (!content && AIMessage.isInstance(message) && message.tool_calls?.length) {
+      if (AIMessage.isInstance(message) && message.tool_calls?.length) {
         const tools = message.tool_calls.map((tc) => tc.name).join(', ');
         return `I plan to use the following tools: ${tools}`;
       }

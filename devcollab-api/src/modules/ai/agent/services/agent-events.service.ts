@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { EventEmitter2 } from '@nestjs/event-emitter';
-import { AgentEvents } from '../enums/agent-events.enum';
+import { AgentEvents, AgentActionType } from '../enums/agent.enums';
 import { AgentActionEvent, AgentConfigurable } from '../interfaces/agent.interfaces';
 
 @Injectable()
@@ -9,7 +9,7 @@ export class AgentEventsService {
 
   emitAction(
     metadata: AgentConfigurable,
-    type: 'TOOL_START' | 'TOOL_END' | 'REASONING_START' | 'REASONING_END',
+    type: AgentActionType,
     label: string,
     callId?: string,
     payload?: any,

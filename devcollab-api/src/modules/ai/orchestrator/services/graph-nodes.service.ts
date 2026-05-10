@@ -5,6 +5,7 @@ import { AgentRunnableConfig, AgentNodeResult } from '../interfaces/orchestrator
 import { ToolBoundLlm } from 'src/modules/ai/llms/interfaces/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { AgentEventsService } from '../../agent/services/agent-events.service';
+import { AgentActionType } from '../../agent/enums/agent.enums';
 import { GraphState } from '../state/graph.state';
 
 @Injectable()
@@ -24,7 +25,7 @@ export class GraphNodesService {
 
     this.agentEvents.emitAction(
       config.configurable || {},
-      'REASONING_START',
+      AgentActionType.REASONING_START,
       'AI is reasoning...',
     );
 
@@ -46,7 +47,7 @@ export class GraphNodesService {
     const toolCalls = OrchestratorStateUtils.getLastToolCalls(state.messages);
 
     // 1. Emit START events
-    this.emitToolEvents('TOOL_START', toolCalls, config);
+    this.emitToolEvents(AgentActionType.TOOL_START, toolCalls, config);
 
     // 2. Execute all tools in the state
     const result = (await toolNode.invoke(state)) as AgentNodeResult;
@@ -57,7 +58,7 @@ export class GraphNodesService {
     );
 
     // 3. Emit END events
-    this.emitToolEvents('TOOL_END', toolCalls, config);
+    this.emitToolEvents(AgentActionType.TOOL_END, toolCalls, config);
 
     return result;
   }
@@ -66,7 +67,7 @@ export class GraphNodesService {
    * Reusable helper to emit events for a batch of tool calls.
    */
   private emitToolEvents(
-    type: 'TOOL_START' | 'TOOL_END',
+    type: AgentActionType.TOOL_START | AgentActionType.TOOL_END,
     toolCalls: any[],
     config: AgentRunnableConfig,
   ) {

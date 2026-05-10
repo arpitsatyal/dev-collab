@@ -1,9 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { OnEvent } from '@nestjs/event-emitter';
 import { Subject, concatMap, from } from 'rxjs';
-import { AgentEvents } from 'src/modules/ai/agent/enums/agent-events.enum';
+import { AgentEvents, AgentActionType } from 'src/modules/ai/agent/enums/agent.enums';
 import { AgentActionEvent } from 'src/modules/ai/agent/interfaces/agent.interfaces';
 import { MissionService } from '../services/mission.service';
+import { MissionStepStatus } from '../enums/mission.enums';
 
 @Injectable()
 export class MissionTaskHandler {
@@ -37,10 +38,10 @@ export class MissionTaskHandler {
 
     try {
       switch (type) {
-        case 'REASONING_START':
+        case AgentActionType.REASONING_START:
           await this.missionService.pushLog({ missionId, message: label });
           break;
-        case 'TOOL_START': {
+        case AgentActionType.TOOL_START: {
           const mission = await this.missionService.getMission(missionId);
           const alreadyExists = mission?.steps?.some(
             (s) => (s.payload as any)?.callId === callId,
@@ -50,12 +51,12 @@ export class MissionTaskHandler {
           await this.missionService.addStep({
             missionId,
             label: `Executing ${payload?.tool || 'tool'}`,
-            status: 'RUNNING',
+            status: MissionStepStatus.RUNNING,
             payload: { callId },
           });
           break;
         }
-        case 'TOOL_END': {
+        case AgentActionType.TOOL_END: {
           const mission = await this.missionService.getMission(missionId);
           const runningStep = mission?.steps?.find(
             (s) => (s.payload as any)?.callId === callId,
@@ -64,7 +65,7 @@ export class MissionTaskHandler {
             await this.missionService.updateStepStatus({
               id: runningStep.id,
               missionId,
-              status: 'COMPLETED',
+              status: MissionStepStatus.COMPLETED,
             });
           }
           break;
