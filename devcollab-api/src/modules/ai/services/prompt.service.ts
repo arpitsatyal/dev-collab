@@ -26,9 +26,9 @@ If the information isn't in the context, politely let the user know and suggest 
 
   buildChatMessages(history: string, question: string, workspaceId?: string): IAiMessage[] {
     let sysMsg =
-      'You are DevCollab Assistant, a helpful and enthusiastic teammate. Your tone should be friendly, professional, and natural. Always ensure your response is complete and does not end abruptly. Avoid being robotic or purely formulaic.';
+      'You are DevCollab Assistant, a helpful and enthusiastic teammate. You are currently interacting with an end-user (not a developer) via a Chat Interface. Your tone should be friendly, natural, and helpful. ALWAYS speak in plain English and talk about application features. YOU ARE FORBIDDEN from mentioning internal function names or tool names (e.g., do not say "create_doc" or "search_snippets"). Instead, say "You can create a new document" or "I can search your snippets for you."';
     if (workspaceId) {
-      sysMsg += `\n\n[CONTEXT]: The user is currently in a workspace (ID: ${workspaceId}).\n\n[TONE GUIDELINE]: When summarizing tools results, don't just list counts (e.g., "5 snippets, 0 docs"). Instead, be descriptive and friendly. Talk about the project's purpose based on its title and description, and mention what's available or what's missing in a conversational way (e.g., "It looks like we're just getting started with the documentation!" or "I found some interesting code snippets for your project."). YOU ARE FORBIDDEN from guessing or using general knowledge—always use your tools first.`;
+      sysMsg += `\n\n[CONTEXT]: The user is currently in a workspace (ID: ${workspaceId}).\n\n[ACTION GUIDELINE]: You have tools to both SEARCH and ACT. If the user asks "How do I..." or a question about the app, explain the feature in plain English. Only use SEARCH tools if needed for context. DO NOT use ACTION tools unless the user explicitly commands it. NEVER mention technical tool/function names to the user.`;
     }
 
     return [
@@ -48,8 +48,8 @@ If the information isn't in the context, politely let the user know and suggest 
     let sysMsg =
       'Classify the user intent based on the current question and conversation history.\n\n' +
       'INTENT:\n' +
-      '- WORKSPACE_QUERY: Asking about data, searching, or performing actions in the workspace.\n' +
-      '- CONVERSATIONAL: Casual chat, platform help, or domain-related questions.\n\n' +
+      '- WORKSPACE_QUERY: Asking about specific data, searching code/docs, or performing actions in the current workspace.\n' +
+      '- CONVERSATIONAL: Casual chat, general help about using the platform, "how-to" questions, or broad technical discussions.\n\n' +
       'SCOPE:\n' +
       '- APP_SPECIFIC: Refers to DevCollab data (snippets, docs, work items) or platform features/onboarding.\n' +
       '- DOMAIN_KNOWLEDGE: Questions about technical terms, platforms, or concepts mentioned in the current workspace context or recent history (e.g., "lastfm" if the workspace is about a Last.fm tool).\n' +
@@ -83,7 +83,7 @@ If the information isn't in the context, politely let the user know and suggest 
     return [
       {
         role: AiMessageRole.SYSTEM,
-        content: "You are DevCollab Assistant, a friendly and helpful teammate. You specialize in DevCollab and the user's workspace. Always ensure your response is complete and does not end abruptly. Avoid being overly formal or robotic.",
+        content: "You are DevCollab Assistant, a friendly and helpful teammate. You are interacting with an end-user via a Chat Interface. Speak in plain English and talk about application features. NEVER mention internal tool/function names (like create_doc).",
       },
       { role: AiMessageRole.USER, content: userMessage },
     ];

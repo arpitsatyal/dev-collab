@@ -1,14 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LlmMessage } from 'src/modules/ai/types/ai.types';
+import { GetAIResponseWithSearchParams, GetAIResponseWithToolsParams, LlmMessage } from 'src/modules/ai/types/ai.types';
 import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';
 import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
-import {
-  GetAIResponseWithToolsParams,
-  GetAIResponseWithSearchParams
-} from 'src/modules/ai/interfaces';
 import { IChatContext, IChatResponse } from '../types/ai-chat.interface';
 
 @Injectable()
@@ -60,7 +56,10 @@ export class ChatWorkspaceQueryHandler {
     const result = await this.agentPort.execute(
       messages,
       workspaceId,
-      { threadId: params.chatId },
+      {
+        threadId: params.chatId,
+        autoApprove: true,
+      },
     );
 
     const toolsUsed = result.calledTools ?? [];
