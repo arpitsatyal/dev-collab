@@ -73,7 +73,7 @@ export class MissionRunnerService {
         mission.workspaceId,
         {
           threadId: id,
-          configurable: { contextId: id },
+          configurable: { missionId: id },
           autoApprove,
         },
       );

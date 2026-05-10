@@ -5,7 +5,7 @@ import { AgentModule } from '../agent/agent.module';
 import { GraphNodesService } from './services/graph-nodes.service';
 import { GraphFactoryService } from './services/graph-factory.service';
 import { GraphPersistenceService } from './services/graph-persistence.service';
-import { LangGraphService } from './services/langgraph.service';
+import { LangGraphAdapter } from './adapters/langgraph.adapter';
 import { AgentOrchestrator, AgentPort } from '../agent/ports/agent.port';
 import { AgentService } from '../agent/services/agent.service';
 
@@ -15,9 +15,9 @@ import { AgentService } from '../agent/services/agent.service';
     GraphNodesService,
     GraphFactoryService,
     GraphPersistenceService,
-    { provide: AgentOrchestrator, useClass: LangGraphService },
+    { provide: AgentOrchestrator, useClass: LangGraphAdapter },
     { provide: AgentPort, useClass: AgentService },
   ],
   exports: [AgentPort],
 })
-export class LangGraphModule { }
+export class OrchestratorModule { }

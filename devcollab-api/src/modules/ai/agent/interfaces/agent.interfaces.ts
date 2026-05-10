@@ -3,6 +3,7 @@ import { RunnableConfig } from '@langchain/core/runnables';
 
 export interface AgentConfigurable extends Record<string, any> {
   contextId?: string;
+  missionId?: string;
   workspaceId?: string;
   thread_id?: string;
 }

@@ -1,7 +1,7 @@
 import { MissionController } from './mission.controller';
 import { Module } from '@nestjs/common';
 import { AgentModule } from '../ai/agent/agent.module';
-import { LangGraphModule } from '../ai/langgraph/langgraph.module';
+import { OrchestratorModule } from '../ai/orchestrator/orchestrator.module';
 import { MissionService } from './services/mission.service';
 import { MissionConsumer } from './mission.consumer';
 import { QueueModule } from '../queue/queue.module';
@@ -10,7 +10,7 @@ import { MissionRunnerService } from './services/mission-runner.service';
 import { MissionTaskHandler } from './handlers/mission-task.handler';
 
 @Module({
-  imports: [AgentModule, LangGraphModule, QueueModule],
+  imports: [AgentModule, OrchestratorModule, QueueModule],
   controllers: [MissionController],
   providers: [
     MissionService,

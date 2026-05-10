@@ -7,11 +7,11 @@ import { IAiResult } from 'src/modules/ai/interfaces';
 import { AgentOrchestrator } from '../../agent/ports/agent.port';
 import { AgentRunOptions } from '../../agent/interfaces/agent.interfaces';
 import { AgentStateUtils } from '../../agent/utils/agent-state.utils';
-import { GraphFactoryService } from './graph-factory.service';
+import { GraphFactoryService } from '../services/graph-factory.service';
 
 @Injectable()
-export class LangGraphService implements AgentOrchestrator {
-  private readonly logger = new Logger(LangGraphService.name);
+export class LangGraphAdapter implements AgentOrchestrator {
+  private readonly logger = new Logger(LangGraphAdapter.name);
 
   constructor(
     private readonly llmGateway: LlmGateway,
