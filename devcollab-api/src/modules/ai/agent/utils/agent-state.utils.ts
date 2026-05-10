@@ -20,13 +20,7 @@ export class AgentStateUtils {
    */
   static getLastAIMessage(messages: BaseMessage[]): AIMessage | undefined {
     const last = this.getLastMessage(messages);
-    // Use type property check instead of instanceof to avoid version mismatch issues
-    const isAI = last && (
-      (last as any)._getType?.() === 'ai' || 
-      last.constructor.name === 'AIMessage' ||
-      (last as any).tool_calls !== undefined
-    );
-    return isAI ? (last as AIMessage) : undefined;
+    return last && AIMessage.isInstance(last) ? last : undefined;
   }
 
   /**
@@ -58,7 +52,7 @@ export class AgentStateUtils {
    */
   static getToolSequence(messages: BaseMessage[]): string[] {
     return messages
-      .filter((m) => (m as any)._getType?.() === 'tool' || m.constructor.name === 'ToolMessage')
+      .filter((m) => ToolMessage.isInstance(m))
       .map((m: any) => m.name)
       .filter(Boolean);
   }
@@ -74,8 +68,8 @@ export class AgentStateUtils {
 
     // Standard string content
     if (typeof content === 'string') {
-      if (!content && (message as AIMessage).tool_calls?.length) {
-        const tools = (message as AIMessage).tool_calls.map(tc => tc.name).join(', ');
+      if (!content && AIMessage.isInstance(message) && message.tool_calls?.length) {
+        const tools = message.tool_calls.map((tc) => tc.name).join(', ');
         return `I plan to use the following tools: ${tools}`;
       }
       return content || 'Empty response.';

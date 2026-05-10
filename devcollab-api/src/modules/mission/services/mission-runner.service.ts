@@ -39,7 +39,7 @@ export class MissionRunnerService {
   /**
    * The actual execution logic (usually called by a background worker).
    */
-  async executeMission(id: string, messages?: any[]) {
+  async executeMission(id: string, messages?: any[], autoApprove = false) {
     const mission = await this.missionService.getMission(id);
     if (!mission) return;
 
@@ -74,10 +74,9 @@ export class MissionRunnerService {
         {
           threadId: id,
           configurable: { missionId: id },
+          autoApprove,
         },
       );
-
-      console.log('executeMission result', result);
 
       if (result.interrupted) {
         await this.missionService.updateMissionStatus(id, 'WAITING_FOR_USER');
@@ -124,12 +123,18 @@ export class MissionRunnerService {
     await this.missionService.updateMissionStatus(id, 'RUNNING');
 
     if (action === 'APPROVE') {
-      // Resume with empty messages to continue from checkpoint
-      return this.executeMission(id, []);
+      // Resume with empty messages to continue from checkpoint, and enable auto-approval
+      // for the rest of the mission to avoid repeatedly asking the user.
+      return this.executeMission(id, [], true);
     } else {
-      // Resume with feedback as a new HumanMessage
-      const feedbackMessage = new HumanMessage(feedback || 'I reject this plan. Please try a different approach.');
-      return this.executeMission(id, [feedbackMessage]);
+      // Abort the mission
+      this.logger.log(`Mission ${id} aborted by user.`);
+      await this.missionService.updateMissionStatus(id, 'FAILED');
+      await this.missionService.pushLog({
+        missionId: id,
+        message: `Mission aborted by user. Feedback: ${feedback || 'None'}`,
+      });
+      return;
     }
   }
 }

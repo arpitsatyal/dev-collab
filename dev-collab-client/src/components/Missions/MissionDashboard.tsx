@@ -24,9 +24,10 @@ const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDa
   };
 
   const handleReject = async () => {
-    await resumeMission({ id: mission.id, action: "REJECT", feedback });
     setRejectModalOpen(false);
+    const currentFeedback = feedback;
     setFeedback("");
+    await resumeMission({ id: mission.id, action: "REJECT", feedback: currentFeedback });
   };
 
   return (
@@ -54,7 +55,7 @@ const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDa
       <Modal
         opened={isRejectModalOpen}
         onClose={() => setRejectModalOpen(false)}
-        title="Reject Plan & Provide Feedback"
+        title="Reject Mission"
         centered
         radius="md"
       >
@@ -68,7 +69,7 @@ const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDa
             radius="md"
           />
           <Button color="red" radius="md" onClick={handleReject} disabled={!feedback.trim()}>
-            Reject with Feedback
+            Reject
           </Button>
         </MantineStack>
       </Modal>

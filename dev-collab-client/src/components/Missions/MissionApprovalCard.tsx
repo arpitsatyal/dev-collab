@@ -18,7 +18,7 @@ const MissionApprovalCard = ({ isVisible, message, onApprove, onReject }: Missio
         {message || "The agent is waiting for your input to proceed."}
         <Group mt="md">
           <Button color="orange" size="xs" radius="md" onClick={onApprove}>Proceed</Button>
-          <Button variant="subtle" color="gray" size="xs" radius="md" onClick={onReject}>Modify Plan</Button>
+          <Button variant="subtle" color="gray" size="xs" radius="md" onClick={onReject}>Reject</Button>
         </Group>
       </Alert>
     </Box>

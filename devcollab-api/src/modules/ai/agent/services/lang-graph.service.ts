@@ -51,11 +51,19 @@ export class LangGraphService implements AgentPort {
     // If we have messages, we start/update the state. 
     // If not, we pass null to continue from the last checkpoint (useful for simple approval).
     const input = messages.length > 0 ? { messages } : null;
-    const finalState = await app.invoke(input, config);
+    let finalState = await app.invoke(input, config);
 
     // 4. Detect Interrupts
-    const state = await app.getState(config);
+    let state = await app.getState(config);
     
+    // Auto-approve loop: If the user approved the mission, we bypass future interruptions
+    // by immediately resuming the graph internally.
+    while (state.next && state.next.length > 0 && options.autoApprove) {
+      this.logger.log(`Mission ${thread_id} auto-approving interrupt for nodes: ${state.next.join(', ')}`);
+      finalState = await app.invoke(null, config);
+      state = await app.getState(config);
+    }
+
     if (state.next && state.next.length > 0) {
       const isPeriodicPause = state.next.includes('pause');
       this.logger.log(`Mission ${thread_id} interrupted for ${isPeriodicPause ? 'periodic check-in' : 'human approval'} (Next nodes: ${state.next.join(', ')})`);

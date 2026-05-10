@@ -14,6 +14,7 @@ export interface AgentRunnableConfig extends RunnableConfig {
 export interface AgentRunOptions {
   threadId: string;
   configurable?: AgentConfigurable;
+  autoApprove?: boolean;
 }
 
 export interface AgentNodeResult {
