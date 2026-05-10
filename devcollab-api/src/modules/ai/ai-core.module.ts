@@ -7,24 +7,25 @@ import { RetrievalPort } from './ports/retrieval.port';
 import { GenerationService } from './services/generation.service';
 import { PromptService } from './services/prompt.service';
 import { RetrievalService } from './services/retrieval.service';
-import { OrchestratorModule } from './orchestrator/orchestrator.module';
+import { AgentEventsService } from './services/agent-events.service';
 
 @Global()
 @Module({
-  imports: [VectorStoreModule, OrchestratorModule],
+  imports: [VectorStoreModule],
   providers: [
     AiConfig,
+    AgentEventsService,
     { provide: GenerationPort, useClass: GenerationService },
     { provide: PromptPort, useClass: PromptService },
     { provide: RetrievalPort, useClass: RetrievalService },
   ],
   exports: [
     AiConfig,
-    OrchestratorModule,
     VectorStoreModule,
     GenerationPort,
     PromptPort,
     RetrievalPort,
+    AgentEventsService,
   ],
 })
-export class AiCoreModule {}
+export class AiCoreModule { }

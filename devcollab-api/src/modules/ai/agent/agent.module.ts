@@ -1,8 +1,9 @@
 import { Module } from '@nestjs/common';
-import { AgentEventsService } from './services/agent-events.service';
+import { OrchestratorModule } from '../orchestrator/orchestrator.module';
 
 @Module({
-  providers: [AgentEventsService],
-  exports: [AgentEventsService],
+  imports: [OrchestratorModule],
+  providers: [],
+  exports: [OrchestratorModule],
 })
 export class AgentModule { }

@@ -13,14 +13,6 @@ export interface LangChainModelConfig {
   secondaryListeners?: any;
 }
 
-/**
- * describes a LangChain model that explicitly supports tool calling and structured output.
- */
-interface IToolCallableChatModel extends BaseChatModel {
-  bindTools(tools: unknown[]): Runnable;
-  withStructuredOutput(schema: unknown): Runnable;
-}
-
 export class LangChainLlmWrapper implements LlmModel {
   constructor(private readonly config: LangChainModelConfig) { }
 

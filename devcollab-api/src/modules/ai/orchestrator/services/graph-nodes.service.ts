@@ -4,7 +4,7 @@ import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentRunnableConfig, AgentNodeResult } from '../types/orchestrator.types';
 import { ToolBoundLlm } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
-import { AgentEventsService } from '../../agent/services/agent-events.service';
+import { AgentEventsService } from 'src/modules/ai/services/agent-events.service';
 import { AgentActionType } from '../../agent/enums/agent.enums';
 import { GraphState } from '../state/graph.state';
 

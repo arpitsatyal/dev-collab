@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ToolsModule } from '../tools/tools.module';
-import { AgentModule } from '../agent/agent.module';
 import { GraphNodesService } from './services/graph-nodes.service';
 import { GraphFactoryService } from './services/graph-factory.service';
 import { GraphPersistenceService } from './services/graph-persistence.service';
@@ -13,7 +12,7 @@ import { GroqLlmAdapter } from './adapters/llm/groq-llm.adapter';
 import { TogetherLlmAdapter } from './adapters/llm/together-llm.adapter';
 
 @Module({
-  imports: [ToolsModule, AgentModule],
+  imports: [ToolsModule],
   providers: [
     GraphNodesService,
     GraphFactoryService,
