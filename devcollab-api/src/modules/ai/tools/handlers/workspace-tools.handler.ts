@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { IAiTool } from '../ports/tools.port';
-import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
+import { WorkspaceActionsPort } from 'src/modules/workspaces/ports/workspace-actions.port';
 import {
   createWorkspaceSchema,
   getWorkspaceOverviewSchema,
@@ -18,7 +18,7 @@ import type {
 @Injectable()
 export class WorkspaceToolsHandler {
   constructor(
-    private readonly workspacesService: WorkspacesService,
+    private readonly workspacesService: WorkspaceActionsPort,
     private readonly snippetsService: SnippetsService,
     private readonly docsService: DocsService,
     private readonly workItemsService: WorkItemsService,

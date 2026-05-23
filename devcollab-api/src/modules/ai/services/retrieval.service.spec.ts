@@ -1,8 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { RetrievalService } from './retrieval.service';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
 import { VectorStorePort } from 'src/common/vector-store/ports/vector-store.port';
 import { Document } from '@langchain/core/documents';
+import { WorkspaceRepository } from 'src/modules/workspaces/repositories/workspace.repository';
+import { WorkItemRepository } from 'src/modules/work-items/repositories/work-item.repository';
+import { SnippetRepository } from 'src/modules/snippets/repositories/snippet.repository';
+import { DocRepository } from 'src/modules/docs/repositories/doc.repository';
+import { GenerationPort } from '../ports/generation.port';
 
 describe('RetrievalService', () => {
   let service: RetrievalService;
@@ -11,33 +15,47 @@ describe('RetrievalService', () => {
     search: jest.fn(),
   };
 
-  const mockDrizzle = {
-    db: {
-      query: {
-        workspaces: { findMany: jest.fn() },
-        workItems: { findMany: jest.fn() },
-        snippets: { findMany: jest.fn() },
-        docs: { findMany: jest.fn() },
-      },
-    },
+  const mockWorkspaceRepo = {
+    findManyBySearch: jest.fn(),
+  };
+
+  const mockWorkItemRepo = {
+    findManyBySearch: jest.fn(),
+  };
+
+  const mockSnippetRepo = {
+    findManyBySearch: jest.fn(),
+  };
+
+  const mockDocRepo = {
+    findManyBySearch: jest.fn(),
+  };
+
+  const mockGenerationPort = {
+    generateText: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         RetrievalService,
-        { provide: DrizzleService, useValue: mockDrizzle },
+        { provide: WorkspaceRepository, useValue: mockWorkspaceRepo },
+        { provide: WorkItemRepository, useValue: mockWorkItemRepo },
+        { provide: SnippetRepository, useValue: mockSnippetRepo },
+        { provide: DocRepository, useValue: mockDocRepo },
         { provide: VectorStorePort, useValue: mockVectorStore },
+        { provide: GenerationPort, useValue: mockGenerationPort },
       ],
     }).compile();
 
     service = module.get<RetrievalService>(RetrievalService);
     jest.clearAllMocks();
 
-    mockDrizzle.db.query.workspaces.findMany.mockResolvedValue([]);
-    mockDrizzle.db.query.workItems.findMany.mockResolvedValue([]);
-    mockDrizzle.db.query.snippets.findMany.mockResolvedValue([]);
-    mockDrizzle.db.query.docs.findMany.mockResolvedValue([]);
+    mockWorkspaceRepo.findManyBySearch.mockResolvedValue([]);
+    mockWorkItemRepo.findManyBySearch.mockResolvedValue([]);
+    mockSnippetRepo.findManyBySearch.mockResolvedValue([]);
+    mockDocRepo.findManyBySearch.mockResolvedValue([]);
+    mockGenerationPort.generateText.mockResolvedValue('');
   });
 
   describe('performHybridSearch', () => {
@@ -64,7 +82,7 @@ describe('RetrievalService', () => {
     it('should inject DB keyword search results and rank them highly', async () => {
       mockVectorStore.search.mockResolvedValue([]);
 
-      mockDrizzle.db.query.workItems.findMany.mockResolvedValue([
+      mockWorkItemRepo.findManyBySearch.mockResolvedValue([
         {
           workspaceId: 'ws-1',
           title: 'Fix bug',

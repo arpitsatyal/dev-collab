@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ToolRegistry, IAiTool } from './ports/tools.port';
-import { WorkspacesService } from 'src/modules/workspaces/workspaces.service';
+import { WorkspaceActionsPort } from 'src/modules/workspaces/ports/workspace-actions.port';
 import { SnippetToolsHandler } from './handlers/snippet-tools.handler';
 import { DocToolsHandler } from './handlers/doc-tools.handler';
 import { WorkItemToolsHandler } from './handlers/work-item-tools.handler';
@@ -12,7 +12,7 @@ export class ToolsService implements ToolRegistry {
   private readonly logger = new Logger(ToolsService.name);
 
   constructor(
-    private readonly workspacesService: WorkspacesService,
+    private readonly workspacesService: WorkspaceActionsPort,
     private readonly snippetHandler: SnippetToolsHandler,
     private readonly docHandler: DocToolsHandler,
     private readonly workItemHandler: WorkItemToolsHandler,

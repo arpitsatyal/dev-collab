@@ -1,185 +1,94 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ChatEngineService } from './chat-engine.service';
-import { PromptPort } from 'src/modules/ai/ports/prompt.port';
-import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
-import { GenerationPort } from 'src/modules/ai/ports/generation.port';
-import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
-import { MessageService } from 'src/modules/message/message.service';
-import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
+import { ChatContextService } from './chat-context.service';
+import { ChatIntentService } from './chat-intent.service';
+import { ChatConversationalHandler } from 'src/modules/chat/handlers/conversational.handler';
+import { ChatWorkspaceQueryHandler } from 'src/modules/chat/handlers/workspace-query.handler';
 
 describe('ChatEngineService', () => {
   let service: ChatEngineService;
 
-  const mockPromptPort = {
-    buildChatMessages: jest.fn(),
-    constructPrompt: jest.fn(),
-    buildIntentClassificationPrompt: jest.fn(),
-    buildConversationalMessages: jest.fn(),
+  const mockChatContextService = {
+    getFormattedHistory: jest.fn(),
+    createChatContext: jest.fn(),
   };
 
-  const mockRetrievalPort = {
-    generateQueryVariations: jest.fn(),
-    performHybridSearch: jest.fn(),
+  const mockChatIntentService = {
+    classifyIntent: jest.fn(),
   };
 
-  const mockGenerationPort = {
-    generateAnswer: jest.fn(),
+  const mockChatConversationalHandler = {
+    handle: jest.fn(),
   };
 
-  const mockLlmGateway = {
-    getReasoningLLM: jest.fn(),
-    getSpeedyLLM: jest.fn(),
-    getReasoningStructuredLLM: jest.fn(),
-  };
-
-  const mockMessageService = {
-    getHistory: jest.fn(),
-  };
-
-  const mockAgentPort = {
-    runAgentGraph: jest.fn(),
+  const mockChatWorkspaceQueryHandler = {
+    handle: jest.fn(),
   };
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         ChatEngineService,
-        { provide: PromptPort, useValue: mockPromptPort },
-        { provide: RetrievalPort, useValue: mockRetrievalPort },
-        { provide: GenerationPort, useValue: mockGenerationPort },
-        { provide: LlmGateway, useValue: mockLlmGateway },
-        { provide: MessageService, useValue: mockMessageService },
-        { provide: AgentPort, useValue: mockAgentPort },
+        { provide: ChatContextService, useValue: mockChatContextService },
+        { provide: ChatIntentService, useValue: mockChatIntentService },
+        { provide: ChatConversationalHandler, useValue: mockChatConversationalHandler },
+        { provide: ChatWorkspaceQueryHandler, useValue: mockChatWorkspaceQueryHandler },
       ],
     }).compile();
 
     service = module.get<ChatEngineService>(ChatEngineService);
-
-    // Reset all mocks
     jest.clearAllMocks();
-
-    // Default mock implementations
-    mockMessageService.getHistory.mockResolvedValue([]);
-
-    // Mock classifier LLM returning default intent
-    mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-      invoke: jest.fn().mockResolvedValue({
-        intent: 'WORKSPACE_QUERY',
-        scope: 'APP_SPECIFIC',
-        confidence: 0.9,
-      }),
-    });
   });
 
-  describe('AI Response Routing', () => {
-    it('should route to Conversational logic when intent is CONVERSATIONAL', async () => {
-      // Setup classifier to return CONVERSATIONAL
-      mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({
-          intent: 'CONVERSATIONAL',
-          scope: 'APP_SPECIFIC',
-          confidence: 0.9,
-        }),
-      });
+  describe('getAIResponse', () => {
+    const mockContext = {
+      chatId: 'chat-1',
+      question: 'Hello',
+      history: 'some history',
+      filters: {},
+    };
 
-      const mockPipe = jest.fn().mockReturnValue({
-        invoke: jest.fn().mockResolvedValue('Hello there!'),
-      });
-      mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
-
-      const result = await service.getAIResponse({
-        chatId: 'chat-1',
-        question: 'Hi!',
-      });
-
-      expect(result.answer).toBe('Hello there!');
-      expect(mockLlmGateway.getSpeedyLLM).toHaveBeenCalled();
+    beforeEach(() => {
+      mockChatContextService.getFormattedHistory.mockResolvedValue('some history');
+      mockChatContextService.createChatContext.mockReturnValue(mockContext);
     });
 
-    it('should return a dynamic AI refusal when intent is CONVERSATIONAL and OUT_OF_SCOPE', async () => {
-      mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({
-          intent: 'CONVERSATIONAL',
-          scope: 'OUT_OF_SCOPE',
-          confidence: 0.9,
-        }),
+    it('should delegate to ChatConversationalHandler when intent is CONVERSATIONAL', async () => {
+      mockChatIntentService.classifyIntent.mockResolvedValue({
+        intent: 'CONVERSATIONAL',
+        scope: 'APP_SPECIFIC',
       });
-
-      const dynamicRefusal =
-        "Warmly: I'm focusing on DevCollab help. Can I assist with your workspace?";
-      const mockPipe = jest.fn().mockReturnValue({
-        invoke: jest.fn().mockResolvedValue(dynamicRefusal),
-      });
-      mockLlmGateway.getSpeedyLLM.mockResolvedValue({ pipe: mockPipe });
+      mockChatConversationalHandler.handle.mockResolvedValue({ answer: 'Hello back' });
 
       const result = await service.getAIResponse({
         chatId: 'chat-1',
-        question: 'How do I cook pasta?',
+        question: 'Hello',
+        filters: {},
       });
 
-      expect(result.answer).toBe(dynamicRefusal);
-      expect(mockAgentPort.runAgentGraph).not.toHaveBeenCalled();
+      expect(mockChatContextService.getFormattedHistory).toHaveBeenCalledWith('chat-1', 10);
+      expect(mockChatContextService.createChatContext).toHaveBeenCalledWith('chat-1', 'Hello', 'some history', {});
+      expect(mockChatIntentService.classifyIntent).toHaveBeenCalledWith(mockContext);
+      expect(mockChatConversationalHandler.handle).toHaveBeenCalledWith(mockContext, 'APP_SPECIFIC');
+      expect(result).toEqual({ answer: 'Hello back' });
     });
 
-    it('should route to LangGraph Agent when workspaceId is provided', async () => {
-      mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({
-          intent: 'WORKSPACE_QUERY',
-          scope: 'APP_SPECIFIC',
-          confidence: 0.9,
-        }),
+    it('should delegate to ChatWorkspaceQueryHandler when intent is not CONVERSATIONAL', async () => {
+      mockChatIntentService.classifyIntent.mockResolvedValue({
+        intent: 'WORKSPACE_QUERY',
+        scope: 'APP_SPECIFIC',
       });
-
-      mockPromptPort.buildChatMessages.mockReturnValue(['mockMessage']);
-
-      mockAgentPort.runAgentGraph.mockResolvedValue({
-        answer: 'Here are your workspace details.',
-        calledTools: ['getSnippetsTool'],
-      });
+      mockChatWorkspaceQueryHandler.handle.mockResolvedValue({ answer: 'Here is info' });
 
       const result = await service.getAIResponse({
         chatId: 'chat-1',
-        question: 'What are the tasks?',
-        filters: { workspaceId: 'ws-1' },
+        question: 'What is this workspace?',
+        filters: {},
       });
 
-      expect(result.answer).toBe('Here are your workspace details.');
-      expect(mockAgentPort.runAgentGraph).toHaveBeenCalledWith(
-        ['mockMessage'],
-        'ws-1',
-      );
-    });
-
-    it('should route to Global Search when no workspaceId is provided but query is APP_SPECIFIC', async () => {
-      mockLlmGateway.getReasoningStructuredLLM.mockResolvedValue({
-        invoke: jest.fn().mockResolvedValue({
-          intent: 'WORKSPACE_QUERY',
-          scope: 'APP_SPECIFIC',
-          confidence: 0.9,
-        }),
-      });
-
-      mockRetrievalPort.performHybridSearch.mockResolvedValue([
-        {
-          doc: { pageContent: 'Global doc content', metadata: {} },
-          score: 0.9,
-        },
-      ]);
-
-      mockGenerationPort.generateAnswer.mockResolvedValue({
-        answer: 'Generated global answer.',
-        context: 'Global doc content',
-        sources: ['doc'],
-      });
-
-      const result = await service.getAIResponse({
-        chatId: 'chat-1',
-        question: 'Search globally',
-      });
-
-      expect(result.answer).toBe('Generated global answer.');
-      expect(mockRetrievalPort.performHybridSearch).toHaveBeenCalled();
-      expect(mockGenerationPort.generateAnswer).toHaveBeenCalled();
+      expect(mockChatIntentService.classifyIntent).toHaveBeenCalledWith(mockContext);
+      expect(mockChatWorkspaceQueryHandler.handle).toHaveBeenCalledWith(mockContext);
+      expect(result).toEqual({ answer: 'Here is info' });
     });
   });
 });

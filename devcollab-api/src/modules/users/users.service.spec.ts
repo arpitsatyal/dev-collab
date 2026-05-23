@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { UsersService } from './users.service';
 import { UserRepository } from './repositories/user.repository';
-import { DrizzleService } from 'src/common/drizzle/drizzle.service';
+import { WorkspaceRepository } from '../workspaces/repositories/workspace.repository';
+import { SnippetRepository } from '../snippets/repositories/snippet.repository';
+import { DocRepository } from '../docs/repositories/doc.repository';
+import { WorkItemRepository } from '../work-items/repositories/work-item.repository';
 
 describe('UsersService', () => {
   let service: UsersService;
@@ -11,7 +14,10 @@ describe('UsersService', () => {
       providers: [
         UsersService,
         { provide: UserRepository, useValue: {} },
-        { provide: DrizzleService, useValue: { db: {} } },
+        { provide: WorkspaceRepository, useValue: {} },
+        { provide: SnippetRepository, useValue: {} },
+        { provide: DocRepository, useValue: {} },
+        { provide: WorkItemRepository, useValue: {} },
       ],
     }).compile();
 

@@ -5,4 +5,7 @@ export abstract class WorkspaceActionsPort {
   ): Promise<any>;
 
   abstract getWorkspace(id: string): Promise<any>;
+
+  abstract getAllWorkspaces(skip?: number, take?: number): Promise<any[]>;
 }
+
