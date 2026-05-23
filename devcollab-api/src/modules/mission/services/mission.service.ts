@@ -1,7 +1,13 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { MissionStatus, MissionStepStatus } from '../enums/mission.enums';
 import { Subject } from 'rxjs';
-import { AddStepRequest, CreateMissionRequest, MissionLog, PushLogRequest, UpdateStepStatusRequest } from '../types/mission.types';
+import {
+  AddStepRequest,
+  CreateMissionRequest,
+  MissionLog,
+  PushLogRequest,
+  UpdateStepStatusRequest,
+} from '../types/mission.types';
 import { MissionRepository } from '../repositories/mission.repository';
 import { MissionStepRepository } from '../repositories/mission-step.repository';
 import { MissionLogRepository } from '../repositories/mission-log.repository';
@@ -15,7 +21,7 @@ export class MissionService {
     private readonly missionRepo: MissionRepository,
     private readonly stepRepo: MissionStepRepository,
     private readonly logRepo: MissionLogRepository,
-  ) { }
+  ) {}
 
   getLogObservable() {
     return this.logSubject.asObservable();
@@ -100,12 +106,10 @@ export class MissionService {
 
       // Emit to real-time stream
       this.logSubject.next(log as MissionLog);
-    } catch (error) {
+    } catch (error: any) {
       this.logger.error(
         `Failed to persist log for mission ${missionId}: ${error.message}`,
       );
     }
   }
-
-
 }

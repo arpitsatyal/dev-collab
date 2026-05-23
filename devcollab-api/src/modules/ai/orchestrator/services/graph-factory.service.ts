@@ -8,21 +8,16 @@ import { GraphPersistenceService } from './graph-persistence.service';
 import { GraphState } from '../state/graph.state';
 import { AgentRunnableConfig } from '../types/orchestrator.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
-import { WorkerGraphService } from './worker-graph.service';
 
 @Injectable()
 export class GraphFactoryService {
   constructor(
     private readonly nodesService: GraphNodesService,
     private readonly persistenceService: GraphPersistenceService,
-    private readonly workerGraphService: WorkerGraphService,
   ) {}
 
   createGraph(llm: ToolBoundLlm, tools: DynamicStructuredTool[]) {
-    const supervisorTools =
-      this.workerGraphService.createSupervisorRouterTools();
-    const workerDefinitions =
-      this.workerGraphService.buildWorkerDefinitions(tools);
+    const toolNode = new ToolNode(tools);
     const checkpointer = this.persistenceService.getSaver();
 
     if (!checkpointer) {
@@ -34,55 +29,24 @@ export class GraphFactoryService {
     }
 
     const graph = new StateGraph(GraphState)
-      .addNode('supervisor', (state, config: AgentRunnableConfig) =>
+      .addNode('agent', (state, config: AgentRunnableConfig) =>
         this.nodesService.callModel(state, llm, config),
       )
-      .addNode('supervisor_tools', (state, config: AgentRunnableConfig) =>
-        this.nodesService.callTools(
-          state,
-          new ToolNode(supervisorTools as any),
-          config,
-        ),
+      .addNode('tools', (state, config: AgentRunnableConfig) =>
+        this.nodesService.callTools(state, toolNode, config),
       )
-      .addNode('pause', () => ({}))
-      .addEdge('__start__', 'supervisor')
-      .addConditionalEdges('supervisor', (state) => {
-        if (state.iterationCount > 0 && state.iterationCount % 3 === 0) {
-          return 'pause';
-        }
-
+      .addEdge('__start__', 'agent')
+      .addConditionalEdges('agent', (state) => {
         return OrchestratorStateUtils.hasToolCalls(state.messages)
-          ? 'supervisor_tools'
+          ? 'tools'
           : '__end__';
       })
-      .addConditionalEdges('supervisor_tools', (state) =>
-        this.workerGraphService.resolveWorkerRoute(
-          state.messages,
-          workerDefinitions,
-        ),
-      )
-      .addEdge('pause', 'supervisor');
+      .addEdge('tools', 'agent')
+      .compile({
+        checkpointer,
+        interruptBefore: ['tools'],
+      });
 
-    workerDefinitions.forEach((worker) =>
-      this.workerGraphService.attachWorkerGraph(
-        graph,
-        this.nodesService,
-        llm,
-        worker,
-      ),
-    );
-
-    const interruptNodes = [
-      'supervisor_tools',
-      'pause',
-      ...workerDefinitions.map((worker) => worker.toolNode),
-    ];
-
-    const app = graph.compile({
-      checkpointer,
-      interruptBefore: interruptNodes as any,
-    });
-
-    return app;
+    return graph;
   }
 }

@@ -39,58 +39,58 @@ export const MissionExplainer = ({
   const examples = {
     documentation: [
       {
-        title: "Workspace Directory & API Audit",
-        description: "Analyze the workspace's structure and write detailed technical guides.",
+        title: "Testing Coverage Audit",
+        description: "Search for existing test assets and compile an audit document.",
         prompt:
-          "Analyze our workspace's routing and directory structure. Create a clear 'API Integration Guide' markdown document detailing how the main REST endpoints are configured and authenticated.",
+          "Perform a semantic search across the workspace for any existing testing or QA snippets. Based on what you find, create a new documentation document titled 'Testing Coverage Audit' summarizing our current testing assets.",
       },
       {
-        title: "Developer Onboarding Article",
-        description: "Generate a comprehensive guide for new engineers joining the project.",
+        title: "Architecture Overview",
+        description: "Summarize existing authentication snippets into a formal guide.",
         prompt:
-          "Audit the workspace codebase and create a new documentation document titled 'Developer Onboarding Guide' highlighting the modules structure, setting up environment variables, and starting the local server.",
+          "Use semantic search to find all snippets related to authentication, JWT, and user login. Write and create a new documentation document called 'Auth Architecture' summarizing the overall flow.",
       },
     ],
     snippets: [
       {
-        title: "Database Drizzle ORM Snippets",
-        description: "Analyze existing DB schema and generate reusable schema/query snippets.",
+        title: "Database Query Helper",
+        description: "Analyze DB schema snippets and generate reusable query handlers.",
         prompt:
-          "Find our Drizzle ORM schema configuration, read it, and generate a new code snippet containing 3 reusable TypeScript query handlers demonstrating robust CRUD operations with transactions.",
+          "Search for existing Drizzle ORM schema snippets in this workspace. Generate and create a new TypeScript snippet containing 3 reusable query handlers demonstrating robust CRUD operations.",
       },
       {
-        title: "Glassmorphism UI Components",
-        description: "Create premium front-end components matching high-end styling patterns.",
+        title: "Glassmorphism UI Component",
+        description: "Create premium front-end components matching existing styles.",
         prompt:
-          "Generate a set of premium React Tailwind component snippets implementing a gorgeous glassmorphism dashboard card, including smooth micro-animations on hover.",
+          "Find any existing CSS or styling snippets using semantic search. Create a new React Component snippet that implements a gorgeous glassmorphism dashboard card based on those styles.",
       },
     ],
     planning: [
       {
-        title: "API Error Handling Refactor Plan",
-        description: "Create a complete, prioritized pipeline task list with tickets.",
+        title: "Error Handling Refactor Plan",
+        description: "Find related bugs and create a consolidated refactoring ticket.",
         prompt:
-          "Draft a comprehensive refactoring plan for our backend API global error handling. Create 4 prioritized work items representing milestones: global filter setup, custom HTTP exceptions, class validator integration, and structured logging.",
+          "Search the workspace for any work items mentioning 'bug', 'error', or 'crash'. Create a new high-priority Work Item proposing a unified global error handling refactor based on those existing issues.",
       },
       {
-        title: "Redux State Migration Roadmap",
-        description: "Formulate task list to track client state management migration.",
+        title: "Feature Integration Roadmap",
+        description: "Formulate task list to track payment integration based on context.",
         prompt:
-          "Review our client app state requirements and create a set of high-priority work items (tickets) detailing a structured roadmap to migrate our remaining context-based state to Redux Toolkit slice architecture.",
+          "Search for snippets and docs related to 'payment processing' or 'checkout'. Create 3 new Work Items that represent the milestones for integrating the Stripe API based on our current context.",
       },
     ],
     complex: [
       {
-        title: "End-to-End Module Delivery",
-        description: "A master mission that audits a route, documents it, codes it, and creates tasks.",
+        title: "State Migration E2E",
+        description: "A master mission that audits state, documents it, codes it, and creates tasks.",
         prompt:
-          "Read our primary user registration route files, generate a comprehensive 'Auth Architecture' documentation file, write a reusable password hashing middleware helper snippet, and create 3 high-priority work items to track its deployment phase.",
+          "Find all snippets related to Redux. Create a 'State Migration' document outlining the transition to Zustand, generate a reusable Zustand store snippet, and create a Work Item to track the migration phase.",
       },
       {
         title: "Security Audit & Reusable Helper",
         description: "Audit security tokens, create helper, and document credentials guidelines.",
         prompt:
-          "Perform a semantic search across our files for authentication methods. Document our session security details in a new document, create a reusable JWT validation helper snippet, and open a critical work item to audit API token rotators.",
+          "Perform a semantic search for authentication methods. Document our session security details in a new document, create a reusable JWT validation helper snippet, and create a critical work item to audit API token rotators.",
       },
     ],
   };

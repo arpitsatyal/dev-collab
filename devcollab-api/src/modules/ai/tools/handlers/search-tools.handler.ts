@@ -1,17 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { IAiTool } from '../ports/tools.port';
-import { SnippetsService } from 'src/modules/snippets/snippets.service';
 import { semanticSearchSchema } from '../schema/search-tools.schema';
-import { WorkItemsService } from 'src/modules/work-items/work-items.service';
-import { DocsService } from 'src/modules/docs/docs.service';
 import type { SemanticSearchArgs } from '../types/tools.types';
+import { RetrievalPort } from '../../ports/retrieval.port';
 
 @Injectable()
 export class SearchToolsHandler {
   constructor(
-    private readonly snippetsService: SnippetsService,
-    private readonly workItemsService: WorkItemsService,
-    private readonly docsService: DocsService,
+    private readonly retrievalPort: RetrievalPort,
   ) {}
 
   async handleSemanticSearch(
@@ -22,17 +18,19 @@ export class SearchToolsHandler {
     const workspaceId = overrideId || defaultId;
     if (!workspaceId) return 'Workspace ID is required to run semantic search.';
 
-    const [snippets, workItems, docs] = await Promise.all([
-      this.snippetsService.searchSnippets(workspaceId, query, 3),
-      this.workItemsService.searchWorkItems(workspaceId, query, 3),
-      this.docsService.searchDocs(workspaceId, query, 3),
-    ]);
+    const variations = await this.retrievalPort.generateQueryVariations(query);
+    const results = await this.retrievalPort.performHybridSearch(
+      variations,
+      query,
+      { workspaceId }
+    );
 
-    if (snippets.length === 0 && workItems.length === 0 && docs.length === 0) {
+    if (results.length === 0) {
       return 'No relevant content found for that query.';
     }
 
-    return JSON.stringify({ snippets, workItems, docs });
+    // Map to docs instead of full hits to reduce context size
+    return JSON.stringify(results.map(r => r.doc));
   }
 
   getTools(workspaceId: string): IAiTool[] {
