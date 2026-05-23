@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LlmGateway, LlmProviderPort, LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema, ProviderContext } from 'src/modules/ai/orchestrator/llm/llm.types';
-import { LlmProvider, LlmTaskType } from 'src/modules/ai/orchestrator/llm/llm.enums';
+import { LlmGateway, LlmProviderPort, LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema, ProviderContext } from '../llm.types';
+import { LlmProvider, LlmTaskType } from '../llm.enums';
 import { IAiTool } from 'src/modules/ai/tools/ports/tools.port';
 import { GroqLlmAdapter } from './groq-llm.adapter';
 import { TogetherLlmAdapter } from './together-llm.adapter';

@@ -3,7 +3,7 @@ import { BaseMessage } from '@langchain/core/messages';
 import { IAiMessage, IAiResult } from 'src/modules/ai/types/ai.types';
 import { LangChainConversionUtils } from 'src/modules/ai/orchestrator/utils/langchain-conversion.utils';
 import { AiConfig } from 'src/modules/ai/ai.config';
-import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
+import { LlmGateway } from 'src/modules/ai/llm/llm.types';
 import { ToolRegistry } from 'src/modules/ai/tools/ports/tools.port';
 import { AgentOrchestrator } from 'src/modules/ai/agent/ports/agent.port';
 import { AgentRunOptions } from 'src/modules/ai/agent/types/agent.types';

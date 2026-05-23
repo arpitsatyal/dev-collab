@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
-import { LlmGateway } from '../orchestrator/llm/llm.types';
-import { LangChainLlmFactoryAdapter } from '../orchestrator/adapters/llm/langchain-llm-factory.adapter';
-import { GroqLlmAdapter } from '../orchestrator/adapters/llm/groq-llm.adapter';
-import { TogetherLlmAdapter } from '../orchestrator/adapters/llm/together-llm.adapter';
+import { LlmGateway } from './llm.types';
+import { LangChainLlmFactoryAdapter } from './adapters/langchain-llm-factory.adapter';
+import { GroqLlmAdapter } from './adapters/groq-llm.adapter';
+import { TogetherLlmAdapter } from './adapters/together-llm.adapter';
 
 @Module({
   providers: [

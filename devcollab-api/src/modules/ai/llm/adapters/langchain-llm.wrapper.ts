@@ -1,7 +1,7 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { Runnable } from '@langchain/core/runnables';
-import { LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema } from 'src/modules/ai/orchestrator/llm/llm.types';
+import { LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema } from '../llm.types';
 
 /**
  * Describes the configuration for a LangChain model, including optional fallbacks and listeners.

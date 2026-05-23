@@ -2,7 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { AgentRunnableConfig, AgentNodeResult } from '../types/orchestrator.types';
-import { ToolBoundLlm } from 'src/modules/ai/orchestrator/llm/llm.types';
+import { ToolBoundLlm } from 'src/modules/ai/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { EventBusService } from 'src/common/events/event-bus.service';
 import { AgentActionType } from 'src/common/events/agent-events.enums';

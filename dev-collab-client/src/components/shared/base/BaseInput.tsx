@@ -1,9 +1,7 @@
 import { TextInput, TextInputProps } from "@mantine/core";
 import React from "react";
 
-interface BaseInputProps extends TextInputProps {
-  // Add any custom props here if needed
-}
+type BaseInputProps = TextInputProps;
 
 const BaseInput = ({
   radius = "md",

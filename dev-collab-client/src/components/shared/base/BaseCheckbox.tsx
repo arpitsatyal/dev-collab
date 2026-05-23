@@ -1,9 +1,7 @@
 import { Checkbox, CheckboxProps } from "@mantine/core";
 import React from "react";
 
-interface BaseCheckboxProps extends CheckboxProps {
-  // Custom props if needed
-}
+type BaseCheckboxProps = CheckboxProps;
 
 const BaseCheckbox = ({ radius = "md", ...props }: BaseCheckboxProps) => {
   return (

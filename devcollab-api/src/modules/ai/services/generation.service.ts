@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { LlmGateway } from '../orchestrator/llm/llm.types';
+import { LlmGateway } from '../llm/llm.types';
 import { GenerationPort, GenerationTask } from '../ports/generation.port';
 import { SearchHit } from '../ports/retrieval.port';
 import { IAiResult } from '../types/ai.types';

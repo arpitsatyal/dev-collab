@@ -1,30 +1,30 @@
 import { Injectable } from '@nestjs/common';
 import { ChatOpenAI } from '@langchain/openai';
 import { ConfigService } from '@nestjs/config';
-import { LlmProviderPort, LlmModel } from '../../llm/llm.types';
-import { LlmTaskType } from '../../llm/llm.enums';
+import { LlmProviderPort, LlmModel } from '../llm.types';
+import { LlmTaskType } from '../llm.enums';
 import { LangChainLlmWrapper } from './langchain-llm.wrapper';
 
 @Injectable()
-export class TogetherLlmAdapter implements LlmProviderPort {
+export class GroqLlmAdapter implements LlmProviderPort {
   constructor(private readonly configService: ConfigService) { }
 
   create(type?: LlmTaskType): LlmModel {
-    const apiKey = this.configService.getOrThrow<string>('TOGETHER_API_KEY');
+    const apiKey = this.configService.getOrThrow<string>('GROQ_API_KEY');
 
     // Select model based on task type
     const modelName = type === LlmTaskType.SPEEDY
-      ? 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'
-      : 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo';
+      ? 'llama-3.1-8b-instant'
+      : 'llama-3.3-70b-versatile';
 
     const model = new ChatOpenAI({
-      apiKey,
       modelName,
+      apiKey,
       configuration: {
-        baseURL: 'https://api.together.xyz/v1',
+        baseURL: 'https://api.groq.com/openai/v1',
       },
-      maxTokens: 3072,
-      temperature: 0.7,
+      maxTokens: 4096,
+      temperature: 0,
     });
 
     return new LangChainLlmWrapper({ primary: model });
