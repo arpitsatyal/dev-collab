@@ -15,19 +15,27 @@ interface MissionDashboardProps {
 }
 
 const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDashboardProps) => {
-  const [resumeMission] = useResumeMissionMutation();
+  const [resumeMission, { isLoading: isResuming }] = useResumeMissionMutation();
   const [isRejectModalOpen, setRejectModalOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
 
   const handleApprove = async () => {
-    await resumeMission({ id: mission.id, action: "APPROVE" });
+    try {
+      await resumeMission({ id: mission.id, action: "APPROVE" }).unwrap();
+    } catch (e) {
+      // swallow; UI will update via invalidation/notifications elsewhere
+    }
   };
 
   const handleReject = async () => {
     setRejectModalOpen(false);
     const currentFeedback = feedback;
     setFeedback("");
-    await resumeMission({ id: mission.id, action: "REJECT", feedback: currentFeedback });
+    try {
+      await resumeMission({ id: mission.id, action: "REJECT", feedback: currentFeedback }).unwrap();
+    } catch (e) {
+      // swallow
+    }
   };
 
   return (
@@ -43,6 +51,7 @@ const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDa
               message={logs.filter(l => l.type === 'status_change' || l.type === 'log').pop()?.message}
               onApprove={handleApprove}
               onReject={() => setRejectModalOpen(true)}
+              isLoading={isResuming}
             />
           </Stack>
         </Grid.Col>
@@ -68,7 +77,7 @@ const MissionDashboard = ({ mission, workspaceId, logs, viewportRef }: MissionDa
             onChange={(e) => setFeedback(e.currentTarget.value)}
             radius="md"
           />
-          <Button color="red" radius="md" onClick={handleReject} disabled={!feedback.trim()}>
+          <Button color="red" radius="md" onClick={handleReject} disabled={!feedback.trim() || isResuming} loading={isResuming}>
             Reject
           </Button>
         </MantineStack>

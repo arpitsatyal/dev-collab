@@ -6,9 +6,10 @@ interface MissionApprovalCardProps {
   message?: string;
   onApprove?: () => void;
   onReject?: () => void;
+  isLoading?: boolean;
 }
 
-const MissionApprovalCard = ({ isVisible, message, onApprove, onReject }: MissionApprovalCardProps) => {
+const MissionApprovalCard = ({ isVisible, message, onApprove, onReject, isLoading }: MissionApprovalCardProps) => {
   if (!isVisible) return null;
 
   return (
@@ -17,8 +18,8 @@ const MissionApprovalCard = ({ isVisible, message, onApprove, onReject }: Missio
       <Alert icon={<IconAlertCircleFilled size={16} />} title="Agent Needs Attention" color="orange" radius="md">
         {message || "The agent is waiting for your input to proceed."}
         <Group mt="md">
-          <Button color="orange" size="xs" radius="md" onClick={onApprove}>Proceed</Button>
-          <Button variant="subtle" color="gray" size="xs" radius="md" onClick={onReject}>Reject</Button>
+          <Button color="orange" size="xs" radius="md" onClick={onApprove} loading={isLoading} disabled={isLoading}>Proceed</Button>
+          <Button variant="subtle" color="gray" size="xs" radius="md" onClick={onReject} disabled={isLoading}>Reject</Button>
         </Group>
       </Alert>
     </Box>
