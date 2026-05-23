@@ -2,6 +2,7 @@ import { createApi } from "@reduxjs/toolkit/query/react";
 import { baseQuery } from "./baseQuery";
 
 import { Mission, MissionLog, MissionStep } from "../../types/mission";
+export type { Mission, MissionLog, MissionStep };
 
 export const missionApi = createApi({
   reducerPath: "missionApi",

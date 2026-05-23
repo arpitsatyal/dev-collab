@@ -11,6 +11,7 @@ import { MissionListHeader } from "./MissionListHeader";
 import { CreateMissionModal } from "./CreateMissionModal";
 import { MissionCard } from "./MissionCard";
 import { MissionEmptyState } from "./MissionEmptyState";
+import { MissionExplainer } from "./MissionExplainer";
 
 dayjs.extend(relativeTime);
 
@@ -19,6 +20,7 @@ export const MissionsContainer = () => {
   const { workspaceId } = router.query;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [missionGoal, setMissionGoal] = useState("");
+  const [isExplainerOpen, setIsExplainerOpen] = useState(false);
 
   const { data: missions, isLoading: isLoadingMissions } = useGetMissionsQuery(workspaceId as string, {
     skip: !workspaceId,
@@ -38,6 +40,11 @@ export const MissionsContainer = () => {
     }
   };
 
+  const handleSelectExample = (goal: string) => {
+    setMissionGoal(goal);
+    setIsModalOpen(true);
+  };
+
   if (!workspaceId || isLoadingMissions) return <BaseLoader />;
 
   return (
@@ -45,6 +52,14 @@ export const MissionsContainer = () => {
       <MissionListHeader
         workspaceId={workspaceId as string}
         onNewMission={() => setIsModalOpen(true)}
+        isExplainerOpen={isExplainerOpen}
+        onToggleExplainer={() => setIsExplainerOpen(!isExplainerOpen)}
+      />
+
+      <MissionExplainer
+        isOpen={isExplainerOpen}
+        onClose={() => setIsExplainerOpen(false)}
+        onSelectExample={handleSelectExample}
       />
 
       <CreateMissionModal

@@ -32,8 +32,8 @@ export class LiveblocksAdapter implements CollaborationPort {
     const session = this.liveblocks.prepareSession(userId, { userInfo });
 
     // Apply permissions passed from the domain service
-    for (const permission of permissions) {
-      session.allow(room, permission as any);
+    if (permissions && permissions.length > 0) {
+      session.allow(room, permissions as any);
     }
 
     const { body, status } = await session.authorize();

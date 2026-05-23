@@ -1,13 +1,20 @@
-import { Group, Box, Title, Text, Button, Breadcrumbs, Anchor } from "@mantine/core";
-import { IconPlus, IconChevronRight } from "@tabler/icons-react";
+import { Group, Box, Title, Text, Button, Breadcrumbs, Anchor, ActionIcon, Tooltip } from "@mantine/core";
+import { IconPlus, IconChevronRight, IconInfoCircle } from "@tabler/icons-react";
 import Link from "next/link";
 
 interface MissionListHeaderProps {
   workspaceId: string;
   onNewMission: () => void;
+  isExplainerOpen: boolean;
+  onToggleExplainer: () => void;
 }
 
-export const MissionListHeader = ({ workspaceId, onNewMission }: MissionListHeaderProps) => {
+export const MissionListHeader = ({
+  workspaceId,
+  onNewMission,
+  isExplainerOpen,
+  onToggleExplainer,
+}: MissionListHeaderProps) => {
   const breadcrumbs = [
     { title: 'Workspace', href: `/workspaces/${workspaceId}` },
     { title: 'Mission Control', href: '#' },
@@ -23,9 +30,26 @@ export const MissionListHeader = ({ workspaceId, onNewMission }: MissionListHead
         {breadcrumbs}
       </Breadcrumbs>
 
-      <Group justify="space-between" mb="xl">
+      <Group justify="space-between" mb="xl" align="flex-end">
         <Box>
-          <Title fz={32} fw={800} style={{ letterSpacing: '-0.5px' }}>Mission Control 🎯</Title>
+          <Group gap="sm" align="center" mb={4}>
+            <Title fz={32} fw={800} style={{ letterSpacing: '-0.5px' }}>Mission Control 🎯</Title>
+            <Tooltip label={isExplainerOpen ? "Hide Guide" : "Show Agent Guide"}>
+              <ActionIcon
+                variant={isExplainerOpen ? "filled" : "light"}
+                color="indigo"
+                radius="xl"
+                size="md"
+                onClick={onToggleExplainer}
+                style={{
+                  boxShadow: !isExplainerOpen ? "0 0 0 0 rgba(92, 124, 250, 0.7)" : "none",
+                  animation: !isExplainerOpen ? "pulse 2s infinite" : "none",
+                }}
+              >
+                <IconInfoCircle size={18} />
+              </ActionIcon>
+            </Tooltip>
+          </Group>
           <Text c="dimmed">Manage and monitor autonomous agent missions for this workspace.</Text>
         </Box>
         <Button
@@ -38,6 +62,21 @@ export const MissionListHeader = ({ workspaceId, onNewMission }: MissionListHead
           New Mission
         </Button>
       </Group>
+
+      {/* Inline styles for pulse animation */}
+      <style jsx global>{`
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(92, 124, 250, 0.4);
+          }
+          70% {
+            box-shadow: 0 0 0 6px rgba(92, 124, 250, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(92, 124, 250, 0);
+          }
+        }
+      `}</style>
     </>
   );
 };
