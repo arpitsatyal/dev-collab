@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { BaseMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
-import { AgentRunnableConfig, AgentNodeResult } from '../types/orchestrator.types';
+import {
+  AgentRunnableConfig,
+  AgentNodeResult,
+} from '../types/orchestrator.types';
 import { ToolBoundLlm } from 'src/modules/ai/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { EventBusService } from 'src/common/events/event-bus.service';
@@ -12,7 +15,7 @@ import { GraphState } from '../state/graph.state';
 export class GraphNodesService {
   private readonly logger = new Logger(GraphNodesService.name);
 
-  constructor(private readonly eventBus: EventBusService) { }
+  constructor(private readonly eventBus: EventBusService) {}
 
   /**
    * Node: Agent/Model Reasoning
@@ -22,17 +25,16 @@ export class GraphNodesService {
     llm: ToolBoundLlm,
     config: AgentRunnableConfig,
   ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
-
     this.eventBus.emitAgentAction(
       config.configurable || {},
       AgentActionType.REASONING_START,
       'AI is reasoning...',
     );
 
-    const response = await llm.invoke(state.messages) as BaseMessage;
+    const response = (await llm.invoke(state.messages)) as BaseMessage;
     return {
       messages: [response],
-      iterationCount: (state.iterationCount || 0) + 1
+      iterationCount: (state.iterationCount || 0) + 1,
     };
   }
 

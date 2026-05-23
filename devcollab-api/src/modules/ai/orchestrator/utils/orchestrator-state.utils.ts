@@ -10,7 +10,9 @@ export class OrchestratorStateUtils {
    * Returns the absolute last message in the sequence.
    */
 
-  private static getLastMessage(messages: BaseMessage[]): BaseMessage | undefined {
+  private static getLastMessage(
+    messages: BaseMessage[],
+  ): BaseMessage | undefined {
     if (!messages.length) return undefined;
     return messages[messages.length - 1];
   }
@@ -48,7 +50,26 @@ export class OrchestratorStateUtils {
   }
 
   /**
-   * Returns the sequence of names for all tools that have actually 
+   * Returns the last tool message appended to the conversation.
+   */
+  static getLastToolMessage(messages: BaseMessage[]): ToolMessage | undefined {
+    const toolMessages = messages.filter((m) =>
+      ToolMessage.isInstance(m),
+    ) as ToolMessage[];
+    return toolMessages.length > 0
+      ? toolMessages[toolMessages.length - 1]
+      : undefined;
+  }
+
+  /**
+   * Returns the name of the last tool message.
+   */
+  static getLastToolMessageName(messages: BaseMessage[]): string | undefined {
+    return this.getLastToolMessage(messages)?.name;
+  }
+
+  /**
+   * Returns the sequence of names for all tools that have actually
    * been executed in the conversation so far.
    */
   static getToolSequence(messages: BaseMessage[]): string[] {
