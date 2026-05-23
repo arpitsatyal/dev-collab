@@ -8,9 +8,11 @@ import { GenerationService } from './services/generation.service';
 import { PromptService } from './services/prompt.service';
 import { RetrievalService } from './services/retrieval.service';
 
+import { LlmModule } from './llm/llm.module';
+
 @Global()
 @Module({
-  imports: [VectorStoreModule],
+  imports: [VectorStoreModule, LlmModule],
   providers: [
     AiConfig,
     { provide: GenerationPort, useClass: GenerationService },

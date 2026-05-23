@@ -4,7 +4,6 @@ import { AgentPort } from 'src/modules/ai/agent/ports/agent.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
 import { RetrievalPort } from 'src/modules/ai/ports/retrieval.port';
 import { GenerationPort } from 'src/modules/ai/ports/generation.port';
-import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
 import { IChatContext, IChatResponse } from '../types/ai-chat.interface';
 
 @Injectable()
@@ -16,7 +15,6 @@ export class ChatWorkspaceQueryHandler {
     private readonly promptPort: PromptPort,
     private readonly retrievalPort: RetrievalPort,
     private readonly generationPort: GenerationPort,
-    private readonly llmGateway: LlmGateway,
   ) { }
 
   /**
@@ -78,8 +76,7 @@ export class ChatWorkspaceQueryHandler {
     const { question, history, filters } = params;
     this.logger.log('HybridSearch: Processing global query');
 
-    const queryGenLlm = await this.llmGateway.getReasoningLLM();
-    const queries = await this.retrievalPort.generateQueryVariations(question, queryGenLlm);
+    const queries = await this.retrievalPort.generateQueryVariations(question);
 
     const filteredResults = await this.retrievalPort.performHybridSearch(
       queries,

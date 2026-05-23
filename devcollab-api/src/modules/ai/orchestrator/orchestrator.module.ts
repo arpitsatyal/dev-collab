@@ -6,23 +6,17 @@ import { GraphPersistenceService } from './services/graph-persistence.service';
 import { LangGraphAdapter } from './adapters/langgraph.adapter';
 import { AgentOrchestrator, AgentPort } from '../agent/ports/agent.port';
 import { AgentService } from '../agent/services/agent.service';
-import { LlmGateway } from './llm/llm.types';
-import { LangChainLlmFactoryAdapter } from './adapters/llm/langchain-llm-factory.adapter';
-import { GroqLlmAdapter } from './adapters/llm/groq-llm.adapter';
-import { TogetherLlmAdapter } from './adapters/llm/together-llm.adapter';
+import { LlmModule } from '../llm/llm.module';
 
 @Module({
-  imports: [ToolsModule],
+  imports: [ToolsModule, LlmModule],
   providers: [
     GraphNodesService,
     GraphFactoryService,
     GraphPersistenceService,
-    GroqLlmAdapter,
-    TogetherLlmAdapter,
     { provide: AgentOrchestrator, useClass: LangGraphAdapter },
     { provide: AgentPort, useClass: AgentService },
-    { provide: LlmGateway, useClass: LangChainLlmFactoryAdapter },
   ],
-  exports: [AgentPort, LlmGateway],
+  exports: [AgentPort],
 })
 export class OrchestratorModule { }

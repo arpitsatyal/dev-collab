@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LlmModel } from '../orchestrator/llm/llm.types';
+import { GenerationPort } from '../ports/generation.port';
 import { VectorStorePort } from 'src/common/vector-store/ports/vector-store.port';
 import {
   RetrievalPort,
@@ -22,11 +22,11 @@ export class RetrievalService implements RetrievalPort {
     private readonly snippetRepo: SnippetRepository,
     private readonly docRepo: DocRepository,
     private readonly vectorStorePort: VectorStorePort,
+    private readonly generationPort: GenerationPort,
   ) { }
 
   async generateQueryVariations(
     query: string,
-    llm: LlmModel,
   ): Promise<string[]> {
     const prompt = `You are an AI assistant helping to expand a user's search query.
     Generate 3 alternative versions of the following query to improve search retrieval. 
@@ -36,7 +36,7 @@ export class RetrievalService implements RetrievalPort {
     Query: "${query}"`;
 
     try {
-      const content = await llm.generateText(prompt);
+      const content = await this.generationPort.generateText(prompt, 'reasoning');
       const variations = content
         .split('\n')
         .filter((q) => q.trim().length > 0)

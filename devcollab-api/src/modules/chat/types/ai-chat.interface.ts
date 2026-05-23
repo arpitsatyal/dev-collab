@@ -1,4 +1,4 @@
-import { ChatScope } from "src/modules/ai/interfaces";
+import { ChatScope } from 'src/modules/ai/types/ai.types';
 
 export interface IChatContext {
   chatId: string;

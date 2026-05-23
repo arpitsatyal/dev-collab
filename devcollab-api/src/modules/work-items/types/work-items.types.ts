@@ -1,4 +1,5 @@
 import { WorkItemStatus } from 'src/common/drizzle/schema/enums';
+export { WorkItemStatus };
 
 export interface CreateWorkItemRequest {
   title: string;

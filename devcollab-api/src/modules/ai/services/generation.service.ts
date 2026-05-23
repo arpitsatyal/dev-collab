@@ -61,4 +61,14 @@ export class GenerationService implements GenerationPort {
 
     return llm.generateText(input);
   }
+
+  async generateStructured<T>(
+    input: string | any[],
+    schema: any,
+    name: string,
+    task: GenerationTask = 'reasoning',
+  ): Promise<T> {
+    const llm = await this.llmFactory.getReasoningStructuredLLM(schema, name);
+    return llm.invoke(input) as Promise<T>;
+  }
 }

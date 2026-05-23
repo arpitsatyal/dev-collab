@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { LlmGateway } from 'src/modules/ai/orchestrator/llm/llm.types';
+import { GenerationPort } from 'src/modules/ai/ports/generation.port';
 import { PromptPort } from 'src/modules/ai/ports/prompt.port';
-import { IintentResult, IntentClassifierLlm } from 'src/modules/ai/types/ai.types';
+import { IintentResult } from 'src/modules/ai/types/ai.types';
 import { IntentSchema } from 'src/modules/ai/schemas';
 import { IChatContext } from '../../types/ai-chat.interface';
 
@@ -10,7 +10,7 @@ export class ChatIntentService {
   private readonly logger = new Logger(ChatIntentService.name);
 
   constructor(
-    private readonly llmGateway: LlmGateway,
+    private readonly generationPort: GenerationPort,
     private readonly promptPort: PromptPort,
   ) { }
 
@@ -18,11 +18,6 @@ export class ChatIntentService {
    * Classifies the user's intent using a structured LLM call.
    */
   async classifyIntent(context: IChatContext): Promise<IintentResult> {
-    const classifierLlm = (await this.llmGateway.getReasoningStructuredLLM(
-      IntentSchema,
-      'classify_intent',
-    )) as IntentClassifierLlm;
-
     const intentMessages = this.promptPort.buildIntentClassificationPrompt(
       context.question,
       context.history,
@@ -30,7 +25,11 @@ export class ChatIntentService {
     );
 
     try {
-      const result = await classifierLlm.invoke(intentMessages);
+      const result = await this.generationPort.generateStructured<any>(
+        intentMessages,
+        IntentSchema,
+        'classify_intent',
+      );
       if (result.confidence > 0.4) {
         return {
           intent: result.intent,

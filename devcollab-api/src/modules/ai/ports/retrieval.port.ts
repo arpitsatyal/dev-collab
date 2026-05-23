@@ -20,7 +20,6 @@ export interface SearchHit {
 export abstract class RetrievalPort {
   abstract generateQueryVariations(
     query: string,
-    llm: LlmModel,
   ): Promise<string[]>;
   abstract performHybridSearch(
     queries: string[],

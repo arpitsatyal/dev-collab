@@ -15,4 +15,11 @@ export abstract class GenerationPort {
     input: string | any[],
     task?: GenerationTask,
   ): Promise<string>;
+
+  abstract generateStructured<T>(
+    input: string | any[],
+    schema: any,
+    name: string,
+    task?: GenerationTask,
+  ): Promise<T>;
 }
