@@ -7,6 +7,7 @@ import { LangGraphAdapter } from './adapters/langgraph.adapter';
 import { AgentOrchestrator, AgentPort } from '../agent/ports/agent.port';
 import { AgentService } from '../agent/services/agent.service';
 import { LlmModule } from '../llm/llm.module';
+import { WorkerGraphService } from './services/worker-graph.service';
 
 @Module({
   imports: [ToolsModule, LlmModule],
@@ -14,6 +15,7 @@ import { LlmModule } from '../llm/llm.module';
     GraphNodesService,
     GraphFactoryService,
     GraphPersistenceService,
+    WorkerGraphService,
     { provide: AgentOrchestrator, useClass: LangGraphAdapter },
     { provide: AgentPort, useClass: AgentService },
   ],

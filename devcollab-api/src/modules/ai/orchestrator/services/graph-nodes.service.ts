@@ -1,5 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { BaseMessage } from '@langchain/core/messages';
+import { BaseMessage, SystemMessage } from '@langchain/core/messages';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import {
   AgentRunnableConfig,
@@ -24,6 +24,7 @@ export class GraphNodesService {
     state: typeof GraphState.State,
     llm: ToolBoundLlm,
     config: AgentRunnableConfig,
+    systemPrompt?: string,
   ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
     this.eventBus.emitAgentAction(
       config.configurable || {},
@@ -31,7 +32,14 @@ export class GraphNodesService {
       'AI is reasoning...',
     );
 
-    const response = (await llm.invoke(state.messages)) as BaseMessage;
+    const messages = [...state.messages];
+    if (systemPrompt && messages.length > 0 && messages[0].getType() === 'system') {
+      messages[0] = new SystemMessage(`${messages[0].content}\n\n[ROLE OVERRIDE]\n${systemPrompt}`);
+    } else if (systemPrompt) {
+      messages.unshift(new SystemMessage(`[ROLE OVERRIDE]\n${systemPrompt}`));
+    }
+
+    const response = (await llm.invoke(messages)) as BaseMessage;
     return {
       messages: [response],
       iterationCount: (state.iterationCount || 0) + 1,

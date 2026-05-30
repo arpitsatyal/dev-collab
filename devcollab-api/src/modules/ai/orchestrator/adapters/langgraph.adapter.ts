@@ -33,9 +33,9 @@ export class LangGraphAdapter implements AgentOrchestrator {
     const tools = await this.toolService.getTools(workspaceId);
     const lcTools = LangChainConversionUtils.toLangChainTools(tools);
 
-    const llmWithTools = await this.llmGateway.getReasoningToolBoundLLM(tools);
+    const rawLlm = await this.llmGateway.getReasoningLLM();
 
-    const app = this.graphFactory.createGraph(llmWithTools, lcTools);
+    const app = this.graphFactory.createGraph(rawLlm, lcTools);
 
     const thread_id = options.threadId || workspaceId;
     const config = {

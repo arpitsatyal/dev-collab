@@ -12,7 +12,6 @@ export class TogetherLlmAdapter implements LlmProviderPort {
   create(type?: LlmTaskType): LlmModel {
     const apiKey = this.configService.getOrThrow<string>('TOGETHER_API_KEY');
 
-    // Select model based on task type
     const modelName = type === LlmTaskType.SPEEDY
       ? 'meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo'
       : 'meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo';

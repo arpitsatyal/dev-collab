@@ -12,7 +12,6 @@ export class GroqLlmAdapter implements LlmProviderPort {
   create(type?: LlmTaskType): LlmModel {
     const apiKey = this.configService.getOrThrow<string>('GROQ_API_KEY');
 
-    // Select model based on task type
     const modelName = type === LlmTaskType.SPEEDY
       ? 'llama-3.1-8b-instant'
       : 'llama-3.3-70b-versatile';

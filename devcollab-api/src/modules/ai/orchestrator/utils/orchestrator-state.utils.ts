@@ -50,6 +50,25 @@ export class OrchestratorStateUtils {
   }
 
   /**
+   * Returns the last tool message appended to the conversation.
+   */
+  static getLastToolMessage(messages: BaseMessage[]): ToolMessage | undefined {
+    const toolMessages = messages.filter((m) =>
+      ToolMessage.isInstance(m),
+    ) as ToolMessage[];
+    return toolMessages.length > 0
+      ? toolMessages[toolMessages.length - 1]
+      : undefined;
+  }
+
+  /**
+   * Returns the name of the last tool message.
+   */
+  static getLastToolMessageName(messages: BaseMessage[]): string | undefined {
+    return this.getLastToolMessage(messages)?.name;
+  }
+
+  /**
    * Returns the sequence of names for all tools that have actually
    * been executed in the conversation so far.
    */
