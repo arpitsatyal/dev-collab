@@ -1,7 +1,12 @@
 import { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { StringOutputParser } from '@langchain/core/output_parsers';
 import { Runnable } from '@langchain/core/runnables';
-import { LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema } from '../llm.types';
+import {
+  LlmModel,
+  StructuredLlm,
+  ToolEnabledLlm,
+  LlmStructuredSchema,
+} from '../llm.types';
 
 /**
  * Describes the configuration for a LangChain model, including optional fallbacks and listeners.
@@ -14,7 +19,7 @@ export interface LangChainModelConfig {
 }
 
 export class LangChainLlmWrapper implements LlmModel {
-  constructor(private readonly config: LangChainModelConfig) { }
+  constructor(private readonly config: LangChainModelConfig) {}
 
   /**
    * Internal helper to build the LangChain runnable chain in the correct order:
@@ -22,19 +27,26 @@ export class LangChainLlmWrapper implements LlmModel {
    * 2. Add Listeners (Runnable level)
    * 3. Apply Fallbacks (Chain level)
    */
-  private getRunnable(tools?: unknown[], schema?: LlmStructuredSchema): Runnable {
+  private getRunnable(
+    tools?: unknown[],
+    schema?: LlmStructuredSchema,
+  ): Runnable {
     const decorate = (model: BaseChatModel, listeners?: any) => {
       let m: any = model;
 
       // Apply tool/structured binding first (must be on the chat model)
       if (tools) {
         if (typeof m.bindTools !== 'function') {
-          throw new Error(`Model ${m.constructor.name} does not support tool binding.`);
+          throw new Error(
+            `Model ${m.constructor.name} does not support tool binding.`,
+          );
         }
         m = m.bindTools(tools);
       } else if (schema) {
         if (typeof m.withStructuredOutput !== 'function') {
-          throw new Error(`Model ${m.constructor.name} does not support structured output.`);
+          throw new Error(
+            `Model ${m.constructor.name} does not support structured output.`,
+          );
         }
         m = m.withStructuredOutput(schema);
       }
@@ -47,10 +59,16 @@ export class LangChainLlmWrapper implements LlmModel {
       return m as Runnable;
     };
 
-    const primaryRunnable = decorate(this.config.primary, this.config.primaryListeners);
+    const primaryRunnable = decorate(
+      this.config.primary,
+      this.config.primaryListeners,
+    );
 
     if (this.config.secondary) {
-      const secondaryRunnable = decorate(this.config.secondary, this.config.secondaryListeners);
+      const secondaryRunnable = decorate(
+        this.config.secondary,
+        this.config.secondaryListeners,
+      );
       return primaryRunnable.withFallbacks({
         fallbacks: [secondaryRunnable],
       });
@@ -64,12 +82,14 @@ export class LangChainLlmWrapper implements LlmModel {
   }
 
   async generateText(input: unknown): Promise<string> {
-    return this.getRunnable().pipe(new StringOutputParser()).invoke(input as any);
+    return this.getRunnable()
+      .pipe(new StringOutputParser())
+      .invoke(input as any);
   }
 
-  bindTools(tools: unknown[]): ToolBoundLlm {
-    // Return the runnable as an opaque ToolBoundLlm
-    return this.getRunnable(tools) as unknown as ToolBoundLlm;
+  bindTools(tools: unknown[]): ToolEnabledLlm {
+    // Return the runnable as an opaque ToolEnabledLlm
+    return this.getRunnable(tools) as unknown as ToolEnabledLlm;
   }
 
   withStructuredOutput(schema: LlmStructuredSchema): StructuredLlm {
@@ -78,7 +98,7 @@ export class LangChainLlmWrapper implements LlmModel {
   }
 
   /**
-   * @deprecated Used only for internal adapter logic. 
+   * @deprecated Used only for internal adapter logic.
    * Provides the primary raw model.
    */
   getRawModel(): BaseChatModel {

@@ -2,14 +2,19 @@ import { Injectable } from '@nestjs/common';
 import { StateGraph } from '@langchain/langgraph';
 import { ToolNode } from '@langchain/langgraph/prebuilt';
 import { DynamicStructuredTool } from '@langchain/core/tools';
+import { HumanMessage } from '@langchain/core/messages';
 import { LlmModel } from 'src/modules/ai/llm/llm.types';
 import { GraphNodesService } from './graph-nodes.service';
 import { GraphPersistenceService } from './graph-persistence.service';
-import { GraphReflectionService, MAX_REFLECTION_RETRIES } from './graph-reflection.service';
+import {
+  GraphReflectionService,
+  MAX_REFLECTION_RETRIES,
+} from './graph-reflection.service';
 import { GraphState } from '../state/graph.state';
 import { AgentRunnableConfig } from '../types/orchestrator.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { WorkerGraphService } from './worker-graph.service';
+import { GraphOrchestratorPromptService } from './graph-orchestrator-prompt.service';
 
 @Injectable()
 export class GraphFactoryService {
@@ -18,7 +23,8 @@ export class GraphFactoryService {
     private readonly persistenceService: GraphPersistenceService,
     private readonly workerGraphService: WorkerGraphService,
     private readonly reflectionService: GraphReflectionService,
-  ) { }
+    private readonly promptService: GraphOrchestratorPromptService,
+  ) {}
 
   createGraph(llm: LlmModel, tools: DynamicStructuredTool[]) {
     const supervisorTools =
@@ -35,9 +41,7 @@ export class GraphFactoryService {
       console.log('SUCCESS: Graph compiled with persistent checkpointer.');
     }
 
-    // The supervisor and all workers share the same LLM instance (with their
-    // respective tools bound), but the reflector uses an unbound LLM so it can
-    // reason freely without tool-call noise.
+    const supervisorAllowedToolNames = supervisorTools.map((tool) => tool.name);
     const supervisorLlm = llm.bindTools(supervisorTools);
 
     // ── Core nodes ───────────────────────────────────────────────────────────
@@ -45,7 +49,7 @@ export class GraphFactoryService {
       // 1. Mission-capture node: runs once at graph entry to snapshot the user
       //    mission into state before the supervisor sees it.
       .addNode('capture_mission', (state) => {
-        const firstHuman = state.messages.find((m) => m.getType() === 'human');
+        const firstHuman = state.messages.find((m) => m.type === 'human');
         const mission = firstHuman
           ? OrchestratorStateUtils.getContent(firstHuman)
           : '';
@@ -58,18 +62,7 @@ export class GraphFactoryService {
           state,
           supervisorLlm,
           config,
-          `You are a supervisor router. Your ONLY job is to analyze the user request and route to the correct worker using the delegate tools.
-
-STRICT ROUTING DOMAIN RULES:
-1. Routing to Code ('delegate_code'):
-   - Use this for ANY request to create, update, or fetch a "snippet", "code snippet", "code block", programming logic, functions, scripts, or coding tasks (e.g. "create a new snippet called 'stereolab'").
-   - Even if the name sounds non-technical or represents an abstract concept, if it is a snippet, it MUST go to the Code worker first.
-2. Routing to Docs ('delegate_docs'):
-   - Use this ONLY for writing user guides, handbooks, text document articles, guides, wikis, or conceptual document pages. Do NOT route here for writing code or snippets.
-3. Routing to Project Management ('delegate_pm'):
-   - Use this for work items, tasks, issues, tickets, or status updates.
-
-CRITICAL: You must ONLY call ONE delegate tool at a time. Do NOT route to multiple workers in a single turn. Wait for a worker to finish before delegating the next step. NEVER attempt to answer questions yourself. If the task is fully complete, do not use any tools and end the mission.`,
+          this.promptService.buildSupervisorRouterSystemPrompt(),
         ),
       )
       .addNode('supervisor_tools', (state, config: AgentRunnableConfig) =>
@@ -79,9 +72,28 @@ CRITICAL: You must ONLY call ONE delegate tool at a time. Do NOT route to multip
           config,
         ),
       )
+      .addNode('supervisor_tool_validation', (state) => {
+        const invalidToolNames = OrchestratorStateUtils.getToolNames(state.messages).filter(
+          (toolName) => !supervisorAllowedToolNames.includes(toolName),
+        );
 
-      // 3. Reflection node: evaluates a worker's output and either approves it
-      //    or injects a correction request back into the message stream.
+        if (invalidToolNames.length === 0) {
+          return {};
+        }
+
+        return {
+          messages: [
+            new HumanMessage({
+              content:
+                `The supervisor attempted to call invalid tools: ${invalidToolNames.join(', ')}. ` +
+                `Use only the delegate tools: ${supervisorAllowedToolNames.join(', ')}. ` +
+                `Do not call workspace tools like get_docs, create_doc, or update_doc directly from the supervisor router. ` +
+                `Reroute the task using the appropriate delegate tool instead.`,
+            }),
+          ],
+        };
+      })
+
       .addNode('reflect', (state, config: AgentRunnableConfig) =>
         this.reflectionService.reflect(state, llm as any, config),
       )
@@ -92,16 +104,19 @@ CRITICAL: You must ONLY call ONE delegate tool at a time. Do NOT route to multip
 
       // ── Supervisor conditional edges ─────────────────────────────────────
       .addConditionalEdges('supervisor', (state) => {
-        return OrchestratorStateUtils.hasToolCalls(state.messages)
+        const toolNames = OrchestratorStateUtils.getToolNames(state.messages);
+        if (toolNames.length === 0) return '__end__';
+        return toolNames.every((name) => supervisorAllowedToolNames.includes(name))
           ? 'supervisor_tools'
-          : '__end__';
+          : 'supervisor_tool_validation';
       })
       .addConditionalEdges('supervisor_tools', (state) =>
         this.workerGraphService.resolveWorkerRoute(
           state.messages,
           workerDefinitions,
         ),
-      );
+      )
+      .addEdge('supervisor_tool_validation', 'supervisor');
 
     // ── Worker nodes ─────────────────────────────────────────────────────────
     workerDefinitions.forEach((worker) => {
@@ -113,12 +128,10 @@ CRITICAL: You must ONLY call ONE delegate tool at a time. Do NOT route to multip
             state,
             workerLlm,
             config,
-            `You are the ${worker.agentNode}. Use your available tools to complete the task delegated to you by the supervisor. 
-CRITICAL RULES:
-1. Look at the latest supervisor router tool execution response in the message history (e.g. "Assigned task: ...") to see your exact assigned sub-task and execute ONLY that specific task.
-2. You must ONLY use the exact tool names provided in your tool schema: [${worker.toolNames.join(', ')}]. 
-3. DO NOT attempt to delegate to other agents or call supervisor tools (such as 'delegate_docs', 'delegate_code', 'delegate_pm', 'delegate_workspace', 'delegate_search'). You do NOT have access to these tools and calling them will crash the system.
-4. If you have finished your task or need to hand control back, do NOT attempt to call any more tools. Simply reply with normal text summarizing what you did, and control will automatically return to the supervisor.`,
+            this.promptService.buildWorkerSystemPrompt(
+              worker.agentNode,
+              worker.toolNames,
+            ),
           ),
         )
         .addNode(worker.toolNode, (state, config: AgentRunnableConfig) =>
@@ -148,14 +161,14 @@ CRITICAL RULES:
     });
 
     // ── Reflection conditional edge ──────────────────────────────────────────
-    // PASS or ABORT → return control to supervisor (mission may be fully done).
-    // REVISE → return to supervisor so it can re-delegate with the critique.
-    // Both paths land on supervisor; the difference is whether a correction
-    // HumanMessage was injected into the stream (handled inside reflect()).
     graph.addConditionalEdges('reflect', (state) => {
       const lastEntry = state.reflectionLog[state.reflectionLog.length - 1];
 
-      if (!lastEntry || lastEntry.verdict === 'PASS' || lastEntry.verdict === 'ABORT') {
+      if (
+        !lastEntry ||
+        lastEntry.verdict === 'PASS' ||
+        lastEntry.verdict === 'ABORT'
+      ) {
         return 'supervisor';
       }
 

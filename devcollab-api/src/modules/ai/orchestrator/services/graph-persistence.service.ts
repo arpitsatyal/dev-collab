@@ -5,10 +5,10 @@ import { Pool } from 'pg';
 
 @Injectable()
 export class GraphPersistenceService implements OnModuleInit, OnModuleDestroy {
-  private pool: Pool;
-  private saver: PostgresSaver;
+  private pool?: Pool;
+  private saver?: PostgresSaver;
 
-  constructor(private configService: ConfigService) { }
+  constructor(private configService: ConfigService) {}
 
   async onModuleInit() {
     this.pool = new Pool({
@@ -23,10 +23,12 @@ export class GraphPersistenceService implements OnModuleInit, OnModuleDestroy {
   }
 
   async onModuleDestroy() {
-    await this.pool.end();
+    if (this.pool) {
+      await this.pool.end();
+    }
   }
 
-  getSaver(): PostgresSaver {
+  getSaver(): PostgresSaver | undefined {
     return this.saver;
   }
 }

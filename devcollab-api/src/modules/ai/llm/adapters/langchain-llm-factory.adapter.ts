@@ -1,6 +1,14 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { LlmGateway, LlmProviderPort, LlmModel, StructuredLlm, ToolBoundLlm, LlmStructuredSchema, ProviderContext } from '../llm.types';
+import {
+  LlmGateway,
+  LlmProviderPort,
+  LlmModel,
+  StructuredLlm,
+  ToolEnabledLlm,
+  LlmStructuredSchema,
+  ProviderContext,
+} from '../llm.types';
 import { LlmProvider, LlmTaskType } from '../llm.enums';
 import { IAiTool } from 'src/modules/ai/tools/ports/tools.port';
 import { GroqLlmAdapter } from './groq-llm.adapter';
@@ -18,17 +26,29 @@ export class LangChainLlmFactoryAdapter implements LlmGateway {
     private readonly togetherLlmAdapter: TogetherLlmAdapter,
     private readonly groqLlmAdapter: GroqLlmAdapter,
     private readonly configService: ConfigService,
-  ) { }
+  ) {}
 
   private getProviderContext(): ProviderContext {
-    const primaryType = this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') || LlmProvider.GROQ;
-    const secondaryType = primaryType === LlmProvider.TOGETHER ? LlmProvider.GROQ : LlmProvider.TOGETHER;
+    const primaryType =
+      this.configService.get<LlmProvider>('PREFERRED_LLM_PROVIDER') ||
+      LlmProvider.GROQ;
+    const secondaryType =
+      primaryType === LlmProvider.TOGETHER
+        ? LlmProvider.GROQ
+        : LlmProvider.TOGETHER;
 
     const resolve = (type: LlmProvider) => ({
-      adapter: type === LlmProvider.TOGETHER ? this.togetherLlmAdapter : this.groqLlmAdapter,
+      adapter:
+        type === LlmProvider.TOGETHER
+          ? this.togetherLlmAdapter
+          : this.groqLlmAdapter,
       type,
-      failed: type === LlmProvider.TOGETHER ? this.togetherFailed : this.groqFailed,
-      markFailed: () => (type === LlmProvider.TOGETHER ? (this.togetherFailed = true) : (this.groqFailed = true)),
+      failed:
+        type === LlmProvider.TOGETHER ? this.togetherFailed : this.groqFailed,
+      markFailed: () =>
+        type === LlmProvider.TOGETHER
+          ? (this.togetherFailed = true)
+          : (this.groqFailed = true),
     });
 
     const primary = resolve(primaryType);
@@ -90,8 +110,14 @@ export class LangChainLlmFactoryAdapter implements LlmGateway {
     }
 
     // Both available - setup internal fallback config
-    const primaryWrapper = factory(ctx.primary, ctx.primaryType) as LangChainLlmWrapper;
-    const secondaryWrapper = factory(ctx.secondary, ctx.secondaryType) as LangChainLlmWrapper;
+    const primaryWrapper = factory(
+      ctx.primary,
+      ctx.primaryType,
+    ) as LangChainLlmWrapper;
+    const secondaryWrapper = factory(
+      ctx.secondary,
+      ctx.secondaryType,
+    ) as LangChainLlmWrapper;
 
     return new LangChainLlmWrapper({
       primary: primaryWrapper.getRawModel(),
@@ -106,7 +132,11 @@ export class LangChainLlmFactoryAdapter implements LlmGateway {
             `Fallback ${taskType} triggered: Switching to ${ctx.secondaryType}`,
           ),
         onError: (error: any) =>
-          this.handleLlmError(ctx.secondaryType, error, ctx.markSecondaryFailed),
+          this.handleLlmError(
+            ctx.secondaryType,
+            error,
+            ctx.markSecondaryFailed,
+          ),
       },
     });
   }
@@ -116,21 +146,28 @@ export class LangChainLlmFactoryAdapter implements LlmGateway {
   }
 
   async getSpeedyLLM(): Promise<LlmModel> {
-    return this.withProviderLogic((p) => p.create(LlmTaskType.SPEEDY), LlmTaskType.SPEEDY);
+    return this.withProviderLogic(
+      (p) => p.create(LlmTaskType.SPEEDY),
+      LlmTaskType.SPEEDY,
+    );
   }
 
   async getReasoningStructuredLLM(
     schema: LlmStructuredSchema,
     name: string,
   ): Promise<StructuredLlm> {
-    const model = await this.withProviderLogic((p) => p.create(), LlmTaskType.STRUCTURED);
+    const model = await this.withProviderLogic(
+      (p) => p.create(),
+      LlmTaskType.STRUCTURED,
+    );
     return model.withStructuredOutput(schema);
   }
 
-  async getReasoningToolBoundLLM(
-    tools: IAiTool[],
-  ): Promise<ToolBoundLlm> {
-    const model = await this.withProviderLogic((p) => p.create(), LlmTaskType.TOOL_BOUND);
+  async getReasoningToolBoundLLM(tools: IAiTool[]): Promise<ToolEnabledLlm> {
+    const model = await this.withProviderLogic(
+      (p) => p.create(),
+      LlmTaskType.TOOL_BOUND,
+    );
     return model.bindTools(tools);
   }
 }

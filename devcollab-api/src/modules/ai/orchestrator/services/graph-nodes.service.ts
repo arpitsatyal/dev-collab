@@ -5,7 +5,7 @@ import {
   AgentRunnableConfig,
   AgentNodeResult,
 } from '../types/orchestrator.types';
-import { ToolBoundLlm } from 'src/modules/ai/llm/llm.types';
+import { ToolEnabledLlm } from 'src/modules/ai/llm/llm.types';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
 import { EventBusService } from 'src/common/events/event-bus.service';
 import { AgentActionType } from 'src/common/events/agent-events.enums';
@@ -22,7 +22,7 @@ export class GraphNodesService {
    */
   async callModel(
     state: typeof GraphState.State,
-    llm: ToolBoundLlm,
+    llm: ToolEnabledLlm,
     config: AgentRunnableConfig,
     systemPrompt?: string,
   ): Promise<{ messages: BaseMessage[]; iterationCount: number }> {
@@ -33,8 +33,14 @@ export class GraphNodesService {
     );
 
     const messages = [...state.messages];
-    if (systemPrompt && messages.length > 0 && messages[0].getType() === 'system') {
-      messages[0] = new SystemMessage(`${messages[0].content}\n\n[ROLE OVERRIDE]\n${systemPrompt}`);
+    if (
+      systemPrompt &&
+      messages.length > 0 &&
+      messages[0].getType() === 'system'
+    ) {
+      messages[0] = new SystemMessage(
+        `${messages[0].content}\n\n[ROLE OVERRIDE]\n${systemPrompt}`,
+      );
     } else if (systemPrompt) {
       messages.unshift(new SystemMessage(`[ROLE OVERRIDE]\n${systemPrompt}`));
     }

@@ -9,6 +9,8 @@ import { AgentOrchestrator, AgentPort } from '../agent/ports/agent.port';
 import { AgentService } from '../agent/services/agent.service';
 import { LlmModule } from '../llm/llm.module';
 import { WorkerGraphService } from './services/worker-graph.service';
+import { OrchestratorPromptPort } from './ports/prompt.port';
+import { GraphOrchestratorPromptService } from './services/graph-orchestrator-prompt.service';
 
 @Module({
   imports: [ToolsModule, LlmModule],
@@ -17,11 +19,15 @@ import { WorkerGraphService } from './services/worker-graph.service';
     GraphFactoryService,
     GraphPersistenceService,
     GraphReflectionService,
+    GraphOrchestratorPromptService,
     WorkerGraphService,
+    {
+      provide: OrchestratorPromptPort,
+      useClass: GraphOrchestratorPromptService,
+    },
     { provide: AgentOrchestrator, useClass: LangGraphAdapter },
     { provide: AgentPort, useClass: AgentService },
   ],
   exports: [AgentPort],
 })
-export class OrchestratorModule { }
-
+export class OrchestratorModule {}

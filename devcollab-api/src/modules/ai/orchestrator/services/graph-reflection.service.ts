@@ -1,49 +1,28 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AIMessage, BaseMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
+import { AIMessage, BaseMessage } from '@langchain/core/messages';
 import { AgentRunnableConfig } from '../types/orchestrator.types';
-import { GraphState, ReflectionEntry, ReflectionVerdict } from '../state/graph.state';
-import { ToolBoundLlm } from 'src/modules/ai/llm/llm.types';
+import {
+  GraphState,
+  ReflectionEntry,
+  ReflectionVerdict,
+} from '../state/graph.state';
+import { ToolEnabledLlm } from 'src/modules/ai/llm/llm.types';
 import { EventBusService } from 'src/common/events/event-bus.service';
 import { AgentActionType } from 'src/common/events/agent-events.enums';
 import { OrchestratorStateUtils } from '../utils/orchestrator-state.utils';
+import { OrchestratorPromptPort } from '../ports/prompt.port';
 
 /** Maximum reflection cycles before the graph is forced to move on. */
 export const MAX_REFLECTION_RETRIES = 3;
-
-const REFLECTION_SYSTEM_PROMPT = `You are a meticulous senior engineer performing a self-correction review.
-You will be given:
-1. The ORIGINAL USER MISSION - the exact task that must be accomplished.
-2. The WORKER LOG - the conversation history showing what the agent did, which tools it called, and what results were returned.
-3. A REVISION HISTORY - any previous reflection verdicts and the corrections already attempted.
-
-Your job is to critically evaluate whether the worker's output correctly and completely fulfils the mission.
-
-Check for ALL of the following:
-- Does the result directly address the mission? (No partial or tangential completions.)
-- Are naming conventions consistent with the project (camelCase, PascalCase, kebab-case as appropriate)?
-- Are there missing registrations, imports, or wiring steps that are typically required?
-- Are there missing tests, documentation, or configuration updates implied by the task?
-- Did any tool call return an error that was silently ignored?
-- Is the work idempotent and non-destructive to existing state?
-- Are there obvious logic errors, missing fields, or truncated outputs?
-
-Respond ONLY with valid JSON (no markdown, no prose outside the JSON):
-{
-  "verdict": "PASS" | "REVISE" | "ABORT",
-  "reasoning": "<concise explanation of your assessment>",
-  "revisionsRequested": ["<specific actionable correction 1>", "<specific actionable correction 2>"]
-}
-
-Use "PASS" when the mission is fully and correctly completed.
-Use "REVISE" when specific, fixable issues exist — list each one in revisionsRequested.
-Use "ABORT" only when the worker has already attempted the same corrections multiple times without success.
-revisionsRequested must be empty for PASS and ABORT.`;
 
 @Injectable()
 export class GraphReflectionService {
   private readonly logger = new Logger(GraphReflectionService.name);
 
-  constructor(private readonly eventBus: EventBusService) {}
+  constructor(
+    private readonly eventBus: EventBusService,
+    private readonly promptService: OrchestratorPromptPort,
+  ) {}
 
   /**
    * Reflection node implementation.
@@ -55,10 +34,16 @@ export class GraphReflectionService {
    */
   async reflect(
     state: typeof GraphState.State,
-    llm: ToolBoundLlm,
+    llm: ToolEnabledLlm,
     config: AgentRunnableConfig,
   ): Promise<Partial<typeof GraphState.State>> {
-    const { missionContext, reflectionCount, reflectionLog, lastWorkerNode, messages } = state;
+    const {
+      missionContext,
+      reflectionCount,
+      reflectionLog,
+      lastWorkerNode,
+      messages,
+    } = state;
 
     this.eventBus.emitAgentAction(
       config.configurable || {},
@@ -66,73 +51,48 @@ export class GraphReflectionService {
       `Reflecting on ${lastWorkerNode} output (attempt ${reflectionCount + 1}/${MAX_REFLECTION_RETRIES})`,
     );
 
-    // ── 1. Hard-stop: never exceed MAX_REFLECTION_RETRIES ──────────────────
-    if (reflectionCount >= MAX_REFLECTION_RETRIES) {
-      this.logger.warn(
-        `[Reflection] Max retries (${MAX_REFLECTION_RETRIES}) reached for worker "${lastWorkerNode}". Forcing ABORT.`,
-      );
-      const abortEntry = this.buildEntry(state, 'ABORT', 'Maximum reflection retries reached. Proceeding with best-effort result.', []);
-      this.eventBus.emitAgentAction(
-        config.configurable || {},
-        AgentActionType.REFLECTION_END,
-        `Reflection ABORT — retry limit hit`,
-      );
-      return {
-        reflectionCount: reflectionCount + 1,
-        reflectionLog: [abortEntry],
-      };
+    const abortState = this.getAbortStateIfMaxRetries(state, config);
+    if (abortState) {
+      return abortState;
     }
 
-    // ── 2. Build the critic prompt ──────────────────────────────────────────
     const workerLog = this.buildWorkerLog(messages, lastWorkerNode);
-    const revisionHistory = this.buildRevisionHistory(reflectionLog, lastWorkerNode);
+    const revisionHistory = this.buildRevisionHistory(
+      reflectionLog,
+      lastWorkerNode,
+    );
 
-    const criticMessages: BaseMessage[] = [
-      new SystemMessage(REFLECTION_SYSTEM_PROMPT),
-      new HumanMessage(
-        `ORIGINAL USER MISSION:\n${missionContext || '(not set)'}\n\n` +
-          `WORKER: ${lastWorkerNode}\n\n` +
-          `WORKER LOG:\n${workerLog}\n\n` +
-          `REVISION HISTORY:\n${revisionHistory || 'No previous revisions.'}`,
-      ),
-    ];
+    const criticMessages = this.promptService.buildCriticMessages(
+      missionContext,
+      lastWorkerNode,
+      workerLog,
+      revisionHistory,
+    );
 
-    // ── 3. Call the LLM critic ─────────────────────────────────────────────
-    let raw: string;
-    try {
-      const response = (await llm.invoke(criticMessages)) as AIMessage;
-      raw = OrchestratorStateUtils.getContent(response);
-    } catch (err) {
-      this.logger.error(`[Reflection] LLM call failed: ${err}`);
-      // Fail open — treat as PASS to avoid blocking the workflow
-      const entry = this.buildEntry(state, 'PASS', 'Reflection LLM call failed; proceeding optimistically.', []);
+    const raw = await this.invokeCritic(criticMessages, llm);
+    if (raw === null) {
+      const entry = this.buildEntry(
+        state,
+        'PASS',
+        'Reflection LLM call failed; proceeding optimistically.',
+        [],
+      );
       return { reflectionCount: reflectionCount + 1, reflectionLog: [entry] };
     }
 
-    // ── 4. Parse verdict JSON ──────────────────────────────────────────────
-    let verdict: ReflectionVerdict = 'PASS';
-    let reasoning = '';
-    let revisionsRequested: string[] = [];
-
-    try {
-      // Strip possible markdown fences the model may add despite instructions
-      const cleaned = raw.replace(/```(?:json)?/gi, '').replace(/```/g, '').trim();
-      const parsed = JSON.parse(cleaned);
-      verdict = parsed.verdict ?? 'PASS';
-      reasoning = parsed.reasoning ?? '';
-      revisionsRequested = Array.isArray(parsed.revisionsRequested) ? parsed.revisionsRequested : [];
-    } catch {
-      this.logger.warn(`[Reflection] Failed to parse JSON verdict. Raw: ${raw}`);
-      // Treat unparseable response as PASS to avoid blocking
-      verdict = 'PASS';
-      reasoning = `Could not parse critic response. Raw output: ${raw.slice(0, 200)}`;
-    }
+    const { verdict, reasoning, revisionsRequested } =
+      this.parseReflectionVerdict(raw);
 
     this.logger.log(
       `[Reflection] Worker="${lastWorkerNode}" verdict="${verdict}" reasoning="${reasoning}"`,
     );
 
-    const entry = this.buildEntry(state, verdict, reasoning, revisionsRequested);
+    const entry = this.buildEntry(
+      state,
+      verdict,
+      reasoning,
+      revisionsRequested,
+    );
 
     this.eventBus.emitAgentAction(
       config.configurable || {},
@@ -140,25 +100,94 @@ export class GraphReflectionService {
       `Reflection ${verdict} — ${reasoning.slice(0, 120)}`,
     );
 
-    // ── 5. When REVISE — inject a correction request into the message stream
-    //       so the supervisor sees it and re-delegates with the critique context.
-    const additionalMessages: BaseMessage[] = [];
-    if (verdict === 'REVISE' && revisionsRequested.length > 0) {
-      const correctionMessage = new HumanMessage(
-        `[REFLECTION FEEDBACK — iteration ${reflectionCount + 1}]\n` +
-          `The previous work by ${lastWorkerNode} requires corrections:\n\n` +
-          revisionsRequested.map((r, i) => `${i + 1}. ${r}`).join('\n') +
-          `\n\nPlease re-delegate to the appropriate worker and address each point above. ` +
-          `Do NOT repeat already-correct work; focus only on the listed corrections.`,
-      );
-      additionalMessages.push(correctionMessage);
-    }
+    const additionalMessages = this.promptService.buildCorrectionMessages(
+      reflectionCount + 1,
+      lastWorkerNode,
+      revisionsRequested,
+    );
 
     return {
       reflectionCount: reflectionCount + 1,
       reflectionLog: [entry],
-      ...(additionalMessages.length > 0 ? { messages: additionalMessages } : {}),
+      ...(additionalMessages.length > 0
+        ? { messages: additionalMessages }
+        : {}),
     };
+  }
+
+  private getAbortStateIfMaxRetries(
+    state: typeof GraphState.State,
+    config: AgentRunnableConfig,
+  ): Partial<typeof GraphState.State> | null {
+    const { reflectionCount, lastWorkerNode } = state;
+    if (reflectionCount < MAX_REFLECTION_RETRIES) {
+      return null;
+    }
+
+    this.logger.warn(
+      `[Reflection] Max retries (${MAX_REFLECTION_RETRIES}) reached for worker "${lastWorkerNode}". Forcing ABORT.`,
+    );
+
+    const abortEntry = this.buildEntry(
+      state,
+      'ABORT',
+      'Maximum reflection retries reached. Proceeding with best-effort result.',
+      [],
+    );
+
+    this.eventBus.emitAgentAction(
+      config.configurable || {},
+      AgentActionType.REFLECTION_END,
+      `Reflection ABORT — retry limit hit`,
+    );
+
+    return {
+      reflectionCount: reflectionCount + 1,
+      reflectionLog: [abortEntry],
+    };
+  }
+
+  private async invokeCritic(
+    criticMessages: BaseMessage[],
+    llm: ToolEnabledLlm,
+  ): Promise<string | null> {
+    try {
+      const response = (await llm.invoke(criticMessages)) as AIMessage;
+      return OrchestratorStateUtils.getContent(response);
+    } catch (err) {
+      this.logger.error(`[Reflection] LLM call failed: ${err}`);
+      return null;
+    }
+  }
+
+  private parseReflectionVerdict(raw: string): {
+    verdict: ReflectionVerdict;
+    reasoning: string;
+    revisionsRequested: string[];
+  } {
+    try {
+      const cleaned = raw
+        .replace(/```(?:json)?/gi, '')
+        .replace(/```/g, '')
+        .trim();
+      const parsed = JSON.parse(cleaned);
+      return {
+        verdict: parsed.verdict ?? 'PASS',
+        reasoning: parsed.reasoning ?? '',
+        revisionsRequested: Array.isArray(parsed.revisionsRequested)
+          ? parsed.revisionsRequested
+          : [],
+      };
+    } catch {
+      this.logger.warn(
+        `[Reflection] Failed to parse JSON verdict. Raw: ${raw}`,
+      );
+      return {
+        verdict: 'PASS',
+        reasoning: `Could not parse critic response. Raw output: ${raw.slice(0, 200)}`,
+        revisionsRequested: [],
+      };
+    }
   }
 
   // ── Private helpers ────────────────────────────────────────────────────────
@@ -188,20 +217,28 @@ export class GraphReflectionService {
     const lines: string[] = [];
 
     for (const msg of relevant) {
-      const type = msg.getType();
+      const type = msg.type;
       const content = OrchestratorStateUtils.getContent(msg);
 
-      if (type === 'ai') {
-        const ai = msg as AIMessage;
-        if (ai.tool_calls?.length) {
-          lines.push(`[AI → tool_calls] ${ai.tool_calls.map((tc) => `${tc.name}(${JSON.stringify(tc.args)})`).join(', ')}`);
-        } else if (content) {
-          lines.push(`[AI → text] ${content.slice(0, 400)}`);
+      switch (type) {
+        case 'ai': {
+          if (AIMessage.isInstance(msg)) {
+            if (msg.tool_calls?.length) {
+              lines.push(
+                `[AI → tool_calls] ${msg.tool_calls.map((tc) => `${tc.name}(${JSON.stringify(tc.args)})`).join(', ')}`,
+              );
+            } else if (content) {
+              lines.push(`[AI → text] ${content.slice(0, 400)}`);
+            }
+          }
+          break;
         }
-      } else if (type === 'tool') {
-        lines.push(`[tool result] ${content.slice(0, 600)}`);
-      } else if (type === 'human') {
-        lines.push(`[human] ${content.slice(0, 400)}`);
+        case 'tool':
+          lines.push(`[tool result] ${content.slice(0, 600)}`);
+          break;
+        case 'human':
+          lines.push(`[human] ${content.slice(0, 400)}`);
+          break;
       }
     }
 
@@ -214,7 +251,10 @@ export class GraphReflectionService {
    * Summarises previous reflection entries for the same worker so the critic
    * knows which corrections were already attempted.
    */
-  private buildRevisionHistory(log: ReflectionEntry[], workerNode: string): string {
+  private buildRevisionHistory(
+    log: ReflectionEntry[],
+    workerNode: string,
+  ): string {
     const relevant = log.filter((e) => e.worker === workerNode);
     if (relevant.length === 0) return '';
 

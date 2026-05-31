@@ -9,7 +9,7 @@ import { LlmProvider, LlmTaskType } from './llm.enums';
 export interface LlmModel {
   invoke(input: unknown): Promise<unknown>;
   generateText(input: unknown): Promise<string>;
-  bindTools(tools: unknown[]): ToolBoundLlm;
+  bindTools(tools: unknown[]): ToolEnabledLlm;
   withStructuredOutput(schema: LlmStructuredSchema): StructuredLlm;
 }
 
@@ -26,9 +26,9 @@ export interface StructuredLlm {
 export type LlmStructuredSchema = ZodTypeAny | Record<string, unknown>;
 
 /**
- * Represents an LLM model that has been bound to tools.
+ * Represents an LLM model with its tool bindings applied.
  */
-export interface ToolBoundLlm {
+export interface ToolEnabledLlm {
   invoke(input: unknown): Promise<unknown>;
 }
 
@@ -63,7 +63,5 @@ export abstract class LlmGateway {
     schema: LlmStructuredSchema,
     name: string,
   ): Promise<StructuredLlm>;
-  abstract getReasoningToolBoundLLM(
-    tools: IAiTool[],
-  ): Promise<ToolBoundLlm>;
+  abstract getReasoningToolBoundLLM(tools: IAiTool[]): Promise<ToolEnabledLlm>;
 }
