@@ -12,7 +12,7 @@ import type {
 
 @Injectable()
 export class SnippetToolsHandler {
-  constructor(private readonly snippetsService: SnippetsService) {}
+  constructor(private readonly snippetsService: SnippetsService) { }
 
   private safeParseContent(content: unknown): string {
     if (typeof content === 'string') return content;
@@ -56,12 +56,51 @@ export class SnippetToolsHandler {
     authorId: string,
   ): Promise<string> {
     const workspaceId = args.workspaceId || defaultId;
+
+    // Auto-map common programming languages to their correct file extension
+    let extension = args.extension?.trim() || '';
+    if (!extension) {
+      const lang = (args.language || '').toLowerCase().trim();
+      const mapping: Record<string, string> = {
+        typescript: '.ts',
+        ts: '.ts',
+        javascript: '.js',
+        js: '.js',
+        python: '.py',
+        py: '.py',
+        go: '.go',
+        golang: '.go',
+        rust: '.rs',
+        rs: '.rs',
+        csharp: '.cs',
+        cs: '.cs',
+        cpp: '.cpp',
+        c: '.c',
+        html: '.html',
+        css: '.css',
+        json: '.json',
+        yaml: '.yaml',
+        yml: '.yaml',
+        markdown: '.md',
+        md: '.md',
+        shell: '.sh',
+        bash: '.sh',
+        sh: '.sh',
+      };
+      extension = mapping[lang] || '';
+    }
+
+    // Ensure extension starts with a leading dot
+    if (extension && !extension.startsWith('.')) {
+      extension = `.${extension}`;
+    }
+
     try {
       const snippet = await this.snippetsService.createSnippet({
         title: args.title,
         language: args.language,
         content: args.content,
-        extension: args.extension,
+        extension,
         workspaceId,
         authorId,
       });

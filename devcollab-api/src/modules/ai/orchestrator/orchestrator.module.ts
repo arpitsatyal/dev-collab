@@ -3,6 +3,7 @@ import { ToolsModule } from '../tools/tools.module';
 import { GraphNodesService } from './services/graph-nodes.service';
 import { GraphFactoryService } from './services/graph-factory.service';
 import { GraphPersistenceService } from './services/graph-persistence.service';
+import { GraphReflectionService } from './services/graph-reflection.service';
 import { LangGraphAdapter } from './adapters/langgraph.adapter';
 import { AgentOrchestrator, AgentPort } from '../agent/ports/agent.port';
 import { AgentService } from '../agent/services/agent.service';
@@ -15,6 +16,7 @@ import { WorkerGraphService } from './services/worker-graph.service';
     GraphNodesService,
     GraphFactoryService,
     GraphPersistenceService,
+    GraphReflectionService,
     WorkerGraphService,
     { provide: AgentOrchestrator, useClass: LangGraphAdapter },
     { provide: AgentPort, useClass: AgentService },
@@ -22,3 +24,4 @@ import { WorkerGraphService } from './services/worker-graph.service';
   exports: [AgentPort],
 })
 export class OrchestratorModule { }
+
