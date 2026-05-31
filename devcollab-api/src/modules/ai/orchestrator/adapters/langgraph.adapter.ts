@@ -9,6 +9,7 @@ import { AgentOrchestrator } from 'src/modules/ai/agent/ports/agent.port';
 import { AgentRunOptions } from 'src/modules/ai/agent/types/agent.types';
 import { OrchestratorStateUtils } from 'src/modules/ai/orchestrator/utils/orchestrator-state.utils';
 import { GraphFactoryService } from 'src/modules/ai/orchestrator/services/graph-factory.service';
+import { GraphState } from '../state/graph.state';
 
 @Injectable()
 export class LangGraphAdapter implements AgentOrchestrator {
@@ -79,8 +80,8 @@ export class LangGraphAdapter implements AgentOrchestrator {
     return this.mapFinalStateToResult(finalState);
   }
 
-  private mapFinalStateToResult(finalState: any): IAiResult {
-    const messages = finalState.messages as BaseMessage[];
+  private mapFinalStateToResult(finalState: typeof GraphState.State): IAiResult {
+    const messages = finalState.messages;
     const calledTools = OrchestratorStateUtils.getToolSequence(messages);
 
     if (calledTools.length === 0) {

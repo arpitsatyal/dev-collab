@@ -61,9 +61,8 @@ export class WorkspacesService implements WorkspaceActionsPort {
 
     if (isPinned) {
       await this.workspaceRepo.upsertPin(user.id, workspaceId);
-    } else {
-      await this.workspaceRepo.deletePin(user.id, workspaceId);
     }
+    await this.workspaceRepo.deletePin(user.id, workspaceId);
 
     return { pinned: isPinned };
   }
