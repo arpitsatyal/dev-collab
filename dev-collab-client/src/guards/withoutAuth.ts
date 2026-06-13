@@ -1,0 +1,35 @@
+import apiClient from "../lib/apiClient";
+import {
+  GetServerSideProps,
+  GetServerSidePropsContext,
+  GetServerSidePropsResult,
+} from "next";
+
+export function withoutAuth<P extends Record<string, any>>(
+  handler: (
+    context: GetServerSidePropsContext,
+  ) => Promise<GetServerSidePropsResult<P>>,
+): GetServerSideProps<P> {
+  return async (context) => {
+    try {
+      // Check session on NestJS side
+      const cookie = context.req.headers.cookie;
+      const response = await apiClient.get("/auth/me", {
+        headers: { cookie: cookie || "" },
+      });
+
+      if (response.data) {
+        return {
+          redirect: {
+            destination: "/dashboard",
+            permanent: false,
+          },
+        };
+      }
+    } catch (error) {
+      // Not authenticated, proceed to handler
+    }
+
+    return handler(context);
+  };
+}

@@ -1,0 +1,54 @@
+{
+  "dev": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-devcollab-dev-49913-authRole",
+      "UnauthRoleArn": "arn:aws:iam::360308275964:role/amplify-devcollab-dev-49913-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::360308275964:role/amplify-devcollab-dev-49913-authRole",
+      "Region": "us-east-2",
+      "DeploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+      "UnauthRoleName": "amplify-devcollab-dev-49913-unauthRole",
+      "StackName": "amplify-devcollab-dev-49913",
+      "StackId": "arn:aws:cloudformation:us-east-2:360308275964:stack/amplify-devcollab-dev-49913/f83206f0-2e68-11f0-849b-0a77d5e6aa71",
+      "AmplifyAppId": "dgvpb7720ksa0"
+    },
+    "categories": {
+      "function": {
+        "elasticIndexWebhook": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/elasticIndexWebhook-7777397652526c315542-build.zip",
+          "neonDbUrl": "postgresql://postgres:qns9eNe8KzfIZJWG@db.rynqtoqrlihntvoyciuo.supabase.co:5432/postgres",
+          "meilisearchServer": "https://ms-a9213d64daf5-45448.fra.meilisearch.io",
+          "meilisearchApiKey": "084d3f9c55c8334f065b934815e61159e8863316e95e763e9c9a714e1d6073e6"
+        },
+        "search": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/search-4a4548595a3530546161-build.zip",
+          "meilisearchApiKey": "084d3f9c55c8334f065b934815e61159e8863316e95e763e9c9a714e1d6073e6",
+          "meilisearchServer": "https://ms-a9213d64daf5-45448.fra.meilisearch.io"
+        },
+        "devcollabsearchlayer": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/devcollabsearchlayer-LambdaLayerVersion75dd3204-build.zip"
+        },
+        "TaskNotificationWorker": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/TaskNotificationWorker-6844495464344c677973-build.zip",
+          "appDomain": "https://www.devcollab.store"
+        },
+        "DueDateCronJob": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/DueDateCronJob-2b616944574d2f764a67-build.zip",
+          "queueUrl": "https://sqs.us-east-2.amazonaws.com/360308275964/TaskNotificationsQueue",
+          "databaseUrl": "postgresql://neondb_owner:npg_zadLk9eVCf1y@ep-white-truth-a5xcccs1-pooler.us-east-2.aws.neon.tech/neondb?sslmode=require"
+        },
+        "devcollabprismalayer": {
+          "deploymentBucketName": "amplify-devcollab-dev-49913-deployment",
+          "s3Key": "amplify-builds/devcollabprismalayer-LambdaLayerVersiona66bbbe5-build.zip"
+        }
+      },
+      "api": {
+        "devcollabapi": {}
+      }
+    }
+  }
+}

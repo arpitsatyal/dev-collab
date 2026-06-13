@@ -1,9 +1,0 @@
-
-.card {
-  transition: transform 150ms ease, box-shadow 150ms ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: var(--mantine-shadow-md);
-  }
-}
