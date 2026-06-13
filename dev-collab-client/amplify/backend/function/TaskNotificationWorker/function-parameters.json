@@ -1,9 +1,0 @@
-{
-  "lambdaLayers": [],
-  "environmentVariableList": [
-    {
-      "cloudFormationParameterName": "appDomain",
-      "environmentVariableName": "APP_DOMAIN"
-    }
-  ]
-}

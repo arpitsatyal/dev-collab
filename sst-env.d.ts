@@ -6,11 +6,71 @@
 
 declare module "sst" {
   export interface Resource {
+    "ApiService": {
+      "service": string
+      "type": "sst.aws.Service"
+      "url": string
+    }
     "DATABASE_URL": {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "DevCollabVpc": {
+      "type": "sst.aws.Vpc"
+    }
+    "Frontend": {
+      "type": "sst.aws.Nextjs"
+      "url": string
+    }
+    "GITHUB_CLIENT_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GITHUB_CLIENT_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GOOGLE_CLIENT_ID": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GOOGLE_CLIENT_SECRET": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "GROQ_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "LIVEBLOCKS_SECRET_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "MEILISEARCH_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PINECONE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "QSTASH_CURRENT_SIGNING_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "QSTASH_NEXT_SIGNING_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "QSTASH_TOKEN": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "SENDGRID_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "TOGETHER_API_KEY": {
       "type": "sst.sst.Secret"
       "value": string
     }
@@ -20,7 +80,6 @@ declare module "sst" {
     }
   }
 }
-/// <reference path="sst-env.d.ts" />
 
 import "sst"
 export {}

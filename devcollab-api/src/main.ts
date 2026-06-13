@@ -70,7 +70,9 @@ async function bootstrap() {
   app.setBaseViewsDir(join(__dirname, '..', 'views'));
 
   app.useGlobalFilters(new AllExceptionsFilter());
-  app.setGlobalPrefix('api');
+  app.setGlobalPrefix('api', {
+    exclude: [{ path: '/', method: 0 }], // 0 is RequestMethod.GET
+  });
 
   await app.listen(port);
 }

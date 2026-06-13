@@ -4,13 +4,20 @@ const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const nextConfig = {
   reactStrictMode: true,
-  swcMinify: true,
   transpilePackages: ["monaco-editor", "@monaco-editor/react", "y-monaco"],
   experimental: {
     externalDir: true,
   },
   env: {
     NEXT_PUBLIC_API_GATEWAY_URL: process.env.NEXT_PUBLIC_API_GATEWAY_URL,
+  },
+  async rewrites() {
+    return [
+      {
+        source: "/api/:path*",
+        destination: `${process.env.NEXT_PUBLIC_API_GATEWAY_URL}/api/:path*`,
+      },
+    ];
   },
   images: {
     remotePatterns: [
