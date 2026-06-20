@@ -58,27 +58,6 @@ export const RecentSearchGroup = () => {
     }
   };
 
-  const sortRecentItems = (items: TypedItems[]) =>
-    [...items].sort((a, b) => {
-      const aIndex = recentSearchOrder?.indexOf(`${a.type}:${a.id}`) ?? -1;
-      const bIndex = recentSearchOrder?.indexOf(`${b.type}:${b.id}`) ?? -1;
-      return aIndex - bIndex;
-    });
-
-  const mapRecentToDataItem = (item: TypedItems): DataItem => ({
-    id: item.id,
-    title: getDisplayTitle(item),
-    description: (item as any).description ?? "-",
-    groupLabel: "Recently Searched",
-    icon: getIcon(item),
-    onClick: () => handleItemClick(item, getTargetPath(item)),
-    meta: {
-      workspaceTitle: (item as any).workspaceId
-        ? workspaces?.find((w) => w.id === (item as any).workspaceId)?.title ?? ""
-        : "",
-    },
-  });
-
   const items = useMemo(() => {
     const hasOtherResults =
       filterByQuery(workspaces ?? [], query).length > 0 ||
@@ -86,6 +65,27 @@ export const RecentSearchGroup = () => {
       (matchedResults?.length ?? 0) > 0;
 
     if (hasOtherResults && query.length > 0) return [];
+
+    const sortRecentItems = (items: TypedItems[]) =>
+      [...items].sort((a, b) => {
+        const aIndex = recentSearchOrder?.indexOf(`${a.type}:${a.id}`) ?? -1;
+        const bIndex = recentSearchOrder?.indexOf(`${b.type}:${b.id}`) ?? -1;
+        return aIndex - bIndex;
+      });
+
+    const mapRecentToDataItem = (item: TypedItems): DataItem => ({
+      id: item.id,
+      title: getDisplayTitle(item),
+      description: (item as any).description ?? "-",
+      groupLabel: "Recently Searched",
+      icon: getIcon(item),
+      onClick: () => handleItemClick(item, getTargetPath(item)),
+      meta: {
+        workspaceTitle: (item as any).workspaceId
+          ? workspaces?.find((w) => w.id === (item as any).workspaceId)?.title ?? ""
+          : "",
+      },
+    });
 
     const sorted = sortRecentItems(recentItems);
 

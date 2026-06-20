@@ -12,18 +12,18 @@ export const WorkspaceSearchGroup = () => {
     useSpotlightSearchContext();
   const { handleItemClick } = useSearchItemHandler();
 
-  const mapWorkspaceToDataItem = (
-    workspace: TypedItem<"workspace">,
-  ): DataItem => ({
-    id: workspace.id,
-    title: workspace.title,
-    description: workspace.description ?? "-",
-    icon: <IconFolder size={24} stroke={1.5} />,
-    onClick: () => handleItemClick(workspace, `/workspaces/${workspace.id}`),
-    groupLabel: "Workspaces",
-  });
-
   const items = useMemo(() => {
+    const mapWorkspaceToDataItem = (
+      workspace: TypedItem<"workspace">,
+    ): DataItem => ({
+      id: workspace.id,
+      title: workspace.title,
+      description: workspace.description ?? "-",
+      icon: <IconFolder size={24} stroke={1.5} />,
+      onClick: () => handleItemClick(workspace, `/workspaces/${workspace.id}`),
+      groupLabel: "Workspaces",
+    });
+
     const localTyped: TypedItem<"workspace">[] = filterByQuery(
       workspaces ?? [],
       query,

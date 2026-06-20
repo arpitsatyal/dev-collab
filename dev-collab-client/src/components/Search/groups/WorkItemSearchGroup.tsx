@@ -11,24 +11,24 @@ export const WorkItemSearchGroup = () => {
     useSpotlightSearchContext();
   const { handleItemClick } = useSearchItemHandler();
 
-  const mapWorkItemToDataItem = (
-    workItem: TypedItem<"workItem">,
-  ): DataItem => ({
-    id: workItem.id,
-    title: workItem.title,
-    description: workItem.description ?? "-",
-    icon: <IconSubtask size={24} stroke={1.5} />,
-    onClick: () =>
-      handleItemClick(workItem, `/workspaces/${workItem.workspaceId}/work-items`),
-    groupLabel: "Work Items",
-    meta: {
-      workspaceTitle:
-        workspaces?.find((w) => w.id === workItem.workspaceId)?.title ?? "",
-    },
-  });
-
   const items = useMemo(() => {
     if (isSearchLoading || !matchedResults?.length) return [];
+
+    const mapWorkItemToDataItem = (
+      workItem: TypedItem<"workItem">,
+    ): DataItem => ({
+      id: workItem.id,
+      title: workItem.title,
+      description: workItem.description ?? "-",
+      icon: <IconSubtask size={24} stroke={1.5} />,
+      onClick: () =>
+        handleItemClick(workItem, `/workspaces/${workItem.workspaceId}/work-items`),
+      groupLabel: "Work Items",
+      meta: {
+        workspaceTitle:
+          workspaces?.find((w) => w.id === workItem.workspaceId)?.title ?? "",
+      },
+    });
 
     return matchedResults
       .filter(

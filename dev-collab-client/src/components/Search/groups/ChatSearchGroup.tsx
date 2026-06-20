@@ -11,16 +11,16 @@ export const ChatSearchGroup = () => {
   const { matchedResults, isSearchLoading } = useSpotlightSearchContext();
   const { handleItemClick } = useSearchItemHandler();
 
-  const mapChatToDataItem = (chat: TypedItem<"chat">): DataItem => ({
-    id: chat.id,
-    title: getDisplayTitle(chat),
-    icon: <IconMessage size={24} stroke={1.5} />,
-    onClick: () => handleItemClick(chat, `/chats/${chat.id}`),
-    groupLabel: "Chats",
-  });
-
   const items = useMemo(() => {
     if (isSearchLoading || !matchedResults?.length) return [];
+
+    const mapChatToDataItem = (chat: TypedItem<"chat">): DataItem => ({
+      id: chat.id,
+      title: getDisplayTitle(chat),
+      icon: <IconMessage size={24} stroke={1.5} />,
+      onClick: () => handleItemClick(chat, `/chats/${chat.id}`),
+      groupLabel: "Chats",
+    });
 
     return matchedResults
       .filter((res: TypedItems): res is TypedItem<"chat"> => res.type === "chat")

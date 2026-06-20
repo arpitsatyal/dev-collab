@@ -17,23 +17,23 @@ export const SnippetSearchGroup = () => {
     useAppSelector((state) => state.snippet.loadedSnippets),
   ).flat();
 
-  const mapSnippetToDataItem = (snippet: TypedItem<"snippet">): DataItem => ({
-    id: snippet.id,
-    title: getDisplayTitle(snippet),
-    icon: <FileIcon snippet={snippet} />,
-    onClick: () =>
-      handleItemClick(
-        snippet,
-        `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
-      ),
-    groupLabel: "Snippets",
-    meta: {
-      workspaceTitle:
-        workspaces?.find((w) => w.id === snippet.workspaceId)?.title ?? "",
-    },
-  });
-
   const items = useMemo(() => {
+    const mapSnippetToDataItem = (snippet: TypedItem<"snippet">): DataItem => ({
+      id: snippet.id,
+      title: getDisplayTitle(snippet),
+      icon: <FileIcon snippet={snippet} />,
+      onClick: () =>
+        handleItemClick(
+          snippet,
+          `/workspaces/${snippet.workspaceId}/snippets/${snippet.id}`,
+        ),
+      groupLabel: "Snippets",
+      meta: {
+        workspaceTitle:
+          workspaces?.find((w) => w.id === snippet.workspaceId)?.title ?? "",
+      },
+    });
+
     const localTyped: TypedItem<"snippet">[] = filterByQuery(
       snippets,
       query,

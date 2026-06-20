@@ -12,21 +12,21 @@ export const DocSearchGroup = () => {
     useSpotlightSearchContext();
   const { handleItemClick } = useSearchItemHandler();
 
-  const mapDocToDataItem = (doc: TypedItem<"doc">): DataItem => ({
-    id: doc.id,
-    title: getDisplayTitle(doc),
-    icon: <IconFileText size={24} stroke={1.5} />,
-    onClick: () =>
-      handleItemClick(doc, `/workspaces/${doc.workspaceId}/docs/${doc.id}`),
-    groupLabel: "Documents",
-    meta: {
-      workspaceTitle:
-        workspaces?.find((w) => w.id === doc.workspaceId)?.title ?? "",
-    },
-  });
-
   const items = useMemo(() => {
     if (isSearchLoading || !matchedResults?.length) return [];
+
+    const mapDocToDataItem = (doc: TypedItem<"doc">): DataItem => ({
+      id: doc.id,
+      title: getDisplayTitle(doc),
+      icon: <IconFileText size={24} stroke={1.5} />,
+      onClick: () =>
+        handleItemClick(doc, `/workspaces/${doc.workspaceId}/docs/${doc.id}`),
+      groupLabel: "Documents",
+      meta: {
+        workspaceTitle:
+          workspaces?.find((w) => w.id === doc.workspaceId)?.title ?? "",
+      },
+    });
 
     return matchedResults
       .filter((res: TypedItems): res is TypedItem<"doc"> => res.type === "doc")
