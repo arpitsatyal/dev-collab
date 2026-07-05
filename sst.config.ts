@@ -12,7 +12,7 @@ export default $config({
     // 1. Secrets (Stored in AWS SSM)
     const dbUrl = new sst.Secret("DATABASE_URL");
     const sendgridApiKey = new sst.Secret("SENDGRID_API_KEY");
-    
+
     // Additional API Secrets
     const googleClientId = new sst.Secret("GOOGLE_CLIENT_ID");
     const googleClientSecret = new sst.Secret("GOOGLE_CLIENT_SECRET");
@@ -56,17 +56,17 @@ export default $config({
       },
     });
 
-    // 5. VPC and ECS Cluster for the API
+    // // 5. VPC and ECS Cluster for the API
     const vpc = new sst.aws.Vpc("DevCollabVpc");
     const cluster = new sst.aws.Cluster("DevCollabCluster", { vpc });
 
-    // 6. API Service (Fargate)
+    // // 6. API Service (Fargate)
     const api = cluster.addService("ApiService", {
       cpu: "0.25 vCPU",
       memory: "0.5 GB",
       link: [
-        dbUrl, 
-        queue, 
+        dbUrl,
+        queue,
         sendgridApiKey,
         googleClientId,
         googleClientSecret,
@@ -89,7 +89,10 @@ export default $config({
       ],
       loadBalancer: {
         domain: "api.devcollab.site",
-        ports: [{ listen: "80/http", forward: "4000/http" }],
+        ports: [
+          { listen: "443/https", forward: "4000/http" },
+          { listen: "80/http", forward: "4000/http" },
+        ],
       },
       image: {
         context: "./devcollab-api",
@@ -123,13 +126,13 @@ export default $config({
       },
     });
 
-    // 7. Frontend (Next.js)
+    // // 7. Frontend (Next.js)
     const frontend = new sst.aws.Nextjs("Frontend", {
       path: "dev-collab-client",
       domain: "devcollab.site",
       environment: {
         NEXT_PUBLIC_API_GATEWAY_URL: "https://api.devcollab.site",
-        NEXT_PUBLIC_API_URL: "",
+        NEXT_PUBLIC_API_URL: "https://api.devcollab.site",
       },
     });
 

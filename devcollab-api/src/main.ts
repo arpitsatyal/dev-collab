@@ -42,9 +42,10 @@ async function bootstrap() {
       saveUninitialized: false,
       rolling: true, // Refresh cookie on every request
       cookie: {
-        secure: process.env.NODE_ENV === 'production', // Must be true if frontend and backend are on different domains
+        secure: true, // Always true for https (ALB)
         httpOnly: true,
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // 'none' required for cross-origin cookies
+        sameSite: 'none', // 'none' required for cross-origin cookies
+        domain: '.devcollab.site',
         maxAge: 24 * 60 * 60 * 1000,
       },
     }),

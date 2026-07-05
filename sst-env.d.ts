@@ -42,6 +42,10 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "IMPORT_QUEUE_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "LIVEBLOCKS_SECRET_KEY": {
       "type": "sst.sst.Secret"
       "value": string
@@ -50,7 +54,27 @@ declare module "sst" {
       "type": "sst.sst.Secret"
       "value": string
     }
+    "MEILISEARCH_HOST": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "MEILISEARCH_INDEX": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "MISSION_QUEUE_URL": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
     "PINECONE_API_KEY": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PINECONE_INDEX": {
+      "type": "sst.sst.Secret"
+      "value": string
+    }
+    "PREFERRED_LLM_PROVIDER": {
       "type": "sst.sst.Secret"
       "value": string
     }

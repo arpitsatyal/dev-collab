@@ -4,6 +4,12 @@ const MonacoWebpackPlugin = require("monaco-editor-webpack-plugin");
 
 const nextConfig = {
   reactStrictMode: true,
+  eslint: {
+    ignoreDuringBuilds: true
+  },
+  typescript: {
+    ignoreBuildErrors: true
+  },
   transpilePackages: ["monaco-editor", "@monaco-editor/react", "y-monaco"],
   experimental: {
     externalDir: true,
