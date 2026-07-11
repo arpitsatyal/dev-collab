@@ -22,15 +22,6 @@ export class ChatWorkspaceQueryHandler {
    * Decides between Tool-based execution (LangGraph) and Search-based RAG.
    */
   async handle(context: IChatContext): Promise<IChatResponse> {
-    if (context.inWorkspace && context.workspaceId) {
-      return this.getAIResponseWithTools({
-        chatId: context.chatId,
-        question: context.question,
-        history: context.history,
-        workspaceId: context.workspaceId,
-      });
-    }
-
     return this.getAIResponseWithSearch({
       chatId: context.chatId,
       question: context.question,

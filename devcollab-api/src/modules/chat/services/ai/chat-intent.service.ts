@@ -47,7 +47,7 @@ export class ChatIntentService {
     }
 
     return {
-      intent: 'WORKSPACE_QUERY',
+      intent: context.inWorkspace ? 'WORKSPACE_QUERY' : 'CONVERSATIONAL',
       scope: context.inWorkspace ? 'APP_SPECIFIC' : 'OUT_OF_SCOPE',
       confidence: 0,
     };

@@ -59,6 +59,9 @@ If the information isn't in the context, politely let the user know and suggest 
     if (inWorkspace) {
       sysMsg +=
         '\n\nNOTE: The user is currently inside a workspace. If they ask about a term or platform identified as the workspace focus in the history, classify it as DOMAIN_KNOWLEDGE.';
+    } else {
+      sysMsg +=
+        '\n\nNOTE: The user is currently in the global dashboard (NOT inside a workspace). Classify the intent as CONVERSATIONAL for general help or onboarding questions. Only use WORKSPACE_QUERY if they explicitly ask to search across all their workspace data.';
     }
 
     return [
