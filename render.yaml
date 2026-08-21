@@ -1,0 +1,41 @@
+services:
+  - type: web
+    name: devcollab-api
+    env: node
+    plan: free
+    rootDir: devcollab-api
+    buildCommand: npm install && npm run build
+    startCommand: npm run start:prod
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        placeholder: "PostgreSQL Database URL"
+      - key: FRONTEND_URL
+        placeholder: "Vercel Frontend URL (e.g. https://your-app.vercel.app)"
+      - key: LIVEBLOCKS_SECRET_KEY
+        placeholder: "Liveblocks secret key"
+      - key: TOGETHER_API_KEY
+        placeholder: "Together API key"
+      - key: GROQ_API_KEY
+        placeholder: "Groq API key"
+      - key: PINECONE_API_KEY
+        placeholder: "Pinecone API key"
+      - key: PINECONE_INDEX
+        value: "devcollab-api"
+      - key: QSTASH_TOKEN
+        placeholder: "Qstash Token"
+      - key: QSTASH_CURRENT_SIGNING_KEY
+        placeholder: "Qstash Current Signing Key"
+      - key: QSTASH_NEXT_SIGNING_KEY
+        placeholder: "Qstash Next Signing Key"
+      - key: GOOGLE_CLIENT_ID
+        placeholder: "Google Client ID"
+      - key: GOOGLE_CLIENT_SECRET
+        placeholder: "Google Client Secret"
+      - key: GITHUB_CLIENT_ID
+        placeholder: "GitHub Client ID"
+      - key: GITHUB_CLIENT_SECRET
+        placeholder: "GitHub Client Secret"

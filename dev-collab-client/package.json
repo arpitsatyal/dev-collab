@@ -61,7 +61,6 @@
     "yjs": "^13.6.27"
   },
   "devDependencies": {
-    "@opennextjs/aws": "^4.0.3",
     "@types/lodash": "^4.17.16",
     "@types/node": "^22.14.1",
     "@types/react": "^19.1.1",
